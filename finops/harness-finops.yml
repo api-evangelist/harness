@@ -1,5 +1,6 @@
 specification: FinOps Framework
 specificationVersion: '1.0'
+schema: https://www.finops.org/framework/
 alignedWith:
   framework: FinOps Foundation Framework
   frameworkUrl: https://www.finops.org/framework/
@@ -8,10 +9,11 @@ alignedWith:
   dataSpecUrl: https://focus.finops.org/focus-specification/v1-3/
 provider: Harness
 providerId: harness
-publisherName: Harness
-serviceCategory: API
+publisherName: Harness, Inc.
+serviceCategory: Developer Tools / DevOps Platform
 created: '2026-05-04'
-modified: '2026-05-04'
+modified: '2026-05-05'
+reconciled: true
 tags:
   - DevOps
   - GitOps
@@ -21,20 +23,25 @@ tags:
   - FinOps
   - Cost Management
   - FOCUS
-description: FinOps framework definition for the Harness API surface. Provides a FOCUS-aligned mapping
-  for cost allocation, usage measurement, and unit-economics reporting across the provider's APIs.
+description: 'FOCUS-aligned FinOps for the Harness DevOps platform: tiered subscription (Free /
+  Essentials / Enterprise) with per-module activation and capacity ceilings such as concurrent
+  pipeline executions and Code Repository storage.'
+sources:
+  - https://www.harness.io/pricing
+  - https://apidocs.harness.io/
 principles:
   - name: Visibility
-    description: Make API consumption costs visible to engineering, product, and finance teams in near
-      real-time.
+    description: Use the Harness Cloud Cost Management module and Software Engineering Insights for
+      pipeline-level cost and engineering productivity telemetry.
   - name: Allocation
-    description: Tag every chargeable API call with the consuming team, environment, application, and
-      feature so cost can be allocated.
+    description: Tag deployments and pipelines with team / service / environment labels at the
+      Harness Project and Org level so spend can be attributed.
   - name: Optimization
-    description: Continuously evaluate request patterns, caching, batching, and tier selection to reduce
-      cost per useful unit of work.
+    description: Right-size concurrent pipeline parallelism, prune idle Code Repository storage, and
+      consolidate modules at the Enterprise tier rather than buying point tools.
   - name: Accountability
-    description: Establish budget owners and chargeback or showback flows for each consuming team.
+    description: Assign budget owners per Harness Org / Project; review module enablement and
+      pipeline volume monthly against the negotiated Enterprise commitment.
 domains:
   - name: Understand Usage and Cost
     capabilities:
@@ -64,8 +71,8 @@ domains:
       - Onboarding Workloads
       - Intersecting Disciplines
 billingModel:
-  pricingCategory: Usage-Based
-  billingFrequency: Monthly
+  pricingCategory: Tiered Subscription
+  billingFrequency: Annual
   billingCurrency: USD
   chargeCategories:
     - Usage
@@ -76,41 +83,58 @@ billingModel:
   chargeFrequency: Recurring
 focusColumns:
   ServiceName: Harness
-  ServiceCategory: Developer Tools / API
+  ServiceCategory: Developer Tools / DevOps Platform
   ProviderName: Harness
-  PublisherName: Harness
-  InvoiceIssuerName: Harness
-  PricingCategory: Usage-Based
-  PricingUnit: request
+  PublisherName: Harness, Inc.
+  InvoiceIssuerName: Harness, Inc.
+  PricingCategory: Tiered Subscription
+  PricingUnit: module + capacity
   BillingCurrency: USD
-  ChargeCategory: Usage
+  ChargeCategory: Purchase
 meters:
-  - name: api_requests
-    description: Count of billable API requests
-    unit: request
+  - name: pipeline_executions
+    description: Pipeline runs across CI and CD modules
+    unit: execution
     aggregation: sum
     dimensions:
-      - api
-      - endpoint
-      - tier
-      - region
-      - consumer
-  - name: data_egress
-    description: Bytes returned over the network in API responses
-    unit: GB
+      - module
+      - project
+      - org
+  - name: concurrent_pipelines
+    description: Peak number of concurrently executing pipelines (capacity ceiling per plan)
+    unit: concurrent_executions
+    aggregation: max
+    dimensions:
+      - module
+      - account
+  - name: code_repo_storage
+    description: Storage consumed by the Harness Code Repository module
+    unit: GB-month
+    aggregation: max
+    dimensions:
+      - account
+      - org
+  - name: feature_flag_evaluations
+    description: Feature flag evaluations served by the FME module
+    unit: evaluation
     aggregation: sum
     dimensions:
-      - api
-      - region
-      - consumer
-  - name: compute_seconds
-    description: Server-side compute consumed by the request, where applicable
-    unit: second
+      - environment
+      - module
+  - name: cloud_cost_managed
+    description: Underlying cloud spend brought under Harness Cloud Cost Management
+    unit: USD
     aggregation: sum
     dimensions:
-      - api
-      - endpoint
-      - tier
+      - cloud_provider
+      - account
+  - name: module_subscriptions
+    description: Active modules enabled on the Harness account (per FOCUS Purchase line)
+    unit: module-month
+    aggregation: sum
+    dimensions:
+      - module
+      - plan
 apis:
   - name: Harness Platform API
     baseURL: ''
@@ -230,11 +254,11 @@ apis:
     serviceName: Harness Software Engineering Insights API
     serviceCategory: API
 unitEconomics:
-  - name: Cost per 1K Requests
-    metric: billed_cost / (api_requests / 1000)
+  - name: Cost per Pipeline Execution
+    metric: billed_cost / pipeline_executions
     target: TBD
-  - name: Cost per Active Consumer
-    metric: billed_cost / active_consumers
+  - name: Cost per Active Module
+    metric: billed_cost / module_subscriptions
     target: TBD
 maintainers:
   - FN: Kin Lane
