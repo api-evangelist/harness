@@ -1,0 +1,88 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Harness Platform API — Projects
+  description: 'Harness Platform API — Projects. 1 operations. Lead operation: Harness List Projects. Self-contained Naftiko
+    capability covering one Harness business surface.'
+  tags:
+  - Harness
+  - Projects
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    HARNESS_API_KEY: HARNESS_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: platform-projects
+    baseUri: https://app.harness.io/gateway
+    description: Harness Platform API — Projects business capability. Self-contained, no shared references.
+    resources:
+    - name: ng-api-projects
+      path: /ng/api/projects
+      operations:
+      - name: listprojects
+        method: GET
+        description: Harness List Projects
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: accountIdentifier
+          in: query
+          type: string
+          description: Account identifier.
+          required: true
+        - name: orgIdentifier
+          in: query
+          type: string
+          description: Organization identifier.
+    authentication:
+      type: apikey
+      key: x-api-key
+      value: '{{env.HARNESS_API_KEY}}'
+      placement: header
+  exposes:
+  - type: rest
+    namespace: platform-projects-rest
+    port: 8080
+    description: REST adapter for Harness Platform API — Projects. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/ng/api/projects
+      name: ng-api-projects
+      description: REST surface for ng-api-projects.
+      operations:
+      - method: GET
+        name: listprojects
+        description: Harness List Projects
+        call: platform-projects.listprojects
+        with:
+          accountIdentifier: rest.accountIdentifier
+          orgIdentifier: rest.orgIdentifier
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: platform-projects-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Harness Platform API — Projects. One tool per consumed operation, routed inline through this
+      capability's consumes block.
+    tools:
+    - name: harness-list-projects
+      description: Harness List Projects
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: platform-projects.listprojects
+      with:
+        accountIdentifier: tools.accountIdentifier
+        orgIdentifier: tools.orgIdentifier
+      outputParameters:
+      - type: object
+        mapping: $.

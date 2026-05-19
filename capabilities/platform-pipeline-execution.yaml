@@ -1,0 +1,107 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Harness Platform API — Pipeline Execution
+  description: 'Harness Platform API — Pipeline Execution. 1 operations. Lead operation: Harness Execute Pipeline. Self-contained
+    Naftiko capability covering one Harness business surface.'
+  tags:
+  - Harness
+  - Pipeline Execution
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    HARNESS_API_KEY: HARNESS_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: platform-pipeline-execution
+    baseUri: https://app.harness.io/gateway
+    description: Harness Platform API — Pipeline Execution business capability. Self-contained, no shared references.
+    resources:
+    - name: pipeline-api-pipelines-execute-pipelineIdentifier
+      path: /pipeline/api/pipelines/execute/{pipelineIdentifier}
+      operations:
+      - name: executepipeline
+        method: POST
+        description: Harness Execute Pipeline
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: pipelineIdentifier
+          in: path
+          type: string
+          description: Pipeline identifier.
+          required: true
+        - name: accountIdentifier
+          in: query
+          type: string
+          required: true
+        - name: orgIdentifier
+          in: query
+          type: string
+          required: true
+        - name: projectIdentifier
+          in: query
+          type: string
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    authentication:
+      type: apikey
+      key: x-api-key
+      value: '{{env.HARNESS_API_KEY}}'
+      placement: header
+  exposes:
+  - type: rest
+    namespace: platform-pipeline-execution-rest
+    port: 8080
+    description: REST adapter for Harness Platform API — Pipeline Execution. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/pipeline/api/pipelines/execute/{pipelineidentifier}
+      name: pipeline-api-pipelines-execute-pipelineidentifier
+      description: REST surface for pipeline-api-pipelines-execute-pipelineIdentifier.
+      operations:
+      - method: POST
+        name: executepipeline
+        description: Harness Execute Pipeline
+        call: platform-pipeline-execution.executepipeline
+        with:
+          pipelineIdentifier: rest.pipelineIdentifier
+          accountIdentifier: rest.accountIdentifier
+          orgIdentifier: rest.orgIdentifier
+          projectIdentifier: rest.projectIdentifier
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: platform-pipeline-execution-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Harness Platform API — Pipeline Execution. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: harness-execute-pipeline
+      description: Harness Execute Pipeline
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: platform-pipeline-execution.executepipeline
+      with:
+        pipelineIdentifier: tools.pipelineIdentifier
+        accountIdentifier: tools.accountIdentifier
+        orgIdentifier: tools.orgIdentifier
+        projectIdentifier: tools.projectIdentifier
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,93 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Harness Platform API — Pipelines
+  description: 'Harness Platform API — Pipelines. 1 operations. Lead operation: Harness List Pipelines. Self-contained Naftiko
+    capability covering one Harness business surface.'
+  tags:
+  - Harness
+  - Pipelines
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    HARNESS_API_KEY: HARNESS_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: platform-pipelines
+    baseUri: https://app.harness.io/gateway
+    description: Harness Platform API — Pipelines business capability. Self-contained, no shared references.
+    resources:
+    - name: pipeline-api-pipelines
+      path: /pipeline/api/pipelines
+      operations:
+      - name: listpipelines
+        method: GET
+        description: Harness List Pipelines
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: accountIdentifier
+          in: query
+          type: string
+          required: true
+        - name: orgIdentifier
+          in: query
+          type: string
+          required: true
+        - name: projectIdentifier
+          in: query
+          type: string
+          required: true
+    authentication:
+      type: apikey
+      key: x-api-key
+      value: '{{env.HARNESS_API_KEY}}'
+      placement: header
+  exposes:
+  - type: rest
+    namespace: platform-pipelines-rest
+    port: 8080
+    description: REST adapter for Harness Platform API — Pipelines. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/pipeline/api/pipelines
+      name: pipeline-api-pipelines
+      description: REST surface for pipeline-api-pipelines.
+      operations:
+      - method: GET
+        name: listpipelines
+        description: Harness List Pipelines
+        call: platform-pipelines.listpipelines
+        with:
+          accountIdentifier: rest.accountIdentifier
+          orgIdentifier: rest.orgIdentifier
+          projectIdentifier: rest.projectIdentifier
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: platform-pipelines-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Harness Platform API — Pipelines. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: harness-list-pipelines
+      description: Harness List Pipelines
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: platform-pipelines.listpipelines
+      with:
+        accountIdentifier: tools.accountIdentifier
+        orgIdentifier: tools.orgIdentifier
+        projectIdentifier: tools.projectIdentifier
+      outputParameters:
+      - type: object
+        mapping: $.
