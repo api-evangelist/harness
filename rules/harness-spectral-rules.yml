@@ -1,3 +1,21 @@
+# harness — Spectral ruleset (strengthened)
+# Plain Spectral. Existing hand-authored rules preserved; measured rules added
+# from this provider's own OpenAPI conventions by strengthen_ruleset.py,
+# then self-validated against the spec.
+#
+# Provenance:
+#   - servers-https-only: 100% of servers already https (error)
+#   - servers-expected-domain: 1/1 servers on harness.io
+#   - query-params-casing: camel @ 100% (n=11)
+#   - operationid-casing: camel @ 100% (n=4)
+#   - schema-names-casing: pascal @ 100% (n=8)
+#   - schema-properties-casing: snake @ 90% (n=21)
+#   - security: global (root) — NOT emitting operation-security-required
+#   - pagination params observed: ['pageSize']
+#   - merge: kept 8 existing, added 8 measured, upgraded 0
+#   - added: servers-https-only, servers-expected-domain, query-params-casing, operationid-casing, schema-names-casing, schema-properties-casing, security-schemes-defined, no-empty-descriptions
+extends:
+  - spectral:oas
 rules:
   info-title-prefix:
     description: Info title should start with "Harness"
@@ -7,43 +25,38 @@ rules:
       field: title
       function: pattern
       functionOptions:
-        match: "^Harness"
-
+        match: ^Harness
   operation-operationId-required:
     description: Every operation must have an operationId
-    given: "$.paths[*][get,post,put,patch,delete]"
+    given: $.paths[*][get,post,put,patch,delete]
     severity: error
     then:
       field: operationId
       function: truthy
-
   operation-summary-required:
     description: Every operation must have a summary starting with "Harness"
-    given: "$.paths[*][get,post,put,patch,delete]"
+    given: $.paths[*][get,post,put,patch,delete]
     severity: error
     then:
       field: summary
       function: truthy
-
   operation-tags-required:
     description: Every operation must have tags
-    given: "$.paths[*][get,post,put,patch,delete]"
+    given: $.paths[*][get,post,put,patch,delete]
     severity: warn
     then:
       field: tags
       function: truthy
-
   parameter-description-required:
     description: Every parameter must have a description
-    given: "$.paths[*][get,post,put,patch,delete].parameters[*]"
+    given: $.paths[*][get,post,put,patch,delete].parameters[*]
     severity: warn
     then:
       field: description
       function: truthy
-
   response-success-required:
     description: Operations must have success responses
-    given: "$.paths[*][get,post,put,patch,delete].responses"
+    given: $.paths[*][get,post,put,patch,delete].responses
     severity: error
     then:
       function: schema
@@ -51,21 +64,85 @@ rules:
         schema:
           type: object
           anyOf:
-            - required: ["200"]
-            - required: ["201"]
-
+          - required:
+            - '200'
+          - required:
+            - '201'
   security-global-defined:
     description: Global security must be defined
-    given: "$"
+    given: $
     severity: error
     then:
       field: security
       function: truthy
-
   schema-properties-description:
     description: Schema properties should have descriptions
-    given: "$.components.schemas[*].properties[*]"
+    given: $.components.schemas[*].properties[*]
     severity: info
     then:
       field: description
+      function: truthy
+  servers-https-only:
+    description: Server URLs must use HTTPS.
+    severity: error
+    given: $.servers[*].url
+    then:
+      function: pattern
+      functionOptions:
+        match: ^https://
+  servers-expected-domain:
+    description: Server URLs should be on the harness.io domain.
+    severity: warn
+    given: $.servers[*].url
+    then:
+      function: pattern
+      functionOptions:
+        match: harness\.io
+  query-params-casing:
+    description: Query parameters should be camelCase (the dominant convention in this API).
+    severity: warn
+    given: $.paths[*][get,post,put,patch,delete].parameters[?(@.in=='query')]
+    then:
+      field: name
+      function: casing
+      functionOptions:
+        type: camel
+  operationid-casing:
+    description: Operation IDs should be camelCase (the dominant convention in this API).
+    severity: warn
+    given: $.paths[*][get,post,put,patch,delete].operationId
+    then:
+      function: casing
+      functionOptions:
+        type: camel
+  schema-names-casing:
+    description: Component schema names should be PascalCase (the dominant convention in this API).
+    severity: warn
+    given: $.components.schemas
+    then:
+      field: '@key'
+      function: casing
+      functionOptions:
+        type: pascal
+  schema-properties-casing:
+    description: Schema properties should be snake_case (the dominant convention in this API).
+    severity: warn
+    given: $.components.schemas[*].properties
+    then:
+      field: '@key'
+      function: casing
+      functionOptions:
+        type: snake
+  security-schemes-defined:
+    description: Security schemes should be defined in components.
+    severity: warn
+    given: $.components
+    then:
+      field: securitySchemes
+      function: truthy
+  no-empty-descriptions:
+    description: Descriptions must not be empty strings.
+    severity: warn
+    given: $..description
+    then:
       function: truthy
