@@ -1,0 +1,109 @@
+openapi: 3.0.3
+info:
+  title: Harness Platform Organizations API
+  description: The Harness Platform API provides access to core platform resources including projects, organizations, connectors, secrets, users, roles, pipelines, triggers, and pipeline execution.
+  version: '1.0'
+  contact:
+    name: Harness Developer Support
+    url: https://developer.harness.io/
+  x-generated-from: documentation
+  x-last-validated: '2026-04-18'
+servers:
+- url: https://app.harness.io/gateway
+  description: Harness SaaS Production
+security:
+- apiKeyAuth: []
+tags:
+- name: Organizations
+  description: Manage organizations
+paths:
+  /ng/api/organizations:
+    get:
+      operationId: listOrganizations
+      summary: Harness List Organizations
+      description: List organizations in the account.
+      tags:
+      - Organizations
+      parameters:
+      - name: accountIdentifier
+        in: query
+        required: true
+        description: Account identifier.
+        schema:
+          type: string
+        example: abc123
+      - name: pageIndex
+        in: query
+        description: Page number (0-based).
+        schema:
+          type: integer
+          default: 0
+      - name: pageSize
+        in: query
+        description: Number of items per page.
+        schema:
+          type: integer
+          default: 50
+      responses:
+        '200':
+          description: Successfully retrieved organizations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationList'
+              examples:
+                ListOrganizations200Example:
+                  summary: Default listOrganizations 200 response
+                  x-microcks-default: true
+                  value:
+                    status: SUCCESS
+                    data:
+                      totalPages: 1
+                      totalItems: 2
+                      content:
+                      - identifier: default
+                        name: Default
+                        description: Default organization
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    OrganizationList:
+      type: object
+      properties:
+        status:
+          type: string
+          example: SUCCESS
+        data:
+          type: object
+          properties:
+            totalPages:
+              type: integer
+              example: 1
+            totalItems:
+              type: integer
+              example: 2
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Organization'
+    Organization:
+      type: object
+      description: A Harness organization.
+      properties:
+        identifier:
+          type: string
+          example: default
+        name:
+          type: string
+          example: Default
+        description:
+          type: string
+          example: Default organization
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Harness API key.
