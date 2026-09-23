@@ -1,0 +1,717 @@
+openapi: 3.2.0
+info:
+  title: Harness GnuPGP Keys API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: GnuPGP Keys
+paths:
+  /gitops/api/v1/agents/{agentIdentifier}/gpgkeys:
+    post:
+      summary: Create one or more GPG public keys in the server's configuration
+      description: Create one or more GPG public keys in the server's configuration.
+      operationId: AgentGPGKeyService_Create
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gpgkeysGnuPGPublicKeyCreateResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gatewayruntimeError'
+      parameters:
+      - name: agentIdentifier
+        description: Agent identifier for entity.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: accountIdentifier
+        description: Account Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: orgIdentifier
+        description: Organization Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: projectIdentifier
+        description: Project Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/gpgkeysGnuPGPublicKeyCreateRequest'
+        required: true
+      tags:
+      - GnuPGP Keys
+  /gitops/api/v1/agents/{agentIdentifier}/gpgkeys/{query.keyID}:
+    get:
+      summary: Get information about specified GPG public key from the server
+      description: Get information about specified GPG public key from the server.
+      operationId: AgentGPGKeyService_Get
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gpgkeysGnuPGPublicKey'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gatewayruntimeError'
+      parameters:
+      - name: agentIdentifier
+        description: Agent identifier for entity.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: query.keyID
+        description: The GPG key ID to query for
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: accountIdentifier
+        description: Account Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: orgIdentifier
+        description: Organization Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: projectIdentifier
+        description: Project Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      tags:
+      - GnuPGP Keys
+    delete:
+      summary: Delete specified GPG public key from the server's configuration
+      description: Delete specified GPG public key from the server's configuration.
+      operationId: AgentGPGKeyService_Delete
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gpgkeysGnuPGPublicKeyResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gatewayruntimeError'
+      parameters:
+      - name: agentIdentifier
+        description: Agent identifier for entity.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: query.keyID
+        description: The GPG key ID to query for
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: accountIdentifier
+        description: Account Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: orgIdentifier
+        description: Organization Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: projectIdentifier
+        description: Project Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      tags:
+      - GnuPGP Keys
+components:
+  schemas:
+    gpgkeysGnuPGPublicKeyCreateResponse:
+      type: object
+      properties:
+        created:
+          $ref: '#/components/schemas/gpgkeysGnuPGPublicKeyList'
+        skipped:
+          type: array
+          items:
+            type: string
+          title: List of key IDs that haven been skipped because they already exist on the server
+      title: Response to a public key creation request
+    v1ListMeta:
+      type: object
+      properties:
+        selfLink:
+          type: string
+          title: 'Deprecated: selfLink is a legacy read-only field that is no longer populated by the system.
+
+            +optional'
+        resourceVersion:
+          type: string
+          title: 'String that identifies the server''s internal version of this object that
+
+            can be used by clients to determine when objects have changed.
+
+            Value must be treated as opaque by clients and passed unmodified back to the server.
+
+            Populated by the system.
+
+            Read-only.
+
+            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
+
+            +optional'
+        continue:
+          type: string
+          description: 'continue may be set if the user set a limit on the number of items returned, and indicates that
+
+            the server has more data available. The value is opaque and may be used to issue another request
+
+            to the endpoint that served this list to retrieve the next set of available objects. Continuing a
+
+            consistent list may not be possible if the server configuration has changed or more than a few
+
+            minutes have passed. The resourceVersion field returned when using this continue value will be
+
+            identical to the value in the first response, unless you have received this token from an error
+
+            message.'
+        remainingItemCount:
+          type: string
+          format: int64
+          title: 'remainingItemCount is the number of subsequent items in the list which are not included in this
+
+            list response. If the list request contained label or field selectors, then the number of
+
+            remaining items is unknown and the field will be left unset and omitted during serialization.
+
+            If the list is complete (either because it is not chunking or because this is the last chunk),
+
+            then there are no more remaining items and this field will be left unset and omitted during
+
+            serialization.
+
+            Servers older than v1.15 do not set this field.
+
+            The intended use of the remainingItemCount is *estimating* the size of a collection. Clients
+
+            should not rely on the remainingItemCount to be set or to be exact.
+
+            +optional'
+      description: 'ListMeta describes metadata that synthetic resources must have, including lists and
+
+        various status objects. A resource may have only one of {ObjectMeta, ListMeta}.'
+    gpgkeysGnuPGPublicKeyCreateRequest:
+      type: object
+      properties:
+        publickey:
+          $ref: '#/components/schemas/gpgkeysGnuPGPublicKey'
+        upsert:
+          type: boolean
+          title: Whether to upsert already existing public keys
+      title: Request to create one or more public keys on the server
+    gatewayruntimeError:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/protobufAny'
+    gpgkeysGnuPGPublicKeyResponse:
+      type: object
+      title: Generic (empty) response for GPG public key CRUD requests
+    protobufAny:
+      type: object
+      properties:
+        type_url:
+          type: string
+          description: "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        value:
+          type: string
+          format: byte
+          description: Must be a valid serialized protocol buffer of the above specified type.
+      description: "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    gpgkeysGnuPGPublicKey:
+      type: object
+      properties:
+        keyID:
+          type: string
+          title: KeyID specifies the key ID, in hexadecimal string format
+        fingerprint:
+          type: string
+          title: Fingerprint is the fingerprint of the key
+        owner:
+          type: string
+          title: Owner holds the owner identification, e.g. a name and e-mail address
+        trust:
+          type: string
+          title: Trust holds the level of trust assigned to this key
+        subType:
+          type: string
+          title: SubType holds the key's subtype (e.g. rsa4096)
+        keyData:
+          type: string
+          title: KeyData holds the raw key data, in base64 encoded format
+      title: GnuPGPublicKey is a representation of a GnuPG public key
+    gpgkeysGnuPGPublicKeyList:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/v1ListMeta'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/gpgkeysGnuPGPublicKey'
+      title: GnuPGPublicKeyList is a collection of GnuPGPublicKey objects
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

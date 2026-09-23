@@ -1,0 +1,1559 @@
+openapi: 3.2.0
+info:
+  title: Harness AutoStopping Rules API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: AutoStopping Rules
+  description: This contains APIs to create and manage AutoStopping Rules for your cloud resources.
+paths:
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules:
+    get:
+      tags:
+      - AutoStopping Rules
+      summary: List AutoStopping Rules
+      description: Retrieves a list of all AutoStopping Rules configured in your account. AutoStopping Rules help optimize cloud costs by automatically stopping idle resources and starting them on-demand when accessed.
+      operationId: ListAutoStoppingRules
+      parameters:
+      - name: account_id
+        description: Unique identifier of the Harness account. This is used to scope the API request to a specific account.
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: accountIdentifier
+        description: 'Account Identifier for authentication and authorization. '
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: dry_run
+        description: When set to true, filters the results to show only rules in dry-run mode. Dry-run rules monitor resource usage and calculate potential savings without actually stopping resources, allowing you to test rule configurations safely before enabling them.
+        in: query
+        schema:
+          type: boolean
+          default: false
+      responses:
+        '200':
+          description: Successfully retrieved the list of AutoStopping Rules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesResponse'
+        '400':
+          description: Invalid status value
+          content: {}
+    post:
+      tags:
+      - AutoStopping Rules
+      summary: Create an AutoStopping Rule
+      description: Creates a new AutoStopping Rule to automatically manage cloud resources and reduce costs. The rule monitors resource activity and automatically stops resources during idle periods, then restarts them when traffic is detected. You can configure idle time thresholds, access methods (HTTP/HTTPS, SSH, RDP), custom domains, and schedules.
+      operationId: UpdateAutoStoppingRule
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRC
+      requestBody:
+        description: Complete service definition for the AutoStopping Rule including resource configuration, idle time settings, access control details, and optional schedules. The request body should specify the cloud resources to manage, the idle time threshold before stopping, and how users will access the resources.
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/SaveServiceRequestWithoutDisabled'
+        required: true
+      responses:
+        '200':
+          description: AutoStopping Rule created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponseWithoutDisabled'
+        '400':
+          description: Bad Request - Invalid rule configuration or missing required fields
+          content:
+            application/json:
+              examples:
+                error:
+                  summary: Invalid configuration
+                  value:
+                    status: ERROR
+                    message: 'Invalid resource configuration: missing required field ''resources'''
+      x-codegen-request-body-name: body
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}:
+    get:
+      tags:
+      - AutoStopping Rules
+      summary: Return AutoStopping Rule details
+      description: Retrieves details of a specific AutoStopping Rule including its configuration, associated resources, idle time settings, etc.
+      operationId: AutoStoppingRuleDetails
+      parameters:
+      - name: account_id
+        in: path
+        description: Account Identifier for the Entity
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: rule_id
+        description: Unique numeric identifier of the AutoStopping Rule. This ID is returned when creating a rule or can be obtained from the list rules endpoint.
+        in: path
+        required: true
+        schema:
+          type: number
+        example: 12345
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      responses:
+        '200':
+          description: Successfully retrieved AutoStopping Rule details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: '#/components/schemas/SaveServiceRequest'
+        '400':
+          description: Invalid status value
+          content: {}
+    delete:
+      tags:
+      - AutoStopping Rules
+      summary: Delete an AutoStopping Rule
+      description: 'Permanently deletes an AutoStopping Rule from your account.
+
+
+        **⚠️ CAUTION:** This action is irreversible. Once deleted, the rule configuration cannot be recovered. Resources that were managed by this rule will no longer be automatically stopped, which may result in increased cloud costs.'
+      operationId: DeleteAutoStoppingRule
+      parameters:
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule to be deleted.
+        in: path
+        required: true
+        schema:
+          type: number
+        example: 12345
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi
+      responses:
+        '200':
+          description: AutoStopping Rule deleted successfully. Returns the deleted rule details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LwServiceResponse'
+        '400':
+          description: Invalid status value
+          content: {}
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}/health:
+    get:
+      tags:
+      - AutoStopping Rules
+      summary: Return health status of an AutoStopping Rule
+      description: Retrieves the current health and operational status of an AutoStopping Rule.
+      operationId: HealthOfAutoStoppingRule
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule for which you need to fetch the health status
+        in: path
+        required: true
+        schema:
+          type: number
+        example: 12345
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      responses:
+        '200':
+          description: Successfully retrieved health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceHealthResponse'
+        '400':
+          description: Invalid status value
+          content: {}
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}/savings:
+    get:
+      tags:
+      - AutoStopping Rules
+      summary: Return savings details for an AutoStopping Rule
+      description: Retrieves detailed cost savings data for a specific AutoStopping Rule grouped by day over the specified time period.
+      operationId: SavingsFromAutoStoppingRule
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule for which you want to fetch savings details
+        in: path
+        required: true
+        schema:
+          type: number
+        example: 12345
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: from
+        description: Start date for the savings calculation period. Accepts YYYY-MM-DD format (e.g., 2024-01-01) or ISO 8601/RFC3339 format (e.g., 2024-01-01T00:00:00Z).
+        in: query
+        schema:
+          type: string
+        example: '2024-01-01'
+      - name: to
+        description: End date for the savings calculation period. Accepts YYYY-MM-DD format (e.g., 2024-01-31) or ISO 8601/RFC3339 format (e.g., 2024-01-31T23:59:59Z).
+        in: query
+        schema:
+          type: string
+        example: '2024-01-31'
+      - name: group_by
+        description: Optional parameter to group savings data by specific dimensions such as 'day', 'week', or 'month'.
+        in: query
+        schema:
+          type: string
+        example: day
+      responses:
+        '200':
+          description: Successfully retrieved savings details
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid status value
+          content: {}
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}/resources:
+    get:
+      tags:
+      - AutoStopping Rules
+      summary: List all the resources for an AutoStopping Rule
+      description: Lists all the resources for an AutoStopping Rule for the given identifier.
+      operationId: AllAutoStoppingResources
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: cloud_account_id
+        description: Unique identifier of the cloud connector (AWS, Azure, or GCP) configured in Harness.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: lightwing_nonprod
+      - name: region
+        description: Cloud provider region where the resources are located (e.g., 'us-east-1' for AWS, 'eastus' for Azure).
+        in: query
+        required: true
+        schema:
+          type: string
+        example: us-east-1
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule for which you need to list the resources
+        in: path
+        required: true
+        schema:
+          type: number
+          format: int64
+        example: 12345
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      responses:
+        '200':
+          description: Successfully retrieved list of resources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllResourcesOfAccountResponse'
+        '400':
+          description: Invalid status value
+          content: {}
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}/diagnostics:
+    get:
+      tags:
+      - AutoStopping Rules
+      summary: Return diagnostics result of an AutoStopping Rule
+      description: Retrieves diagnostic information for an AutoStopping Rule to help troubleshoot issues.
+      operationId: GetAutoStoppingDiagnostics
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule for which you need to fetch diagnostics details
+        in: path
+        required: true
+        schema:
+          type: number
+        example: 12345
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      responses:
+        '200':
+          description: Successfully retrieved diagnostics information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDiagnosticsResponse'
+        '400':
+          description: Invalid status value
+          content: {}
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}/warmup:
+    post:
+      tags:
+      - AutoStopping Rules
+      summary: Warm up an AutoStopping Rule
+      description: Manually starts (warms up) the resources managed by an AutoStopping Rule, bringing them online immediately.
+      operationId: WarmUpAutostoppingRule
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule to warm up
+        in: path
+        required: true
+        schema:
+          type: number
+        example: 12345
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      requestBody:
+        description: Warm Up Options
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/WarmUpOption'
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WarmUpResponse'
+        '500':
+          description: Internal error
+          content: {}
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}/cooldown:
+    post:
+      tags:
+      - AutoStopping Rules
+      summary: Cool down an AutoStopping Rule
+      description: Manually stops (cools down) the resources managed by an AutoStopping Rule, shutting them down immediately to save costs.
+      operationId: CoolDownAutostoppingRule
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule to cool down
+        in: path
+        required: true
+        schema:
+          type: number
+        example: 12345
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      requestBody:
+        description: Cool Down Options
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/CoolDownOption'
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal error
+          content: {}
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}/cooldown_meta:
+    get:
+      tags:
+      - AutoStopping Rules
+      summary: Return metadata of cool down of an AutoStopping Rule
+      description: Retrieves metadata about the cooldown configuration and status of an AutoStopping Rule.
+      operationId: GetAutoStoppingCoolDownMeta
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule
+        in: path
+        required: true
+        schema:
+          type: number
+        example: 12345
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoolDownMetaSuccessResponse'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoolDownMetaFailureResponse'
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/savings/cumulative:
+    get:
+      tags:
+      - AutoStopping Rules
+      summary: Return cumulative savings for all the AutoStopping Rules
+      description: Retrieves the total cumulative cost savings achieved across all AutoStopping Rules in the account.
+      operationId: CumulativeAutoStoppingSavings
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CumulativeSavingsResponse'
+        '400':
+          description: Invalid status value
+          content: {}
+  /gateway/lw/api/accounts/{account_id}/autostopping/rules/{rule_id}/toggle_state:
+    put:
+      tags:
+      - AutoStopping Rules
+      summary: Disable/Enable an Autostopping Rule
+      description: Enables or disables an AutoStopping Rule. When disabled, the rule will not automatically stop resources during idle periods.
+      operationId: ToggleAutostoppingRule
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      - name: rule_id
+        description: Unique identifier of the AutoStopping Rule to enable or disable
+        in: path
+        required: true
+        schema:
+          type: string
+        example: '12345'
+      - name: disable
+        description: Set to true to disable the rule, false to enable it.
+        in: query
+        required: true
+        schema:
+          type: boolean
+        example: false
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization.
+        in: query
+        required: true
+        schema:
+          type: string
+        example: abc12_DEFgh-ijkLMNOPqr
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesResponse'
+        '400':
+          description: Invalid status value
+          content: {}
+components:
+  schemas:
+    RoutingRule:
+      type: object
+      properties:
+        path_match:
+          type: string
+    LwService:
+      required:
+      - cloud_account_id
+      - kind
+      - name
+      - org_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        org_id:
+          type: string
+        account_identifier:
+          type: string
+        project_id:
+          type: string
+        fulfilment:
+          type: string
+        kind:
+          type: string
+        cloud_account_id:
+          type: string
+        idle_time_mins:
+          type: integer
+          format: int64
+        host_name:
+          type: string
+        health_check:
+          type: object
+          properties: {}
+        custom_domains:
+          type: array
+          items:
+            type: string
+        match_all_subdomains:
+          type: boolean
+        disabled:
+          type: boolean
+        routing:
+          $ref: '#/components/schemas/RoutingData'
+        opts:
+          $ref: '#/components/schemas/Opts'
+        created_at:
+          type: string
+        access_point_id:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/ServiceMetadata'
+        status:
+          type: string
+    CumulativeSavingsResponse:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/CumulativeSavings'
+    Proxy:
+      type: object
+      properties:
+        id:
+          type: string
+    CumulativeSavings:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            type: string
+        potential_cost:
+          type: array
+          items:
+            type: number
+            format: float
+        actual_cost:
+          type: array
+          items:
+            type: number
+            format: float
+        savings:
+          type: array
+          items:
+            type: number
+            format: float
+        total_savings:
+          type: number
+          format: float
+        total_potential:
+          type: number
+          format: float
+        total_cost:
+          type: number
+          format: float
+        savings_percent:
+          type: number
+          format: float
+        total_active_services:
+          type: number
+          format: int64
+    ServiceError:
+      type: object
+      properties:
+        error:
+          type: string
+        action:
+          type: string
+    ServiceMetadata:
+      type: object
+      properties:
+        cloud_provider_details:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+        target_group_details:
+          type: object
+          properties: {}
+        service_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceError'
+        kubernetes_connector_id:
+          type: string
+        autostopping_proxy_config:
+          type: object
+          properties:
+            http:
+              $ref: '#/components/schemas/HTTPProxy'
+            tcp:
+              $ref: '#/components/schemas/HTTPProxy'
+    CoolDownMetaFailureResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        errors:
+          type: array
+          items:
+            type: string
+          description: Errors
+    RoutingData:
+      type: object
+      properties:
+        instance:
+          $ref: '#/components/schemas/InstanceBasedRoutingData'
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortConfig'
+        lb:
+          type: string
+        k8s:
+          type: object
+          properties:
+            RuleJson:
+              type: string
+            ConnectorID:
+              type: string
+            Namespace:
+              type: string
+        custom_domain_providers:
+          type: object
+          properties: {}
+        container_svc:
+          $ref: '#/components/schemas/ContainerSvc'
+        database:
+          $ref: '#/components/schemas/RDSDatabase'
+    SaveServiceRequestWithoutDisabled:
+      type: object
+      properties:
+        deps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDep'
+        service:
+          $ref: '#/components/schemas/ServiceWithoutDisabled'
+        apply_now:
+          type: boolean
+    ServiceDiagnosticsResponse:
+      type: object
+      properties:
+        response:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDiagnostics'
+    ServiceResponseWithoutDisabled:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/ServiceWithoutDisabled'
+    CoolDownMetaSuccessResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        success:
+          type: boolean
+          description: Specifies if the operation is successful
+        response:
+          type: array
+          items:
+            type: string
+          description: Name of dependant autostopping rules which will be shut down
+    HTTPProxy:
+      required:
+      - proxy
+      - ports
+      type: object
+      properties:
+        proxy:
+          $ref: '#/components/schemas/Proxy'
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortConfig'
+    ServiceDiagnostics:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message if success were to be false
+        name:
+          type: string
+          description: Name of the check
+        success:
+          type: boolean
+          description: Flag which specifies if a diagnostic check is successful
+        type:
+          type: string
+    WarmUpOption:
+      type: object
+      properties:
+        idle_time_mins:
+          type: integer
+          required: true
+          description: Specifies time for which resource should be running
+          default: '5'
+        source:
+          type: string
+          required: true
+          description: Specifies source of warm up
+          default: Warm up through API
+        forced_trigger:
+          type: boolean
+          description: Specifies warm up as force action to override schedules
+          required: true
+          default: true
+    ServiceDep:
+      type: object
+    AllResourcesOfAccountResponse:
+      type: object
+      properties:
+        response:
+          type: array
+          items:
+            $ref: '#/components/schemas/LwResource'
+    PortConfig:
+      type: object
+      properties:
+        protocol:
+          type: string
+        target_protocol:
+          type: string
+        port:
+          type: integer
+        target_port:
+          type: integer
+        server_name:
+          type: string
+        action:
+          type: string
+        redirect_url:
+          type: string
+        routing_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingRule'
+    SaveServiceRequest:
+      type: object
+      properties:
+        deps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDep'
+        service:
+          $ref: '#/components/schemas/LwService'
+        apply_now:
+          type: boolean
+    ServiceStatus:
+      type: object
+      properties:
+        state:
+          type: string
+          description: Current state of the service (e.g., warming_up, active, stopped)
+        target_url:
+          type: string
+          description: Target URL for accessing the service
+        error:
+          type: string
+          description: Error message if the operation failed
+        id:
+          type: string
+          description: Unique identifier for cache invalidation
+    Opts:
+      type: object
+      properties:
+        preserve_private_ip:
+          type: boolean
+        delete_cloud_resources:
+          type: boolean
+        always_use_private_ip:
+          type: boolean
+        access_details:
+          type: object
+          properties: {}
+        hide_progress_page:
+          type: boolean
+        idle_time_for_state_sync:
+          type: boolean
+          description: If true, idle time is used for state sync instead of the default 5 minutes
+    ASGMinimal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        desired:
+          type: integer
+        min:
+          type: integer
+        max:
+          type: integer
+        on_demand:
+          type: integer
+        spot:
+          type: integer
+        mixed_instance:
+          type: boolean
+        cloud_account_id:
+          type: string
+        provider_name:
+          type: string
+        target_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetGroupMinimal'
+        region:
+          type: string
+        availability_zones:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        meta:
+          type: object
+          properties: {}
+    ContainerSvc:
+      type: object
+      properties:
+        cluster:
+          type: string
+        service:
+          type: string
+        region:
+          type: string
+        task_count:
+          type: number
+    CoolDownOption:
+      type: object
+      properties:
+        propagate:
+          type: boolean
+          description: Specifies if we need to propagate cool down to dependant rules
+        force:
+          type: boolean
+          description: Specifies if the cool down is by force
+    InstanceBasedRoutingData:
+      type: object
+      properties:
+        filter_text:
+          type: string
+        scale_group:
+          $ref: '#/components/schemas/ASGMinimal'
+    TargetGroupMinimal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        port:
+          type: integer
+        protocol:
+          type: string
+        vpc:
+          type: string
+    WarmUpResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          format: int64
+          description: Response timestamp in milliseconds
+        success:
+          type: boolean
+          description: Indicates if the operation was successful
+        errors:
+          type: array
+          items:
+            type: string
+          description: List of error messages, if any
+        response:
+          $ref: '#/components/schemas/ServiceStatus'
+    RDSDatabase:
+      type: object
+      properties:
+        id:
+          type: string
+        region:
+          type: string
+    LwServiceResponse:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/LwService'
+    ServicesResponse:
+      type: object
+      properties:
+        response:
+          type: array
+          items:
+            $ref: '#/components/schemas/LwService'
+    LwResource:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        region:
+          type: string
+        availability_zone:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+        launch_time:
+          type: string
+        ipv4:
+          type: array
+          items:
+            type: string
+        private_ipv4:
+          type: array
+          items:
+            type: string
+        tags:
+          type: object
+          properties: {}
+          description: tag key as attribute key and tag value as attribute value
+        resource_type:
+          type: string
+        provider_name:
+          type: string
+        is_spot:
+          type: boolean
+        platform:
+          type: string
+        cloud_account_id:
+          type: number
+        metadata:
+          type: object
+          properties: {}
+        provider_type:
+          type: string
+    ServiceWithoutDisabled:
+      required:
+      - cloud_account_id
+      - kind
+      - name
+      - org_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        org_id:
+          type: string
+        account_identifier:
+          type: string
+        project_id:
+          type: string
+        fulfilment:
+          type: string
+        kind:
+          type: string
+        cloud_account_id:
+          type: string
+        idle_time_mins:
+          type: integer
+          format: int64
+        host_name:
+          type: string
+        health_check:
+          type: object
+          properties: {}
+        custom_domains:
+          type: array
+          items:
+            type: string
+        match_all_subdomains:
+          type: boolean
+        routing:
+          $ref: '#/components/schemas/RoutingData'
+        opts:
+          $ref: '#/components/schemas/Opts'
+        created_at:
+          type: string
+        access_point_id:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/ServiceMetadata'
+        status:
+          type: string
+    ServiceHealthResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            state:
+              type: string
+              description: Current state of the AutoStopping Rule
+              enum:
+              - warmingup
+              - errored
+              - active
+              - down
+              - coolingdown
+              - disabled
+              - enabled
+              - created
+              - deleted
+              - scheduled_downtime
+            target_url:
+              type: string
+              description: Target URL for accessing the AutoStopping Rule
+            error:
+              type: string
+              description: Error message if the rule is in an errored state, empty otherwise
+            id:
+              type: string
+              description: Unique identifier for the health check result
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

@@ -1,0 +1,802 @@
+openapi: 3.2.0
+info:
+  title: Harness Onboarding Resource API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: OnboardingResource
+  description: Onboarding
+  x-displayName: Onboarding
+paths:
+  /v1/onboarding/harness-entities:
+    get:
+      summary: Get Harness Entities
+      operationId: get-harness-entities
+      responses:
+        '200':
+          $ref: '#/components/responses/HarnessEntitiesResponse'
+      tags:
+      - OnboardingResource
+      x-internal: true
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/Page1'
+      - $ref: '#/components/parameters/Limit5'
+      - $ref: '#/components/parameters/Sort6'
+      - $ref: '#/components/parameters/Order1'
+      - $ref: '#/components/parameters/SearchTerm5'
+      - schema:
+          type: string
+          default: null
+        in: query
+        name: project_to_filter
+        description: This would be used to filter resources having attributes matching the project filter.
+  /v1/onboarding/harness-entities-count:
+    get:
+      summary: Get Harness Entities Count
+      operationId: get-harness-entities-count
+      responses:
+        '200':
+          $ref: '#/components/responses/HarnessEntitiesCountResponse'
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      tags:
+      - OnboardingResource
+      x-internal: true
+  /v1/onboarding/import-harness-entities:
+    post:
+      summary: Import Harness Entities to IDP
+      operationId: import-harness-entities
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      requestBody:
+        $ref: '#/components/requestBodies/ImportHarnessEntitiesRequest'
+      tags:
+      - OnboardingResource
+      responses:
+        '200':
+          $ref: '#/components/responses/ImportEntitiesResponse'
+      x-internal: true
+  /v1/onboarding/generate-yaml:
+    post:
+      summary: Generate YAML Definition for entity
+      operationId: onboarding-generate-yaml
+      responses:
+        '200':
+          $ref: '#/components/responses/GenerateYamlResponse'
+      tags:
+      - OnboardingResource
+      x-internal: true
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      requestBody:
+        $ref: '#/components/requestBodies/GenerateYamlRequest'
+components:
+  schemas:
+    HarnessBackstageEntities:
+      title: HarnessBackstageEntities
+      x-stoplight:
+        id: x43sybn2ad4n7
+      type: object
+      description: Harness entities mapping with backstage entities
+      properties:
+        name:
+          type: string
+        system:
+          type: string
+        owner:
+          type: string
+        type:
+          type: string
+        identifier:
+          type: string
+        entity_type:
+          type: string
+      required:
+      - name
+      - system
+      - owner
+      - type
+      - identifier
+      - entity_type
+    EntitiesForImport:
+      title: EntitiesForImport
+      x-stoplight:
+        id: ruicl5da2sloc
+      type: object
+      description: Details of Harness Entities to import
+      x-examples: {}
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+        entity_type:
+          type: string
+      required:
+      - identifier
+      - entity_type
+    GenerateYamlRequest:
+      title: GenerateYamlRequest
+      x-stoplight:
+        id: cn0x8iu87ivzy
+      type: object
+      properties:
+        entities:
+          type: array
+          x-stoplight:
+            id: 8o9n97v686wpz
+          items:
+            $ref: '#/components/schemas/EntitiesForImport'
+            x-stoplight:
+              id: rx3oubfzkg2hs
+      required:
+      - entities
+      description: Request to generate yaml for any one entity if provided or generate sample entity yaml definition
+    ImportEntitiesResponse:
+      title: ImportEntitiesResponse
+      x-stoplight:
+        id: kvv6lxzsebamz
+      type: object
+      description: Response for import / save harness entities to IDP
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    ConnectorDetails:
+      title: ConnectorDetails
+      x-stoplight:
+        id: ydmrv3krwpyvr
+      type: object
+      properties:
+        identifier:
+          type: string
+        type:
+          type: string
+          enum:
+          - Github
+          - Gitlab
+          - Bitbucket
+          - AzureRepo
+      required:
+      - identifier
+      - type
+      description: Connector details containing identifier and type
+    CatalogConnectorInfo:
+      title: CatalogConnectorInfo
+      x-stoplight:
+        id: wpk4fmntpbtlj
+      type: object
+      description: Details of IDP catalog connector
+      properties:
+        connector:
+          $ref: '#/components/schemas/ConnectorDetails'
+          x-stoplight:
+            id: gep9rdz9yhwyy
+        repo:
+          type: string
+        branch:
+          type: string
+        path:
+          type: string
+      required:
+      - connector
+      - repo
+      - branch
+      - path
+    HarnessEntitiesResponse:
+      title: HarnessEntitiesResponse
+      x-stoplight:
+        id: fz2subwqrbh5p
+      type: object
+      x-examples: {}
+      description: Response for harness entities mapping with backstage entities
+      properties:
+        harness_backstage_entities:
+          x-stoplight:
+            id: 29gtwmx9rtbtj
+          type: array
+          items:
+            $ref: '#/components/schemas/HarnessBackstageEntities'
+            x-stoplight:
+              id: xljavofzn2x2t
+      required:
+      - harness_backstage_entities
+    HarnessEntitiesCountResponse:
+      title: HarnessEntitiesCountResponse
+      x-stoplight:
+        id: 2wzkhrjbcg4d5
+      type: object
+      x-examples: {}
+      description: Response for harness entities count that can be imported to IDP
+      properties:
+        org_count:
+          type: integer
+          x-stoplight:
+            id: gbvcwogico9cd
+        project_count:
+          type: integer
+          x-stoplight:
+            id: h7se69ebe6tn5
+        service_count:
+          type: integer
+      required:
+      - org_count
+      - project_count
+      - service_count
+    GenerateYamlResponse:
+      title: GenerateYamlResponse
+      x-stoplight:
+        id: fqxr0lo87mlj0
+      type: object
+      description: Response contianing entity yaml definition and description about the entity
+      properties:
+        generated_yaml:
+          type: object
+          x-stoplight:
+            id: hjwmleg6046p3
+          required:
+          - yaml_def
+          - description
+          properties:
+            yaml_def:
+              type: string
+              x-stoplight:
+                id: qotajwzqf534c
+            description:
+              type: string
+              x-stoplight:
+                id: 3p4vjjkwbtd5y
+      required:
+      - generated_yaml
+      x-examples: {}
+    ImportEntitiesBase:
+      title: ImportEntitiesBase
+      x-stoplight:
+        id: 3rlp8p98fnstv
+      type: object
+      description: Abstract base for import entities
+      discriminator:
+        propertyName: type
+        mapping:
+          All: '#/components/schemas/AllEntitiesImport'
+          Individual: '#/components/schemas/IndividualEntitiesImport'
+          Sample: '#/components/schemas/SampleEntitiesImport'
+      properties:
+        type:
+          type: string
+          x-stoplight:
+            id: z551lvgusdf0y
+          enum:
+          - All
+          - Individual
+          - Sample
+        catalog_connector_info:
+          $ref: '#/components/schemas/CatalogConnectorInfo'
+          x-stoplight:
+            id: ir8u1tzc1jeti
+      required:
+      - type
+      - catalog_connector_info
+  requestBodies:
+    ImportHarnessEntitiesRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ImportEntitiesBase'
+          examples: {}
+      description: Details of Harness Entities and Catalog Location info
+    GenerateYamlRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenerateYamlRequest'
+      description: Request to generate yaml for any one entity if provided or generate sample entity yaml definition
+  parameters:
+    Page1:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: null
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Order1:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Order on the basis of which sorting is done.
+    Limit5:
+      name: limit
+      in: query
+      required: false
+      schema:
+        default: null
+        type: integer
+      description: 'Pagination: Number of items to return'
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Sort6:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Parameter on the basis of which sorting is done.
+    SearchTerm5:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: This would be used to filter resources having attributes matching the search term.
+  responses:
+    ImportEntitiesResponse:
+      description: Response for import / save harness entities to IDP
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ImportEntitiesResponse'
+    HarnessEntitiesCountResponse:
+      description: Response for harness entities count that can be imported to IDP
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HarnessEntitiesCountResponse'
+    HarnessEntitiesResponse:
+      description: Response for harness entities mapping with backstage entities
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HarnessEntitiesResponse'
+          examples: {}
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+    GenerateYamlResponse:
+      description: Response contianing entity yaml definition and description about the entity
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenerateYamlResponse'
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

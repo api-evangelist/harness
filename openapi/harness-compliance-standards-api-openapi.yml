@@ -1,0 +1,819 @@
+openapi: 3.2.0
+info:
+  title: Harness Compliance Standards API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Compliance Standards
+paths:
+  /v1/orgs/{org}/projects/{project}/compliance-standards:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    post:
+      summary: Create Compliance Standards
+      responses:
+        '200':
+          description: Shared Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComplianceCheck'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      operationId: createComplianceStandards
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      requestBody:
+        $ref: '#/components/requestBodies/CreateComplianceStandardRequestBody'
+      x-stoplight:
+        id: w7t7slwx4bpyp
+      tags:
+      - Compliance Standards
+  /v1/orgs/{org}/projects/{project}/compliance-standards/list:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    post:
+      summary: Fetch Compliance Standards
+      responses:
+        '200':
+          $ref: '#/components/responses/ComplianceStandardsResponseBody'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      operationId: getComplianceStandards
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      - $ref: '#/components/parameters/Limit6'
+      - $ref: '#/components/parameters/Page2'
+      - $ref: '#/components/parameters/Order2'
+      - schema:
+          type: string
+        in: query
+        name: sort
+        description: Parameter on the basis of which sorting is done.
+      requestBody:
+        $ref: '#/components/requestBodies/ComplianceStandardsRequestBody'
+      x-stoplight:
+        id: ba1j9fp38rjbh
+      tags:
+      - Compliance Standards
+  /v1/orgs/{org}/projects/{project}/compliance-standards/compliances/{compliance}:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: compliance
+      in: path
+      required: true
+      description: compliance Id
+    get:
+      summary: Get Compliance Standard By Id
+      tags:
+      - Compliance Standards
+      security:
+      - x-api-key: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ComplianceStandardByIdResponseBody'
+      operationId: getCompliaceStandardById
+      x-stoplight:
+        id: pm3x5ic04amhd
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+components:
+  schemas:
+    ComplianceStandardsFilterEntity:
+      title: ComplianceStandardsFilterEntity
+      x-stoplight:
+        id: 0mc5ygoyq3h1c
+      type: object
+      x-examples:
+        Example 1:
+          scan_type: CICD
+          integrations:
+          - GITHUB
+          - HARNESS
+      description: Type of SPM support and platforms integrated
+      x-internal: false
+      required:
+      - scan_type
+      - integrations
+      properties:
+        scan_type:
+          $ref: '#/components/schemas/ComplianceScanType'
+        integrations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceSourcePlatform'
+    ComplianceCheckSeverity:
+      title: ComplianceCheckSeverity
+      type: string
+      x-stoplight:
+        id: kpbii4pjiw1ff
+      enum:
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
+    ComplianceScanType:
+      title: ComplianceScanType
+      x-stoplight:
+        id: xofqrlg94b1o5
+      type: string
+      enum:
+      - REPOSITORY
+      - CICD
+      description: Type of scan on the source like Repository scan or Worklfow scan
+    ComplianceSourcePlatform:
+      title: ComplianceSourcePlatform
+      x-stoplight:
+        id: mu4qb4tnrii02
+      type: string
+      enum:
+      - GITHUB
+      - HARNESS
+      description: 'Source platform enum. Example: GITHUB, HARNESS'
+    ComplianceFilter:
+      title: ComplianceFilter
+      x-stoplight:
+        id: 2s5vjjncxduj6
+      type: object
+      properties:
+        standards:
+          x-stoplight:
+            id: 93rw59dvxegw7
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceStandardType'
+        type:
+          $ref: '#/components/schemas/ComplianceCheckType'
+        entity:
+          $ref: '#/components/schemas/ComplianceCheckEntityType'
+        severity:
+          $ref: '#/components/schemas/ComplianceCheckSeverity'
+        search_term:
+          type: string
+          x-stoplight:
+            id: l10xdz7ssp9vn
+        integrations_filter:
+          type: array
+          x-stoplight:
+            id: 9vnhu1ikeqtxh
+          items:
+            $ref: '#/components/schemas/ComplianceStandardsFilterEntity'
+    ComplianceCheck:
+      type: object
+      x-examples:
+        Example 1:
+          can_execute: true
+          compliance_id: 1.2.1
+          category: Source Code
+          category_id: '1'
+          sub_category: Repository Management
+          sub_category_id: '1.2'
+          title: Ensure all public repositories contain a SECURITY.md file
+          severity: LOW
+          type: SCM
+          entity: REPOSITORY
+          description: SECURITY.md file is a security policy file, which gives people instructions when they are reporting security vulnerabilities in a project. When someone creates an issue in that project, a link to the SECURITY.md file will be shown.
+          remediation: For each repository in use, create a SECURITY.md file and save it in the documents or root directory of the repository.
+          integrations:
+          - GITHUB
+          standards:
+          - CIS
+          tags:
+          - CIS-1.2.1
+          url: https://avd.aquasec.com/compliance/softwaresupplychain/cis-1.0/cis-1.0-sourcecode/1.2
+          scan_type: REPOSITORY
+      description: Represents Single SSCA Compliance Check
+      required:
+      - compliance_id
+      - category
+      - category_id
+      - title
+      - severity
+      - type
+      - entity
+      - description
+      - standards
+      - sub_category
+      - sub_category_id
+      - can_execute
+      - scan_type
+      properties:
+        compliance_id:
+          type: string
+          x-stoplight:
+            id: ak9y7kwry6e2o
+        category:
+          type: string
+          x-stoplight:
+            id: zvq34yh1ak6nz
+        category_id:
+          type: string
+          x-stoplight:
+            id: v0fnkw247n211
+        title:
+          type: string
+        severity:
+          $ref: '#/components/schemas/ComplianceCheckSeverity'
+        type:
+          $ref: '#/components/schemas/ComplianceCheckType'
+        entity:
+          $ref: '#/components/schemas/ComplianceCheckEntityType'
+        description:
+          type: string
+        remediation:
+          type: string
+        standards:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceStandardType'
+        tags:
+          type: array
+          items:
+            type: string
+            x-stoplight:
+              id: kd1ktfq6vjcvf
+        url:
+          type: string
+          x-stoplight:
+            id: 0q36p62mq8bur
+        sub_category:
+          type: string
+          x-stoplight:
+            id: 2iczkwuwdnahe
+        sub_category_id:
+          type: string
+          x-stoplight:
+            id: hoh6mm0iogk3u
+        integrations:
+          type: array
+          x-stoplight:
+            id: 8fb60msdrzd09
+          items:
+            type: string
+        can_execute:
+          type: boolean
+          x-stoplight:
+            id: q0qq16vpi1pf6
+        scan_type:
+          $ref: '#/components/schemas/ComplianceScanType'
+      x-stoplight:
+        id: vlfta3sppng1w
+    ComplianceCheckEntityType:
+      title: ComplianceCheckEntityType
+      type: string
+      x-stoplight:
+        id: c9u1ph0w9r2pc
+      enum:
+      - REPOSITORY
+      - ORGANIZATION
+      - BRANCH
+      - PACKAGEREGISTRY
+      - PIPELINE
+      - DEPENDENCIES
+      - All
+      description: Represents entity type on which compliance check is applicable
+    ComplianceCheckType:
+      title: ComplianceCheckType
+      type: string
+      x-stoplight:
+        id: 172pz2p0c2bc1
+      enum:
+      - SCM
+      - ARTIFACT
+      - BUILD
+      - DEPENDENCIES
+      description: Represents Type of Compliance Check
+    ComplianceStandardType:
+      title: ComplianceStandardType
+      type: string
+      x-stoplight:
+        id: hqwyia5x65e2x
+      enum:
+      - CIS
+      - OWASP
+  responses:
+    ComplianceStandardsResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ComplianceCheck'
+      headers:
+        X-Total-Elements:
+          $ref: '#/components/headers/X-Total-Elements'
+        X-Page-Number:
+          $ref: '#/components/headers/X-Page-Number'
+        X-Page-Size:
+          $ref: '#/components/headers/X-Page-Size'
+    ComplianceStandardByIdResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceCheck'
+  parameters:
+    Page2:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Limit6:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
+    Order2:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        default: ASC
+      description: Order on the basis of which sorting is done.
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+  requestBodies:
+    CreateComplianceStandardRequestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ComplianceCheck'
+    ComplianceStandardsRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceFilter'
+  headers:
+    X-Page-Size:
+      schema:
+        type: integer
+      description: Maximum page size in Paginated response.
+    X-Total-Elements:
+      schema:
+        type: integer
+      description: Total number of elements returned in Paginated response.
+    X-Page-Number:
+      schema:
+        type: integer
+      description: Page number in Paginated response.
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

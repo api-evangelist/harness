@@ -1,0 +1,100 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the Harness Platform API
+  version: 1.0.0
+extends: ../openapi/_original/harness-apis-openapi.yaml
+x-generated: '2026-09-12'
+x-method: generated
+x-source: >-
+  Derived from the API Evangelist enrichment pass of 2026-09-12 over
+  openapi/_original/harness-apis-openapi.yaml (Harness's own bundle, fetched from
+  https://apidocs.harness.io/_bundle/index.yaml). This overlay records OUR annotations; it
+  never mutates the provider's document.
+actions:
+  - target: $.info
+    description: >-
+      Record provenance and the cross-cutting artifacts derived from this contract, so a
+      consumer applying the overlay gets the runtime semantics alongside the operations.
+    update:
+      x-apievangelist:
+        provider: harness
+        profile: https://apis.io/provider/harness
+        harvested: '2026-09-12'
+        harvested_from: https://apidocs.harness.io/_bundle/index.yaml
+        operations: 2883
+        paths: 2147
+        schemas: 6358
+        artifacts:
+          conventions: conventions/harness-conventions.yml
+          errors: errors/harness-error-codes.yml
+          lifecycle: lifecycle/harness-lifecycle.yml
+          authentication: authentication/harness-authentication.yml
+          permissions: scopes/harness-scopes.yml
+          rate_limits: rate-limits/harness-rate-limits.yml
+          conformance: conformance/harness-conformance.yml
+          data_model: data-model/harness-data-model.yml
+          events: asyncapi/harness-events.yml
+          mcp: mcp/harness-mcp.yml
+          crosswalk: mcp/harness-tool-crosswalk.yml
+  - target: $.info
+    description: >-
+      Surface the published platform rate limits, which are documented on the developer hub
+      but not represented anywhere in the contract itself.
+    update:
+      x-rate-limits:
+        source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+        per_ip: 5000 requests / 10 seconds
+        per_api_key: 1000 requests / minute
+        external_per_x_api_key: 400 requests / minute
+        status_on_exhaustion: 429
+        retry_after_header: >-
+          Documented, but Harness states it is not supported by the Google Cloud Armor
+          layer enforcing the IP limit. Back off on the status code.
+  - target: $.components.securitySchemes['x-api-key']
+    description: >-
+      Add the token format and the RBAC permission model, which the scheme description
+      omits. Knowing the token shape lets a client validate a key before spending a call.
+    update:
+      x-token-format: <prefix>.<accountId>.<tokenId>.<secret>
+      x-token-kinds: [PAT, SAT]
+      x-authorization-model: rbac-permissions
+      x-permissions-reference: https://developer.harness.io/harness-platform/use-harness-platform/automation/api/api-permissions-reference
+      x-permission-count: 194
+  - target: $.paths['/pipeline/api/pipeline/execute/{identifier}'].post
+    description: >-
+      Annotate the pipeline-run operation with its reversal path and consequence class.
+      This is the single highest-consequence write in the contract and nothing in the spec
+      says how to take it back.
+    update:
+      x-agentic-access:
+        action-class: acting
+        consequence: write
+        escalation:
+          human-in-the-loop: required
+      x-reversibility:
+        reversal: putHandleInterrupt
+        kind: abort
+        window: while the execution is still running
+        rollback: triggerRollbackV3
+        precondition: checkIfInstanceCanBeRolledBack
+      x-idempotency: >-
+        None. A repeated call starts a second execution. No Idempotency-Key is accepted on
+        this operation.
+  - target: $.paths['/ng/api/organizations/{identifier}'].delete
+    description: Mark the irreversible configuration deletes so an agent gates them on a human.
+    update:
+      x-agentic-access:
+        action-class: acting
+        consequence: delete
+        escalation:
+          human-in-the-loop: required
+      x-reversibility:
+        reversal: none
+        note: No restore operation exists for an organization. Hard delete.
+  - target: $.paths['/cf/admin/features/{identifier}/restore'].post
+    description: Record that the feature-flag delete is reversible, which is the exception rather than the rule here.
+    update:
+      x-reverses: DeleteFeatureFlag
+      x-reversibility:
+        kind: restore
+        window: not stated by the provider

@@ -1,16 +1,96 @@
-generated: '2026-07-11'
-method: derived
-source: openapi/harness-platform-api.yaml
+generated: '2026-09-12'
+method: searched
+source: >-
+  https://developer.harness.io/harness-platform/use-harness-platform/automation/api/api-quickstart,
+  https://developer.harness.io/harness-platform/use-harness-platform/automation/api/add-and-manage-api-keys,
+  the Authentication section of info.description in
+  openapi/_original/harness-apis-openapi.yaml, and the probed OIDC discovery documents
+  under well-known/
+docs: https://developer.harness.io/harness-platform/use-harness-platform/automation/api/add-and-manage-api-keys
+provider: Harness
+providerId: harness
 summary:
   types:
-  - apiKey
+    - apiKey
+    - oauth2
   api_key_in:
-  - header
+    - header
+  rest_api: api-key only
+  oauth_scope: hosted MCP server, CLI SSO login, and platform sign-in — not the REST API
 schemes:
-- name: apiKeyAuth
-  type: apiKey
-  in: header
-  parameter: x-api-key
-  description: Harness API key.
-  sources:
-  - openapi/harness-platform-api.yaml
+  - name: x-api-key
+    type: apiKey
+    in: header
+    parameter: x-api-key
+    description: >-
+      The only security scheme declared in the Harness OpenAPI, and it is applied at the
+      document root, so every one of the 2,883 operations requires it.
+    applied: global
+    operations: 2883
+    sources:
+      - openapi/_original/harness-apis-openapi.yaml
+    token:
+      format: <prefix>.<accountId>.<tokenId>.<secret>
+      kinds:
+        - {prefix: pat, name: Personal Access Token, note: Belongs to a user; inherits that user's permissions.}
+        - {prefix: sat, name: Service Account Token, note: Belongs to a service account; the right choice for automation.}
+      account_id_embedded: true
+      account_id_note: >-
+        The account id is the second segment of the token, so a client can derive account
+        scope from the credential without a separate lookup. The Harness MCP server relies
+        on exactly this.
+      storage_warning: >-
+        Harness does not store the token after generation. It is shown once, at creation.
+      creation_path: Harness Platform > My Profile > API Key > + Token
+    authorization:
+      model: rbac-permissions
+      note: >-
+        A key carries a SUBSET of the permissions of the user or service account it was
+        created under. A 403 means the key lacks the permission at that scope, not that the
+        credential is invalid.
+      reference: https://developer.harness.io/harness-platform/use-harness-platform/automation/api/api-permissions-reference
+      permission_count: 194
+      see_also: scopes/harness-scopes.yml
+    required_roles_for_full_api_use:
+      - Account Administrator
+      - Organization Admin
+      - Project Admin
+      - or an equivalent custom role
+  - name: harness-platform-oauth
+    type: oauth2
+    scope_of_use:
+      - https://mcp.harness.io/mcp (hosted MCP server)
+      - harness auth login --sso (CLI, browser-based OAuth2 with PKCE)
+      - Harness Platform sign-in
+    not_applicable_to: the REST API
+    issuer: https://id.harness.io/idp/realms/HarnessIDP
+    discovery: https://id.harness.io/idp/realms/HarnessIDP/.well-known/openid-configuration
+    protected_resource_metadata: https://mcp.harness.io/.well-known/oauth-protected-resource
+    grant_types: [authorization_code, refresh_token, client_credentials]
+    pkce: S256
+    scopes: [openid, profile, email, offline_access]
+    id_token_signing: RS256
+    dynamic_client_registration: true
+    files:
+      - well-known/harness-id-harnessidp-openid-configuration.json
+      - well-known/harness-id-openid-configuration.json
+      - well-known/harness-mcp-oauth-protected-resource.json
+federation:
+  sso: SAML, OAuth and LDAP supported for user sign-in
+  scim:
+    supported: true
+    providers: [Okta, Microsoft Entra ID, OneLogin]
+    jwt_auth: >-
+      SCIM API authentication can be enabled through JWT using the Setting API
+      (https://developer.harness.io/harness-platform/use-harness-platform/automation/api/default-settings-for-jwt-token).
+    contract_gap: >-
+      No SCIM path or urn:ietf:params:scim schema URN appears in the published OpenAPI —
+      the SCIM surface is documented but not contracted.
+cors:
+  supported: true
+  note: Documented as supported; credentials are still required on every request.
+mtls:
+  present: false
+  note: >-
+    The contract carries an INVALID_AGENT_MTLS_AUTHORITY error code and Harness offers
+    delegate mTLS, but no mutualTLS security scheme is declared in the OpenAPI.

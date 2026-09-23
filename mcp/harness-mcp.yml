@@ -1,0 +1,124 @@
+generated: '2026-09-12'
+method: searched
+source: >-
+  https://github.com/harness/mcp-server (README, fetched 2026-09-12) +
+  live probes of https://mcp.harness.io/mcp and
+  https://mcp.harness.io/.well-known/oauth-protected-resource
+provider: Harness
+providerId: harness
+status: published
+server:
+  name: harness-mcp-v2
+  title: Harness MCP Server 2.0
+  transport: [stdio, http]
+  url: https://mcp.harness.io/mcp
+  repository: https://github.com/harness/mcp-server
+  package: https://www.npmjs.com/package/harness-mcp-v2
+  version: 3.2.27
+  license_note: Published by Harness on its own GitHub organization and npm scope.
+deployment:
+  mode: both
+  endpoint: https://mcp.harness.io/mcp
+  install: npx -y harness-mcp-v2@latest
+  package: https://www.npmjs.com/package/harness-mcp-v2
+  auth: oauth
+  verified: probed
+  checked: '2026-09-12'
+  notes: >-
+    Two distinct products. The REMOTE endpoint https://mcp.harness.io/mcp answers an
+    anonymous JSON-RPC POST with HTTP 401 and
+    {"code":"UNAUTHORIZED","message":"Invalid authorization header format"}, and its
+    RFC 9728 protected-resource document names
+    https://id.harness.io/idp/realms/HarnessIDP as the authorization server — it uses
+    Harness Platform OAuth, not HARNESS_API_KEY, and Harness Support must enable the
+    hosted MCP service per account before the endpoint can be used. The LOCAL stdio
+    server is `npx -y harness-mcp-v2` and authenticates with a Harness API key
+    (PAT/SAT), with the account id auto-extracted from the token.
+authentication:
+  remote:
+    scheme: oauth2
+    protected_resource: https://mcp.harness.io/.well-known/oauth-protected-resource
+    authorization_server: https://id.harness.io/idp/realms/HarnessIDP
+    bearer_methods_supported: [header]
+    enablement: per-account, requires Harness Support to enable the hosted MCP service
+  local:
+    scheme: api-key
+    env: HARNESS_API_KEY
+    token_format: <prefix>.<accountId>.<tokenId>.<secret> (PAT or SAT)
+    optional_env: [HARNESS_ORG, HARNESS_PROJECT, HARNESS_BASE_URL]
+architecture:
+  pattern: registry-dispatch
+  description: >-
+    Harness deliberately did NOT map one tool per API endpoint. 2,883 REST operations are
+    collapsed into 11 verb-shaped tools that dispatch over a registry of 247 resource
+    types, so a model chooses from 11 tools rather than hundreds. The resource type is a
+    tool ARGUMENT, not a tool name.
+  toolsets: 41
+  resource_types: 247
+  prompt_templates: 35
+tools_source: >-
+  Tool names, descriptions and the registry model are taken from the provider's own
+  README. Live tools/list introspection against mcp.harness.io is auth-gated (HTTP 401),
+  so per-tool inputSchema is NOT captured here — it requires an authenticated MCP
+  handshake.
+tools:
+  - name: harness_describe
+    kind: metadata
+    description: Discover available resource types, operations and fields. Local registry metadata, no API call.
+  - name: harness_schema
+    kind: metadata
+    description: Fetch exact YAML/JSON Schema definitions and examples for creating or updating resources.
+  - name: harness_list
+    kind: read
+    description: List resources of a given type with filtering, search and pagination.
+  - name: harness_get
+    kind: read
+    description: Get a single resource by its identifier.
+  - name: harness_create
+    kind: write
+    description: Create a new resource. Prompts for user confirmation via MCP elicitation.
+  - name: harness_update
+    kind: write
+    description: Update an existing resource. Prompts for user confirmation via MCP elicitation.
+  - name: harness_delete
+    kind: destructive
+    description: Delete a resource. Prompts for user confirmation via MCP elicitation.
+  - name: harness_execute
+    kind: write
+    description: >-
+      Execute an action on a resource — run/retry a pipeline, import a pipeline from Git,
+      toggle a flag, sync a GitOps app. Prompts for confirmation via elicitation.
+  - name: harness_search
+    kind: read
+    description: >-
+      Search across resource types with one query, using local ONNX all-MiniLM-L6-v2
+      embeddings to narrow ~163 types to 1-8 before scatter-gather.
+  - name: harness_diagnose
+    kind: read
+    description: >-
+      Diagnose pipeline, connector, delegate and gitops_application resources — stage/step
+      timing, failure detail, health signals.
+  - name: harness_status
+    kind: read
+    description: Real-time project health dashboard — recent executions, failure rates, deep links.
+agent_safety:
+  elicitation: >-
+    harness_create, harness_update, harness_delete and harness_execute prompt the human
+    for confirmation through MCP elicitation before acting. This is a provider-shipped
+    human-in-the-loop gate, not a convention we recommended.
+  audit: >-
+    All registry-dispatched operations (list/get/create/update/delete/execute) emit
+    structured audit events when audit sinks are configured; mutating events carry the
+    confirmation path used. harness_describe and harness_schema bypass the registry and
+    are not in the audit stream.
+  output_schema: Every tool declares an MCP outputSchema; harness_list normalises list responses to {items,total,page}.
+probe:
+  - url: https://mcp.harness.io/mcp
+    method: POST tools/list
+    status: 401
+    body: '{"code":"UNAUTHORIZED","message":"Invalid authorization header format"}'
+  - url: https://mcp.harness.io/mcp
+    method: POST initialize
+    status: 401
+  - url: https://mcp.harness.io/.well-known/oauth-protected-resource/mcp
+    status: 200

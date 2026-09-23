@@ -1,0 +1,1034 @@
+openapi: 3.2.0
+info:
+  title: Harness Orchestration V2 API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: OrchestrationV2
+paths:
+  /v1/org/{org}/project/{project}/orchestration/{orchestration-id}/sbom-download:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: orchestration-id
+      in: path
+      required: true
+      description: Orchestration Identifier
+    get:
+      summary: Download SBOM for an artifact
+      responses:
+        '200':
+          $ref: '#/components/responses/ArtifactSbomResponseBody'
+      operationId: downloadSbom
+      x-stoplight:
+        id: q6aepcsx5fl46
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      x-internal: false
+      security:
+      - x-api-key: []
+      tags:
+      - OrchestrationV2
+  /v1/orgs/{org}/projects/{project}/orchestration/{orchestration}/sbom-drift:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: orchestration
+      in: path
+      required: true
+      description: Orchestration Step Execution ID
+    post:
+      summary: Calculate Drift For Orchestration Step
+      tags:
+      - OrchestrationV2
+      responses:
+        '200':
+          $ref: '#/components/responses/OrchestrationStepDriftResponseBody'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      operationId: calculateDriftForOrchestrationStep
+      x-stoplight:
+        id: rc1gp55e42zv2
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      requestBody:
+        $ref: '#/components/requestBodies/OrchestrationStepDriftRequestBody'
+      x-internal: true
+  /v1/orgs/{org}/projects/{project}/orchestration/{orchestration-id}/sbom-upload:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: orchestration-id
+      in: path
+      required: true
+      description: Orchestration Identifier
+    servers: []
+    post:
+      summary: Upload SBOM
+      tags:
+      - OrchestrationV2
+      responses:
+        '201':
+          description: Created
+      operationId: uploadSbom
+      x-stoplight:
+        id: nu31o2ljat7wm
+      description: Upload SBOM for an orchestration run
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - sbom
+              - execution_context
+              properties:
+                sbom:
+                  type: string
+                  x-stoplight:
+                    id: q6xx2x2hw7izu
+                  format: binary
+                  writeOnly: true
+                execution_context:
+                  $ref: '#/components/schemas/ExecutionContext'
+                sbom_name:
+                  type: string
+                  x-stoplight:
+                    id: x2y8o4pdp79wh
+      security:
+      - x-api-key: []
+      x-internal: true
+  /v1/orgs/{org}/projects/{project}/orchestration/{orchestration-id}:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: orchestration-id
+      in: path
+      required: true
+      description: Provide the Harness Pipeline Execution ID
+    post:
+      summary: Save Orchestration
+      tags:
+      - OrchestrationV2
+      responses:
+        '201':
+          $ref: '#/components/responses/SaveOrchestrationResponseBody'
+        '400':
+          description: Bad Request
+      operationId: saveOrchestration
+      x-stoplight:
+        id: z435nplrowm4h
+      requestBody:
+        $ref: '#/components/requestBodies/SaveOrchestrationRequestBody'
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      security:
+      - x-api-key: []
+      x-internal: true
+components:
+  responses:
+    ArtifactSbomResponseBody:
+      description: Response Body for Artifact Sbom
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ArtifactSbomResponseBody'
+    OrchestrationStepDriftResponseBody:
+      description: Response body for calculating drift in step execution.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ArtifactSbomDriftResponse'
+    SaveOrchestrationResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SaveOrchestrationResponseBody'
+  schemas:
+    ArtifactSbomResponseBody:
+      title: ArtifactSbomResponseBody
+      x-stoplight:
+        id: vqsbzq42jdfl8
+      type: object
+      properties:
+        sbom:
+          type: string
+      description: ''
+    ExecutionContext:
+      title: ExecutionContext
+      x-stoplight:
+        id: 7o6l08qrn9k92
+      type: object
+      required:
+      - pipeline_id
+      - stage_id
+      - sequence_id
+      - pipeline_execution_id
+      - step_id
+      - step_execution_id
+      - stage_execution_id
+      properties:
+        pipeline_id:
+          type: string
+          x-stoplight:
+            id: 2ggh8qbfitm2h
+        stage_id:
+          type: string
+          x-stoplight:
+            id: nr3flmafic61d
+        sequence_id:
+          type: string
+          x-stoplight:
+            id: eahgdg9y3657d
+        pipeline_execution_id:
+          type: string
+          x-stoplight:
+            id: 9pmcytlzquu73
+        step_id:
+          type: string
+          example: Orchestrate
+          x-stoplight:
+            id: v1lrfnusqdk4s
+        build_url:
+          type: string
+          example: https://app.harness.io/ng/#/account/acc/ci/orgs/org/projects/dummyProject/pipelines/CKO_SSCA_Pipeline/executions/q940CvjoQj-GEInJQfWiwg/pipeline?storeType=INLINE
+        step_execution_id:
+          type: string
+          example: betatest1
+        step_name:
+          type: string
+          x-stoplight:
+            id: agubor4ho34r5
+        stage_name:
+          type: string
+          x-stoplight:
+            id: r1ir58caw421i
+        stage_execution_id:
+          type: string
+          x-stoplight:
+            id: u8z5q12sxlz7a
+        stage_type:
+          type: string
+          x-stoplight:
+            id: h8ulrl6swxcbf
+          description: 'Stage type of the step
+
+            '
+    LicenseDriftSummary:
+      title: LicenseDriftSummary
+      x-stoplight:
+        id: xqrznhby6s5pm
+      type: object
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: rv3e26us1gpns
+          description: Total number of license drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: i712aeyzprqnp
+          description: Total number of licenses added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: 78xi96muf5dzy
+          description: Total number of licenses deleted
+      required:
+      - total
+      - added
+      - deleted
+      description: Provides License Drift Summary
+    ArtifactSbomDriftResponse:
+      title: ArtifactSbomDriftResponse
+      x-stoplight:
+        id: 8wtldj2bdrxbl
+      type: object
+      description: Response body for sbom drift calculation between 2 artifact versions.
+      required:
+      - drift_id
+      - tag
+      - base_tag
+      - artifact_name
+      - total_drifts
+      properties:
+        drift_id:
+          type: string
+          x-stoplight:
+            id: abkvlxxav7a0m
+          description: Drift ID to get the drift results
+        tag:
+          type: string
+          x-stoplight:
+            id: r8jspopjepniy
+          description: Tag on which drift was calculated
+        base_tag:
+          type: string
+          x-stoplight:
+            id: vp5s1sanmd26h
+          description: Base tag from which drift was calculated
+        artifact_name:
+          type: string
+          x-stoplight:
+            id: v2iqwtzrsb78d
+          description: Artifact name
+        total_drifts:
+          type: integer
+          x-stoplight:
+            id: qii5blwextc6b
+          description: Sum total of component and license drifts.
+        component_drift_summary:
+          $ref: '#/components/schemas/ComponentDriftSummary'
+        license_drift_summary:
+          $ref: '#/components/schemas/LicenseDriftSummary'
+    SaveOrchestrationResponseBody:
+      title: SaveOrchestrationResponseBody
+      x-stoplight:
+        id: ud8owob6dy3nb
+      type: object
+      required:
+      - artifact_id
+      properties:
+        artifact_id:
+          type: string
+          x-stoplight:
+            id: wrz7jes211t3j
+    RepositoryPlatform:
+      type: string
+      title: RepositoryPlatform
+      x-stoplight:
+        id: prybalroyw6dc
+      enum:
+      - HARNESS
+      - GITHUB
+      - BITBUCKET
+      - GITLAB
+      - GIT
+      - AZURE
+    SbomMetadataV2:
+      title: SbomMetadataV2
+      x-stoplight:
+        id: 4na922okidtvc
+      type: object
+      required:
+      - name
+      - format
+      - tool_name
+      - tool_version
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: 0160bbgwts3sz
+        format:
+          type: string
+          minLength: 3
+          example: spdx-json
+        tool_name:
+          type: string
+          minLength: 3
+          example: synk
+          x-stoplight:
+            id: ic4qf7a3stbw7
+        tool_version:
+          type: string
+          x-stoplight:
+            id: 1mfkoo8p7i071
+        created:
+          type: number
+          x-stoplight:
+            id: ldh7rwijoj89o
+        sbom_version:
+          type: string
+          x-stoplight:
+            id: feovw69zekn4x
+        tool_vendor:
+          type: string
+          x-stoplight:
+            id: cbdqudq2dotry
+    ArtifactVariant:
+      title: ArtifactVariant
+      x-stoplight:
+        id: uyb3jwhgs9wjh
+      type: object
+      properties:
+        type:
+          type: string
+          x-stoplight:
+            id: 2r8lmxejmwqbf
+          enum:
+          - tag
+          - branch
+          - gitTag
+          - commit
+          description: type of the variant of the artifact.
+        value:
+          type: string
+          x-stoplight:
+            id: hd1p3s7bugn88
+          description: Value of the variant of the artifact.
+    Attestation:
+      title: Attestation
+      x-stoplight:
+        id: rzr5mk8z847jg
+      type: object
+      properties:
+        is_attested:
+          type: boolean
+          default: false
+          description: is the sbom attested or not
+        url:
+          type: string
+          description: url of the attested file
+          example: https://storage.googleapis.com/sbom_store_public/kmpySmUISimoRrJL6NL73w/default/SSCS_CI_Plugin_Demo/CKO_SSCA_Pipeline/Build/39/q940CvjoQj-GEInJQfWiwg/sbom
+    SaveOrchestrationRequest:
+      title: SaveOrchestrationRequest
+      x-stoplight:
+        id: 5tb5gd8m5ehto
+      type: object
+      required:
+      - artifact
+      - sbom_metadata
+      - attestation
+      properties:
+        components:
+          type: array
+          x-stoplight:
+            id: x8wtamg34sbym
+          items:
+            $ref: '#/components/schemas/SbomComponentRequestDTO'
+        artifact:
+          $ref: '#/components/schemas/Artifact1'
+        sbom_metadata:
+          $ref: '#/components/schemas/SbomMetadataV2'
+        attestation:
+          $ref: '#/components/schemas/Attestation'
+        execution_context:
+          $ref: '#/components/schemas/ExecutionContext'
+    SbomComponentRequestDTO:
+      title: NormalizedSbomComponentDTO
+      x-stoplight:
+        id: w7dtx3sur4642
+      type: object
+      description: Normalized SBOM Component Details
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+        package_id:
+          type: string
+        package_name:
+          type: string
+        package_description:
+          type: string
+        package_license:
+          type: array
+          items:
+            type: string
+        package_source_info:
+          type: string
+        package_version:
+          type: string
+        package_originator_name:
+          type: string
+        originator_type:
+          type: string
+        package_type:
+          type: string
+        package_cpe:
+          type: string
+        package_properties:
+          type: string
+        package_manager:
+          type: string
+        package_namespace:
+          type: string
+        major_version:
+          type: number
+        minor_version:
+          type: number
+        patch_version:
+          type: number
+        purl:
+          type: string
+        language:
+          type: string
+        filter_tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/LayerType'
+    OrchestrationStepDriftRequestBody:
+      title: OrchestrationStepDriftRequestBody
+      x-stoplight:
+        id: a10i10ic81mf2
+      type: object
+      properties:
+        base:
+          x-stoplight:
+            id: hpnybas76g36y
+          enum:
+          - baseline
+          - last_generated_sbom
+          - repository
+          description: Provide the baseline from which drift has to be calculated
+        variant:
+          $ref: '#/components/schemas/ArtifactVariant'
+      required:
+      - base
+    Artifact1:
+      title: Artifact
+      x-go-name: ArtifactListItem
+      x-stoplight:
+        id: 13qkvpww6x2ku
+      type: object
+      x-examples: {}
+      required:
+      - type
+      - name
+      - registry_url
+      properties:
+        id:
+          type: string
+          description: id of the artifact
+          example: 089855ea-f90e-4bea-a5c9-b5ddf85d3180
+        type:
+          type: string
+          description: type of the artifact
+          enum:
+          - image
+          - repository
+          default: image
+          example: image
+        name:
+          type: string
+          description: name of the artifact
+          example: harness/image
+        tag:
+          type: string
+          description: tag of the artifact
+          default: latest
+          example: latest
+        registry_url:
+          type: string
+          description: url of the artifact
+          example: https://console.cloud.google.com/gcr/images/imageName
+        url:
+          type: string
+          x-stoplight:
+            id: 2gcc89tfmislv
+        variant:
+          $ref: '#/components/schemas/ArtifactVariant'
+        digest:
+          type: string
+          description: digest of the artifact
+          example: sha256:1234567890
+        metadata:
+          type: object
+          additionalProperties: true
+          x-stoplight:
+            id: bcmiu856m2sf8
+        repository_platform:
+          $ref: '#/components/schemas/RepositoryPlatform'
+    LayerType:
+      title: LayerType
+      enum:
+      - BASE
+      - APP
+      - DISTRO
+      x-stoplight:
+        id: 151c5cf8ekave
+    ComponentDriftSummary:
+      title: ComponentDriftSummary
+      x-stoplight:
+        id: b32uzhtuywe2w
+      type: object
+      description: Component drift summary
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: hxyal6jm7n1op
+          description: Total number of component drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: r0v4mbai7xjnj
+          description: Number of components added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: cloho1oa3yqwg
+          description: Number of components deleted.
+        modified:
+          type: integer
+          x-stoplight:
+            id: eg71m292ud719
+          description: Number of components modified.
+      required:
+      - total
+      - added
+      - deleted
+      - modified
+  parameters:
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
+  requestBodies:
+    SaveOrchestrationRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SaveOrchestrationRequest'
+    OrchestrationStepDriftRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OrchestrationStepDriftRequestBody'
+      description: Provide the base from which drift has to be calculated.
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

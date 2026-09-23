@@ -1,0 +1,1132 @@
+openapi: 3.2.0
+info:
+  title: Harness Registry V3 - Files API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- description: V3 files endpoints
+  name: Registry V3 - Files
+paths:
+  /har/api/v3/files:
+    get:
+      description: List files.
+      operationId: ListFilesV3
+      parameters:
+      - $ref: '#/components/parameters/AccountIdentifierV3'
+      - $ref: '#/components/parameters/OrgIdentifierV3'
+      - $ref: '#/components/parameters/ProjectIdentifierV3'
+      - $ref: '#/components/parameters/RegistryIdOptionalParamV3'
+      - $ref: '#/components/parameters/PackageIdOptionalParamV3'
+      - $ref: '#/components/parameters/VersionIdOptionalParamV3'
+      - $ref: '#/components/parameters/ConanRecipeRevisionOptionalParamV3'
+      - $ref: '#/components/parameters/ConanPackageRevisionOptionalParamV3'
+      - $ref: '#/components/parameters/PageNumberV3'
+      - $ref: '#/components/parameters/PageSizeV3'
+      - $ref: '#/components/parameters/SortV3'
+      - $ref: '#/components/parameters/SearchTermV3'
+      responses:
+        '200':
+          $ref: '#/components/responses/ListFilesResponseV3'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorV3'
+          description: Error response.
+      summary: Search Files
+      tags:
+      - Registry V3 - Files
+      x-internal: false
+  /har/api/v3/files/{id}/content:
+    get:
+      description: Download a file using its id. When `preview=true` is supplied the response is a `302` redirect to an inline-preview URL for the file instead of the file bytes.
+      operationId: GetFileV3
+      parameters:
+      - $ref: '#/components/parameters/AccountIdentifierV3'
+      - $ref: '#/components/parameters/IdPathParamV3'
+      - $ref: '#/components/parameters/FilePreviewQueryParamV3'
+      responses:
+        '200':
+          $ref: '#/components/responses/DownloadFileResponseV3'
+        '302':
+          $ref: '#/components/responses/RedirectV3'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorV3'
+          description: Error response.
+      summary: Download file using file id
+      tags:
+      - Registry V3 - Files
+      x-internal: false
+  /har/api/v3/files/{id}/metadata:
+    get:
+      description: Retrieves all metadata for a file.
+      operationId: GetFileMetadataV3
+      parameters:
+      - $ref: '#/components/parameters/AccountIdentifierV3'
+      - $ref: '#/components/parameters/IdPathParamV3'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetadataResponseV3'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorV3'
+          description: Error response.
+      summary: Get File Metadata
+      tags:
+      - Registry V3 - Files
+      x-internal: false
+    post:
+      description: Creates or overwrites metadata for a file.
+      operationId: UpsertFileMetadataV3
+      parameters:
+      - $ref: '#/components/parameters/AccountIdentifierV3'
+      - $ref: '#/components/parameters/IdPathParamV3'
+      requestBody:
+        $ref: '#/components/requestBodies/MetadataRequestV3'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetadataResponseV3'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorV3'
+          description: Error response.
+      summary: Upsert File Metadata
+      tags:
+      - Registry V3 - Files
+      x-internal: false
+    put:
+      description: Replaces all metadata for a file.
+      operationId: SaveFileMetadataV3
+      parameters:
+      - $ref: '#/components/parameters/AccountIdentifierV3'
+      - $ref: '#/components/parameters/IdPathParamV3'
+      requestBody:
+        $ref: '#/components/requestBodies/MetadataRequestV3'
+      responses:
+        '200':
+          $ref: '#/components/responses/MetadataResponseV3'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorV3'
+          description: Error response.
+      summary: Replace File Metadata
+      tags:
+      - Registry V3 - Files
+      x-internal: false
+  /har/api/v3/files/{id}/preview:
+    get:
+      description: Returns a URL for rendering a file inline in the browser. For cloud (S3/GCS) deployments the URL is a presigned URL with inline Content-Disposition and a forced Content-Type baked in, expiring after 20 minutes. For filesystem deployments the URL routes back through the protocol API with preview=true and relies on the caller's session. The endpoint enforces the preview allowlist and a configured maximum size before returning a URL.
+      operationId: GetFilePreviewV3
+      parameters:
+      - $ref: '#/components/parameters/AccountIdentifierV3'
+      - $ref: '#/components/parameters/OrgIdentifierV3'
+      - $ref: '#/components/parameters/ProjectIdentifierV3'
+      - $ref: '#/components/parameters/IdPathParamV3'
+      responses:
+        '200':
+          $ref: '#/components/responses/FilePreviewResponseV3'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorV3'
+          description: Error response.
+      summary: Get inline preview URL for a file
+      tags:
+      - Registry V3 - Files
+      x-internal: true
+  /har/api/v3/files/search:
+    post:
+      description: 'Search files across a registry using a POSIX regular expression matched server-side against the full node path. Filter payload is sent in the request body so that regex characters such as `?`, `&`, `+`, `#` and `%` do not need URL-encoding and are not truncated by proxies. Backs the CLI bulk-download flow: the server performs regex filtering and the client parallelizes the individual file downloads.'
+      operationId: SearchRegistryFilesV3
+      parameters:
+      - $ref: '#/components/parameters/AccountIdentifierV3'
+      - $ref: '#/components/parameters/OrgIdentifierV3'
+      - $ref: '#/components/parameters/ProjectIdentifierV3'
+      - $ref: '#/components/parameters/PageNumberV3'
+      - $ref: '#/components/parameters/PageSizeV3'
+      - $ref: '#/components/parameters/SortV3'
+      requestBody:
+        $ref: '#/components/requestBodies/SearchRegistryFilesRequestV3'
+      responses:
+        '200':
+          $ref: '#/components/responses/ListFilesResponseV3'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorV3'
+          description: Error response.
+      summary: Search Registry Files by path regex
+      tags:
+      - Registry V3 - Files
+      x-internal: true
+  /har/api/v3/internal/registries/{registry_name}/files:
+    get:
+      description: List files belonging to a registry.
+      operationId: ListRegistryFilesV3
+      parameters:
+      - $ref: '#/components/parameters/AccountIdentifierV3'
+      - $ref: '#/components/parameters/RegistryNamePathParamV3'
+      - $ref: '#/components/parameters/PackageNameFilterParamV3'
+      - $ref: '#/components/parameters/VersionFilterParamV3'
+      - $ref: '#/components/parameters/FilePathFilterParamV3'
+      - $ref: '#/components/parameters/PageNumberV3'
+      - $ref: '#/components/parameters/PageSizeV3'
+      - $ref: '#/components/parameters/SortV3'
+      - $ref: '#/components/parameters/SearchTermV3'
+      responses:
+        '200':
+          $ref: '#/components/responses/ListFilesResponseV3'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorV3'
+          description: Error response.
+      summary: List Registry Files
+      tags:
+      - Registry V3 - Files
+      x-internal: true
+components:
+  requestBodies:
+    MetadataRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MetadataInputV3'
+      description: Request body containing metadata key-value pairs to add or update
+    SearchRegistryFilesRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchRegistryFilesRequestInputV3'
+      description: request to search registry files by path regex
+  parameters:
+    RegistryNamePathParamV3:
+      description: Registry name (identifier).
+      in: path
+      name: registry_name
+      required: true
+      schema:
+        type: string
+    VersionFilterParamV3:
+      description: Filter by version
+      in: query
+      name: version
+      schema:
+        type: string
+    FilePreviewQueryParamV3:
+      description: 'When `true`, the endpoint responds with a `302` redirect to an inline-preview URL for the file (presigned URL for cloud deployments, or a protocol-API URL with `preview=true` for filesystem deployments) instead of streaming the file for download. The file must satisfy the preview allowlist and size limit, otherwise an error is returned. Defaults to `false` (download).
+
+        '
+      in: query
+      name: preview
+      schema:
+        default: false
+        type: boolean
+    VersionIdOptionalParamV3:
+      description: 'Unique identifier for the version.
+
+        '
+      in: query
+      name: version_id
+      schema:
+        type: string
+    IdPathParamV3:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    ConanPackageRevisionOptionalParamV3:
+      description: 'Internal UUID of the Conan package revision (PREV) row. Resolves file paths via
+
+        node_entity_mapping. Requires version_id.
+
+        Mutually exclusive with recipe_revision_id.
+
+        '
+      in: query
+      name: package_revision_id
+      schema:
+        type: string
+    SortV3:
+      description: 'The sort for the results.
+
+        Accepted pattern: `sort_field:sort_order` where sort_field is the field name
+
+        and sort_order is either `asc` or `desc`.
+
+
+        Examples: `name:asc`, `modifiedAt:desc`
+
+        '
+      in: query
+      name: sort
+      schema:
+        type: string
+    ConanRecipeRevisionOptionalParamV3:
+      description: 'Internal UUID of the Conan recipe revision (RREV) row. Resolves file paths via
+
+        node_entity_mapping. Requires version_id.
+
+        Mutually exclusive with package_revision_id.
+
+        '
+      in: query
+      name: recipe_revision_id
+      schema:
+        type: string
+    PackageNameFilterParamV3:
+      description: Filter by package name
+      in: query
+      name: package_name
+      schema:
+        type: string
+    AccountIdentifierV3:
+      description: 'Unique identifier for the Harness account.
+
+        '
+      in: query
+      name: account_identifier
+      required: true
+      schema:
+        type: string
+    SearchTermV3:
+      description: 'Search term for filtering results.
+
+
+        Example: `search_term=prod` might match keys like "production", "prod-env", etc.
+
+        '
+      in: query
+      name: search_term
+      schema:
+        type: string
+    ProjectIdentifierV3:
+      description: 'Unique identifier for the project within the organization.
+
+
+        Example: `my_project` or `frontend_services`
+
+        '
+      in: query
+      name: project_identifier
+      schema:
+        type: string
+    PageNumberV3:
+      description: 'The page number for pagination (0-indexed).
+
+
+        Used to navigate through large result sets. Combined with `size` parameter
+
+        to control which subset of results to return.
+
+
+        Example: `page=0` returns the first page, `page=1` returns the second page
+
+        '
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
+    RegistryIdOptionalParamV3:
+      description: 'Unique id for the registry.
+
+        '
+      example: 12345678-1234-1234-1234-123456789012
+      in: query
+      name: registry_id
+      schema:
+        type: string
+    PageSizeV3:
+      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        maximum: 100
+        minimum: 1
+        type: integer
+    PackageIdOptionalParamV3:
+      description: 'Unique identifier for the package.
+
+        '
+      in: query
+      name: package_id
+      schema:
+        type: string
+    FilePathFilterParamV3:
+      description: Filter by file path (partial match)
+      in: query
+      name: file_path
+      schema:
+        type: string
+    OrgIdentifierV3:
+      description: 'Unique identifier for the organization within the account.
+
+
+        Example: `default` or `engineering_org`
+
+        '
+      in: query
+      name: org_identifier
+      schema:
+        type: string
+  responses:
+    DownloadFileResponseV3:
+      content:
+        application/octet-stream:
+          schema:
+            format: binary
+            type: string
+      description: Response containing file content
+    ListFilesResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListFilesResponseBodyV3'
+      description: response for list files
+    FilePreviewResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FilePreviewResponseBodyV3'
+      description: Response containing the inline preview URL for a file
+    MetadataResponseV3:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                description: Array of metadata entries
+                items:
+                  $ref: '#/components/schemas/MetadataV3'
+                type: array
+            required:
+            - data
+            type: object
+      description: Response containing all metadata entries for the requested entity
+    RedirectV3:
+      description: Temporary Redirect
+      headers:
+        Location:
+          description: The URL of the redirected resource
+          schema:
+            format: uri
+            type: string
+  schemas:
+    MetadataV3:
+      description: Metadata entry
+      properties:
+        id:
+          description: Unique identifier for this metadata entry
+          format: uuid
+          type: string
+        key:
+          description: The metadata key name
+          example: environment
+          type: string
+        type:
+          $ref: '#/components/schemas/MetadataTypeV3'
+        value:
+          description: The metadata value
+          example: production
+          type: string
+      required:
+      - id
+      - key
+      - value
+      - type
+      type: object
+    UserInfoV3:
+      description: Structured user information for a principal
+      properties:
+        display_name:
+          description: Human-readable display name
+          type: string
+        email:
+          description: Email address
+          type: string
+        type:
+          description: Principal type (user, service, service_account)
+          type: string
+        uid:
+          description: Principal unique identifier (username)
+          type: string
+      type: object
+    PageInfoV3:
+      description: 'Pagination metadata.
+
+        - `page` selects which page of results to return (0 = first page).
+
+        - `size` controls how many items are returned per page.
+
+        - `hasMore` is true if more results exist after this page.
+
+        '
+      properties:
+        hasMore:
+          description: True if more results exist after this page.
+          example: true
+          type: boolean
+        page:
+          description: The current page (0-indexed)
+          example: 0
+          format: int64
+          type: integer
+        size:
+          description: Number of items per page
+          example: 20
+          format: int64
+          type: integer
+      required:
+      - page
+      - size
+      - hasMore
+      type: object
+    MetadataItemInputV3:
+      description: Metadata key-value pair for create/update operations
+      properties:
+        key:
+          description: The metadata key name (case-sensitive)
+          example: environment
+          maxLength: 128
+          minLength: 1
+          type: string
+        value:
+          description: The metadata value
+          example: production
+          maxLength: 256
+          minLength: 1
+          type: string
+      required:
+      - key
+      - value
+      type: object
+    FilePreviewDataV3:
+      description: Inline preview details for a file.
+      properties:
+        contentType:
+          description: 'Content-Type the file will be served with for preview. HTML and SVG are forced to text/plain to mitigate stored XSS.
+
+            '
+          type: string
+        expiresAt:
+          description: 'When the preview URL expires (Unix ms). Set for cloud presigned URLs (now + 20m); null for filesystem deployments whose URL does not expire.
+
+            '
+          format: int64
+          type:
+          - integer
+          - 'null'
+        fileName:
+          description: File name (leaf of the node path).
+          type: string
+        previewUrl:
+          description: 'URL the browser can open to render the file inline. A presigned URL for cloud deployments, or a protocol-API URL with preview=true for filesystem deployments.
+
+            '
+          type: string
+        size:
+          description: File size in bytes.
+          format: int64
+          type: integer
+      required:
+      - previewUrl
+      - contentType
+      - fileName
+      - size
+      type: object
+    SearchRegistryFilesRequestInputV3:
+      description: 'Input for the search registry files operation. The regex is sent
+
+        in the body so characters like `?`, `&`, `+`, `#` and `%` don''t
+
+        need URL-encoding and aren''t mangled by proxies.
+
+        '
+      properties:
+        regex:
+          description: 'POSIX regular expression matched server-side against file paths. Evaluated by Postgres (`~` operator, case-sensitive). Max length 500.
+
+            '
+          maxLength: 500
+          type: string
+        registry:
+          description: Registry identifier (name).
+          type: string
+      required:
+      - registry
+      - regex
+      type: object
+    FileMetadataV3:
+      description: File Metadata
+      properties:
+        createdAt:
+          $ref: '#/components/schemas/CreatedAtMsV3'
+        createdBy:
+          $ref: '#/components/schemas/UserInfoV3'
+        downloadCmd:
+          type: string
+        downloadUrl:
+          type: string
+        id:
+          type: string
+        md5:
+          type: string
+        name:
+          type: string
+        path:
+          type: string
+        sha1:
+          type: string
+        sha256:
+          type: string
+        sha512:
+          type: string
+        size:
+          type: string
+      required:
+      - id
+      - name
+      - path
+      - createdAt
+      - sha1
+      - sha256
+      - sha512
+      - md5
+      - size
+      - downloadCmd
+      type: object
+    MetaV3:
+      description: Metadata about the list response
+      properties:
+        activeCount:
+          description: Count of active (non-deleted) entities
+          example: 95
+          format: int64
+          type: integer
+        deletedCount:
+          description: Count of soft-deleted entities
+          example: 5
+          format: int64
+          type: integer
+      required:
+      - activeCount
+      - deletedCount
+      type: object
+    CreatedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was created
+      example: 1736360000123
+      format: int64
+      type:
+      - integer
+      - 'null'
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
+    MetadataInputV3:
+      description: 'Request payload containing metadata key-value pairs to add or update.
+
+        '
+      example:
+        metadata:
+        - key: environment
+          value: production
+        - key: team
+          value: backend
+      properties:
+        metadata:
+          description: Array of metadata key-value pairs
+          items:
+            $ref: '#/components/schemas/MetadataItemInputV3'
+          maxItems: 50
+          minItems: 1
+          type: array
+      required:
+      - metadata
+      type: object
+    MetadataTypeV3:
+      description: Indicates if metadata was manually added (MANUAL) or system-generated (AUTO)
+      enum:
+      - MANUAL
+      - AUTO
+      type: string
+    ListFilesResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          items:
+            items:
+              $ref: '#/components/schemas/FileMetadataV3'
+            type: array
+          meta:
+            $ref: '#/components/schemas/MetaV3'
+        required:
+        - items
+        type: object
+    ApiErrorsV3:
+      properties:
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
+      required:
+      - type
+      title: APIErrors
+      type: object
+    FilePreviewResponseBodyV3:
+      description: Single-resource read wrapping the file preview details.
+      properties:
+        data:
+          $ref: '#/components/schemas/FilePreviewDataV3'
+      required:
+      - data
+      type: object
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

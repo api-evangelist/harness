@@ -1,0 +1,889 @@
+openapi: 3.2.0
+info:
+  title: Harness CICD Workflows API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: CICDWorkflows
+paths:
+  /v1/orgs/{org}/projects/{project}/ci-cd/list:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    post:
+      summary: List All CI/CD Workflows
+      operationId: getCICDWorkflowsList
+      responses:
+        '200':
+          description: CI/CD Workflow List Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CICDWorkflowListingResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      description: List CI/CD Workflows
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      - $ref: '#/components/parameters/Limit6'
+      - $ref: '#/components/parameters/Order2'
+      - $ref: '#/components/parameters/Page2'
+      - in: query
+        description: Parameter on the basis of which sorting is done.
+        name: sort
+        schema:
+          type: string
+          enum:
+          - last_scan
+          - evaluation_count
+          default: last_scan
+      security:
+      - x-api-key: []
+      requestBody:
+        description: Shared Request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CICDWorkflowListingRequest'
+      x-stoplight:
+        id: w1x8cutq6bkqi
+      tags:
+      - CICDWorkflows
+  /v1/orgs/{org}/projects/{project}/ci-cd/summary:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    get:
+      summary: GET All CI/CD Workflows Summary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CICDWorkflowSummary'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      operationId: getCICDWorkflowsSummary
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      x-stoplight:
+        id: mwxtnz07xmd0n
+      tags:
+      - CICDWorkflows
+      description: Get all CI/CD Workflow Summary including Number of workflows and Compliance evaluations for all workflows.
+  /v1/orgs/{org}/projects/{project}/ci-cd/{workflow}/overview:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: workflow
+      in: path
+      required: true
+      description: CI/Cd Workflow ID
+    get:
+      summary: Get CI/CD Workflow Overview
+      responses:
+        '200':
+          $ref: '#/components/responses/CICDOverviewResponseBody'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      operationId: getCICDOverview
+      x-stoplight:
+        id: s6xgds8h03apk
+      description: This API provides overview details of a Ci/Cd Workflow.
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      tags:
+      - CICDWorkflows
+  /v1/orgs/{org}/projects/{project}/ci-cd/{workflow}/rules/evalution-trend:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: workflow
+      in: path
+      required: true
+      description: CICD Workflow ID
+    - $ref: '#/components/parameters/AccountHeader6'
+    get:
+      summary: GET CI/CD Rules Evaluation Trend
+      tags:
+      - CICDWorkflows
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request - Invalid input parameters
+        '401':
+          description: Unauthorized - Authentication credentials are missing or invalid
+        '403':
+          description: Forbidden - User doesn't have permission to access this resource
+      operationId: getCICDRulesEvaluationTrend
+      x-stoplight:
+        id: 8bt8ww6kmivsz
+      security:
+      - x-api-key: []
+      parameters:
+      - schema:
+          type: integer
+          format: int64
+        in: query
+        name: start_time
+        description: Start Time
+        required: true
+      - schema:
+          type: integer
+          format: int64
+        in: query
+        name: end_time
+        description: End Time
+  /v1/orgs/{org}/projects/{project}/ci-cd/harness/pipeline/{pipeline-id}:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: pipeline-id
+      in: path
+      required: true
+      description: pipeline identifier
+    get:
+      summary: GET harness pipeline information
+      tags:
+      - CICDWorkflows
+      responses:
+        '200':
+          $ref: '#/components/responses/CICDHarnessPipelineResponseBody'
+      operationId: getHarnessPipelineYaml
+      security:
+      - x-api-key: []
+      x-stoplight:
+        id: xrl53lnewor3z
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+  /v1/orgs/{org}/projects/{project}/ci-cd/{workflow}/plugins:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: workflow
+      in: path
+      required: true
+      description: workflow ID
+    get:
+      summary: Fetch List of plugins for a workflow
+      tags:
+      - CICDWorkflows
+      security:
+      - x-api-key: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CICDWorklfowPluginsResponseBody'
+        '500':
+          description: Internal Server Error
+      operationId: fetchPluginsForWorkflow
+      x-stoplight:
+        id: 1v19c850aossa
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      - $ref: '#/components/parameters/Page2'
+      - $ref: '#/components/parameters/Limit6'
+      - $ref: '#/components/parameters/Order2'
+      - schema:
+          type: string
+          enum:
+          - name
+          default: name
+        in: query
+        name: sort
+        description: sort order
+      - schema:
+          type: string
+        in: query
+        name: search_term
+        description: plugin name search
+components:
+  parameters:
+    Page2:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Limit6:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
+    Order2:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        default: ASC
+      description: Order on the basis of which sorting is done.
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+  schemas:
+    CICDWorkflowListingResponse:
+      title: CICDWorkflowListingResponse
+      x-stoplight:
+        id: tt2e1jm0ioc1x
+      type: object
+      required:
+      - id
+      - name
+      - last_scan
+      - compliance_summary
+      - source
+      properties:
+        id:
+          type: string
+          description: Workflow Id
+        name:
+          type: string
+          description: Workflow Name
+        last_scan:
+          type: integer
+          format: int64
+        compliance_summary:
+          $ref: '#/components/schemas/ComplianceEvaluationSummary'
+        source:
+          $ref: '#/components/schemas/WorkflowSource'
+    ComplianceSourcePlatform:
+      title: ComplianceSourcePlatform
+      x-stoplight:
+        id: mu4qb4tnrii02
+      type: string
+      enum:
+      - GITHUB
+      - HARNESS
+      description: 'Source platform enum. Example: GITHUB, HARNESS'
+    CICDWorkflowListingRequest:
+      title: CICDWorkflowListingRequest
+      x-stoplight:
+        id: 091iwl7nn4zwr
+      type: object
+      x-examples: {}
+      properties:
+        search_term:
+          type: string
+        platform_type:
+          $ref: '#/components/schemas/ComplianceSourcePlatform'
+      description: CI/CD Workflow Listing Request.
+    HarnessPipelineSettings:
+      title: HarnessPipelineSettings
+      x-stoplight:
+        id: tghaftaxk6w16
+      type: object
+      properties:
+        is_auth_enabled_for_custom_webhook:
+          type: boolean
+          x-stoplight:
+            id: 86cw8l9rmrpjg
+    ComplianceEvaluationSummary:
+      title: ComplianceEvaluationSummary
+      x-stoplight:
+        id: w6bm50zzc4qvm
+      type: object
+      properties:
+        passed:
+          type: integer
+          x-stoplight:
+            id: n9eea7yuwgj2p
+        failed:
+          type: integer
+          x-stoplight:
+            id: o6dgewchk2r19
+        criticial_failures:
+          type: integer
+          x-stoplight:
+            id: 67cnmw5x5e0rg
+        medium_failures:
+          type: integer
+          x-stoplight:
+            id: 8cd6cagnioamc
+        high_failures:
+          type: integer
+          x-stoplight:
+            id: lapzcy8o2c5ty
+        low_failures:
+          type: integer
+          x-stoplight:
+            id: v5iq4o1mkm0wo
+        evaluation_time:
+          type: integer
+          x-stoplight:
+            id: 55r1eicwd51tm
+          format: int64
+    CICDHarnessPipelineYamlResponseBody:
+      title: CICDHarnessPipelineYamlResponseBody
+      x-stoplight:
+        id: ver2dyae9lsfn
+      type: object
+      required:
+      - pipeline_yaml
+      properties:
+        pipeline_yaml:
+          type: string
+          x-stoplight:
+            id: h1ik5naj7j0td
+        harness_pipeline_settings:
+          $ref: '#/components/schemas/HarnessPipelineSettings'
+    CICDWorklfowPluginsResponse:
+      title: CICDWorklfowPluginsResponse
+      x-stoplight:
+        id: 5wdvs00p4wa00
+      type: object
+      properties:
+        plugin_name:
+          type: string
+          x-stoplight:
+            id: emdtllba1deoe
+    WorkflowSource:
+      title: WorkflowSource
+      x-stoplight:
+        id: tdne5ehs4aif7
+      type: object
+      description: Represent Workflow Source
+      required:
+      - name
+      - url
+      - type
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: al23pegshrknr
+          description: Source Name
+        url:
+          type: string
+          x-stoplight:
+            id: pz4qsjkmnmf3e
+          description: Source URL
+        type:
+          type: string
+          x-stoplight:
+            id: s2x2mpxkirx73
+          enum:
+          - GITHUB
+          - HARNESS
+          description: Workflow Source Type
+    CICDOverviewResponseBody:
+      title: CiCdOverviewResponseBody
+      x-stoplight:
+        id: wl7zxtr0dmbft
+      type: object
+      required:
+      - id
+      - name
+      - last_scan
+      - compliance_summary
+      - source
+      properties:
+        id:
+          type: string
+          description: Workflow Id
+          x-stoplight:
+            id: z5a9z4zmzhryu
+        name:
+          type: string
+          description: Workflow Name
+        last_scan:
+          type: integer
+          format: int64
+        compliance_summary:
+          $ref: '#/components/schemas/ComplianceEvaluationSummary'
+        source:
+          $ref: '#/components/schemas/WorkflowSource'
+    CICDWorkflowSummary:
+      title: CICDWorkflowSummary
+      x-stoplight:
+        id: akvm9g9wf3zhe
+      type: object
+      properties:
+        total_workflows:
+          type: integer
+          x-stoplight:
+            id: dypacgi0s04bs
+        compliance_summary:
+          $ref: '#/components/schemas/ComplianceEvaluationSummary'
+  responses:
+    CICDWorklfowPluginsResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CICDWorklfowPluginsResponse'
+    CICDHarnessPipelineResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CICDHarnessPipelineYamlResponseBody'
+    CICDOverviewResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CICDOverviewResponseBody'
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

@@ -1,0 +1,947 @@
+openapi: 3.2.0
+info:
+  title: Harness Teams API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Teams
+  description: Teams
+  x-displayName: Teams
+paths:
+  /v1/teams/hierarchy:
+    get:
+      summary: Get Team Hierarchy
+      description: Returns the full hierarchy of Teams (sub-teams nested to N levels) for selecting a parent Team within the requested scope.
+      operationId: get-team-hierarchy
+      x-stoplight:
+        id: get-team-hierarchy
+      x-internal: true
+      tags:
+      - Teams
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - name: scopes
+        description: Filter entities on the scopes
+        in: query
+        schema:
+          type: string
+      - name: include_child_scopes
+        description: Include Sub-Teams that are in the child scopes
+        in: query
+        schema:
+          type: boolean
+      - name: custom
+        description: Filter only Custom User Groups
+        in: query
+        schema:
+          type: boolean
+      - $ref: '#/components/parameters/Page1'
+      - $ref: '#/components/parameters/LimitWithRestriction'
+      - $ref: '#/components/parameters/Sort6'
+      - $ref: '#/components/parameters/SearchTerm5'
+      responses:
+        '200':
+          $ref: '#/components/responses/TeamHierarchyResponse'
+  /v1/teams/{scope}/{identifier}/owned-entities:
+    get:
+      operationId: get-team-owned-entities
+      summary: Get entities owned by a team
+      description: List all catalog entities owned by the given team. When include_child_teams is true, also includes entities owned by all descendant subteams at any depth in the team hierarchy. The team must be a group entity (kind=group).
+      tags:
+      - Teams
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/OrgIdentifierQueryParam'
+      - $ref: '#/components/parameters/ProjectIdentifierQueryParam'
+      - $ref: '#/components/parameters/ScopeParam'
+      - $ref: '#/components/parameters/IdentifierParam'
+      - $ref: '#/components/parameters/Page1'
+      - $ref: '#/components/parameters/LimitWithRestriction'
+      - $ref: '#/components/parameters/Sort6'
+      - $ref: '#/components/parameters/SearchTerm5'
+      - name: include_child_teams
+        description: When true, also include entities owned by all descendant subteams at any depth.
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/EntityResponseBodyList'
+components:
+  parameters:
+    IdentifierParam:
+      name: identifier
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier of the entity within its scope and kind
+    ProjectIdentifierQueryParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Unique identifier of the project within the organization
+    Page1:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: null
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    OrgIdentifierQueryParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Unique identifier of the organization within the account
+    ScopeParam:
+      name: scope
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Scope of the entity (account, account.orgId, account.orgId.projectId)
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Sort6:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Parameter on the basis of which sorting is done.
+    LimitWithRestriction:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 10
+        maximum: 100
+      description: 'Maximum number of items to return per page (1-100, default: 10)'
+    SearchTerm5:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: This would be used to filter resources having attributes matching the search term.
+  responses:
+    EntityResponseBodyList:
+      description: 'Response containing a paginated list of Entities matching the filter criteria. The response includes the matching entities in the body and pagination metadata in the headers. Headers include total element count, current page information, and counts for entities owned by or starred by the current user.
+
+        '
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityResponse'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityResponse'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements that match the filter criteria
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Current page number in the paginated response
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum number of items per page in the paginated response
+        Total-Owned:
+          schema:
+            type: integer
+          description: Total number of entities owned by the current user or their groups
+        Total-Starred:
+          schema:
+            type: integer
+          description: Total number of entities marked as favorites by the current user
+    TeamHierarchyResponse:
+      description: Team hierarchy response containing Teams & Sub-Teams metadata
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TeamHierarchyNode'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TeamHierarchyNode'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+  schemas:
+    TeamHierarchyNode:
+      title: TeamHierarchyNode
+      description: A Team along with its nested sub-teams within the hierarchy.
+      type: object
+      properties:
+        identifier:
+          type: string
+        entity_ref:
+          type: string
+        orgIdentifier:
+          type: string
+        org_name:
+          type: string
+        projectIdentifier:
+          type: string
+        project_name:
+          type: string
+        scope:
+          type: string
+          enum:
+          - ACCOUNT
+          - ORGANIZATION
+          - PROJECT
+        referenceType:
+          type: string
+          enum:
+          - INLINE
+          - GIT
+        created:
+          type: integer
+          format: int64
+        updated:
+          type: integer
+          format: int64
+        kind_identifier:
+          type: string
+        kind_icon:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        owner:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+        spec:
+          type: object
+        relations:
+          type: object
+        decorator:
+          type: string
+        git_details:
+          $ref: '#/components/schemas/GitDetails1'
+        children:
+          type: array
+          description: Direct sub-teams nested under this Team, recursively to N levels.
+          items:
+            $ref: '#/components/schemas/TeamHierarchyNode'
+    CacheResponseData:
+      title: CacheResponseData
+      x-stoplight:
+        id: 5twby12bhyems
+      type: object
+      x-examples:
+        example-1:
+          cache_state: VALID_CACHE
+          ttl_left: 9223372036854776000
+          last_updated_at: 9223372036854776000
+      properties:
+        cache_state:
+          type: string
+          enum:
+          - VALID_CACHE
+          - STALE_CACHE
+          - UNKNOWN
+          description: Tells the state of cache.
+        ttl_left:
+          type: integer
+          format: int64
+          description: Time left till cache expriry.
+        last_updated_at:
+          type: integer
+          format: int64
+          description: Time when the cache was last updated at.
+        is_sync_enabled:
+          type: boolean
+    EntityResponse:
+      title: Entity Response Body
+      description: Detailed information about an Entity, including its metadata, relationships, and YAML representation.
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Unique identifier of the entity within its scope and kind
+        entity_ref:
+          type: string
+          description: Full entity reference in the format scope/kind/identifier
+        orgIdentifier:
+          type: string
+          description: Identifier of the organization that the entity belongs to
+        org_name:
+          type: string
+          description: Display name of the organization that the entity belongs to
+        projectIdentifier:
+          type: string
+          description: Identifier of the project that the entity belongs to
+        project_name:
+          type: string
+          description: Display name of the project that the entity belongs to
+        scope:
+          type: string
+          enum:
+          - ACCOUNT
+          - ORGANIZATION
+          - PROJECT
+          description: Scope of the entity (account, organization, or project level)
+        referenceType:
+          type: string
+          enum:
+          - INLINE
+          - GIT
+          description: Type of reference for the entity (inline definition or Git-sourced)
+        kind:
+          type: string
+          enum:
+          - api
+          - component
+          - group
+          - resource
+          - user
+          - workflow
+          description: Kind of the entity (defines its core purpose)
+        kind_identifier:
+          type: string
+        kind_icon:
+          type: string
+        type:
+          type: string
+          description: Type of the entity within its kind (e.g., Service, Website)
+        name:
+          type: string
+          description: Display name of the entity
+        description:
+          type: string
+          description: Descriptive text about the entity
+        owner:
+          type: string
+          description: Owner reference for the entity (user or group)
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags associated with the entity for categorization
+        lifecycle:
+          type: string
+          description: Lifecycle stage of the entity (e.g., experimental, production)
+        metadata:
+          type: object
+          description: Additional metadata associated with the entity
+        git_details:
+          $ref: '#/components/schemas/GitDetails1'
+        cache_response_data:
+          $ref: '#/components/schemas/CacheResponseData'
+        entity_validity_details:
+          type: object
+          properties:
+            is_valid:
+              type: boolean
+            error_messages:
+              type: array
+              items:
+                type: string
+        scorecards:
+          type: object
+          properties:
+            average:
+              type: number
+              description: Average score across all scorecards
+            scores:
+              type: array
+              items:
+                type: object
+                properties:
+                  scorecard:
+                    type: string
+                    description: Name of the scorecard
+                  score:
+                    type: number
+                    description: Numeric score (typically 0-100)
+                  total_checks:
+                    type: number
+                    description: Total number of checks in the scorecard
+                  passed_checks:
+                    type: number
+                    description: Number of checks that passed
+          description: Scorecard information for the entity
+        yaml:
+          type: string
+          description: Complete entity YAML definition
+        starred:
+          type: boolean
+          description: Whether the entity is marked as a favorite by the current user
+        status:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: Type of status information
+              level:
+                type: string
+                description: Severity level (info, warning, error)
+              message:
+                type: string
+                description: Status message text
+          description: Status information for the entity
+        groups:
+          type: array
+          items:
+            type: object
+            properties:
+              org_identifier:
+                type: string
+                description: Organization identifier
+              org_name:
+                type: string
+                description: Organization name
+              project_identifier:
+                type: string
+                description: Project identifier
+              project_name:
+                type: string
+                description: Project name
+              scope:
+                type: string
+                enum:
+                - ACCOUNT
+                - ORGANIZATION
+                - PROJECT
+                description: Scope level
+              group_identifier:
+                type: string
+                description: Group identifier
+              group_name:
+                type: string
+                description: Group display name
+              group_description:
+                type: string
+                description: Group description
+              group_icon:
+                type: string
+                description: Group icon URL
+          description: Groups that the entity belongs to
+      required:
+      - identifier
+      - entity_ref
+      - scope
+      - referenceType
+      - kind
+      - yaml
+    GitDetails1:
+      title: Git Details
+      x-stoplight:
+        id: p1h9vvkuks7kq
+      type: object
+      description: Git Experience related details of the Entity.
+      x-examples:
+        example-create-git:
+          branch_name: branch
+          file_path: /folder/file.json
+          commit_message: Added Harness Git Experience
+          object_id: abcdXYZ
+          base_branch: old_branch
+          commit_id: abcdXYZ
+          connector_ref: git_connector
+          store_type: REMOTE
+          repo_name: example_repository
+          is_harness_code_repo: false
+      properties:
+        branch_name:
+          type: string
+          description: Name of the branch.
+        file_path:
+          type: string
+          description: File path of the Entity in the repository.
+        file_url:
+          type: string
+          description: File URL of the Entity.
+        commit_message:
+          type: string
+          description: Commit message used for the merge commit.
+        object_id:
+          type: string
+          description: Object identifier (for Github only).
+        base_branch:
+          type: string
+          description: Name of the default branch (this checks out a new branch titled by branch_name).
+        commit_id:
+          type: string
+          description: Commit identifier.
+        connector_ref:
+          type: string
+          description: Identifier of the Harness Connector used for CRUD operations on the Entity.
+        store_type:
+          type: string
+          description: Specifies whether the Entity is to be stored in Git or not.
+          enum:
+          - INLINE
+          - REMOTE
+        repo_name:
+          type: string
+          description: Name of the repository.
+        repo_url:
+          type: string
+          description: Repository URL of the Entity.
+        is_harness_code_repo:
+          type: boolean
+          description: Is Git Experience repo harness code.
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

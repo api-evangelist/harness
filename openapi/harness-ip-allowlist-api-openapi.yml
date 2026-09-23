@@ -1,0 +1,804 @@
+openapi: 3.2.0
+info:
+  title: Harness IP Allowlist API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: IP Allowlist
+  description: This contains APIs for IP Allowlist.
+  x-displayName: IP Allowlist [Beta]
+paths:
+  /v1/ip-allowlist:
+    parameters: []
+    post:
+      summary: Create a IP Allowlist config
+      operationId: create-ip-allowlist-config
+      responses:
+        '201':
+          $ref: '#/components/responses/IPAllowlistConfigResponse'
+      description: Creates a new IP Allowlist config
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      security:
+      - x-api-key: []
+      requestBody:
+        $ref: '#/components/requestBodies/IPAllowlistConfigRequest'
+      tags:
+      - IP Allowlist
+      x-internal: false
+    get:
+      summary: List IP Allowlist Configs
+      operationId: get-ip-allowlist-configs
+      responses:
+        '200':
+          $ref: '#/components/responses/IPAllowlistConfigListResponse'
+      description: Retrieves the information of the IP Allowlist Config
+      parameters:
+      - $ref: '#/components/parameters/SearchTerm1'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit1'
+      - $ref: '#/components/parameters/AccountHeader'
+      - $ref: '#/components/parameters/Sort1'
+      - $ref: '#/components/parameters/Order'
+      - schema:
+          type: string
+        in: query
+        description: This is to filter IP allowlist configs only blocked from UI or API
+        name: allowed_source_type
+      security:
+      - x-api-key: []
+      tags:
+      - IP Allowlist
+      x-internal: false
+  /v1/ip-allowlist/{ip-config-identifier}:
+    parameters:
+    - schema:
+        type: string
+      name: ip-config-identifier
+      in: path
+      required: true
+    get:
+      summary: Retrieve a IP Allowlist config
+      operationId: get-ip-allowlist-config
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      description: Retrieves the specified IP Allowlist config
+      security:
+      - x-api-key: []
+      responses:
+        '200':
+          $ref: '#/components/responses/IPAllowlistConfigResponse'
+      tags:
+      - IP Allowlist
+      x-internal: false
+    put:
+      summary: Update IP Allowlist config
+      operationId: update-ip-allowlist-config
+      responses:
+        '200':
+          $ref: '#/components/responses/IPAllowlistConfigResponse'
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/IPAllowlistConfigRequest'
+      description: Updates the specified IP Allowlist config
+      security:
+      - x-api-key: []
+      tags:
+      - IP Allowlist
+      x-internal: false
+    delete:
+      summary: Delete an IP Allowlist config
+      operationId: delete-ip-allowlist-config
+      responses:
+        '204':
+          description: No Content
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      description: Deletes the specified IP Allowlist config
+      security:
+      - x-api-key: []
+      tags:
+      - IP Allowlist
+      x-internal: false
+  /v1/ip-allowlist/validate-unique-identifier/{ip-config-identifier}:
+    parameters:
+    - schema:
+        type: string
+      name: ip-config-identifier
+      in: path
+      required: true
+    get:
+      summary: Validate unique IP Allowlist config identifier
+      operationId: validate-unique-ip-allowlist-config-identifier
+      description: Checks whether the IP Allowlist config identifier is unique or not
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      security:
+      - x-api-key: []
+      tags:
+      - IP Allowlist
+      x-internal: false
+      responses:
+        '200':
+          $ref: '#/components/responses/IPAllowlistValidateUniqueIdentifierResponse'
+  /v1/ip-allowlist/validate/ip-address:
+    parameters: []
+    get:
+      summary: Validate IP address lies in a specified range or not
+      operationId: validate-ip-address-allowlisted-or-not
+      responses:
+        '200':
+          $ref: '#/components/responses/IPAllowlistConfigValidateResponse'
+      description: Checks whether the IP address is allowed or not. It also supports checking against a specific IP block range.
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      - schema:
+          type: string
+        in: query
+        name: ip_address
+        description: This is the IP address that needs to be checked if allowed or not
+        required: true
+      - schema:
+          type: string
+        in: query
+        name: custom_ip_address_block
+        description: This is the IP address or block of IP address against which we need to verify if a given IP address is allowed or not. If not passed we do the validation against the IP configs within Harness.
+      - schema:
+          type: boolean
+          default: false
+        in: query
+        name: include_disabled_configs
+        description: This setting controls the visibility of IP allowlist configurations. When set to 'true', it displays both enabled and disabled configurations. When set to 'false' or left unset, it displays only the enabled configurations.
+        allowReserved: false
+      security:
+      - x-api-key: []
+      tags:
+      - IP Allowlist
+      x-internal: false
+  /v1/ip-allowlist/allowed/ip-address:
+    parameters: []
+    get:
+      summary: Check if IP address is allowed or not
+      operationId: allowed-ip-address
+      responses:
+        '200':
+          $ref: '#/components/responses/IPAllowlistConfigValidateResponse'
+      description: Checks whether the IP address is allowed or not.
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      - schema:
+          type: string
+        in: query
+        name: ip_address
+        description: This is the IP address that needs to be checked if allowed or not
+        required: true
+      security:
+      - x-api-key: []
+      tags:
+      - IP Allowlist
+      x-internal: true
+components:
+  schemas:
+    IPAllowlistConfigRequest:
+      title: IPAllowlistConfigRequest
+      x-stoplight:
+        id: gmdedmqicwsx4
+      type: object
+      description: This is the request spec to create IP Allowlist config in Harness
+      properties:
+        ip_allowlist_config:
+          $ref: '#/components/schemas/IPAllowlistConfig'
+    IPAllowlistConfigValidateResponse:
+      title: IPAllowlistConfigValidateResponse
+      x-stoplight:
+        id: smtu2jgnoz1up
+      type: object
+      properties:
+        allowed_for_custom_block:
+          type: boolean
+          description: This indicates if given IP Address lies in range of custom IP block or not.
+        allowlisted_configs:
+          type: array
+          description: 'This is the list of IP configs configured in Harness from which IP address is allowed. This is empty in case of custom IP address block.
+
+            '
+          items:
+            $ref: '#/components/schemas/IPAllowlistConfigResponse'
+        allowed_for_ui:
+          type: boolean
+          description: This indicates if a given IP is allowlisted in Harness for UI requests
+        allowed_for_api:
+          type: boolean
+          description: This indicates if a given IP is allowlisted in Harness for API requests
+        disabled_allowlisted_configs:
+          type: array
+          description: 'This is the list of IP configs configured in Harness from which IP address is allowed but the config is disabled. This is empty in case of custom IP address block.
+
+            '
+          items:
+            $ref: '#/components/schemas/IPAllowlistConfigResponse'
+    IPAllowlistConfig:
+      title: IPAllowlistConfig
+      x-stoplight:
+        id: z54w7edwpccca
+      type: object
+      description: This contains data for a config set in Harness to allow selected IPs
+      properties:
+        name:
+          type: string
+          description: Name of the IP Config defined in Harness
+          pattern: ^[0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        identifier:
+          type: string
+          description: Identifier of the IP Config
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          description: Description of the entity
+        enabled:
+          type: boolean
+          default: false
+          description: If true, it will allow all the IPs that are part of the config and block others.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: IP Allowlist tags
+          maxProperties: 128
+        allowed_source_type:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/AllowedSourceType'
+        ip_address:
+          type: string
+      required:
+      - name
+      - identifier
+      - ip_address
+    AllowedSourceType:
+      title: AllowedSourceType
+      x-stoplight:
+        id: j4g1a19tpiovc
+      type: string
+      enum:
+      - UI
+      - API
+      description: This denotes source from which IPs are allowed.
+    IPAllowlistConfigResponse:
+      title: IPAllowlistConfigResponse
+      x-stoplight:
+        id: 9rirmo68rh6st
+      type: object
+      properties:
+        ip_allowlist_config:
+          $ref: '#/components/schemas/IPAllowlistConfig'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for the IP Allowlist config.
+        updated:
+          type: integer
+          format: int64
+          description: Last modification timestamp for IP Allowlist config.
+      required:
+      - ip_allowlist_config
+      - created
+      - updated
+  responses:
+    IPAllowlistValidateUniqueIdentifierResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: boolean
+    IPAllowlistConfigResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IPAllowlistConfigResponse'
+    IPAllowlistConfigValidateResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IPAllowlistConfigValidateResponse'
+    IPAllowlistConfigListResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/IPAllowlistConfigResponse'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+  parameters:
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    SearchTerm1:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching with search term.
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    Sort1:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - name
+        - identifier
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+  requestBodies:
+    IPAllowlistConfigRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IPAllowlistConfigRequest'
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

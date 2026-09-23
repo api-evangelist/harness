@@ -1,0 +1,1557 @@
+openapi: 3.2.0
+info:
+  title: Harness Risks API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Risks
+paths:
+  /gateway/chaos/manager/api/rest/service/experimentation/report/{accountID}:
+    get:
+      description: Generate experimentation activity report for account in a given timeframe
+      summary: Generate experimentation activity report
+      operationId: getExperimentationActivityReport
+      parameters:
+      - description: ID of the account
+        name: accountID
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: start time in unix format in milliseconds
+        name: startTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: end time in unix format in milliseconds
+        name: endTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: true for cumulative stats
+        name: cumulate
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/shared.Error'
+        '500':
+          description: Internal Server Error
+      tags:
+      - Risks
+  /gateway/chaos/manager/api/rest/service/overall/stats/{accountID}:
+    get:
+      description: Get overall service usage stats by type for account
+      summary: Get the overall service usage stats by type related to requested account
+      operationId: getOverallServiceUsageStats
+      parameters:
+      - description: ID of the account
+        name: accountID
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: start time in unix format in milliseconds
+        name: startTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: end time in unix format in milliseconds
+        name: endTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chaosserviceusage.OverallServiceUsageStats'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      tags:
+      - Risks
+  /gateway/chaos/manager/api/rest/service/report/{accountID}:
+    get:
+      description: Generate service usage report for account in a given timeframe
+      summary: Generate service usage report
+      operationId: getServiceUsageReport
+      parameters:
+      - description: ID of the account
+        name: accountID
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: start time in unix format in milliseconds
+        name: startTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: end time in unix format in milliseconds
+        name: endTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: true for cumulative stats
+        name: cumulate
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/shared.Error'
+        '500':
+          description: Internal Server Error
+      tags:
+      - Risks
+  /gateway/chaos/manager/api/rest/service/stats/{accountID}:
+    get:
+      description: Get service usage stats for account
+      summary: Get the service usage stats related to requested account grouped by day or month
+      operationId: getAccountServiceUsageStats
+      parameters:
+      - description: ID of the account
+        name: accountID
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: group by period (day/month)
+        name: groupBy
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: start time in unix format in milliseconds
+        name: startTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: end time in unix format in milliseconds
+        name: endTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: true for cumulative stats
+        name: cumulative
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chaosserviceusage.UsageStats'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      tags:
+      - Risks
+  /gateway/chaos/manager/api/rest/service/{accountID}:
+    get:
+      description: Get service details for account
+      summary: Get service usage details for account in the requested time frame
+      operationId: getAccountServiceDetails
+      parameters:
+      - description: ID of the account
+        name: accountID
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: page number
+        name: page
+        in: query
+        required: true
+        schema:
+          type: integer
+          default: 0
+      - description: limit per page
+        name: limit
+        in: query
+        required: true
+        schema:
+          type: integer
+          default: 10
+      - description: start time in unix format in milliseconds
+        name: startTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: end time in unix format in milliseconds
+        name: endTime
+        in: query
+        required: true
+        schema:
+          type: integer
+      - description: search based on service name
+        name: service
+        in: query
+        schema:
+          type: string
+      - description: search based on service type
+        name: serviceType
+        in: query
+        schema:
+          type: string
+      - description: sort the response in ascending order
+        name: sortAscending
+        in: query
+        schema:
+          type: boolean
+          default: false
+      - description: 'sort the response w.r.t field: faultsRan, experiments, experimentsRan'
+        name: sortField
+        in: query
+        schema:
+          type: string
+          enum:
+          - experimentsRan
+          - experiments
+          - faultsRan
+          default: faultsRan
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chaosserviceusage.ServiceDataResponse'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      tags:
+      - Risks
+  /gateway/chaos/manager/api/v3/risks:
+    get:
+      tags:
+      - Risks
+      summary: List risks
+      operationId: listRisks
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: query
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - name: includeAllScope
+        in: query
+        schema:
+          type: boolean
+      - x-enum-varnames:
+        - InfrastructureTypeKubernetes
+        - InfrastructureTypeKubernetesV2
+        - InfrastructureTypeWindows
+        - InfrastructureTypeLinux
+        - InfrastructureTypeCloudFoundry
+        - InfrastructureTypeContainer
+        name: infrastructure
+        in: query
+        schema:
+          type: string
+          enum:
+          - Kubernetes
+          - KubernetesV2
+          - Windows
+          - Linux
+          - CloudFoundry
+          - Container
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 15
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 0
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - name: resourceIdentifiers
+        in: query
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+      - description: name that you want to search
+        name: search
+        in: query
+        schema:
+          type: string
+      - description: if sort order ascending or not
+        name: sortAscending
+        in: query
+        schema:
+          type: boolean
+      - description: field  name that you want to sort
+        name: sortField
+        in: query
+        schema:
+          type: string
+          enum:
+          - name
+          - lastUpdated
+          - experimentName
+      - name: tags
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/risks.ListRiskResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+    post:
+      tags:
+      - Risks
+      summary: Create a risk
+      operationId: createRisk
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/risks.CreateRequest'
+        description: create risk request
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/risks.Risk'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+  /gateway/chaos/manager/api/v3/risks/{identity}:
+    get:
+      tags:
+      - Risks
+      summary: Get a risk by identity
+      operationId: getRisk
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - description: The identifier for the risk
+        name: identity
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/risks.RiskResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+    put:
+      tags:
+      - Risks
+      summary: Update a risk
+      operationId: updateRisk
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - description: The identifier for the risk
+        name: identity
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/risks.UpdateRequest'
+        description: update risk request
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/risks.Risk'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+    delete:
+      tags:
+      - Risks
+      summary: Delete a risk
+      operationId: deleteRisk
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - description: The identifier for the risk
+        name: identity
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/risks.DeleteResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+  /gateway/chaos/manager/api/v3/risks/{identity}/active-risks:
+    get:
+      description: List probe executions for a given risk identity
+      tags:
+      - Risks
+      summary: List probe executions
+      operationId: listProbeExecutions
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - name: endTime
+        in: query
+        schema:
+          type: integer
+      - name: includeAllScope
+        in: query
+        schema:
+          type: boolean
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 15
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 0
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - description: name that you want to search
+        name: search
+        in: query
+        schema:
+          type: string
+      - description: if sort order ascending or not
+        name: sortAscending
+        in: query
+        schema:
+          type: boolean
+      - description: field  name that you want to sort
+        name: sortField
+        in: query
+        schema:
+          type: string
+          enum:
+          - name
+          - lastUpdated
+          - experimentName
+      - name: startTime
+        in: query
+        schema:
+          type: integer
+      - x-enum-varnames:
+        - ActiveRiskCounterTypePassedProbes
+        - ActiveRiskCounterTypeFailedProbes
+        name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - Passed
+          - Failed
+      - name: tags
+        in: query
+        schema:
+          type: string
+      - description: risk identity
+        name: identity
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/risks.ListExecutionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+components:
+  schemas:
+    shared.PaginationResponse:
+      type: object
+      properties:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    chaosserviceusage.OverallServiceUsageStats:
+      type: object
+      properties:
+        accountID:
+          type: string
+        licenseServiceMapping:
+          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
+        serviceStats:
+          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
+        totalUsage:
+          type: number
+    chaosserviceusage.ServiceData:
+      type: object
+      properties:
+        experimentRuns:
+          type: integer
+        experiments:
+          type: integer
+        faultsRan:
+          type: integer
+        infraStructure:
+          type: string
+        infraType:
+          $ref: '#/components/schemas/chaosserviceusage.InfrastructureType'
+        licenseUtilisation:
+          type: number
+        namespace:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        resource:
+          type: string
+        service:
+          type: string
+        serviceID:
+          type: string
+        subType:
+          type: string
+        type:
+          $ref: '#/components/schemas/chaosserviceusage.ServiceType'
+    hcesdk.UserDetails:
+      type: object
+      properties:
+        email:
+          type: string
+        userID:
+          type: string
+        username:
+          type: string
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
+          type: string
+    risks.ActiveRiskCounter:
+      type: object
+      properties:
+        failedProbes:
+          type: integer
+        passedProbes:
+          type: integer
+    chaosserviceusage.ServiceDataResponse:
+      type: object
+      properties:
+        serviceData:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosserviceusage.ServiceData'
+        serviceTypes:
+          type: array
+          items:
+            type: string
+        total:
+          type: integer
+    shared.Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        correlationID:
+          type: string
+        message:
+          type: string
+    chaosserviceusage.PeriodicStats:
+      type: object
+      properties:
+        experimentStatsByType:
+          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
+        serviceStatsByType:
+          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
+        timestamp:
+          type: integer
+        totalConsumption:
+          type: number
+        totalExperimentRunsConsumption:
+          type: number
+    risks.UpdateRequest:
+      type: object
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        identity:
+          type: string
+        isDefault:
+          type: boolean
+        name:
+          type: string
+        supportedInfra:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+    risks.CreateRequest:
+      type: object
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        identity:
+          type: string
+        isDefault:
+          type: boolean
+        name:
+          type: string
+        supportedInfra:
+          type: array
+          items:
+            $ref: '#/components/schemas/risks.Infrastructure'
+        tags:
+          type: array
+          items:
+            type: string
+    risks.ExecutionType:
+      type: string
+      enum:
+      - CHAOS_EXECUTION
+      - DR_EXECUTION
+      x-enum-varnames:
+      - ExecutionTypeChaosExecutionNode
+      - ExecutionTypeDRComponentNode
+    chaosserviceusage.StatsByType:
+      type: object
+      properties:
+        Cloud Resources:
+          type: number
+        Container Services:
+          type: number
+        Kubernetes:
+          type: number
+        Linux:
+          type: number
+        Others:
+          type: number
+        Serverless:
+          type: number
+        Windows:
+          type: number
+    chaosserviceusage.UsageStats:
+      type: object
+      properties:
+        accountID:
+          type: string
+        periodicStats:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosserviceusage.PeriodicStats'
+    execution.ChaosStepStatus:
+      type: string
+      enum:
+      - Queued
+      - Error
+      - Completed_With_Probe_Failure
+      - Completed_With_Probe_Absent
+      - Pending
+      - Running
+      - Stopped
+      - Completed
+      - Failed
+      - Passed
+      - Skipped
+      - Interrupted
+      x-enum-varnames:
+      - Queued
+      - Error
+      - CompletedWithProbeFailure
+      - CompletedWithProbeAbsent
+      - Pending
+      - Running
+      - Stopped
+      - Completed
+      - Failed
+      - Passed
+      - Skipped
+      - Interrupted
+    chaosserviceusage.InfrastructureType:
+      type: string
+      enum:
+      - Kubernetes
+      - KubernetesV2
+      - Windows
+      - Linux
+      x-enum-varnames:
+      - InfrastructureTypeKubernetes
+      - InfrastructureTypeKubernetesV2
+      - InfrastructureTypeWindows
+      - InfrastructureTypeLinux
+    risks.DeleteResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        success:
+          type: boolean
+    risks.ListExecutionResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/risks.ActiveExecutionResponse'
+        pagination:
+          $ref: '#/components/schemas/shared.PaginationResponse'
+    risks.RiskResponse:
+      type: object
+      required:
+      - accountID
+      - name
+      properties:
+        accountID:
+          type: string
+        activeRisk:
+          $ref: '#/components/schemas/risks.ActiveRiskCounter'
+        category:
+          type: string
+        createdBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
+        description:
+          type: string
+        identity:
+          type: string
+        isDefault:
+          type: boolean
+        lastDetectedAt:
+          description: 'PassiveRiskCounter      PassiveRiskCounter `bson:"passiveRisk" json:"passiveRisk"` //TODO: To be added later'
+          type: integer
+        name:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        supportedInfra:
+          type: array
+          items:
+            $ref: '#/components/schemas/risks.Infrastructure'
+        tags:
+          type: array
+          items:
+            type: string
+        updatedBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
+    risks.Risk:
+      type: object
+      required:
+      - accountID
+      - name
+      properties:
+        accountID:
+          type: string
+        activeRisk:
+          $ref: '#/components/schemas/risks.ActiveRiskCounter'
+        category:
+          type: string
+        description:
+          type: string
+        identity:
+          type: string
+        isDefault:
+          type: boolean
+        lastDetectedAt:
+          description: 'PassiveRiskCounter      PassiveRiskCounter `bson:"passiveRisk" json:"passiveRisk"` //TODO: To be added later'
+          type: integer
+        name:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        supportedInfra:
+          type: array
+          items:
+            $ref: '#/components/schemas/risks.Infrastructure'
+        tags:
+          type: array
+          items:
+            type: string
+    risks.ListRiskResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/risks.RiskResponse'
+        pagination:
+          $ref: '#/components/schemas/shared.PaginationResponse'
+    risks.ActiveExecutionResponse:
+      type: object
+      properties:
+        duration:
+          type: string
+        executedBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
+        executionID:
+          type: integer
+        executionType:
+          $ref: '#/components/schemas/risks.ExecutionType'
+        lastUpdatedAt:
+          type: integer
+        name:
+          type: string
+        parentIdentity:
+          type: string
+        probeID:
+          type: string
+        probeName:
+          type: string
+        runID:
+          type: string
+        startedAt:
+          type: integer
+        status:
+          $ref: '#/components/schemas/execution.ChaosStepStatus'
+    chaosserviceusage.ServiceType:
+      type: string
+      enum:
+      - Kubernetes
+      - Linux
+      - Windows
+      - Serverless
+      - ContainerServices
+      - CloudResources
+      - Others
+      x-enum-varnames:
+      - ServiceTypeKubernetes
+      - ServiceTypeLinux
+      - ServiceTypeWindows
+      - ServiceTypeServerless
+      - ServiceTypeContainerServices
+      - ServiceTypeCloudResources
+      - ServiceTypeOthers
+    risks.Infrastructure:
+      type: string
+      enum:
+      - Kubernetes
+      - KubernetesV2
+      - Windows
+      - Linux
+      - CloudFoundry
+      - Container
+      x-enum-varnames:
+      - InfrastructureTypeKubernetes
+      - InfrastructureTypeKubernetesV2
+      - InfrastructureTypeWindows
+      - InfrastructureTypeLinux
+      - InfrastructureTypeCloudFoundry
+      - InfrastructureTypeContainer
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

@@ -1,0 +1,842 @@
+openapi: 3.2.0
+info:
+  title: Harness Service Level Objective API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: ServiceLevelObjective
+paths:
+  /cv/api/v1/orgs/{org}/projects/{project}/metric-graph/{slo-identifier}:
+    get:
+      tags:
+      - ServiceLevelObjective
+      summary: Get Metric Graph For SLO
+      description: Get Underlying Metrics Graph for SLO
+      operationId: getMetricGraphForSLO
+      parameters:
+      - name: org
+        in: path
+        description: Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: project
+        in: path
+        description: Project identifier
+        required: true
+        schema:
+          type: string
+      - name: slo-identifier
+        in: path
+        description: SLO identifier.
+        required: true
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: 'Start Time for the metric graphs. '
+        schema:
+          type: integer
+          format: int64
+      - name: end_time
+        in: query
+        description: End Time for the metric graphs.
+        schema:
+          type: integer
+          format: int64
+      - name: Harness-Account
+        in: header
+        description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Metric Graph response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricGraph'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+        '502':
+          description: Bad Gateway
+      security:
+      - x-api-key: []
+  /cv/api/v1/orgs/{org}/projects/{project}/slo:
+    get:
+      tags:
+      - ServiceLevelObjective
+      summary: List SLOs
+      description: Returns a list of Service Level Objectives
+      operationId: listSlo
+      parameters:
+      - name: org
+        in: path
+        description: Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: project
+        in: path
+        description: Project identifier
+        required: true
+        schema:
+          type: string
+      - name: Harness-Account
+        in: header
+        description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'Pagination: Number of items to return.'
+        schema:
+          maximum: 100
+          type: integer
+          format: int32
+          default: 20
+      - name: composite_slo_identifier
+        in: query
+        description: Identifier for the Composite SLO for which underlying SLOs needs to be listed.
+        schema:
+          type: string
+      - name: monitored_service_identifier
+        in: query
+        description: For filtering on the basis of monitored service identifier
+        schema:
+          type: string
+      - name: user_journey_identifiers
+        in: query
+        description: List of User Journey identifiers on the basis of which the SLOs are filtered.
+        schema:
+          type: array
+          items:
+            type: string
+      - name: filter
+        in: query
+        description: SLO Name on the basis of which the SLOs are filtered.
+        schema:
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          type: string
+      - name: slo_type
+        in: query
+        description: SLO Types on the basis of which the SLOs are filtered.
+        schema:
+          maxLength: 1024
+          minLength: 0
+          type: string
+      - name: env_identifiers
+        in: query
+        description: Identifiers of Environments on the basis of which the SLOs are filtered.
+        schema:
+          maxItems: 128
+          minItems: 0
+          type: array
+          items:
+            type: string
+      - name: target_types
+        in: query
+        description: Target Types on the basis of which the SLOs are filtered.
+        schema:
+          type: array
+          items:
+            type: string
+      - name: error_budget_risks
+        in: query
+        description: Error Budgets on the basis of which the SLOs are filtered.
+        schema:
+          type: array
+          items:
+            type: string
+      - name: evaluation_type
+        in: query
+        description: Evaluation Type on the basis of which the SLOs are filtered.
+        schema:
+          type: string
+      - name: child_resource
+        in: query
+        description: For filtering the simple slo&#x27;s on the basis of accountId. Set it to true for Account Level SLOs.
+        schema:
+          type: boolean
+          default: false
+      responses:
+        '200':
+          description: SLO List Response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SLOHealthListView'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+        '502':
+          description: Bad Gateway
+      security:
+      - x-api-key: []
+components:
+  schemas:
+    SLOError:
+      required:
+      - failed_state
+      type: object
+      properties:
+        failed_state:
+          type: boolean
+          description: Failed State of the SLO. If SLO has some failures this field will be true.
+        error_message:
+          type: string
+          description: Error Message if there is an SLO failure.
+        slo_error_type:
+          type: string
+          description: Types of SLO Errors.
+      description: SLO Error Details.
+    DowntimeStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      description: Enum For Downtime Statuses
+    SLOHealthListView:
+      required:
+      - burn_rate
+      - error_budget_remaining
+      - error_budget_remaining_percentage
+      - evaluation_type
+      - name
+      - no_of_active_alerts
+      - project_params
+      - slo_identifier
+      - slo_target_percentage
+      - slo_type
+      - total_error_budget
+      type: object
+      properties:
+        slo_identifier:
+          type: string
+          description: Identifier of the SLO.
+        name:
+          type: string
+          description: Name of the SLO.
+        org_name:
+          type: string
+          description: Organization Name to which the SLO belongs.
+        project_name:
+          type: string
+          description: Project Name to which the SLO belongs.
+        monitored_service_identifier:
+          type: string
+          description: Identifier of the Monitored Service to which the SLO is associated.
+        monitored_service_name:
+          type: string
+          description: Name of the Monitored Service to which the SLO is associated.
+        service_identifier:
+          type: string
+          description: Identifier of the Service to which the SLO is associated.
+        health_source_identifier:
+          type: string
+          description: Identifier of the Health Source to which the SLO is associated.
+        health_source_name:
+          type: string
+          description: Identifier of the Health Source to which the SLO is associated.
+        service_name:
+          type: string
+          description: Name of the Service to which the SLO is associated.
+        environment_identifier:
+          type: string
+          description: Identifier of the Environment to which the SLO is associated.
+        environment_name:
+          type: string
+          description: Name of the Environment to which the SLO is associated.
+        tags:
+          type: array
+          description: List of tags for SLO.
+          items:
+            type: string
+            description: List of tags for SLO.
+        description:
+          type: string
+          description: Description for the SLO.
+        user_journey_name:
+          type: string
+          description: Name of the first User Journey for the SLO.
+        user_journeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserJourney'
+        burn_rate:
+          type: number
+          description: Burn rate per day of the SLO. The unit is "Minutes" if the Evaluation type is Window, for Request based it's "Request".
+          format: double
+        error_budget_remaining_percentage:
+          type: number
+          description: Error Budget Remaining Percentage of the SLO.
+          format: double
+        error_budget_remaining:
+          type: integer
+          description: Error Budget Remaining of the SLO. The unit is "Minutes" if the Evaluation type is Window, for Request based it's "Request".
+          format: int32
+        total_error_budget:
+          type: integer
+          description: Total Error Budget of the SLO. The unit is "Minutes" if the Evaluation type is Window, for Request based it's "Request".
+          format: int32
+        slo_target_type:
+          $ref: '#/components/schemas/SLOTargetType'
+        slo_type:
+          $ref: '#/components/schemas/ServiceLevelObjectiveType'
+        slo_target_percentage:
+          type: number
+          description: Target Percentage of the SLO defined by the user.
+          format: double
+        no_of_active_alerts:
+          type: integer
+          description: Number of Notification Rules defined for the SLO.
+          format: int32
+        evaluation_type:
+          $ref: '#/components/schemas/SLIEvaluationType'
+        downtime_status_details:
+          $ref: '#/components/schemas/DowntimeStatusDetails'
+        project_params:
+          $ref: '#/components/schemas/ProjectParams'
+        slo_error:
+          $ref: '#/components/schemas/SLOError'
+        error_budget_risk:
+          type: string
+          description: 'Error Budget Risk for the SLO. - It''s Healthy if Error Budget Remaining Percentage >= 75. - It''s Observe if Error Budget Remaining Percentage >= 50 < 75. - It''s Need Attention if Error Budget Remaining Percentage >= 25 < 50. - It''s Unhealthy if Error Budget Remaining Percentage >= 0 < 25. - It''s Exhausted if Error Budget Remaining Percentage < 0. '
+      description: Health List View of SLO.
+    DowntimeStatusDetails:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/DowntimeStatus'
+        start_time:
+          type: integer
+          description: Start time of the Downtime.
+          format: int64
+        end_time:
+          type: integer
+          description: End time of the Downtime.
+          format: int64
+        end_date_time:
+          type: string
+          description: 'End time of the Downtime in the format: yyyy-MM-dd hh:mm a'
+      description: Details of Downtime with Status
+    MetricGraph:
+      required:
+      - start_time
+      type: object
+      properties:
+        start_time:
+          type: integer
+          description: Start time of the Graph Values.
+          format: int64
+        end_time:
+          type: integer
+          description: End time of the Graph Values.
+          format: int64
+        data_points:
+          type: array
+          description: List of the Data points between start and end times.
+          items:
+            $ref: '#/components/schemas/DataPoints'
+        metric_name:
+          type: string
+          description: 'Name of the Metric. '
+        metric_identifier:
+          type: string
+          description: 'Identifier of the Metric. '
+      description: Metric Graph
+    SLIEvaluationType:
+      type: object
+      properties:
+        type:
+          type: string
+      description: Evaluation Type of SLI
+    ServiceLevelObjectiveType:
+      type: object
+      properties:
+        type:
+          type: string
+      description: Types of Service Level Objectives.
+    ProjectParams:
+      required:
+      - account_identifier
+      type: object
+      properties:
+        account_identifier:
+          type: string
+          description: Account Identifier.
+        org_identifier:
+          type: string
+          description: Org Identifier.
+        project_identifier:
+          type: string
+          description: Project Identifier.
+      description: Project Parameters
+    DataPoints:
+      required:
+      - timestamp
+      type: object
+      properties:
+        value:
+          type: number
+          description: Value of the data point.
+          format: double
+        timestamp:
+          type: integer
+          description: Timestamp of the data point.
+          format: int64
+      description: Representation of one data point.
+    UserJourney:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the User Journey.
+        identifier:
+          type: string
+          description: Identifier of the User Journey.
+      description: User Journey Details.
+    SLOTargetType:
+      type: object
+      properties:
+        type:
+          type: string
+      description: Types of SLO Target Period.
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

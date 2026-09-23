@@ -1,0 +1,1520 @@
+openapi: 3.2.0
+info:
+  title: Harness Dashboards API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Dashboards
+paths:
+  /gitops/api/v1/dashboard/counts:
+    get:
+      summary: Get recently created app, cluster, repo counts
+      description: RecentlyCreatedCounts lists the count of clusters, repositories, and applications created within a specified time period.
+      operationId: DashboardService_RecentlyCreatedCounts
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1RecentlyCreatedOverview'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gatewayruntimeError'
+      parameters:
+      - name: projectIdentifier
+        description: Project Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: orgIdentifier
+        description: Organization Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: accountIdentifier
+        description: Account Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: endTime
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: startTime
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      tags:
+      - Dashboards
+  /gitops/api/v1/dashboard/overview:
+    get:
+      summary: Get dashboard overview
+      description: GetDashboardOverview provides an overview of the dashboard including key metrics.
+      operationId: DashboardService_GetDashboardOverview
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1DashboardOverview'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gatewayruntimeError'
+      parameters:
+      - name: agentIdentifier
+        description: Agent identifier for entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: projectIdentifier
+        description: Project Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: orgIdentifier
+        description: Organization Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: accountIdentifier
+        description: Account Identifier for the Entity.
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: disasterRecoveryIdentifier
+        in: query
+        required: false
+        schema:
+          type: string
+      tags:
+      - Dashboards
+  /dashboard/api/dashboards/{dashboard_id}/download:
+    get:
+      tags:
+      - Dashboards
+      description: Download the data of all tiles within a Dashboard.
+      summary: Download data within a Dashboard
+      operationId: get_dashboard_data
+      parameters:
+      - in: path
+        name: dashboard_id
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: file_type
+        schema:
+          type: string
+          enum:
+          - csv
+        required: true
+      - in: query
+        name: filters
+        schema:
+          type: string
+        required: false
+      responses:
+        '200':
+          description: Returns files of a specified type within a ZIP file for each tile within a Dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardDownloadResponse'
+        '400':
+          description: Please specify a valid File Type.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '404':
+          description: Dashboard not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+  /dashboard/dashboards/{dashboard_id}/elements:
+    get:
+      tags:
+      - Dashboards
+      description: Get all elements within a dashboard by ID.
+      operationId: get_dashboard_elements
+      parameters:
+      - in: path
+        name: dashboard_id
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      responses:
+        '200':
+          description: Returns all of the elements within a dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDashboardElementsResponse'
+        '404':
+          description: Dashboard or dashboard elements not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+      summary: Get dashboard elements
+      x-summary-source: derived
+  /dashboard/dashboards/{dashboard_id}/filters:
+    get:
+      tags:
+      - Dashboards
+      description: Get all filters within a dashboard by ID.
+      operationId: get_dashboard_filters
+      parameters:
+      - in: path
+        name: dashboard_id
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      responses:
+        '200':
+          description: Returns all of the filters within a dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDashboardFiltersResponse'
+        '404':
+          description: Dashboard or dashboard filters not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+      summary: Get dashboard filters
+      x-summary-source: derived
+  /dashboard/clone:
+    post:
+      tags:
+      - Dashboards
+      description: Clone a dashboard.
+      operationId: clone_dashboard
+      parameters:
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      requestBody:
+        description: Clone a Dashboard
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloneDashboardRequestBody'
+      responses:
+        '200':
+          description: Returns the newly created dashboard's details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClonedDashboardResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+      summary: Clone dashboard
+      x-summary-source: derived
+  /dashboard/dashboards/{dashboard_id}:
+    get:
+      tags:
+      - Dashboards
+      description: Get all details of a dashboard by ID.
+      operationId: get_dashboard
+      parameters:
+      - in: path
+        name: dashboard_id
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      responses:
+        '200':
+          description: Returns the details of a dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDashboardResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+      summary: Get dashboard
+      x-summary-source: derived
+  /dashboard/:
+    patch:
+      tags:
+      - Dashboards
+      description: Update a dashboards name, tags or folder.
+      operationId: update_dashboard
+      parameters:
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      requestBody:
+        description: Update dashboard fields.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDashboardRequest'
+      responses:
+        '200':
+          description: Returns the updated fields of the dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateDashboardResponse'
+      summary: Update dashboard
+      x-summary-source: derived
+  /dashboard/remove:
+    delete:
+      tags:
+      - Dashboards
+      description: Delete a dashboard.
+      operationId: delete_dashboard
+      parameters:
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: folderId
+        schema:
+          type: string
+        required: true
+      requestBody:
+        description: Delete a Dashboard by ID.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteDashboardRequest'
+      responses:
+        '200':
+          description: Returns if Dashboard deletion was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteDashboardResponse'
+      summary: Delete dashboard
+      x-summary-source: derived
+  /dashboard/dashboards/{dashboard_id}/filters/{filter_id}:
+    patch:
+      tags:
+      - Dashboards
+      description: Update a specific filter within a dashboard by ID.
+      operationId: update_dashboard_filter
+      parameters:
+      - in: path
+        name: dashboard_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: filter_id
+        schema:
+          type: string
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDashboardFilterRequest'
+      responses:
+        '200':
+          description: Returns the updated dashboard filter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDashboardFilterResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '403':
+          description: User does not have permission to update this dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '404':
+          description: Dashboard or dashboard filter not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+      summary: Update dashboard filter
+      x-summary-source: derived
+  /dashboard/download/dashboards/{dashboard_id}/csv:
+    get:
+      tags:
+      - Dashboards
+      description: Download a Dashboard in CSV format.
+      summary: Download a Dashboard CSV
+      operationId: get_dashboard_download_csv
+      parameters:
+      - in: path
+        name: dashboard_id
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: filters
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: expanded_tables
+        schema:
+          type: boolean
+        required: false
+      - in: query
+        name: apply_vis
+        schema:
+          type: boolean
+        required: false
+      responses:
+        '200':
+          description: Returns a zip of CSV files containing raw data of each tile within a Dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadCsvDashboardResponse'
+        '400':
+          description: Download Task has failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '404':
+          description: Dashboard not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '504':
+          description: Querying Dashboard to build CSV has timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+  /dashboard/download/dashboards/{dashboard_id}/pdf:
+    get:
+      tags:
+      - Dashboards
+      description: Download a Dashboard in PDF format.
+      summary: Download a Dashboard PDF
+      operationId: get_dashboard_download_pdf
+      parameters:
+      - in: path
+        name: dashboard_id
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: filters
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: expanded_tables
+        schema:
+          type: boolean
+        required: false
+      - in: query
+        name: landscape
+        schema:
+          type: boolean
+        required: false
+      - in: query
+        name: paper_size
+        schema:
+          type: string
+          enum:
+          - letter
+          - legal
+          - tabloid
+          - a0
+          - a1
+          - a2
+          - a3
+          - a4
+          - a5
+        required: false
+      - in: query
+        name: style
+        schema:
+          type: string
+          enum:
+          - single_column
+          - tiled
+        required: false
+      responses:
+        '200':
+          description: Returns a PDF file containing the visualization of a Dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadPdfDashboardResponse'
+        '400':
+          description: Render Task has failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '404':
+          description: Dashboard not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '504':
+          description: Render Task has timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+  /dashboard/schedules/run_once:
+    post:
+      tags:
+      - Dashboards
+      description: Run a schedule delivery once
+      summary: Runs a schedule delivery once that is then immediately sent via email to…
+      operationId: schedules_run_once
+      parameters:
+      - in: query
+        name: accountId
+        schema:
+          type: string
+        required: false
+      requestBody:
+        description: Run a Dashboard Schedule Delivery once
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleReportRequestBody'
+      responses:
+        '200':
+          description: A successful request does not necessarily mean successful delivery of emails
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleReportResponse'
+        '400':
+          description: Please specify a valid File Type.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        '404':
+          description: Dashboard not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardsErrorResponse'
+components:
+  schemas:
+    v1DashboardOverview:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        agentIdentifier:
+          type: string
+          description: Agent identifier for entity.
+        applicationStatusCounts:
+          $ref: '#/components/schemas/v1ApplicationStatusCounts'
+        repositoryCount:
+          type: integer
+          format: int32
+        applicationCount:
+          type: integer
+          format: int32
+        clusterCount:
+          type: integer
+          format: int32
+    gatewayruntimeError:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/protobufAny'
+    v1SyncStatusCounts:
+      type: object
+      properties:
+        synced:
+          type: integer
+          format: int32
+        outOfSync:
+          type: integer
+          format: int32
+        unknown:
+          type: integer
+          format: int32
+    v1RecentlyCreatedOverview:
+      type: object
+      properties:
+        appCounts:
+          $ref: '#/components/schemas/v1RecentlyCreatedCount'
+        repoCounts:
+          $ref: '#/components/schemas/v1RecentlyCreatedCount'
+        clusterCounts:
+          $ref: '#/components/schemas/v1RecentlyCreatedCount'
+        appSetCounts:
+          $ref: '#/components/schemas/v1RecentlyCreatedCount'
+    v1ApplicationStatusCounts:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        healthStatusCounts:
+          $ref: '#/components/schemas/v1HealthStatusCounts'
+        syncStatusCounts:
+          $ref: '#/components/schemas/v1SyncStatusCounts'
+    protobufAny:
+      type: object
+      properties:
+        type_url:
+          type: string
+          description: "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        value:
+          type: string
+          format: byte
+          description: Must be a valid serialized protocol buffer of the above specified type.
+      description: "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    v1RecentlyCreatedCount:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        recentlyCreated:
+          type: integer
+          format: int32
+    v1HealthStatusCounts:
+      type: object
+      properties:
+        healthy:
+          type: integer
+          format: int32
+        degraded:
+          type: integer
+          format: int32
+        progressing:
+          type: integer
+          format: int32
+        suspended:
+          type: integer
+          format: int32
+        missing:
+          type: integer
+          format: int32
+        unknown:
+          type: integer
+          format: int32
+    ClonedDashboard:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        resourceIdentifier:
+          type: string
+      required:
+      - description
+      - id
+      - resourceIdentifier
+      - title
+    CreateDashboardRequest:
+      type: object
+      properties:
+        folderId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        dashboardId:
+          type: integer
+      required:
+      - folderId
+      - name
+    ScheduleReportResponse:
+      type: object
+      properties:
+        resource:
+          $ref: '#/components/schemas/ScheduleReportResponseBody'
+      required:
+      - resource
+    DashboardsErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: integer
+        correlationId:
+          type: string
+        responseMessages:
+          type: string
+      required:
+      - code
+      - error
+      - responseMessages
+    GetDashboardElementsResponse:
+      type: object
+      properties:
+        resource:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardElements'
+      required:
+      - resource
+    DashboardFilter:
+      type: object
+      properties:
+        id:
+          type: string
+        dashboard_id:
+          type: string
+        default_value:
+          type: string
+        explore:
+          type: string
+        model:
+          type: string
+        name:
+          type:
+          - string
+          - 'null'
+        row:
+          type:
+          - integer
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        ui_config:
+          type: object
+      required:
+      - dashboard_id
+      - default_value
+      - explore
+      - id
+      - model
+      - ui_config
+    ClonedDashboardResponse:
+      type: object
+      properties:
+        resource:
+          $ref: '#/components/schemas/ClonedDashboard'
+      required:
+      - resource
+    DashboardElements:
+      type: object
+      properties:
+        id:
+          type: string
+        dashboard_id:
+          type: string
+        title_text:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        type:
+          type: string
+      required:
+      - dashboard_id
+      - id
+      - type
+    ScheduleReportRequestBody:
+      type: object
+      properties:
+        dashboard_id:
+          type: string
+        destination_emails:
+          type: string
+        file_type:
+          type: string
+          enum:
+          - csv_zip
+          - assembled_pdf
+          - wysiwyg_pdf
+          - wysiwyg_png
+        name:
+          type: string
+        message:
+          type: string
+        filters:
+          type: string
+      required:
+      - dashboard_id
+      - destination_emails
+      - file_type
+      - name
+    CloneDashboardRequestBody:
+      type: object
+      properties:
+        dashboardId:
+          type: string
+        folderId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+      required:
+      - dashboardId
+    DeleteDashboardResponse:
+      type: object
+      properties:
+        resource:
+          $ref: '#/components/schemas/DeleteDashboardResponseResource'
+      required:
+      - resource
+    DownloadCsvDashboardResponse:
+      type: object
+      properties:
+        file:
+          type: string
+          format: byte
+    UpdateDashboardResponseResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        resourceIdentifier:
+          type: string
+        description:
+          type: string
+      required:
+      - description
+      - id
+      - resourceIdentifier
+      - title
+    DownloadPdfDashboardResponse:
+      type: object
+      properties:
+        file:
+          type: string
+          format: byte
+    DeleteDashboardRequest:
+      type: object
+      properties:
+        dashboardId:
+          type: string
+      required:
+      - dashboardId
+    UpdateDashboardResponse:
+      type: object
+      properties:
+        resource:
+          $ref: '#/components/schemas/UpdateDashboardResponseResource'
+      required:
+      - resource
+    ScheduleReportResponseBody:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    GetDashboardResponse:
+      type: object
+      properties:
+        resource:
+          $ref: '#/components/schemas/Dashboard'
+      required:
+      - resource
+    Dashboard:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+          - ACCOUNT
+          - SHARED
+        description:
+          type: string
+        title:
+          type: string
+        view_count:
+          type: integer
+        favorite_count:
+          type: integer
+        created_at:
+          type: string
+        data_source:
+          type: array
+          items:
+            type: string
+            enum:
+            - CD
+            - CE
+            - CET
+            - CF
+            - CHAOS
+            - CI
+            - DBOPS
+            - HARNESS
+            - IACM
+            - IDP
+            - SRM
+            - SSCA
+            - STO
+            - UNIVERSAL
+        models:
+          type: array
+          items:
+            type: string
+            enum:
+            - CD
+            - CE
+            - CET
+            - CF
+            - CG_CD
+            - CHAOS
+            - CI
+            - CI_TI
+            - DBOPS
+            - IACM
+            - IDP
+            - SRM
+            - SSCA
+            - STO
+            - UNIVERSAL
+        last_accessed_at:
+          type: string
+        resourceIdentifier:
+          type: string
+        folder:
+          $ref: '#/components/schemas/DashboardFolder'
+      required:
+      - created_at
+      - data_source
+      - description
+      - favorite_count
+      - folder
+      - id
+      - last_accessed_at
+      - models
+      - resourceIdentifier
+      - title
+      - type
+      - view_count
+    GetDashboardFiltersResponse:
+      type: object
+      properties:
+        resource:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardFilter'
+      required:
+      - resource
+    DeleteDashboardResponseResource:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+      - id
+    DashboardFolder:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        created_at:
+          type: string
+        parent_id:
+          type: string
+      required:
+      - created_at
+      - id
+      - parent_id
+      - title
+    UpdateDashboardFilterRequest:
+      type: object
+      properties:
+        default_value:
+          type: string
+        name:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        row:
+          type:
+          - integer
+          - 'null'
+        ui_config:
+          type: object
+    GetDashboardFilterResponse:
+      type: object
+      properties:
+        resource:
+          $ref: '#/components/schemas/DashboardFilter'
+      required:
+      - resource
+    DashboardDownloadResponse:
+      type: object
+      properties:
+        file:
+          type: string
+          format: byte
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

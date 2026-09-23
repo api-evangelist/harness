@@ -1,0 +1,170 @@
+generated: '2026-09-19'
+method: probed
+source: 'Direct HTTP probes on 2026-09-12 of the named /.well-known/ path list across every host this
+  record knows: harness.io, www.harness.io, app.harness.io, developer.harness.io, apidocs.harness.io,
+  mcp.harness.io, plus id.harness.io — named by the authorization_servers array of the mcp.harness.io
+  protected-resource document.'
+provider: Harness
+providerId: harness
+summary:
+  hosts_probed: 7
+  documents_served: 5
+  finding: 'Harness publishes no security.txt and no api-catalog on any host. It DOES publish a complete
+    RFC 9728 / RFC 8414 OAuth discovery chain for its hosted MCP server: mcp.harness.io advertises the
+    protected resource, which names id.harness.io as the authorization server, which serves full OpenID
+    Connect discovery. The oauth-authorization-server document on apidocs.harness.io belongs to Redocly,
+    the docs platform Harness runs apidocs on, not to Harness itself.'
+hosts:
+- host: harness.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: www.harness.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: app.harness.io
+  note: Every /.well-known/ path on the application host returns 401 with a sign-in redirect shell; the
+    host authenticates before routing, so absence cannot be distinguished from gating here.
+  documents:
+  - path: /.well-known/security.txt
+    status: 401
+  - path: /.well-known/openid-configuration
+    status: 401
+  - path: /.well-known/oauth-authorization-server
+    status: 401
+  - path: /.well-known/api-catalog
+    status: 401
+  - path: /.well-known/ai-plugin.json
+    status: 401
+  - path: /.well-known/agent-card.json
+    status: 401
+  - path: /.well-known/agent.json
+    status: 401
+- host: developer.harness.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: apidocs.harness.io
+  note: The one document served here is emitted by Redocly, the documentation platform hosting apidocs.harness.io
+    — issuer is auth.cloud.redocly.com and the endpoints front Redocly's own docs MCP service. Recorded
+    because it is served from a Harness host, but it is platform-authored, not a Harness API auth surface.
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    content_type: application/json
+    file: harness-apidocs-oauth-authorization-server.json
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: mcp.harness.io
+  note: First-party. RFC 9728 protected-resource metadata for the hosted Harness MCP server, served both
+    at the host root and scoped to the /mcp resource.
+  documents:
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    content_type: application/json
+    file: harness-mcp-oauth-protected-resource.json
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 200
+    content_type: application/json
+    file: harness-mcp-oauth-protected-resource-mcp.json
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  path_echo_control: passed
+- host: id.harness.io
+  note: 'First-party. The authorization server named by mcp.harness.io. Two distinct documents: a compact
+    OAuth profile at the host root and full Keycloak OpenID Connect discovery for the HarnessIDP realm.'
+  documents:
+  - path: /.well-known/openid-configuration
+    status: 200
+    content_type: application/json
+    file: harness-id-openid-configuration.json
+  - path: /idp/realms/HarnessIDP/.well-known/openid-configuration
+    status: 200
+    content_type: application/json
+    file: harness-id-harnessidp-openid-configuration.json
+  - path: /idp/realms/HarnessIDP/.well-known/oauth-authorization-server
+    status: 200
+    content_type: application/json
+    note: Byte-identical to the realm openid-configuration document; not saved twice.
+  - path: /.well-known/security.txt
+    status: 403
+  - path: /idp/realms/HarnessIDP/.well-known/oauth-authorization-server
+    status: 200
+    file: harness-id-oauth-authorization-server.json
+    bytes: 6627
+  path_echo_control: passed
+x-mcp-probe:
+  probed: '2026-09-19'
+  issue: roadmap#321, roadmap#337
+  documents:
+  - host: https://mcp.harness.io
+    path: /.well-known/oauth-protected-resource
+    file: harness-mcp-oauth-protected-resource.json
+  - host: https://id.harness.io
+    path: /idp/realms/HarnessIDP/.well-known/oauth-authorization-server
+    file: harness-id-oauth-authorization-server.json
+  validated_on: resource (RFC 9728) / issuer (RFC 8414, OIDC)
+  negative_control: one per host; a 2xx JSON object at an impossible path discards the host
+note: 'MCP-host OAuth discovery added 2026-09-19 (roadmap#321/#337): the harvest visits a provider''s
+  primary hosts, and RFC 9728 protected-resource metadata lives on the MCP host, so these documents existed
+  and were invisible to the scorer. Fetched live and validated on `resource`/`issuer`; one negative control
+  per host.'

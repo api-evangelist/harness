@@ -1,0 +1,959 @@
+openapi: 3.2.0
+info:
+  title: Harness Project Resource Groups API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Project Resource Groups
+  description: This contains APIs for Project-scoped Resource Groups.
+  x-displayName: Project Resource Groups [Beta]
+paths:
+  /v1/orgs/{org}/projects/{project}/resource-groups:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    get:
+      summary: List Resource Groups
+      responses:
+        '200':
+          $ref: '#/components/responses/ResourceGroupsListResponse'
+      operationId: list-resource-groups-project
+      description: Returns a list of Resource Groups present in the Project scope.
+      parameters:
+      - $ref: '#/components/parameters/PageIndex'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/SearchTerm'
+      - $ref: '#/components/parameters/AccountHeader2'
+      - $ref: '#/components/parameters/Sort'
+      - $ref: '#/components/parameters/Order'
+      security:
+      - x-api-key: []
+      tags:
+      - Project Resource Groups
+    post:
+      summary: Create a Resource Group
+      operationId: create-resource-group-project
+      description: Creates a custom Resource Group in the Project scope.
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader2'
+      tags:
+      - Project Resource Groups
+      requestBody:
+        $ref: '#/components/requestBodies/CreateResourceGroupRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/ResourceGroupsResponse'
+  /v1/orgs/{org}/projects/{project}/resource-groups/{resource-group}:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    - $ref: '#/components/parameters/ResourceGroupParam'
+    get:
+      summary: Retrieve a Resource Group
+      operationId: get-resource-group-project
+      security:
+      - x-api-key: []
+      description: Retrieves a Resource Group from Project scope.
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader2'
+      tags:
+      - Project Resource Groups
+      responses:
+        '200':
+          $ref: '#/components/responses/ResourceGroupsResponse'
+    put:
+      summary: Update a Resource Group
+      operationId: update-resource-group-project
+      responses:
+        '200':
+          $ref: '#/components/responses/ResourceGroupsResponse'
+      security:
+      - x-api-key: []
+      requestBody:
+        $ref: '#/components/requestBodies/CreateResourceGroupRequest'
+      description: Updates a Resource Group from Project scope.
+      tags:
+      - Project Resource Groups
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader2'
+    delete:
+      summary: Delete a Resource Group
+      operationId: delete-resource-group-project
+      responses:
+        '200':
+          $ref: '#/components/responses/ResourceGroupsResponse'
+      description: Deletes a custom Resource Group from Project scope.
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader2'
+      tags:
+      - Project Resource Groups
+components:
+  schemas:
+    ResourceFilter:
+      title: Resource Filter
+      x-stoplight:
+        id: m5qhp13hm6o1z
+      type: object
+      description: Specifies resources in Resource Group.
+      x-examples:
+        example-resource-filter:
+          resource_type: resource
+          identifiers:
+          - example_resource
+          attribute_name: resource_attribute
+          attribute_values:
+          - example_resource_attribute
+      properties:
+        resource_type:
+          type: string
+          description: Specifies the type of Resource.
+        identifiers:
+          type: array
+          description: Identifiers for the Resource Type.
+          items:
+            type: string
+            pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+            minLength: 1
+            maxLength: 128
+        attribute_name:
+          type: string
+          description: Attribute name on the basis of which filtering will be done.
+        attribute_values:
+          type: array
+          description: Attribute values selected.
+          items:
+            type: string
+      required:
+      - resource_type
+    CreateResourceGroupRequest:
+      title: Create Resource Group Request
+      x-stoplight:
+        id: z8g6ol73nsqjs
+      type: object
+      description: Resource Group request body
+      x-examples:
+        resource-group-request:
+          identifier: example_resource_group
+          name: Example_Resource Group
+          color: '#0063F7'
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          description: This is an Example Resource Group
+          included_scope:
+          - filter: EXCLUDING_CHILD_SCOPES
+            account: sample_account
+            org: sample_organization
+            project: sample_project
+          resource_filter:
+          - resource_type: resource
+            identifiers:
+            - example_resource
+            attribute_name: resource_attribute
+            attribute_values:
+            - example_resource_attribute
+          include_all_resources: false
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          description: Resource Group identifier
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          description: Resource Group name
+        color:
+          type: string
+          description: Color associated with the Resource Group.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Resource Group tags
+        description:
+          type: string
+          maxLength: 1024
+          description: Resource Group description
+        included_scope:
+          type: array
+          description: Included scopes for the resources belonging to the Resource Group.
+          items:
+            $ref: '#/components/schemas/ResourceGroupScope'
+        resource_filter:
+          type: array
+          description: Specifies the actual resources present in the Resource Group.
+          items:
+            $ref: '#/components/schemas/ResourceFilter'
+        include_all_resources:
+          type: boolean
+          description: Boolean value for including all resources in Resource Group.
+      required:
+      - identifier
+      - name
+    ResourceGroupScope:
+      title: Resource Group Scope
+      x-stoplight:
+        id: w8j3bc9323bxb
+      type: object
+      description: Included scopes for the Resources belonging to the Resource Group
+      x-examples:
+        example-1:
+          filter: EXCLUDING_CHILD_SCOPES
+          account: sample_account
+          org: sample_organization
+          project: sample_project
+      properties:
+        filter:
+          type: string
+          enum:
+          - EXCLUDING_CHILD_SCOPES
+          - INCLUDING_CHILD_SCOPES
+          description: Including or Excluding Child scopes.
+        account:
+          type: string
+          description: Account identifier
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          description: Organization identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        project:
+          type: string
+          description: Project identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+      required:
+      - filter
+    ResourceGroupsResponse:
+      title: Resource Groups Response
+      x-stoplight:
+        id: q6oq3jxkd2who
+      type: object
+      description: Resource Group response body
+      x-examples:
+        example-resource-group:
+          identifier: example_resource_group
+          name: Example_Resource Group
+          color: '#0063F7'
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          description: This is an Example Resource Group
+          allowed_scope_levels:
+          - account
+          included_scope:
+          - filter: EXCLUDING_CHILD_SCOPES
+            account: sample_account
+            org: sample_organization
+            project: sample_project
+          resource_filter:
+          - resource_type: resource
+            identifiers:
+            - example_resource
+            attribute_name: resource_attribute
+            attribute_values:
+            - example_resource_attribute
+          include_all_resources: false
+          harness_managed: true
+          created: 1234567890
+          updated: 1234567890
+      properties:
+        identifier:
+          type: string
+          description: Resource Group Identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Resource Group Name
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        color:
+          type: string
+          description: Color associated with the Resource Group.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Resource Group tags
+          maxProperties: 128
+        description:
+          type: string
+          description: Resource Group description
+          maxLength: 1024
+        allowed_scope_levels:
+          type: array
+          description: Allowed scope levels for this Resource Group.
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - account
+            - organization
+            - project
+        included_scope:
+          type: array
+          description: Included scopes for the resources belonging to the Resource Group.
+          items:
+            $ref: '#/components/schemas/ResourceGroupScope'
+        resource_filter:
+          type: array
+          description: Specifies the actual resources present in the Resource Group.
+          items:
+            $ref: '#/components/schemas/ResourceFilter'
+        include_all_resources:
+          type: boolean
+          description: Boolean value for including all resources in Resource Group.
+        harness_managed:
+          type: boolean
+          description: This indicates if this Resource Group is managed by Harness or not. If true, Harness can manage and modify this Resource Group.
+        created:
+          type: integer
+          description: Creation timestamp for Resource Group.
+          format: int64
+        updated:
+          type: integer
+          description: Last modification timestamp for Resource Group.
+          format: int64
+      required:
+      - identifier
+      - name
+  responses:
+    ResourceGroupsResponse:
+      description: Resource Group response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResourceGroupsResponse'
+          examples:
+            resource-group-response:
+              value:
+                identifier: example_resource_group
+                name: Example Resource Group
+                color: '#0063F7'
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                description: This is an Example Resource Group
+                allowed_scope_levels:
+                - account
+                included_scope:
+                - filter: EXCLUDING_CHILD_SCOPES
+                  account: sample_account
+                  org: sample_organization
+                  project: sample_project
+                resource_filter:
+                - resource_type: resource
+                  identifiers:
+                  - example_resource
+                  attribute_name: resource_attribute
+                  attribute_values:
+                  - example_resource_attribute
+                include_all_resources: false
+                harness_managed: true
+                created: 1234567890
+                updated: 1234567890
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ResourceGroupsResponse'
+          examples:
+            resource-group-response:
+              value: "identifier: example_resource_group\nname: Example Resource Group\ncolor: '#0063F7'\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\ndescription: This is an Example Resource Group\nallowed_scope_levels:\n  - account\nincluded_scope:\n  - filter: EXCLUDING_CHILD_SCOPES\n    account: sample_account\n    org: sample_organization\n    project: sample_project\nresource_filter:\n  - resource_type: resource\n    identifiers:\n      - example_resource\n    attribute_name: resource_attribute\n    attribute_values:\n      - example_resource_attribute\ninclude_all: false\nharness_managed: true\ncreated: 1234567890\nupdated: 1234567890\n"
+    ResourceGroupsListResponse:
+      description: Resource Groups List response body
+      content:
+        application/json:
+          schema:
+            type: array
+            description: List of Resource Groups
+            items:
+              $ref: '#/components/schemas/ResourceGroupsResponse'
+          examples:
+            resource-group-list-response:
+              value:
+              - identifier: example_resource_group
+                name: Example Resource Group
+                color: '#0063F7'
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                description: This is an Example Resource Group
+                allowed_scope_levels:
+                - account
+                included_scope:
+                - filter: EXCLUDING_CHILD_SCOPES
+                  account: sample_account
+                  org: sample_organization
+                  project: sample_project
+                resource_filter:
+                - resource_type: resource
+                  identifiers:
+                  - example_resource
+                  attribute_name: resource_attribute
+                  attribute_values:
+                  - example_resource_attribute
+                include_all_resources: false
+                harness_managed: true
+                created: 1234567890
+                updated: 1234567890
+        application/yaml:
+          schema:
+            type: array
+            description: List of Resource Groups
+            items:
+              $ref: '#/components/schemas/ResourceGroupsResponse'
+          examples:
+            resource-group-list-response:
+              value: "- identifier: example_resource_group\n  name: Example Resource Group\n  color: '#0063F7'\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n  description: This is an Example Resource Group\n  allowed_scope_levels:\n    - account\n  included_scope:\n    - filter: EXCLUDING_CHILD_SCOPES\n      account: sample_account\n      org: sample_organization\n      project: sample_project\n  resource_filter:\n    - resource_type: resource\n      identifiers:\n        - example_resource\n      attribute_name: resource_attribute\n      attribute_values:\n        - example_resource_attribute\n  include_all: false\n  harness_managed: true\n  created: 1234567890\n  updated: 1234567890\n"
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+        maximum: 100
+      description: 'Pagination: Number of items to return.'
+    PageIndex:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+    ResourceGroupParam:
+      name: resource-group
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Resource Group identifier
+    AccountHeader2:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - identifier
+        - name
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    SearchTerm:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching the search term.
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+  requestBodies:
+    CreateResourceGroupRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateResourceGroupRequest'
+          examples:
+            resource-group-request:
+              value:
+                identifier: example_resource_group
+                name: Example Resource Group
+                color: '#0063F7'
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                description: This is an Example Resource Group
+                included_scope:
+                - filter: EXCLUDING_CHILD_SCOPES
+                  account: sample_account
+                  org: sample_organization
+                  project: sample_project
+                resource_filter:
+                - resource_type: resource
+                  identifiers:
+                  - example_resource
+                  attribute_name: resource_attribute
+                  attribute_values:
+                  - example_resource_attribute
+                include_all_resources: false
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/CreateResourceGroupRequest'
+          examples:
+            resource-group-request:
+              value: "identifier: example_resource_group\nname: Example Resource Group\ncolor: '#0063F7'\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\ndescription: This is an Example Resource Group\nincluded_scope:\n  - filter: EXCLUDING_CHILD_SCOPES\n    account: sample_account\n    org: sample_organization\n    project: sample_project\nresource_filter:\n  - resource_type: resource\n    identifiers:\n      - example_resource\n    attribute_name: resource_attribute\n    attribute_values:\n      - example_resource_attribute\ninclude_all: false\n"
+      description: Resource Group request body
+      required: true
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

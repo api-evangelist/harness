@@ -1,0 +1,827 @@
+openapi: 3.2.0
+info:
+  title: Harness Attributes API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- description: APIS to create and manage Target Group Attributes
+  name: Attributes
+paths:
+  /cf/admin/attributes:
+    get:
+      description: Returns all the custom attributes the given environment
+      operationId: GetAttributes
+      parameters:
+      - $ref: '#/components/parameters/accountQueryParam'
+      - $ref: '#/components/parameters/orgQueryParam'
+      - $ref: '#/components/parameters/projectQueryParam'
+      - $ref: '#/components/parameters/environmentQueryParam'
+      - $ref: '#/components/parameters/pageNumber'
+      - $ref: '#/components/parameters/pageSize'
+      - $ref: '#/components/parameters/sortOrder'
+      - $ref: '#/components/parameters/customAttributeQueryParam'
+      - $ref: '#/components/parameters/attributeCounts'
+      responses:
+        '200':
+          $ref: '#/components/responses/AttributesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      summary: Returns all custom attributes for the project
+      tags:
+      - Attributes
+    post:
+      description: Creates a custom attribute for given environment
+      operationId: CreateAttribute
+      parameters:
+      - $ref: '#/components/parameters/accountQueryParam'
+      - $ref: '#/components/parameters/orgQueryParam'
+      - $ref: '#/components/parameters/projectQueryParam'
+      - $ref: '#/components/parameters/environmentQueryParam'
+      requestBody:
+        $ref: '#/components/requestBodies/AttributeRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/AttributeEditResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      summary: Creates a custom Attribute
+      tags:
+      - Attributes
+  /cf/admin/attributes/{key}:
+    delete:
+      description: Delete an Attribute for the given key and environmentID
+      operationId: DeleteAttribute
+      parameters:
+      - $ref: '#/components/parameters/key'
+      - $ref: '#/components/parameters/accountQueryParam'
+      - $ref: '#/components/parameters/orgQueryParam'
+      - $ref: '#/components/parameters/projectQueryParam'
+      - $ref: '#/components/parameters/environmentQueryParam'
+      responses:
+        '204':
+          description: No content
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '424':
+          $ref: '#/components/responses/GitSyncError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      summary: Delete an Attribute
+      tags:
+      - Attributes
+    get:
+      description: Returns Attribute
+      operationId: GetAttribute
+      parameters:
+      - $ref: '#/components/parameters/key'
+      - $ref: '#/components/parameters/accountQueryParam'
+      - $ref: '#/components/parameters/orgQueryParam'
+      - $ref: '#/components/parameters/projectQueryParam'
+      - $ref: '#/components/parameters/environmentQueryParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/AttributeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      summary: Returns an Attribute
+      tags:
+      - Attributes
+    patch:
+      description: Updates Attribute key details for the given environment
+      operationId: PatchAttribute
+      parameters:
+      - $ref: '#/components/parameters/key'
+      - $ref: '#/components/parameters/accountQueryParam'
+      - $ref: '#/components/parameters/orgQueryParam'
+      - $ref: '#/components/parameters/projectQueryParam'
+      - $ref: '#/components/parameters/environmentQueryParam'
+      requestBody:
+        $ref: '#/components/requestBodies/AttributePatchRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/AttributeEditResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      summary: Update Attribute for the environment
+      tags:
+      - Attributes
+components:
+  responses:
+    AttributeResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Attribute'
+      description: OK
+    Conflict:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: The specified resource already exists
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Bad request
+    Unauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Unauthenticated
+    GitSyncError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: An error with git syncing
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Unauthorized
+    InternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Internal server error
+    AttributeEditResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AttributeResponseMetadata'
+      description: OK
+    AttributesResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Attributes'
+      description: OK
+    NotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: The specified resource was not found
+  schemas:
+    GitSyncPatchOperation:
+      properties:
+        comment:
+          description: A comment explaining the reason for this patch operation
+          example: This is a comment string
+          type: string
+        executionTime:
+          description: Time of execution in unix epoch milliseconds when the scheduled changes will be applied
+          type: integer
+        gitDetails:
+          $ref: '#/components/schemas/CfGitDetails'
+        instructions:
+          $ref: '#/components/schemas/PatchInstruction'
+      required:
+      - instructions
+      type: object
+    Pagination:
+      properties:
+        itemCount:
+          description: The total number of items
+          example: 1
+          type: integer
+        pageCount:
+          description: The total number of pages
+          example: 100
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+        version:
+          description: The version of this object.  The version will be incremented each time the object is modified
+          example: 5
+          type: integer
+      required:
+      - pageCount
+      - itemCount
+      - pageSize
+      - pageIndex
+      type: object
+    Attributes:
+      allOf:
+      - $ref: '#/components/schemas/Pagination'
+      - properties:
+          attributes:
+            items:
+              $ref: '#/components/schemas/Attribute'
+            type: array
+      description: A list of Attributes
+      required:
+      - environment
+      type: object
+    PatchInstruction:
+      description: A list of Patch Instructions
+      items:
+        properties:
+          kind:
+            description: The name of the modification you would like to perform on a resource.
+            example: enableFeatureFlag
+            type: string
+          parameters:
+            example:
+              ruleId: TestRule
+              variationID: TestVariation
+            type: object
+        required:
+        - kind
+        - parameters
+      type: array
+    Attribute:
+      description: An Attribute, object property to evaluate targets on.
+      properties:
+        key:
+          description: The attribute key
+          example: age
+          type: string
+      required:
+      - key
+      type: object
+    CfError:
+      properties:
+        code:
+          description: The http error code
+          example: 404
+          type: string
+        details:
+          description: Additional details about the error
+          type: object
+        message:
+          description: The reason the request failed
+          example: Error retrieving projects, organization 'default_org' does not exist
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    AttributeResponseMetadata:
+      properties:
+        details:
+          description: Additional metadata about the request
+          properties:
+            governanceMetadata:
+              description: Summary of governance checks including any warnings
+              type: object
+          type: object
+      type: object
+    CfGitDetails:
+      description: The commit message to use as part of a gitsync operation
+      properties:
+        commitMsg:
+          description: A description of the change or action
+          example: Turning on flag test-flag for production
+          type: string
+      required:
+      - commitMsg
+      type: object
+  parameters:
+    accountQueryParam:
+      description: Account Identifier
+      examples:
+        default:
+          value: default
+      in: query
+      name: accountIdentifier
+      required: true
+      schema:
+        type: string
+    pageSize:
+      description: PageSize
+      in: query
+      name: pageSize
+      schema:
+        type: integer
+    sortOrder:
+      description: SortOrder
+      in: query
+      name: sortOrder
+      schema:
+        enum:
+        - ASCENDING
+        - DESCENDING
+        type: string
+    environmentQueryParam:
+      allowEmptyValue: true
+      description: Environment Identifier
+      in: query
+      name: environmentIdentifier
+      required: true
+      schema:
+        type: string
+    customAttributeQueryParam:
+      description: Returns only custom attributes
+      in: query
+      name: customAttributes
+      schema:
+        type: boolean
+    orgQueryParam:
+      description: Organization Identifier
+      examples:
+        default:
+          value: default_org
+      in: query
+      name: orgIdentifier
+      required: true
+      schema:
+        type: string
+    key:
+      description: Unique key for the attribute in the API.
+      in: path
+      name: key
+      required: true
+      schema:
+        type: string
+    projectQueryParam:
+      description: The Project identifier
+      in: query
+      name: projectIdentifier
+      required: true
+      schema:
+        type: string
+    attributeCounts:
+      description: Returns attribute
+      in: query
+      name: attributeCounts
+      schema:
+        type: boolean
+    pageNumber:
+      description: PageNumber
+      in: query
+      name: pageNumber
+      schema:
+        type: integer
+  requestBodies:
+    AttributePatchRequest:
+      content:
+        application/json:
+          example:
+            instructions:
+            - kind: updateAttribute
+              parameters:
+                key: Updated attributeKey
+          schema:
+            $ref: '#/components/schemas/GitSyncPatchOperation'
+    AttributeRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Attribute'
+      required: true
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

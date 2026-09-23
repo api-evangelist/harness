@@ -1,0 +1,1046 @@
+openapi: 3.2.0
+info:
+  title: Harness Project Services API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Project Services
+  description: This contains APIs for project-scoped services.
+  x-displayName: Project Services [Beta]
+paths:
+  /v1/orgs/{org}/projects/{project}/services/{service}:
+    parameters:
+    - $ref: '#/components/parameters/OrgPathParam'
+    - $ref: '#/components/parameters/ProjectPathParam'
+    - $ref: '#/components/parameters/ServicePathParam'
+    get:
+      summary: Retrieve a service
+      operationId: get-service
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      description: Retrieves the specified service
+      security:
+      - x-api-key: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ServiceResponse'
+      tags:
+      - Project Services
+    put:
+      summary: Update Service
+      operationId: update-service
+      responses:
+        '200':
+          $ref: '#/components/responses/ServiceResponse'
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/ServiceUpdateRequest'
+      description: Updates the specified service
+      security:
+      - x-api-key: []
+      tags:
+      - Project Services
+    delete:
+      summary: Delete a Service
+      operationId: delete-service
+      responses:
+        '200':
+          $ref: '#/components/responses/ServiceResponse'
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      - $ref: '#/components/parameters/ForceDelete'
+      description: Deletes the requested service.
+      security:
+      - x-api-key: []
+      tags:
+      - Project Services
+  /v1/orgs/{org}/projects/{project}/services:
+    parameters:
+    - $ref: '#/components/parameters/OrgPathParam'
+    - $ref: '#/components/parameters/ProjectPathParam'
+    get:
+      summary: List Services
+      responses:
+        '200':
+          $ref: '#/components/responses/ServiceListResponse'
+      operationId: get-services
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit1'
+      - $ref: '#/components/parameters/SearchTerm1'
+      - $ref: '#/components/parameters/ServiceIdentifiers'
+      - $ref: '#/components/parameters/Sort1'
+      - schema:
+          type: boolean
+        in: query
+        name: is_access_list
+        description: Specifies whether the list is an access list. An access list is a list of services that you are permitted to use in a pipeline.
+      - $ref: '#/components/parameters/DeploymentType'
+      - schema:
+          type: boolean
+        name: git_ops_enabled
+        in: query
+        description: Enables you to use the service in Harness GitOps PR pipelines.
+      - $ref: '#/components/parameters/AccountHeader'
+      - $ref: '#/components/parameters/Order'
+      security:
+      - x-api-key: []
+      description: Returns a list of the services for which you have view permissions in the given project.
+      tags:
+      - Project Services
+    post:
+      summary: Create a Service
+      operationId: create-service
+      responses:
+        '201':
+          $ref: '#/components/responses/ServiceResponse'
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/ServiceCreateRequest'
+      description: Creates a service
+      security:
+      - x-api-key: []
+      tags:
+      - Project Services
+  /v1/orgs/{org}/projects/{project}/services/{service}/primary-manifests:
+    parameters:
+    - $ref: '#/components/parameters/ServicePathParam'
+    - $ref: '#/components/parameters/OrgPathParam'
+    - $ref: '#/components/parameters/ProjectPathParam'
+    get:
+      summary: List primary manifests of a project scoped service
+      responses:
+        '200':
+          $ref: '#/components/responses/ManifestsResponseDTO'
+      operationId: get-primary-manifests
+      description: Returns a list of eligible primary manifests from all configured manifest in a project-scoped service.
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      security:
+      - x-api-key: []
+      tags:
+      - Project Services
+      x-internal: true
+    post:
+      summary: List primary manifests of a project scoped service
+      responses:
+        '200':
+          $ref: '#/components/responses/ManifestsResponseDTO'
+      description: Returns a list of eligible primary manifests from all configured manifest in a project-scoped service.
+      operationId: post-primary-manifests
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/GitEntityFindInfoRequestBody'
+      security:
+      - x-api-key: []
+      tags:
+      - Project Services
+      x-internal: true
+components:
+  parameters:
+    DeploymentType:
+      name: deployment_type
+      in: query
+      required: false
+      description: Service Definition Type
+      schema:
+        type: string
+        enum:
+        - Kubernetes
+        - NativeHelm
+        - Ssh
+        - WinRm
+        - ServerlessAwsLambda
+        - AzureWebApp
+        - GitOps
+        - ECS
+        - TAS
+        - CustomDeployment
+        - Elastigroup
+        - Asg
+        - GoogleCloudFunctions
+        - AwsLambda
+        - AWS_SAM
+    SearchTerm1:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching with search term.
+    ProjectPathParam:
+      name: project
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the project the resource is scoped to
+    Sort1:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - name
+        - identifier
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    ServiceIdentifiers:
+      name: service_ids
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+      description: List of Service Identifiers
+    OrgPathParam:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the organization the resource is scoped to
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    ForceDelete:
+      name: forceDelete
+      in: query
+      schema:
+        type: boolean
+        default: false
+      description: Enable this field to force delete the entity
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    ServicePathParam:
+      name: service
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the service the resource is scoped to
+  schemas:
+    ServiceResponse:
+      type: object
+      x-examples:
+        example-1:
+          service:
+            account: sample_account
+            identifier: example_service
+            org: sample_organization
+            project: sample_project
+            name: Example_service
+            description: This is a example service
+            tags:
+              example-tag-1: example-tag-1-value
+              example-tag-2: example-tag-2-value
+            yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+          created: 1234567890
+          updated: 1234567890
+      description: Default response when a service is returned
+      title: ServiceResponse
+      properties:
+        service:
+          $ref: '#/components/schemas/Service'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for Service.
+        updated:
+          type: integer
+          format: int64
+          description: Last modification timestamp for Service.
+    ServiceCreateRequest:
+      type: object
+      x-examples:
+        example-1:
+          identifier: example_service
+          name: Example_service
+          description: This is a example service
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+      title: ServiceCreateRequest
+      description: 'Service Request Body '
+      properties:
+        identifier:
+          type: string
+          description: Identifier of the Service
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Name of the Service
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          description: Description of the entity
+          maxLength: 1024
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Service tags
+          maxProperties: 128
+        yaml:
+          type: string
+          description: YAML for the Service Request
+        harness_version:
+          type: string
+          description: version of harness yaml
+      required:
+      - identifier
+      - name
+    GitEntityFindInfoDTO:
+      type: object
+      description: Details to find Git Entity including Git Sync Config Id and Branch Name.
+      properties:
+        branch:
+          type: string
+          description: The branch name.
+        yamlGitConfigId:
+          type: string
+          description: Git Sync Config ID.
+        defaultFromOtherRepo:
+          type: boolean
+          description: If true, return all default entities.
+        parentEntityConnectorRef:
+          type: string
+          description: Connector ref of parent entity if remote.
+        parentEntityRepoName:
+          type: string
+          description: Repo name of parent entity if remote.
+        parentEntityAccountIdentifier:
+          type: string
+          description: Account identifier of parent entity.
+        parentEntityOrgIdentifier:
+          type: string
+          description: Organization identifier of parent entity.
+        parentEntityProjectIdentifier:
+          type: string
+          description: Project identifier of parent entity.
+        repoName:
+          type: string
+          description: Repository name.
+    ManifestsResponseDTO:
+      title: ManifestsResponseDTO
+      type: object
+      properties:
+        identifiers:
+          type: array
+          description: List of Manifest Identifiers
+          items:
+            type: string
+      description: ManifestsResponseDTO returns a list of manifest identifiers from a service's eligible primary manifests.
+      x-internal: false
+      x-examples:
+        Example 1:
+          identifiers:
+          - id1
+          - id2
+    Service:
+      type: object
+      x-examples:
+        example-1:
+          account: sample_account
+          identifier: example_service
+          org: sample_organization
+          project: sample_project
+          name: Example_service
+          description: This is a example service
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+      description: This is the Service entity defined in Harness
+      title: Service
+      properties:
+        account:
+          type: string
+          description: Account Identifier
+          minLength: 1
+          maxLength: 128
+        identifier:
+          type: string
+          description: Identifier of the Service Request.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          description: Organization Identifier for the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        project:
+          type: string
+          description: Project Identifier for the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Name of the Service Request.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          description: Description of the entity
+          maxLength: 1024
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Service tags
+          maxProperties: 128
+        yaml:
+          type: string
+          description: Yaml related to service
+        harness_version:
+          type: string
+          description: version of harness yaml
+      required:
+      - identifier
+      - name
+    ServiceUpdateRequest:
+      type: object
+      x-examples:
+        example-1:
+          identifier: example_service
+          name: Example_service
+          description: This is a example service
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+      title: ServiceUpdateRequest
+      description: 'Service Update Request Body '
+      properties:
+        identifier:
+          type: string
+          description: Identifier of the Service
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Name of the Service
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          description: Description of the entity
+          maxLength: 1024
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Service tags
+          maxProperties: 128
+        yaml:
+          type: string
+          description: YAML for the Service Request
+        harness_version:
+          type: string
+          description: version of harness yaml
+      required:
+      - identifier
+      - name
+  responses:
+    ManifestsResponseDTO:
+      description: Response containing a list of eligible manifest identifiers that can be applied as primary manifest.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ManifestsResponseDTO'
+          examples:
+            Example 1:
+              value:
+                identifiers:
+                - id1
+                - id2
+        application/xml:
+          schema:
+            type: object
+            properties: {}
+    ServiceListResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ServiceResponse'
+          examples:
+            example-1:
+              value:
+              - service:
+                  account: sample_account
+                  identifier: example_service
+                  org: sample_organization
+                  project: sample_project
+                  name: Example_service
+                  description: This is a example service
+                  tags:
+                    example-tag-1: example-tag-1-value
+                    example-tag-2: example-tag-2-value
+                  yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+                created: 1234567890
+                updated: 1234567890
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ServiceResponse'
+          examples:
+            example-1:
+              value: "- service:\n    account: sample_account\n    identifier: example_service\n    org: sample_organization\n    project: sample_project\n    name: Example_service\n    description: This is a example service\n    tags:\n      example-tag-1: example-tag-1-value\n      example-tag-2: example-tag-2-value\n    yaml: |\n      service:\n        name: \"Example_service\"\n        identifier: \"example_service\"\n        tags: {}\n  created: 1234567890\n  updated: 1234567890\n"
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+    ServiceResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceResponse'
+          examples:
+            example-1:
+              value:
+                service:
+                  account: sample_account
+                  identifier: example_service
+                  org: sample_organization
+                  project: sample_project
+                  name: Example_service
+                  description: This is a example service
+                  tags:
+                    example-tag-1: example-tag-1-value
+                    example-tag-2: example-tag-2-value
+                  yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+                created: 1234567890
+                updated: 1234567890
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ServiceResponse'
+          examples:
+            example-1:
+              value: "service:\n  account: sample_account\n  identifier: example_service\n  org: sample_organization\n  project: sample_project\n  name: Example_service\n  description: This is a example service\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n  yaml: |\n    service:\n      name: \"Example_service\"\n      identifier: \"example_service\"\n      tags: {}\ncreated: 1234567890\nupdated: 1234567890\n"
+  requestBodies:
+    GitEntityFindInfoRequestBody:
+      description: Optional Git synchronization details for filtering primary manifests.
+      required: false
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GitEntityFindInfoDTO'
+    ServiceCreateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceCreateRequest'
+          examples:
+            example-1:
+              value:
+                identifier: example_service
+                name: Example_service
+                description: This is a example service
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ServiceCreateRequest'
+          examples:
+            example-1:
+              value: "identifier: example_service\nname: Example_service\ndescription: This is a example service\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_service\"\n    identifier: \"example_service\"\n    tags: {}\n"
+      description: Create Service request body
+      required: true
+    ServiceUpdateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceUpdateRequest'
+          examples:
+            example-1:
+              value:
+                identifier: example_service
+                name: Example_service
+                description: This is a example service
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ServiceUpdateRequest'
+          examples:
+            example-1:
+              value: "identifier: example_service\nname: Example_service\ndescription: This is a example service\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_service\"\n    identifier: \"example_service\"\n    tags: {}\n"
+      description: Update Service request body
+      required: true
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

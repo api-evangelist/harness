@@ -1,22 +1,408 @@
 openapi: 3.2.0
 info:
-  title: Harness Platform Organizations Pipeline Execution API
-  description: The Harness Platform API provides access to core platform resources including projects, organizations, connectors, secrets, users, roles, pipelines, triggers, and pipeline execution.
+  title: Harness Pipeline Execution API
   version: '1.0'
-  contact:
-    name: Harness Developer Support
-    url: https://developer.harness.io/
-  x-generated-from: documentation
-  x-last-validated: '2026-04-18'
+  x-refined-note:
+  - x-generated-from differs across the merged source definitions and was not carried
+  - x-last-validated differs across the merged source definitions and was not carried
+  - x-logo differs across the merged source definitions and was not carried
+  description: 'Operations tagged Pipeline Execution across 2 of this provider''s published API definitions: harness-apis-openapi.yaml, harness-platform-api.yaml. Each path carries the servers of the definition it was published in.'
 servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
 - url: https://app.harness.io/gateway
   description: Harness SaaS Production
-security:
-- apiKeyAuth: []
 tags:
 - name: Pipeline Execution
-  description: Execute pipelines
+  description: This contains APIs for Pipeline Execution.
+  x-displayName: Pipeline Execution [Beta]
 paths:
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/execute:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    - $ref: '#/components/parameters/PipelineParam'
+    post:
+      summary: Execute Pipeline
+      operationId: execute-pipeline
+      responses:
+        '200':
+          $ref: '#/components/responses/PipelineExecuteResponseBody'
+      x-stoplight:
+        id: 1afpa0a08cfyg
+      requestBody:
+        $ref: '#/components/requestBodies/PipelineExecuteRequestBody'
+      parameters:
+      - schema:
+          type: string
+        in: query
+        name: module
+        description: Module type for the entity. If its from deployments,type will be CD , if its from build type will be CI
+      - schema:
+          type: boolean
+          default: 'false'
+        in: query
+        name: use_fqn_if_error_response
+        description: Use FQN in error response.
+      - schema:
+          type: boolean
+          default: 'false'
+        in: query
+        name: notify_only_user
+      - schema:
+          type: string
+        in: query
+        name: notes
+        description: Notes of a pipeline execution
+      - $ref: '#/components/parameters/AccountHeader4'
+      - $ref: '#/components/parameters/Branch'
+      - schema:
+          type: string
+        in: query
+        name: connector_ref
+        description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
+      - schema:
+          type: string
+        in: query
+        name: repo_name
+        description: Name of the repository (for Git Experience).
+      description: Pipeline Execution API
+      tags:
+      - Pipeline Execution
+      security:
+      - x-api-key: []
+    servers:
+    - url: https://app.harness.io
+      description: Harness host URL
+    - url: https://{vanity}
+      description: Vanity URL
+      variables:
+        vanity:
+          default: app.harness.io
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/execute/rerun/{execution-id}:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    - $ref: '#/components/parameters/PipelineParam'
+    - $ref: '#/components/parameters/ExecutionIdParam'
+    post:
+      summary: Rerun Pipeline
+      operationId: rerun-pipeline
+      responses:
+        '200':
+          $ref: '#/components/responses/PipelineExecuteResponseBody'
+      x-stoplight:
+        id: 8rms04nwjz7uq
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader4'
+      - schema:
+          type: string
+        in: query
+        name: module
+        description: Module type for the entity. If its from deployments,type will be CD , if its from build type will be CI.
+      - schema:
+          type: boolean
+          default: false
+        in: query
+        name: use_fqn_if_error
+      - schema:
+          type: string
+        in: query
+        name: notes
+        description: Notes of a pipeline execution
+      - $ref: '#/components/parameters/Branch'
+      - schema:
+          type: string
+        in: query
+        name: connector_ref
+        description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
+      - schema:
+          type: string
+        in: query
+        name: repo_name
+        description: Name of the repository (for Git Experience).
+      requestBody:
+        $ref: '#/components/requestBodies/RerunPipelineRequestBody'
+      description: Rerun Pipeline Execution
+      tags:
+      - Pipeline Execution
+      x-internal: true
+      security:
+      - x-api-key: []
+    servers:
+    - url: https://app.harness.io
+      description: Harness host URL
+    - url: https://{vanity}
+      description: Vanity URL
+      variables:
+        vanity:
+          default: app.harness.io
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/execute/retry/{execution-id}:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    - $ref: '#/components/parameters/PipelineParam'
+    - $ref: '#/components/parameters/ExecutionIdParam'
+    post:
+      summary: Retry Pipeline
+      operationId: retry-pipeline-with-inputset-pipeline-yaml
+      responses:
+        '200':
+          $ref: '#/components/responses/PipelineExecuteResponseBody'
+      x-stoplight:
+        id: s6t1sk8tjrzpj
+      description: Retry a executed Pipeline with inputSet Pipeline yaml.
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader4'
+      - schema:
+          type: string
+        in: query
+        name: module
+        description: Module type for the entity. If its from deployments,type will be CD , if its from build type will be CI.
+      - schema:
+          type: array
+          items:
+            type: string
+        in: query
+        name: retry_stages
+        allowEmptyValue: false
+        description: This param contains the identifier of stages from where to resume. It will be a list if we want to retry from parallel group.
+      - schema:
+          type: boolean
+          default: true
+        in: query
+        name: run_all_stages
+        description: This param provides an option to run only the failed stages when Pipeline fails at parallel group. By default, it will run all the stages in the failed parallel group.
+      - schema:
+          type: string
+        in: query
+        name: notes
+        description: Notes of a Pipeline execution.
+      requestBody:
+        $ref: '#/components/requestBodies/RerunPipelineRequestBody'
+      x-internal: true
+      tags:
+      - Pipeline Execution
+      security:
+      - x-api-key: []
+    servers:
+    - url: https://app.harness.io
+      description: Harness host URL
+    - url: https://{vanity}
+      description: Vanity URL
+      variables:
+        vanity:
+          default: app.harness.io
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/execute/stages-execution-list:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    - $ref: '#/components/parameters/PipelineParam'
+    get:
+      summary: Get Stages execution List for a given Pipeline execution
+      tags:
+      - Pipeline Execution
+      responses:
+        '200':
+          $ref: '#/components/responses/StageExecutionResponseList'
+      operationId: get-stages-execution-list
+      x-stoplight:
+        id: aixvxgt5qd21j
+      description: Returns list of Stage identifiers with their names and stage dependencies
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader4'
+      - schema:
+          type: string
+          default: 'false'
+        in: header
+        name: Load-From-Cache
+        description: Flag to enable loading the remote Pipeline from git or git cache
+      - $ref: '#/components/parameters/Branch'
+      - schema:
+          type: string
+        in: query
+        name: connector_ref
+        description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
+      - schema:
+          type: string
+        in: query
+        name: repo_name
+        description: Name of the repository (for Git Experience).
+      security:
+      - x-api-key: []
+    servers:
+    - url: https://app.harness.io
+      description: Harness host URL
+    - url: https://{vanity}
+      description: Vanity URL
+      variables:
+        vanity:
+          default: app.harness.io
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/execute/rerun/{execution-id}/stages:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    - $ref: '#/components/parameters/PipelineParam'
+    - $ref: '#/components/parameters/ExecutionIdParam'
+    post:
+      summary: Re-run Stages Execution of a Pipeline
+      tags:
+      - Pipeline Execution
+      responses:
+        '200':
+          $ref: '#/components/responses/PipelineExecuteResponseBody'
+      operationId: rerun-stages-execution-of-pipeline
+      x-stoplight:
+        id: fiduvh2471by2
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader4'
+      - $ref: '#/components/parameters/Branch'
+      - schema:
+          type: string
+        in: query
+        name: connector_ref
+        description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
+      - schema:
+          type: string
+        in: query
+        name: repo_name
+        description: Name of the repository (for Git Experience)
+      - schema:
+          type: boolean
+          default: false
+        in: query
+        name: use_fqn_if_error
+        description: Use FQN in error response
+      - schema:
+          type: string
+        in: query
+        name: module
+        description: Module type for the entity. If its from deployments,type will be CD , if its from build type will be CI.
+      - schema:
+          type: string
+        in: query
+        name: notes
+        description: Notes of a pipeline execution
+      requestBody:
+        $ref: '#/components/requestBodies/RunStageRequestBody'
+      security:
+      - x-api-key: []
+    servers:
+    - url: https://app.harness.io
+      description: Harness host URL
+    - url: https://{vanity}
+      description: Vanity URL
+      variables:
+        vanity:
+          default: app.harness.io
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/execute/dynamic:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    - $ref: '#/components/parameters/PipelineParam'
+    post:
+      summary: Execute Pipeline with dynamic Input YAML
+      tags:
+      - Pipeline Execution
+      responses:
+        '200':
+          $ref: '#/components/responses/PipelineExecuteResponseBody'
+      operationId: runDynamicExecutionWithInputYaml
+      description: API for executing a dynamic pipeline input YAML. Refer to the developer documentation for detailed usage and configuration instructions https://developer.harness.io/docs/platform/pipelines/dynamic-execution-pipeline/#dynamic-execution-api
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader4'
+      - schema:
+          type: string
+        in: query
+        name: moduleType
+        description: The module from which execution was triggered.
+      - schema:
+          type: string
+        in: query
+        name: notes
+        default: ''
+        description: Notes of a pipeline execution
+      - schema:
+          type: boolean
+          default: false
+        in: query
+        name: notify_only_user
+      requestBody:
+        $ref: '#/components/requestBodies/DynamicPipelineExecuteRequestBody'
+      x-stoplight:
+        id: izltjry4il9gp
+      security:
+      - x-api-key: []
+    servers:
+    - url: https://app.harness.io
+      description: Harness host URL
+    - url: https://{vanity}
+      description: Vanity URL
+      variables:
+        vanity:
+          default: app.harness.io
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/execute/stages:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam'
+    - $ref: '#/components/parameters/ProjectParam'
+    - $ref: '#/components/parameters/PipelineParam'
+    post:
+      summary: Execute given Stages of a Pipeline
+      tags:
+      - Pipeline Execution
+      responses:
+        '200':
+          $ref: '#/components/responses/PipelineExecuteResponseBody'
+      operationId: execute-stages-with-input-yaml
+      x-stoplight:
+        id: gp30uxkm66ijj
+      description: Execute given Stages of a Pipeline with Input Yaml
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader4'
+      - schema:
+          type: string
+        in: query
+        name: module
+        description: Module type for the entity. If its from deployments,type will be CD , if its from build type will be CI.
+      - schema:
+          type: string
+          default: 'false'
+        in: query
+        name: use_fqn_if_error
+        description: Use FQN in error response.
+      - schema:
+          type: string
+        in: query
+        name: notes
+        description: Notes of a Pipeline execution.
+      - $ref: '#/components/parameters/Branch'
+      - schema:
+          type: string
+        in: query
+        name: connector_ref
+        description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
+      - schema:
+          type: string
+        in: query
+        name: repo_name
+        description: Name of the repository (for Git Experience).
+      requestBody:
+        $ref: '#/components/requestBodies/RunStageRequestBody'
+      security:
+      - x-api-key: []
+    servers:
+    - url: https://app.harness.io
+      description: Harness host URL
+    - url: https://{vanity}
+      description: Vanity URL
+      variables:
+        vanity:
+          default: app.harness.io
   /pipeline/api/pipelines/execute/{pipelineIdentifier}:
     post:
       operationId: executePipeline
@@ -61,17 +447,157 @@ paths:
       x-microcks-operation:
         delay: 0
         dispatcher: FALLBACK
+      security:
+      - apiKeyAuth: []
+    servers:
+    - url: https://app.harness.io/gateway
+      description: Harness SaaS Production
 components:
+  responses:
+    PipelineExecuteResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PipelineExecuteResponseBody'
+    StageExecutionResponseList:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StageExecutionResponseList'
   schemas:
-    PipelineExecutionRequest:
+    DynamicPipelineExecuteRequestBody:
+      title: DynamicPipelineExecuteRequestBody
       type: object
-      description: Request to execute a pipeline.
+      description: Please provide input Pipeline YAML, which needs to be executed.
       properties:
-        inputSetReferences:
+        yaml:
+          type: string
+      x-examples:
+        Example 1:
+          yaml: "pipeline:\n  identifier: Dynamic_pipeline\n  stages:\n    - stage:\n        identifier: stage1\n        type: Custom\n        spec:\n          execution:\n            steps:\n              - step:\n                  identifier: Wait_1\n                  type: Wait\n                  spec:\n                    duration: 10s\n"
+      x-stoplight:
+        id: nyqjsupsodd94
+    PipelineExecuteResponseBody:
+      title: PipelineExecuteResponseBody
+      x-stoplight:
+        id: zxuefpr014jtf
+      type: object
+      properties:
+        execution_details:
+          $ref: '#/components/schemas/ExecutionDetails'
+    RunStageRequestBody:
+      title: RunStageRequestBody
+      x-stoplight:
+        id: h8mxoegrz962h
+      type: object
+      description: Request Parameters needed to run specific Stages of a Pipeline.
+      properties:
+        inputs_yaml:
+          type: string
+          x-stoplight:
+            id: x5gp39vwvsfqa
+          description: Inputs yaml of the Pipeline.
+        stage_identifiers:
           type: array
+          x-stoplight:
+            id: k07ndws6g4c06
+          description: List of stages to run.
           items:
+            x-stoplight:
+              id: 15rh571azguqa
             type: string
-          description: Input set references for the execution.
+        expression_values:
+          type: object
+          additionalProperties:
+            type: string
+          x-stoplight:
+            id: nu0wje2ij62n4
+          description: If any selected stage to execute has expressions, then this map contains expressions with its corresponding values.
+    RerunPipelineRequest:
+      title: RerunPipelineRequest
+      x-stoplight:
+        id: sybat01ihsx1t
+      type: object
+      properties:
+        inputs_yaml:
+          type: string
+          x-stoplight:
+            id: bt7mcmrltbaed
+          description: Inputs YAML if the pipeline contains runtime inputs. This will be empty by default if pipeline does not contains runtime inputs
+    StageExecutionResponseBody:
+      title: StageExecutionResponseBody
+      x-stoplight:
+        id: iyueximu9l079
+      type: object
+      description: This contains info about a Pipeline Stage needed for stage execution.
+      properties:
+        stage_identifier:
+          type: string
+          x-stoplight:
+            id: 7egt86y9e44ys
+          description: Stage Identifier
+        stage_name:
+          type: string
+          x-stoplight:
+            id: f6w9hmz8gjl4c
+          description: Stage Name
+        message:
+          type: string
+          x-stoplight:
+            id: 5d49qpxupxqwj
+          description: Warning message for Selective stage execution.
+        is_to_be_blocked:
+          type: boolean
+          x-stoplight:
+            id: pr0l1xidr6g09
+          description: Checks if there is a dependency and stage cannot be run individually.
+        stages_required:
+          type: array
+          x-stoplight:
+            id: u3z0ui7bo3kly
+          description: Stages that needs to be ran along with this stage as there is a dependency.
+          items:
+            x-stoplight:
+              id: 11db0z1kb8mef
+            type: string
+    StageExecutionResponseList:
+      title: StageExecutionResponseList
+      x-stoplight:
+        id: jpq696fbwhqrc
+      type: array
+      items:
+        $ref: '#/components/schemas/StageExecutionResponseBody'
+      x-internal: true
+    PipelineExecuteRequestBody:
+      title: PipelineExecuteRequestBody
+      x-stoplight:
+        id: ewyvhqpxsefmi
+      type: object
+      properties:
+        inputs_yaml:
+          type: string
+          x-stoplight:
+            id: nuc124clughh4
+          description: Inputs YAML if the Pipeline contains Runtime Inputs
+      x-examples:
+        Example 1:
+          inputs_yaml: "pipeline:\n  identifier: pipelineIdentifier\n  stages:\n    - stage:\n        identifier: stage1\n        type: Custom\n        spec:\n          execution:\n            steps:\n              - step:\n                  identifier: ShellScript_1\n                  type: ShellScript\n                  spec:\n                    source:\n                      type: Inline\n                      spec:\n                        script: echo hello\n                  timeout: 10s"
+    ExecutionDetails:
+      title: ExecutionDetails
+      x-stoplight:
+        id: n5bobdu3qlotg
+      type: object
+      properties:
+        execution_id:
+          type: string
+          x-stoplight:
+            id: z4u8i0ndngb1l
+        status:
+          type: string
+          x-stoplight:
+            id: jqvvn4fj1nrdd
     PipelineExecution:
       type: object
       description: A pipeline execution.
@@ -91,9 +617,479 @@ components:
                 status:
                   type: string
                   example: RUNNING
+    PipelineExecutionRequest:
+      type: object
+      description: Request to execute a pipeline.
+      properties:
+        inputSetReferences:
+          type: array
+          items:
+            type: string
+          description: Input set references for the execution.
+  parameters:
+    Branch:
+      name: branch_name
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Name of the branch (for Git Experience).
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    AccountHeader4:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    ExecutionIdParam:
+      name: execution-id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Pipeline Execution identifier
+    PipelineParam:
+      name: pipeline
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Pipeline identifier
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+  requestBodies:
+    RunStageRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RunStageRequestBody'
+    PipelineExecuteRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PipelineExecuteRequestBody'
+    RerunPipelineRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RerunPipelineRequest'
+    DynamicPipelineExecuteRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DynamicPipelineExecuteRequestBody'
+      description: ''
   securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
     apiKeyAuth:
       type: apiKey
       in: header
       name: x-api-key
       description: Harness API key.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-refined-from:
+- harness-apis-openapi.yaml
+- harness-platform-api.yaml
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

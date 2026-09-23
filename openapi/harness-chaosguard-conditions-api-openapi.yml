@@ -1,0 +1,1161 @@
+openapi: 3.2.0
+info:
+  title: Harness ChaosGuard Conditions API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: ChaosGuard Conditions
+paths:
+  /gateway/chaos/manager/api/rest/genai/sgp/generate:
+    post:
+      summary: Get security governance conditions template
+      operationId: getSGPTemplateByGenAI
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/security_governance.Condition'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/shared.Error'
+      tags:
+      - ChaosGuard Conditions
+  /gateway/chaos/manager/api/v3/chaosguard-conditions:
+    get:
+      tags:
+      - ChaosGuard Conditions
+      summary: List chaos guard conditions
+      operationId: listCondition
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - x-enum-varnames:
+        - KUBERNETES
+        - KUBERNETESV2
+        - Linux
+        - Windows
+        name: infrastructureType
+        in: query
+        schema:
+          type: string
+          enum:
+          - Kubernetes
+          - KubernetesV2
+          - Linux
+          - Windows
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 15
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 0
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - description: name that you want to search
+        name: search
+        in: query
+        schema:
+          type: string
+      - description: if sort order ascending or not
+        name: sortAscending
+        in: query
+        schema:
+          type: boolean
+      - description: field  name that you want to sort
+        name: sortField
+        in: query
+        schema:
+          type: string
+          enum:
+          - name
+          - lastUpdated
+          - experimentName
+      - name: tags
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chaosguardconditions.ListConditionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+    post:
+      tags:
+      - ChaosGuard Conditions
+      summary: Create a chaos guard condition
+      operationId: createCondition
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/chaosguardconditions.CreateConditionRequest'
+        description: create condition request
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chaosguardconditions.CreateConditionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+  /gateway/chaos/manager/api/v3/chaosguard-conditions/{identity}:
+    get:
+      tags:
+      - ChaosGuard Conditions
+      summary: Get a chaos guard condition by id
+      operationId: getCondition
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - description: The identifier for the condition
+        name: identity
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chaosguardconditions.GetConditionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+    put:
+      tags:
+      - ChaosGuard Conditions
+      summary: Update a chaos guard condition
+      operationId: updateCondition
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - description: The identifier for the condition
+        name: identity
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/security_governance.Condition'
+        description: update condition request
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chaosguardconditions.UpdateConditionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+    delete:
+      tags:
+      - ChaosGuard Conditions
+      summary: Delete a chaos guard condition
+      operationId: deleteCondition
+      parameters:
+      - description: account id to access the resource
+        name: accountIdentifier
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: correlation id is used to debug micro svc communication
+        name: correlationID
+        in: query
+        schema:
+          type: string
+      - description: organization id to access the resource
+        name: organizationIdentifier
+        in: query
+        schema:
+          type: string
+      - description: project id to access the resource
+        name: projectIdentifier
+        in: query
+        schema:
+          type: string
+      - description: The identifier for the condition
+        name: identity
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chaosguardconditions.DeleteConditionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/api.RestError'
+components:
+  schemas:
+    chaosguardconditions.CreateConditionResponse:
+      type: object
+      required:
+      - conditionId
+      - faultSpec
+      - infraType
+      - name
+      properties:
+        conditionId:
+          type: string
+        correlationID:
+          type: string
+        description:
+          type: string
+        faultSpec:
+          $ref: '#/components/schemas/security_governance.FaultSpec'
+        infraType:
+          $ref: '#/components/schemas/security_governance.InfraType'
+        k8sSpec:
+          $ref: '#/components/schemas/security_governance.K8sSpec'
+        machineSpec:
+          $ref: '#/components/schemas/security_governance.MachineSpec'
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    chaosguardconditions.CreateConditionRequest:
+      type: object
+      required:
+      - conditionId
+      - faultSpec
+      - infraType
+      - name
+      properties:
+        conditionId:
+          type: string
+        description:
+          type: string
+        faultSpec:
+          $ref: '#/components/schemas/security_governance.FaultSpec'
+        infraType:
+          $ref: '#/components/schemas/security_governance.InfraType'
+        k8sSpec:
+          $ref: '#/components/schemas/security_governance.K8sSpec'
+        machineSpec:
+          $ref: '#/components/schemas/security_governance.MachineSpec'
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    security_governance.ApplicationSpec:
+      type: object
+      properties:
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+        workloads:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.Workload'
+    hcesdk.UserDetails:
+      type: object
+      properties:
+        email:
+          type: string
+        userID:
+          type: string
+        username:
+          type: string
+    security_governance.InfraSpec:
+      type: object
+      properties:
+        infraIds:
+          type: array
+          items:
+            type: string
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+    security_governance.Env:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    chaosguardconditions.ListConditionResponse:
+      type: object
+      properties:
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosguardconditions.ConditionResponse'
+        correlationID:
+          type: string
+        pagination:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    security_governance.FaultType:
+      type: string
+      enum:
+      - FAULT_GROUP
+      - FAULT_NAME
+      x-enum-varnames:
+      - FAULT_GROUP
+      - FAULT_NAME
+    security_governance.Workload:
+      type: object
+      properties:
+        applicationMapId:
+          type: string
+        env:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.Env'
+        kind:
+          type: string
+        label:
+          type: string
+        namespace:
+          type: string
+        services:
+          type: array
+          items:
+            type: string
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    security_governance.AccessControl:
+      type: string
+      enum:
+      - ALLOWED
+      - BLOCKED
+      x-enum-varnames:
+      - ALLOWED
+      - BLOCKED
+    security_governance.InfraType:
+      type: string
+      enum:
+      - Kubernetes
+      - KubernetesV2
+      - Linux
+      - Windows
+      x-enum-varnames:
+      - KUBERNETES
+      - KUBERNETESV2
+      - Linux
+      - Windows
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
+          type: string
+    security_governance.K8sSpec:
+      type: object
+      properties:
+        applicationSpec:
+          $ref: '#/components/schemas/security_governance.ApplicationSpec'
+        chaosServiceAccountSpec:
+          $ref: '#/components/schemas/security_governance.ChaosServiceAccountSpec'
+        infraSpec:
+          $ref: '#/components/schemas/security_governance.InfraSpec'
+        unverifiedProbe:
+          $ref: '#/components/schemas/security_governance.AccessControl'
+    chaosguardconditions.UpdateConditionResponse:
+      type: object
+      required:
+      - conditionId
+      - faultSpec
+      - infraType
+      - name
+      properties:
+        conditionId:
+          type: string
+        correlationID:
+          type: string
+        description:
+          type: string
+        faultSpec:
+          $ref: '#/components/schemas/security_governance.FaultSpec'
+        infraType:
+          $ref: '#/components/schemas/security_governance.InfraType'
+        k8sSpec:
+          $ref: '#/components/schemas/security_governance.K8sSpec'
+        machineSpec:
+          $ref: '#/components/schemas/security_governance.MachineSpec'
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    security_governance.Condition:
+      type: object
+      required:
+      - conditionId
+      - faultSpec
+      - infraType
+      - name
+      properties:
+        conditionId:
+          type: string
+        description:
+          type: string
+        faultSpec:
+          $ref: '#/components/schemas/security_governance.FaultSpec'
+        infraType:
+          $ref: '#/components/schemas/security_governance.InfraType'
+        k8sSpec:
+          $ref: '#/components/schemas/security_governance.K8sSpec'
+        machineSpec:
+          $ref: '#/components/schemas/security_governance.MachineSpec'
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    security_governance.MachineSpec:
+      type: object
+      properties:
+        infraSpec:
+          $ref: '#/components/schemas/security_governance.InfraSpec'
+        unverifiedProbe:
+          $ref: '#/components/schemas/security_governance.AccessControl'
+    security_governance.Fault:
+      type: object
+      properties:
+        faultType:
+          $ref: '#/components/schemas/security_governance.FaultType'
+        name:
+          type: string
+    security_governance.ChaosServiceAccountSpec:
+      type: object
+      properties:
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+        serviceAccounts:
+          type: array
+          items:
+            type: string
+    shared.Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        correlationID:
+          type: string
+        message:
+          type: string
+    chaosguardconditions.DeleteConditionResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        message:
+          type: string
+        success:
+          type: boolean
+    chaosguardconditions.Rule:
+      type: object
+      required:
+      - name
+      - ruleId
+      properties:
+        name:
+          type: string
+        ruleId:
+          type: string
+    security_governance.FaultSpec:
+      type: object
+      properties:
+        faults:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.Fault'
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
+      type: object
+      properties:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    chaosguardconditions.ConditionResponse:
+      type: object
+      required:
+      - conditionId
+      - faultSpec
+      - infraType
+      - name
+      properties:
+        conditionId:
+          type: string
+        createdAt:
+          type: integer
+        createdBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
+        description:
+          type: string
+        faultSpec:
+          $ref: '#/components/schemas/security_governance.FaultSpec'
+        infraType:
+          $ref: '#/components/schemas/security_governance.InfraType'
+        k8sSpec:
+          $ref: '#/components/schemas/security_governance.K8sSpec'
+        machineSpec:
+          $ref: '#/components/schemas/security_governance.MachineSpec'
+        name:
+          type: string
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosguardconditions.Rule'
+        tags:
+          type: array
+          items:
+            type: string
+        updatedAt:
+          type: integer
+        updatedBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
+    chaosguardconditions.GetConditionResponse:
+      type: object
+      required:
+      - conditionId
+      - faultSpec
+      - infraType
+      - name
+      properties:
+        conditionId:
+          type: string
+        correlationID:
+          type: string
+        createdAt:
+          type: integer
+        createdBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
+        description:
+          type: string
+        faultSpec:
+          $ref: '#/components/schemas/security_governance.FaultSpec'
+        infraType:
+          $ref: '#/components/schemas/security_governance.InfraType'
+        k8sSpec:
+          $ref: '#/components/schemas/security_governance.K8sSpec'
+        machineSpec:
+          $ref: '#/components/schemas/security_governance.MachineSpec'
+        name:
+          type: string
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosguardconditions.Rule'
+        tags:
+          type: array
+          items:
+            type: string
+        updatedAt:
+          type: integer
+        updatedBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
+    security_governance.Operator:
+      type: string
+      enum:
+      - EQUAL_TO
+      - NOT_EQUAL_TO
+      x-enum-varnames:
+      - EQUAL_TO
+      - NOT_EQUAL_TO
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

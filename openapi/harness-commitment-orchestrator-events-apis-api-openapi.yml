@@ -1,0 +1,720 @@
+openapi: 3.2.0
+info:
+  title: Harness Commitment Orchestrator Events APIs API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Commitment Orchestrator Events APIs
+  description: This contains APIs to fetch commitment orchestrator events data.
+paths:
+  /gateway/lw/api/accounts/{account_id}/v1/events/chart:
+    post:
+      tags:
+      - Commitment Orchestrator Events APIs
+      summary: List event logs
+      description: Obtains list of events and the count of their occurences grouped by date
+      operationId: EventsChart
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: accountIdentifier
+        description: Account Identifier for the Entity
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        required: true
+        schema:
+          type: string
+          description: Start time of the period
+          example: '2021-10-19'
+      - name: end_date
+        in: query
+        required: true
+        schema:
+          type: string
+          description: End time of the period
+          example: '2021-10-19'
+      requestBody:
+        description: Optional filters
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/EventsFilter'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsChartsSuccessResponse'
+        '400':
+          description: Invalid status value
+          content: {}
+      x-codegen-request-body-name: body
+  /gateway/lw/api/accounts/{account_id}/v1/events/renewal_events:
+    post:
+      tags:
+      - Commitment Orchestrator Events APIs
+      summary: List auto-renewal events
+      description: Returns auto-renewal activities (upcoming and completed) for the account, filtered by date range and optional cloud account, regions, and AWS service. Used to annotate charts such as Compute Coverage when savings or coverage dip around RI/SP renewals. If start_date and end_date are omitted, the server defaults to the last 30 days (UTC).
+      operationId: RenewalEvents
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Date range and optional filters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenewalEventsRequest'
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/RenewalEventsRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenewalEventsSuccessResponse'
+        '400':
+          description: Invalid request (e.g. invalid date format or end_date before start_date)
+          content: {}
+      x-codegen-request-body-name: body
+  /gateway/lw/api/accounts/{account_id}/v1/events/ri_recommendation_schedule:
+    get:
+      tags:
+      - Commitment Orchestrator Events APIs
+      summary: RI recommendation cooldown schedule
+      description: Returns the configured minimum interval between RI recommendation engine runs and when the next run becomes eligible, based on the latest completed approval transaction for the account and service.
+      operationId: RIRecommendationSchedule
+      parameters:
+      - name: account_id
+        description: Account Identifier for the Entity
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: service
+        description: AWS Service type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - Amazon Elastic Compute Cloud - Compute
+          - Amazon Relational Database Service
+          - Amazon ElastiCache
+          default: Amazon Elastic Compute Cloud - Compute
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RIRecommendationScheduleSuccessResponse'
+        '400':
+          description: Invalid parameters
+          content: {}
+components:
+  schemas:
+    EventsChartsSuccessResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        success:
+          type: boolean
+          description: Specifies if the operation is successful
+        errors:
+          type: string
+          description: Specifies the error if the operation failed
+        response:
+          type: object
+          properties:
+            total:
+              type: integer
+            pages:
+              type: integer
+            events:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChartResponse'
+    ChartResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          example: '2023-07-14T00:59:00.619568Z'
+        count:
+          type: integer
+        event_type:
+          type: string
+    RIRecommendationSchedule:
+      type: object
+      properties:
+        minIntervalDays:
+          type: integer
+          description: Minimum calendar days after the last completed RI approval transaction before a non-force recommendation run proceeds
+        lastTransactionAt:
+          type: string
+          format: date-time
+          description: Omitted when no qualifying completed approval transaction exists (e.g. recommendation job never ran or none completed yet). Otherwise, updated time of the latest transaction used for cooldown.
+        nextEligibleAt:
+          type: string
+          format: date-time
+          description: Earliest time a non-force run clears the cooldown; omitted when there is no prior transaction or cooldown is disabled
+        isEligibleNow:
+          type: boolean
+          description: Whether a non-force recommendation run would not be skipped for cooldown reasons
+        lastRunCompletedAt:
+          type: string
+          format: date-time
+          description: When the latest completed RI recommendation engine job finished for this cloud account and service
+        recommendationsGenerated:
+          type: integer
+          description: Number of RI recommendations enqueued in that last completed run
+        noNewRecommendationsReason:
+          type: string
+          description: When no new recommendations were produced, machine-readable reason (e.g. target_coverage_achieved, guardrails_validation_failed, pending_jobs_or_cooldown, recommendation_cooldown, no_forecast_data)
+        noNewRecommendationsReasonMessage:
+          type: string
+          description: Default English explanation for the UI when noNewRecommendationsReason is set; clients may localize using noNewRecommendationsReason as the key
+    EventsFilter:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            type: string
+        group_by:
+          type: string
+        service:
+          type: string
+          enum:
+          - Amazon Relational Database Service
+          - Amazon Elastic Compute Cloud - Compute
+          default: Amazon Elastic Compute Cloud - Compute
+          description: Service to fetch the details for.
+    RenewalEventsRequest:
+      type: object
+      properties:
+        cloud_account_ids:
+          type: array
+          items:
+            type: string
+          description: When non-empty, only renewal events for these cloud accounts are returned
+        start_date:
+          type: string
+          format: date
+          description: Start of filter range (YYYY-MM-DD). Defaults to 30 days before today (UTC) when omitted.
+          example: '2025-01-01'
+        end_date:
+          type: string
+          format: date
+          description: End of filter range (YYYY-MM-DD). Defaults to today (UTC) when omitted.
+          example: '2025-01-31'
+        regions:
+          type: array
+          items:
+            type: string
+          description: When non-empty, only events whose region matches one of these values
+        service:
+          type: string
+          description: AWS service type; defaults to Amazon Elastic Compute Cloud - Compute when omitted
+          enum:
+          - Amazon Elastic Compute Cloud - Compute
+          - Amazon Relational Database Service
+          default: Amazon Elastic Compute Cloud - Compute
+    RIRecommendationScheduleSuccessResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        success:
+          type: boolean
+          description: Specifies if the operation is successful
+        errors:
+          type: string
+          description: Specifies the error if the operation failed
+        response:
+          $ref: '#/components/schemas/RIRecommendationSchedule'
+    RenewalEventsSuccessResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        success:
+          type: boolean
+          description: Specifies if the operation is successful
+        errors:
+          type:
+          - string
+          - 'null'
+          description: Specifies the error if the operation failed
+        response:
+          type: object
+          properties:
+            events:
+              type: array
+              items:
+                $ref: '#/components/schemas/RenewalEvent'
+              description: Auto-renewal events in the requested range and filters
+    RenewalEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Activity row identifier
+        cloud_account_id:
+          type: string
+        region:
+          type: string
+        status:
+          type: string
+          description: Activity status (e.g. pending, complete)
+        expiry_date:
+          type: string
+          format: date
+          description: Reservation expiry date from activity metadata (YYYY-MM-DD)
+        renewal_scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Present when status indicates renewal scheduling completed; mirrors last update time
+        updated_at:
+          type: string
+          format: date-time
+          description: When the activity was last updated
+        description:
+          type: string
+          description: Human-readable activity description
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

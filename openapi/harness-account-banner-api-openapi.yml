@@ -1,0 +1,740 @@
+openapi: 3.2.0
+info:
+  title: Harness Account Banner API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Account Banner
+  description: This contains APIs for Account Banners.
+  x-displayName: Account Banner
+paths:
+  /v1/banners:
+    get:
+      summary: Retrieves the list of Banners in account scope
+      tags:
+      - Account Banner
+      responses:
+        '200':
+          $ref: '#/components/responses/BannerListResponse'
+      operationId: get-account-scoped-banners
+      x-stoplight:
+        id: ld5yy1r4xvhtt
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      - $ref: '#/components/parameters/SearchTerm1'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit1'
+      - $ref: '#/components/parameters/Sort1'
+      - $ref: '#/components/parameters/Order'
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+        in: query
+        name: enabled
+        description: Show banners with enabled field filtering
+        allowEmptyValue: true
+    post:
+      summary: Creates a new Banner in account scope
+      operationId: create-account-scoped-banners
+      x-stoplight:
+        id: 7qljrrvy7z0ha
+      responses:
+        '201':
+          $ref: '#/components/responses/BannerResponse'
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      security:
+      - x-api-key: []
+      requestBody:
+        $ref: '#/components/requestBodies/CreateBannerRequest'
+      description: Creates a new Banner in Account Scope.
+      tags:
+      - Account Banner
+  /v1/banners/validate-unique-identifier/{bannerId}:
+    parameters:
+    - schema:
+        type: string
+      name: bannerId
+      in: path
+      required: true
+      description: Identifier field of the BannerDTO
+    get:
+      summary: Validate if the specified Banner identifier is available for use in account…
+      tags:
+      - Account Banner
+      responses:
+        '200':
+          $ref: '#/components/responses/BannerBooleanResponse'
+      operationId: validate-account-scoped-banner-identifier
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      description: Validate if the specified BannerDTO identifier is available for use in account scope
+      security:
+      - x-api-key: []
+  /v1/banners/allowed:
+    get:
+      summary: Check for a current account max 5 banners are enabled or not
+      tags:
+      - Account Banner
+      responses:
+        '200':
+          $ref: '#/components/responses/BannerBooleanResponse'
+      operationId: banners-allowed
+      description: Check for a current account max 5 banners are enabled or not.
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+  /v1/banners/{banner}:
+    parameters:
+    - schema:
+        type: string
+      name: banner
+      in: path
+      required: true
+      description: Identifier field of the Banner
+    put:
+      summary: Updates the specified Banner in account scope
+      operationId: update-account-scoped-banner
+      responses:
+        '200':
+          $ref: '#/components/responses/BannerResponse'
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateBannerRequest'
+      tags:
+      - Account Banner
+    delete:
+      summary: Deletes the specified Banner in account scope
+      operationId: delete-account-scoped-banner
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      tags:
+      - Account Banner
+  /v1/banners/active:
+    get:
+      summary: Return Active Banners
+      tags:
+      - Account Banner
+      responses:
+        '200':
+          $ref: '#/components/responses/BannerListResponse'
+      operationId: get-account-scoped-active-banners
+      description: This API endpoint will return max 5 banners as that is the enabled banners count.
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader'
+      - $ref: '#/components/parameters/SearchTerm1'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit1'
+      - $ref: '#/components/parameters/Sort1'
+      - $ref: '#/components/parameters/Order'
+components:
+  parameters:
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    SearchTerm1:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching with search term.
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    Sort1:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - name
+        - identifier
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+  responses:
+    BannerResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BannerResponseDTO'
+    BannerListResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/BannerResponseDTO'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: string
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: string
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: string
+          description: Maximum page size in Paginated response.
+    BannerBooleanResponse:
+      description: This Response body is used in validate banner identifier endpoint & /v1/banners/allowed
+      content:
+        application/json:
+          schema:
+            type: boolean
+  schemas:
+    BannerIntent:
+      title: BannerIntent
+      x-stoplight:
+        id: 0lz494izh75cr
+      type: string
+      enum:
+      - INFORMATIONAL
+      - HIGH
+      - MEDIUM
+      - LOW
+      description: enum for "intent" field in BannerDTO
+    BannerDTO:
+      title: BannerDTO
+      x-stoplight:
+        id: bjkd0178m4ic6
+      type: object
+      description: This is the request dto to create a Banner in Harness
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: izz4aokqklu02
+        identifier:
+          type: string
+          x-stoplight:
+            id: ext4ub1eyfa2d
+        enabled:
+          type: boolean
+          x-stoplight:
+            id: o1bqftrzgja8o
+          default: false
+        intent:
+          $ref: '#/components/schemas/BannerIntent'
+        title:
+          type: string
+          x-stoplight:
+            id: f13e2ake7hr2e
+          maxLength: 80
+          description: Banner Title with max length 80
+        message:
+          type: string
+          x-stoplight:
+            id: 8kabcedzxhhao
+          maxLength: 250
+          description: Banner Message with max length 250
+        callToActions:
+          type: object
+          x-stoplight:
+            id: gjergkzmibzw3
+      required:
+      - name
+      - identifier
+      - intent
+      - title
+      - message
+    BannerResponseDTO:
+      title: BannerResponseDTO
+      x-stoplight:
+        id: 8farxrnz2d6o3
+      type: object
+      properties:
+        banner:
+          $ref: '#/components/schemas/BannerDTO'
+        created:
+          type: integer
+          x-stoplight:
+            id: w5vpxgir9xee8
+          format: int64
+        updated:
+          type: integer
+          x-stoplight:
+            id: 6wuncr0735opi
+          format: int64
+      required:
+      - banner
+  requestBodies:
+    CreateBannerRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BannerDTO'
+    UpdateBannerRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BannerDTO'
+      description: Request body when updating respective Banner.
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

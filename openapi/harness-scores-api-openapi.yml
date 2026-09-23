@@ -1,0 +1,954 @@
+openapi: 3.2.0
+info:
+  title: Harness Scores API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Scores
+  description: Scores Information
+  x-displayName: Scores Information
+paths:
+  /v1/scores/summary:
+    parameters: []
+    get:
+      summary: Get Score Summary for Scorecards
+      responses:
+        '200':
+          $ref: '#/components/responses/ScorecardSummaryInfoResponse'
+      operationId: get-all-scorecard-summary
+      x-stoplight:
+        id: 6hoo6kwpvy1p8
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/EntityIdentifier'
+      x-internal: false
+      tags:
+      - Scores
+  /v1/scores:
+    parameters: []
+    get:
+      summary: Get Scores for Scorecards
+      responses:
+        '200':
+          $ref: '#/components/responses/ScorecardScoreResponse'
+      operationId: get-scorecards-scores-overview
+      x-stoplight:
+        id: lpnl6xzlj655z
+      security:
+      - x-api-key: []
+      x-internal: false
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/EntityIdentifier'
+      tags:
+      - Scores
+  /v1/scores/aggregate:
+    post:
+      summary: Get Aggregated Scores for Catalog entities
+      responses:
+        '200':
+          $ref: '#/components/responses/EntityScoresResponseList'
+      operationId: get-aggregated-scores
+      x-stoplight:
+        id: i14tbedz1cc8u
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScorecardFilter'
+      x-internal: false
+      tags:
+      - Scores
+  /v1/scores/graph:
+    parameters: []
+    get:
+      summary: Get Data for check status for graph
+      responses:
+        '200':
+          $ref: '#/components/responses/ScorecardGraphSummaryResponse'
+      operationId: get-scorecards-graphs-score-summary
+      x-stoplight:
+        id: 8pd67sxvs7wwe
+      x-internal: true
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/EntityIdentifier'
+      - schema:
+          type: string
+          default: null
+        in: query
+        name: scorecard_identifier
+        description: 'Identifier for scorecard '
+      security:
+      - x-api-key: []
+      tags:
+      - Scores
+  /v1/scores/recalibrate:
+    parameters: []
+    post:
+      summary: Trigger recalibration of scores for a scorecard
+      operationId: scorecard-recalibrate
+      responses:
+        '200':
+          $ref: '#/components/responses/ScorecardRecalibrateResponse'
+      x-stoplight:
+        id: 3px6djmawemwv
+      description: API for Recalibrating the score for scorecard of entity
+      security:
+      - x-api-key: []
+      requestBody:
+        $ref: '#/components/requestBodies/ScorecardRecalibrateRequest'
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      x-internal: true
+      tags:
+      - Scores
+  /v1/scores/recalibrate/status:
+    parameters: []
+    get:
+      summary: Get score recalibration status
+      tags:
+      - Scores
+      responses:
+        '200':
+          $ref: '#/components/responses/ScorecardRecalibrateResponseV2'
+      operationId: get-scores-recalibrate-status
+      x-stoplight:
+        id: 2qlp5rle9cmv8
+      description: Get status of score computation request
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      requestBody:
+        $ref: '#/components/requestBodies/ScorecardRecalibrateRequest'
+      x-internal: true
+components:
+  schemas:
+    ScorecardScore:
+      title: ScorecardScore
+      x-stoplight:
+        id: ynku3ttnf3cx6
+      type: object
+      x-internal: false
+      description: Score info for single score card
+      properties:
+        score:
+          type: integer
+          x-stoplight:
+            id: h22nwhcbzelge
+        description:
+          type: string
+          x-stoplight:
+            id: zcv3hpqtum3sy
+        scorecard_name:
+          type: string
+          x-stoplight:
+            id: nci7recn0sy8r
+      required:
+      - score
+      - description
+      - scorecard_name
+    ScorecardRecalibrateResponse:
+      title: ScorecardRecalibrateResponse
+      x-stoplight:
+        id: 832327nsai3xw
+      type: object
+      properties:
+        recalibrated_scores:
+          $ref: '#/components/schemas/ScorecardSummaryInfo'
+      required:
+      - recalibrated_scores
+    EntityScores:
+      title: EntityScores
+      x-stoplight:
+        id: pm2xjutml29k8
+      type: object
+      x-internal: false
+      description: Scores for each backstage entity
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: c0ds57kufm40y
+        title:
+          type: string
+          x-stoplight:
+            id: 3br5wu0kv0evq
+        kind:
+          type: string
+          x-stoplight:
+            id: yyu76dpyv8le4
+        namespace:
+          type: string
+          x-stoplight:
+            id: ndpcgr677rusf
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScorecardScore'
+      required:
+      - name
+      - title
+      - kind
+      - namespace
+      - scores
+    ScorecardGraphSummaryInfo:
+      title: ScorecardGraphSummaryInfo
+      x-stoplight:
+        id: yue93ode0kqe9
+      type: object
+      description: Scorecard graph summary
+      x-internal: true
+      properties:
+        scorecard_identifier:
+          type: string
+          x-stoplight:
+            id: sgnwvhqpiw7w3
+        timestamp:
+          type: integer
+          x-stoplight:
+            id: 5s7wtkrmax6su
+          format: int64
+        score:
+          type: integer
+          x-stoplight:
+            id: z8oob1b8f6t8z
+      required:
+      - scorecard_identifier
+      - timestamp
+      - score
+    ScorecardSummaryResponse:
+      title: ScorecardSummaryResponse
+      x-stoplight:
+        id: ynl06zzfi94rh
+      type: object
+      description: 'Response for getting list for summary of score '
+      properties:
+        scorecards_summary:
+          type: array
+          x-stoplight:
+            id: 1f4kjylmzpkq8
+          items:
+            $ref: '#/components/schemas/ScorecardSummaryInfo'
+      required:
+      - scorecards_summary
+      x-internal: false
+    ScorecardScoreResponse:
+      title: ScorecardScoreResponse
+      x-stoplight:
+        id: mzt5uyu7qe0wo
+      type: object
+      x-internal: false
+      description: Response for getting only scores for scorecards
+      properties:
+        scorecard_scores:
+          type: array
+          x-stoplight:
+            id: awwxj6rf39qgz
+          items:
+            $ref: '#/components/schemas/ScorecardScore'
+        overall_score:
+          type: integer
+          x-stoplight:
+            id: d2sok8uuzgwog
+      required:
+      - scorecard_scores
+      - overall_score
+    ScorecardGraphSummaryInfoResponse:
+      title: ScorecardGraphSummaryInfoResponse
+      x-stoplight:
+        id: 9phrnuoo1d9pe
+      type: object
+      x-internal: true
+      properties:
+        scorecard_graph_summary:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScorecardGraphSummaryInfo'
+      required:
+      - scorecard_graph_summary
+      description: Response for scorecard graph summary
+    EntityScoresResponse:
+      title: EntityScoresResponse
+      x-stoplight:
+        id: 6jzf10wfckw9o
+      type: object
+      description: Response for each entity scores
+      x-internal: false
+      properties:
+        entity:
+          $ref: '#/components/schemas/EntityScores'
+    ScorecardFilter:
+      title: ScorecardFilter
+      x-stoplight:
+        id: xwnr2xalsb1fv
+      type: object
+      properties:
+        kind:
+          type: string
+          x-stoplight:
+            id: ni2n6gaelw2sh
+        type:
+          type: string
+          x-stoplight:
+            id: pit0to8ng7rtl
+        owners:
+          type: array
+          x-stoplight:
+            id: ibe4axxxrnwpl
+          items:
+            x-stoplight:
+              id: kde7prhuw2ww2
+            type: string
+        tags:
+          type: array
+          x-stoplight:
+            id: 9sqie0nb3f08d
+          items:
+            x-stoplight:
+              id: 8sko0og6lpbyh
+            type: string
+        lifecycle:
+          type: array
+          x-stoplight:
+            id: 9rtf97h3uu9z3
+          items:
+            x-stoplight:
+              id: etzt6sp88w5iz
+            type: string
+      required:
+      - kind
+    CheckStatus:
+      title: CheckStatus
+      x-stoplight:
+        id: fdrxgq2legal0
+      type: object
+      description: Info for single check status
+      x-internal: false
+      properties:
+        reason:
+          type: string
+          x-stoplight:
+            id: a55tfumwxdws2
+        identifier:
+          type: string
+          x-stoplight:
+            id: def12dcql6nng
+        name:
+          type: string
+          x-stoplight:
+            id: hgm12dcql6uny
+        custom:
+          type: boolean
+          x-stoplight:
+            id: 05nibebb1qklq
+        status:
+          type: string
+          x-stoplight:
+            id: zz8q5jgf52oex
+          enum:
+          - PASS
+          - FAIL
+        weight:
+          type: integer
+          x-stoplight:
+            id: 4onn2ugf7eag2
+      required:
+      - name
+      - status
+      - weight
+    ScorecardRecalibrateInfo:
+      title: ScorecardRecalibrateInfo
+      x-stoplight:
+        id: a5yovd00yo89y
+      type: object
+      properties:
+        start_time:
+          type: integer
+          x-stoplight:
+            id: dsc57yz269flx
+          format: int64
+        started_by:
+          $ref: '#/components/schemas/User'
+    ScorecardRecalibrateResponseV2:
+      title: ScorecardRecalibrateResponseV2
+      x-stoplight:
+        id: 6ooyo1l1t3jkn
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/ScorecardRecalibrateInfo'
+    ScorecardRecalibrateIdentifiers:
+      title: ScorecardRecalibrateIdentifiers
+      x-stoplight:
+        id: dq24ve7fntvl7
+      type: object
+      properties:
+        scorecard_identifier:
+          type: string
+          x-stoplight:
+            id: ext9tyc3dprj6
+        entity_identifier:
+          type: string
+          x-stoplight:
+            id: 988nefyoe6o5e
+      description: Identifiers needed for score recalibration
+    ScorecardRecalibrateRequest:
+      title: ScorecardRecalibrateRequest
+      x-stoplight:
+        id: wyhtihipnwd7n
+      type: object
+      properties:
+        identifiers:
+          $ref: '#/components/schemas/ScorecardRecalibrateIdentifiers'
+    User:
+      title: User
+      x-stoplight:
+        id: p693c8e19hig1
+      type: object
+      properties:
+        uuid:
+          type: string
+          x-stoplight:
+            id: akz3uywxq3fcy
+        name:
+          type: string
+          x-stoplight:
+            id: j5y9u9hxapibd
+        email:
+          type: string
+          x-stoplight:
+            id: zrikcrbyjl7pk
+      description: ''
+    ScorecardSummaryInfo:
+      title: ScorecardSummaryInfo
+      x-stoplight:
+        id: pay6aezj4d31h
+      type: object
+      description: Scorecard score calculation summary info
+      x-internal: false
+      properties:
+        scorecard_name:
+          type: string
+          x-stoplight:
+            id: 9mygzdf55ojhx
+        timestamp:
+          type: integer
+          x-stoplight:
+            id: t8nvwtsz37o45
+          format: int64
+        score:
+          type: integer
+          x-stoplight:
+            id: n3owkfarff0z1
+        checks_statuses:
+          type: array
+          x-stoplight:
+            id: bq3l2ts4hqmeb
+          items:
+            $ref: '#/components/schemas/CheckStatus'
+        description:
+          type: string
+          x-stoplight:
+            id: vqndowi5uxn9y
+        scorecard_identifier:
+          type: string
+          x-stoplight:
+            id: 8ug477to6b52k
+        recalibrate_info:
+          $ref: '#/components/schemas/ScorecardRecalibrateInfo'
+      required:
+      - scorecard_name
+      - timestamp
+      - score
+      - checks_statuses
+      - description
+      - scorecard_identifier
+  responses:
+    ScorecardGraphSummaryResponse:
+      description: Response for scorecard's score summary for graph
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardGraphSummaryInfoResponse'
+    ScorecardRecalibrateResponseV2:
+      description: Response for async scorecard recalibrate request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardRecalibrateResponseV2'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ScorecardRecalibrateResponseV2'
+    ScorecardRecalibrateResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardRecalibrateResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ScorecardRecalibrateResponse'
+    EntityScoresResponseList:
+      description: Response for all the entity scores
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityScoresResponse'
+    ScorecardScoreResponse:
+      description: Response for scorecards score
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardScoreResponse'
+    ScorecardSummaryInfoResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardSummaryResponse'
+  parameters:
+    EntityIdentifier:
+      name: entity_identifier
+      in: query
+      required: true
+      schema:
+        type: string
+      description: 'Identifier for entity to get the scores for score card '
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+  requestBodies:
+    ScorecardRecalibrateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardRecalibrateRequest'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ScorecardRecalibrateRequest'
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

@@ -1,0 +1,1144 @@
+openapi: 3.2.0
+info:
+  title: Harness AutoStopping Alerts API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: AutoStopping Alerts
+  description: This contains APIs to create and manage alerts for AutoStopping events and notifications.
+paths:
+  /gateway/lw/api/accounts/{account_id}/alerts:
+    post:
+      tags:
+      - AutoStopping Alerts
+      summary: Create Alert
+      description: Creates a new alert configuration for AutoStopping events. Alerts can notify users via email or Slack when specific events occur, such as warmup failures, cooldown failures, or rule lifecycle changes.
+      operationId: CreateAlert
+      parameters:
+      - name: account_id
+        description: Unique identifier of the Harness account
+        in: path
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization
+        in: query
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      requestBody:
+        description: Alert configuration to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertRequest'
+            examples:
+              all_rules:
+                summary: Alert for all AutoStopping rules
+                description: Creates an alert that applies to all AutoStopping rules in the account
+                value:
+                  name: demo-alert-all-rules
+                  enabled: true
+                  entity_type: autostopping_rule
+                  recipients:
+                  - type: email
+                    ids:
+                    - user@example.com
+                  events:
+                  - id: event-created
+                    event: autostopping_rule_created
+                  - id: event-updated
+                    event: autostopping_rule_updated
+                  - id: event-deleted
+                    event: autostopping_rule_deleted
+                  - id: event-warmup-failed
+                    event: autostopping_warmup_failed
+                  - id: event-cooldown-failed
+                    event: autostopping_cooldown_failed
+                  associated_entities:
+                  - relation_type: all
+              specific_rules:
+                summary: Alert for specific AutoStopping rules
+                description: Creates an alert that targets specific AutoStopping rules by their IDs
+                value:
+                  name: specific-rules-alert-demo
+                  enabled: true
+                  entity_type: autostopping_rule
+                  recipients:
+                  - type: email
+                    ids:
+                    - user@example.com
+                  events:
+                  - id: event-updated
+                    event: autostopping_rule_updated
+                  - id: event-deleted
+                    event: autostopping_rule_deleted
+                  associated_entities:
+                  - relation_type: specific
+                    entity_id: '4519'
+                  - relation_type: specific
+                    entity_id: '4487'
+        required: true
+      responses:
+        '200':
+          description: Alert created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertCreateResponse'
+        '400':
+          description: Invalid request - validation failed
+          content: {}
+      x-codegen-request-body-name: body
+    put:
+      tags:
+      - AutoStopping Alerts
+      summary: Update Alert
+      description: Updates an existing alert configuration. The alert ID must be provided in the request body.
+      operationId: UpdateAlert
+      parameters:
+      - name: account_id
+        description: Unique identifier of the Harness account
+        in: path
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization
+        in: query
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      requestBody:
+        description: Alert configuration to update. The alert ID is required.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertUpdateRequest'
+            examples:
+              all_rules:
+                summary: Update alert for all AutoStopping rules
+                description: Updates an alert to apply to all AutoStopping rules in the account
+                value:
+                  id: 550e8400-e29b-41d4-a716-446655440000
+                  name: updated-alert-all-rules
+                  enabled: true
+                  entity_type: autostopping_rule
+                  recipients:
+                  - type: email
+                    ids:
+                    - user@example.com
+                  events:
+                  - id: event-created
+                    event: autostopping_rule_created
+                  - id: event-warmup-failed
+                    event: autostopping_warmup_failed
+                  - id: event-cooldown-failed
+                    event: autostopping_cooldown_failed
+                  associated_entities:
+                  - relation_type: all
+              specific_rules:
+                summary: Update alert for specific AutoStopping rules
+                description: Updates an alert to target specific AutoStopping rules by their IDs
+                value:
+                  id: 550e8400-e29b-41d4-a716-446655440000
+                  name: updated-specific-rules-alert
+                  enabled: true
+                  entity_type: autostopping_rule
+                  recipients:
+                  - type: email
+                    ids:
+                    - user@example.com
+                  events:
+                  - id: event-updated
+                    event: autostopping_rule_updated
+                  - id: event-deleted
+                    event: autostopping_rule_deleted
+                  associated_entities:
+                  - relation_type: specific
+                    entity_id: '4519'
+                  - relation_type: specific
+                    entity_id: '4487'
+        required: true
+      responses:
+        '200':
+          description: Alert updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertMessageResponse'
+        '400':
+          description: Invalid request - validation failed or alert not found
+          content: {}
+      x-codegen-request-body-name: body
+  /gateway/lw/api/accounts/{account_id}/alerts/list:
+    post:
+      tags:
+      - AutoStopping Alerts
+      summary: List Alerts
+      description: Retrieves a paginated list of alerts matching the specified search criteria. Supports filtering by entity type, entity IDs, enabled status, events, and name search.
+      operationId: ListAlerts
+      parameters:
+      - name: account_id
+        description: Unique identifier of the Harness account
+        in: path
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization
+        in: query
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      requestBody:
+        description: Search criteria for filtering alerts
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertSearchRequest'
+        required: true
+      responses:
+        '200':
+          description: Successfully retrieved list of alerts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertListResponse'
+        '400':
+          description: Invalid request - validation failed
+          content: {}
+      x-codegen-request-body-name: body
+  /gateway/lw/api/accounts/{account_id}/alerts/{alert_id}:
+    get:
+      tags:
+      - AutoStopping Alerts
+      summary: Get Alert
+      description: Retrieves the details of a specific alert by its ID.
+      operationId: GetAlert
+      parameters:
+      - name: account_id
+        description: Unique identifier of the Harness account
+        in: path
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      - name: alert_id
+        description: Unique identifier of the alert to retrieve
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization
+        in: query
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      responses:
+        '200':
+          description: Successfully retrieved alert details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertResponse'
+        '400':
+          description: Invalid request - alert_id is required
+          content: {}
+        '404':
+          description: Alert not found
+          content: {}
+    delete:
+      tags:
+      - AutoStopping Alerts
+      summary: Delete Alert
+      description: Deletes an alert by its ID. This is a soft delete operation.
+      operationId: DeleteAlert
+      parameters:
+      - name: account_id
+        description: Unique identifier of the Harness account
+        in: path
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      - name: alert_id
+        description: Unique identifier of the alert to delete
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: accountIdentifier
+        description: Account Identifier for authentication and authorization
+        in: query
+        required: true
+        schema:
+          type: string
+        example: px7xd_BFRCi-pfWPYXVjvw
+      responses:
+        '200':
+          description: Alert deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertMessageResponse'
+        '400':
+          description: Invalid request - alert_id is required
+          content: {}
+        '404':
+          description: Alert not found
+          content: {}
+components:
+  schemas:
+    AlertListResponse:
+      type: object
+      required:
+      - response
+      properties:
+        response:
+          type: object
+          required:
+          - records
+          - total
+          - pages
+          properties:
+            records:
+              type: array
+              description: List of alerts matching the search criteria
+              items:
+                $ref: '#/components/schemas/Alert'
+            total:
+              type: integer
+              description: Total number of alerts matching the criteria
+            pages:
+              type: integer
+              description: Total number of pages
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the alert
+        account_id:
+          type: string
+          description: ID of the account this alert belongs to
+        name:
+          type: string
+          description: Name of the alert
+        enabled:
+          type: boolean
+          description: Whether the alert is enabled
+        entity_type:
+          type: string
+          description: Type of entity the alert is associated with
+          enum:
+          - autostopping_rule
+        recipients:
+          type: array
+          description: List of notification recipients
+          items:
+            $ref: '#/components/schemas/AlertRecipient'
+        events:
+          type: array
+          description: List of events that trigger the alert
+          items:
+            $ref: '#/components/schemas/AlertEvent'
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the alert was created
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the alert was last updated
+        associated_entities:
+          type: array
+          description: List of entities associated with this alert
+          items:
+            $ref: '#/components/schemas/AlertEntity'
+    AlertUpdateRequest:
+      type: object
+      description: Request payload for updating an existing alert. The alert ID is required.
+      required:
+      - id
+      - name
+      - entity_type
+      - recipients
+      - events
+      - associated_entities
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the alert to update. This field is required for update operations.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          description: Name of the alert
+          example: demo-alert-all-rules
+        enabled:
+          type: boolean
+          description: Whether the alert is enabled
+          default: true
+          example: true
+        entity_type:
+          type: string
+          description: Type of entity the alert is associated with
+          enum:
+          - autostopping_rule
+          example: autostopping_rule
+        recipients:
+          type: array
+          description: List of notification recipients. At least one recipient is required.
+          items:
+            $ref: '#/components/schemas/AlertRecipient'
+          example:
+          - type: email
+            ids:
+            - user@example.com
+        events:
+          type: array
+          description: List of events that trigger the alert. At least one event is required.
+          items:
+            $ref: '#/components/schemas/AlertEvent'
+          example:
+          - id: event-created
+            event: autostopping_rule_created
+        associated_entities:
+          type: array
+          description: List of entities associated with this alert. Use relation_type 'all' to apply to all AutoStopping rules, or 'specific' with entity_id to target specific rules.
+          items:
+            $ref: '#/components/schemas/AlertEntity'
+          example:
+          - relation_type: all
+      example:
+        id: 550e8400-e29b-41d4-a716-446655440000
+        name: updated-alert-name
+        enabled: true
+        entity_type: autostopping_rule
+        recipients:
+        - type: email
+          ids:
+          - user@example.com
+        events:
+        - id: event-created
+          event: autostopping_rule_created
+        - id: event-warmup-failed
+          event: autostopping_warmup_failed
+        associated_entities:
+        - relation_type: all
+    AlertEntitySpecific:
+      type: object
+      description: Apply alert to a specific AutoStopping rule by ID
+      required:
+      - relation_type
+      - entity_id
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the alert entity (auto-generated, not required in requests)
+        alert_id:
+          type: string
+          description: ID of the parent alert (auto-generated, not required in requests)
+        relation_type:
+          type: string
+          description: Must be 'specific' to target individual rules
+          enum:
+          - specific
+        entity_id:
+          type: string
+          description: ID of the specific AutoStopping rule. This is the rule ID (numeric string).
+          example: '4519'
+      example:
+        relation_type: specific
+        entity_id: '4519'
+    AlertEntityAll:
+      type: object
+      description: Apply alert to all AutoStopping rules in the account
+      required:
+      - relation_type
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the alert entity (auto-generated, not required in requests)
+        alert_id:
+          type: string
+          description: ID of the parent alert (auto-generated, not required in requests)
+        relation_type:
+          type: string
+          description: Must be 'all' to apply alert to all AutoStopping rules
+          enum:
+          - all
+      example:
+        relation_type: all
+    AlertEntity:
+      description: Defines which entities (AutoStopping rules) the alert applies to. Use 'all' to apply to all rules, or 'specific' with entity_id to target specific rules.
+      oneOf:
+      - $ref: '#/components/schemas/AlertEntityAll'
+      - $ref: '#/components/schemas/AlertEntitySpecific'
+    AlertRecipient:
+      type: object
+      required:
+      - type
+      - ids
+      properties:
+        type:
+          type: string
+          description: Type of notification channel
+          enum:
+          - email
+          - slack
+          example: email
+        ids:
+          type: array
+          description: 'List of recipient identifiers. For email: email addresses. For slack: Slack channel IDs or webhook URLs.'
+          items:
+            type: string
+          example:
+          - user@example.com
+    AlertEvent:
+      type: object
+      required:
+      - id
+      - event
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this event configuration. Can be any string to identify this event entry.
+          example: event-warmup-failed
+        event:
+          type: string
+          description: Type of event that triggers the alert
+          enum:
+          - autostopping_warmup_failed
+          - autostopping_cooldown_failed
+          - autostopping_rule_created
+          - autostopping_rule_updated
+          - autostopping_rule_deleted
+          example: autostopping_warmup_failed
+    AlertRequest:
+      type: object
+      required:
+      - name
+      - entity_type
+      - recipients
+      - events
+      - associated_entities
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the alert. Required for update operations.
+        name:
+          type: string
+          description: Name of the alert
+          example: demo-alert-all-rules
+        enabled:
+          type: boolean
+          description: Whether the alert is enabled
+          default: true
+          example: true
+        entity_type:
+          type: string
+          description: Type of entity the alert is associated with
+          enum:
+          - autostopping_rule
+          example: autostopping_rule
+        recipients:
+          type: array
+          description: List of notification recipients. At least one recipient is required.
+          items:
+            $ref: '#/components/schemas/AlertRecipient'
+          example:
+          - type: email
+            ids:
+            - user@example.com
+        events:
+          type: array
+          description: List of events that trigger the alert. At least one event is required.
+          items:
+            $ref: '#/components/schemas/AlertEvent'
+          example:
+          - id: event-created
+            event: autostopping_rule_created
+          - id: event-warmup-failed
+            event: autostopping_warmup_failed
+        associated_entities:
+          type: array
+          description: List of entities associated with this alert. Use relation_type 'all' to apply to all AutoStopping rules, or 'specific' with entity_id to target specific rules.
+          items:
+            $ref: '#/components/schemas/AlertEntity'
+          example:
+          - relation_type: all
+      example:
+        name: demo-alert-all-rules
+        enabled: true
+        entity_type: autostopping_rule
+        recipients:
+        - type: email
+          ids:
+          - user@example.com
+        events:
+        - id: event-created
+          event: autostopping_rule_created
+        - id: event-updated
+          event: autostopping_rule_updated
+        - id: event-deleted
+          event: autostopping_rule_deleted
+        - id: event-warmup-failed
+          event: autostopping_warmup_failed
+        - id: event-cooldown-failed
+          event: autostopping_cooldown_failed
+        associated_entities:
+        - relation_type: all
+    AlertResponse:
+      type: object
+      required:
+      - response
+      properties:
+        response:
+          $ref: '#/components/schemas/Alert'
+    AlertSearchRequest:
+      type: object
+      description: Request payload for searching and filtering alerts with pagination support
+      properties:
+        page:
+          type: integer
+          description: Page number for pagination (1-indexed)
+          default: 1
+          example: 1
+        limit:
+          type: integer
+          description: Number of records per page
+          default: 10
+          example: 10
+        sort:
+          type: object
+          description: Sorting options for the results
+          properties:
+            field:
+              type: string
+              description: Field to sort by
+              enum:
+              - updated_at
+              - created_at
+              example: updated_at
+            type:
+              type: string
+              description: Sort direction
+              enum:
+              - ASC
+              - DESC
+              example: DESC
+          example:
+            field: updated_at
+            type: DESC
+        filters:
+          type: array
+          description: Advanced filters for querying alerts
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field name to filter on
+              fields:
+                type: array
+                description: Multiple fields to filter with OR clause (higher priority than single field)
+                items:
+                  type: string
+              operator:
+                type: string
+                description: Filter operator
+                enum:
+                - equals
+                - not_equals
+              values:
+                type: array
+                description: Values to filter by
+                items:
+                  type: string
+        entity_type:
+          type: string
+          description: Filter by entity type
+          enum:
+          - autostopping_rule
+          example: autostopping_rule
+        entity_id:
+          type: array
+          description: Filter by specific entity IDs (AutoStopping rule IDs)
+          items:
+            type: string
+          example:
+          - '4519'
+          - '4487'
+        enabled:
+          type: boolean
+          description: Filter by enabled status
+          example: true
+        events:
+          type: array
+          description: Filter by event types
+          items:
+            type: string
+            enum:
+            - autostopping_warmup_failed
+            - autostopping_cooldown_failed
+            - autostopping_rule_created
+            - autostopping_rule_updated
+            - autostopping_rule_deleted
+          example:
+          - autostopping_warmup_failed
+          - autostopping_cooldown_failed
+        query:
+          type: string
+          description: Search query to filter alerts by name (case-insensitive partial match)
+          example: production
+      example:
+        page: 1
+        limit: 10
+        sort:
+          field: updated_at
+          type: DESC
+        entity_type: autostopping_rule
+        enabled: true
+    AlertMessageResponse:
+      type: object
+      required:
+      - response
+      properties:
+        response:
+          type: object
+          required:
+          - message
+          properties:
+            message:
+              type: string
+              description: Success message
+    AlertCreateResponse:
+      type: object
+      required:
+      - response
+      properties:
+        response:
+          type: string
+          description: ID of the created alert
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

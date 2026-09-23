@@ -1,0 +1,6095 @@
+openapi: 3.2.0
+info:
+  title: Harness Pullreq API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: pullreq
+paths:
+  /code/api/v1/pullreq:
+    get:
+      operationId: listPullReqSpace
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The state of the pull requests to include in the result.
+        explode: true
+        in: query
+        name: state
+        required: false
+        schema:
+          items:
+            default: open
+            enum:
+            - closed
+            - merged
+            - open
+            type: string
+          type: array
+        style: form
+      - description: Source repository ref of the pull requests.
+        in: query
+        name: source_repo_ref
+        required: false
+        schema:
+          type: string
+      - description: Source branch of the pull requests.
+        in: query
+        name: source_branch
+        required: false
+        schema:
+          type: string
+      - description: Target branch of the pull requests.
+        in: query
+        name: target_branch
+        required: false
+        schema:
+          type: string
+      - description: The substring by which the pull requests are filtered.
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+      - description: List of principal IDs who created pull requests.
+        explode: true
+        in: query
+        name: created_by
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: The result should contain only entries created before this timestamp (unix millis).
+        in: query
+        name: created_lt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries created after this timestamp (unix millis).
+        in: query
+        name: created_gt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries updated before this timestamp (unix millis).
+        in: query
+        name: updated_lt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: By providing this parameter the description would be excluded from the response.
+        in: query
+        name: exclude_description
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: The result should contain entries from the desired space and of its subspaces.
+        in: query
+        name: include_subspaces
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - description: List of label ids used to filter pull requests.
+        explode: true
+        in: query
+        name: label_id
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: List of label value ids used to filter pull requests.
+        explode: true
+        in: query
+        name: value_id
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: Return only pull requests where this user is the author.
+        in: query
+        name: author_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has created at least one comment.
+        in: query
+        name: commenter_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has been mentioned.
+        in: query
+        name: mentioned_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has been added as a reviewer.
+        in: query
+        name: reviewer_id
+        required: false
+        schema:
+          type: integer
+      - description: Require only this review decision of the reviewer. Requires reviewer_id parameter.
+        explode: true
+        in: query
+        name: review_decision
+        required: false
+        schema:
+          items:
+            enum:
+            - approved
+            - changereq
+            - pending
+            - reviewed
+            type: string
+          type: array
+        style: form
+      - description: If true, the git diff stats would be included in the response.
+        in: query
+        name: include_git_stats
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If true, the summary of check for the branch commit SHA would be included in the response.
+        in: query
+        name: include_checks
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If true, a list of rules that apply to this branch would be included in the response.
+        in: query
+        name: include_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesPullReqRepo'
+                type: array
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List pull requests in account/org/project
+      tags:
+      - pullreq
+  /code/api/v1/pullreq/count:
+    get:
+      operationId: countPullReqSpace
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The state of the pull requests to include in the result.
+        explode: true
+        in: query
+        name: state
+        required: false
+        schema:
+          items:
+            default: open
+            enum:
+            - closed
+            - merged
+            - open
+            type: string
+          type: array
+        style: form
+      - description: Source repository ref of the pull requests.
+        in: query
+        name: source_repo_ref
+        required: false
+        schema:
+          type: string
+      - description: Source branch of the pull requests.
+        in: query
+        name: source_branch
+        required: false
+        schema:
+          type: string
+      - description: Target branch of the pull requests.
+        in: query
+        name: target_branch
+        required: false
+        schema:
+          type: string
+      - description: The substring by which the pull requests are filtered.
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+      - description: List of principal IDs who created pull requests.
+        explode: true
+        in: query
+        name: created_by
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: The result should contain only entries created before this timestamp (unix millis).
+        in: query
+        name: created_lt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries created after this timestamp (unix millis).
+        in: query
+        name: created_gt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries updated before this timestamp (unix millis).
+        in: query
+        name: updated_lt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain entries from the desired space and of its subspaces.
+        in: query
+        name: include_subspaces
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: List of label ids used to filter pull requests.
+        explode: true
+        in: query
+        name: label_id
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: List of label value ids used to filter pull requests.
+        explode: true
+        in: query
+        name: value_id
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: Return only pull requests where this user is the author.
+        in: query
+        name: author_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has created at least one comment.
+        in: query
+        name: commenter_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has been mentioned.
+        in: query
+        name: mentioned_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has been added as a reviewer.
+        in: query
+        name: reviewer_id
+        required: false
+        schema:
+          type: integer
+      - description: Require only this review decision of the reviewer. Requires reviewer_id parameter.
+        explode: true
+        in: query
+        name: review_decision
+        required: false
+        schema:
+          items:
+            enum:
+            - approved
+            - changereq
+            - pending
+            - reviewed
+            type: string
+          type: array
+        style: form
+      - description: If true, a list of rules that apply to this branch would be included in the response.
+        in: query
+        name: include_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: integer
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Count pull requests in account/org/project
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq:
+    get:
+      operationId: listPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The state of the pull requests to include in the result.
+        explode: true
+        in: query
+        name: state
+        required: false
+        schema:
+          items:
+            default: open
+            enum:
+            - closed
+            - merged
+            - open
+            type: string
+          type: array
+        style: form
+      - description: Source repository ref of the pull requests.
+        in: query
+        name: source_repo_ref
+        required: false
+        schema:
+          type: string
+      - description: Source branch of the pull requests.
+        in: query
+        name: source_branch
+        required: false
+        schema:
+          type: string
+      - description: Target branch of the pull requests.
+        in: query
+        name: target_branch
+        required: false
+        schema:
+          type: string
+      - description: The substring by which the pull requests are filtered.
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+      - description: List of principal IDs who created pull requests.
+        explode: true
+        in: query
+        name: created_by
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: The order of the output.
+        in: query
+        name: order
+        required: false
+        schema:
+          default: asc
+          enum:
+          - asc
+          - desc
+          type: string
+      - description: The data by which the pull requests are sorted.
+        in: query
+        name: sort
+        required: false
+        schema:
+          default: number
+          enum:
+          - created
+          - edited
+          - merged
+          - number
+          - updated
+          type: string
+      - description: The result should contain only entries created before this timestamp (unix millis).
+        in: query
+        name: created_lt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries created after this timestamp (unix millis).
+        in: query
+        name: created_gt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries updated before this timestamp (unix millis).
+        in: query
+        name: updated_lt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries updated after this timestamp (unix millis).
+        in: query
+        name: updated_gt
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: By providing this parameter the description would be excluded from the response.
+        in: query
+        name: exclude_description
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - description: List of label ids used to filter pull requests.
+        explode: true
+        in: query
+        name: label_id
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: List of label value ids used to filter pull requests.
+        explode: true
+        in: query
+        name: value_id
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: Return only pull requests where this user is the author.
+        in: query
+        name: author_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has created at least one comment.
+        in: query
+        name: commenter_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has been mentioned.
+        in: query
+        name: mentioned_id
+        required: false
+        schema:
+          type: integer
+      - description: Return only pull requests where this user has been added as a reviewer.
+        in: query
+        name: reviewer_id
+        required: false
+        schema:
+          type: integer
+      - description: Require only this review decision of the reviewer. Requires reviewer_id parameter.
+        explode: true
+        in: query
+        name: review_decision
+        required: false
+        schema:
+          items:
+            enum:
+            - approved
+            - changereq
+            - pending
+            - reviewed
+            type: string
+          type: array
+        style: form
+      - description: If true, the git diff stats would be included in the response.
+        in: query
+        name: include_git_stats
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If true, the summary of check for the branch commit SHA would be included in the response.
+        in: query
+        name: include_checks
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If true, a list of rules that apply to this branch would be included in the response.
+        in: query
+        name: include_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesPullReq'
+                type: array
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List pull requests
+      tags:
+      - pullreq
+    post:
+      operationId: createPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCreatePullReqRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReq'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Create pull request
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}:
+    get:
+      operationId: getPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReq'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get pull request
+      tags:
+      - pullreq
+    patch:
+      operationId: updatePullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiUpdatePullReqRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReq'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Update pull request
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/activities:
+    get:
+      operationId: listPullReqActivities
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The kind of the pull request activity to include in the result.
+        in: query
+        name: kind
+        required: false
+        schema:
+          items:
+            enum:
+            - change-comment
+            - comment
+            - system
+            type: string
+          type: array
+      - description: The type of the pull request activity to include in the result.
+        in: query
+        name: type
+        required: false
+        schema:
+          items:
+            enum:
+            - auto-merge-unsupported-merge-method
+            - branch-delete
+            - branch-restore
+            - branch-update
+            - code-comment
+            - comment
+            - label-modify
+            - merge
+            - merge-queue-added
+            - merge-queue-removed
+            - non-unique-merge-base
+            - review-submit
+            - reviewer-add
+            - reviewer-delete
+            - state-change
+            - target-branch-change
+            - target-branch-deleted
+            - title-change
+            - user-group-reviewer-add
+            - user-group-reviewer-delete
+            type: string
+          type: array
+      - description: The result should contain only entries created at and after this timestamp (unix millis).
+        in: query
+        name: after
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries created before this timestamp (unix millis).
+        in: query
+        name: before
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesPullReqActivity'
+                type: array
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List activities
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/automerge:
+    delete:
+      operationId: prAutoMergeDisable
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Disable the auto-merge option for the pull request
+      tags:
+      - pullreq
+    get:
+      operationId: prAutoMergeGet
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesAutoMergeResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get the auto-merge option for the pull request
+      tags:
+      - pullreq
+    put:
+      operationId: prAutoMergeEnable
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                delete_source_branch:
+                  type: boolean
+                message:
+                  type: string
+                method:
+                  $ref: '#/components/schemas/EnumMergeMethod'
+                title:
+                  type: string
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesAutoMergeResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Enable the auto-merge option for the pull request
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/branch:
+    post:
+      operationId: restorePullReqSourceBranch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                bypass_rules:
+                  type: boolean
+                dry_run_rules:
+                  type: boolean
+              type: object
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesCreateBranchOutput'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRulesViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Restore source branch
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/checks:
+    get:
+      operationId: checksPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqChecks'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get status checks
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/codeowners:
+    get:
+      operationId: codeownersPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesCodeOwnerEvaluation'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get code owners
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/comments:
+    post:
+      operationId: commentCreatePullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCommentCreatePullReqRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqActivity'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Create new pull request comment
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/comments/{pullreq_comment_id}:
+    delete:
+      operationId: commentDeletePullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: pullreq_comment_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Delete pull request comment
+      tags:
+      - pullreq
+    patch:
+      operationId: commentUpdatePullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: pullreq_comment_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCommentUpdatePullReqRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqActivity'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Update pull request comment
+      tags:
+      - pullreq
+  ? /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/comments/{pullreq_comment_id}/reactions/{pullreq_reaction_emoji}
+  : delete:
+      operationId: commentReactionDeletePullReq
+      parameters:
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: pullreq_comment_id
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: pullreq_reaction_emoji
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Remove emoji reaction from pull request comment
+      tags:
+      - pullreq
+    post:
+      operationId: commentReactionCreatePullReq
+      parameters:
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: pullreq_comment_id
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: pullreq_reaction_emoji
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqCommentReaction'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Add emoji reaction to pull request comment
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/comments/{pullreq_comment_id}/status:
+    put:
+      operationId: commentStatusPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: pullreq_comment_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCommentStatusPullReqRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqActivity'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Update status of pull request comment
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/comments/apply-suggestions:
+    post:
+      operationId: commentApplySuggestions
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCommentApplySuggestionstRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullreqCommentApplySuggestionsOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRulesViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Apply pull request code comment suggestions
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/commits:
+    get:
+      operationId: listPullReqCommits
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesCommit'
+                type: array
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List commits
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/diff:
+    get:
+      operationId: diffPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: provide path for diff operation
+        in: query
+        name: path
+        schema:
+          description: provide path for diff operation
+          items:
+            type: string
+          type: array
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GitFileDiff'
+                type: array
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get file changes
+      tags:
+      - pullreq
+    post:
+      operationId: diffPullReqPost
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiPostRawPRDiffRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GitFileDiff'
+                type: array
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get file changes
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/file-views:
+    get:
+      operationId: fileViewListPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesPullReqFileView'
+                type: array
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List viewed files
+      tags:
+      - pullreq
+    put:
+      operationId: fileViewAddPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiFileViewAddPullReqRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqFileView'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Mark file as viewed
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/file-views/{file_path}:
+    delete:
+      operationId: fileViewDeletePullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: file_path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Remove file view
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/merge:
+    post:
+      operationId: mergePullReqOp
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiMergePullReq'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesMergeResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Method Not Allowed
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesMergeViolations'
+          description: Unprocessable Entity
+      summary: Merge
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/mergequeue:
+    delete:
+      operationId: prMergeQueueRemove
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Remove the pull request from the merge queue
+      tags:
+      - pullreq
+    get:
+      operationId: prMergeQueueGet
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesMergeQueueInfo'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get the pull request's merge-queue details
+      tags:
+      - pullreq
+    put:
+      operationId: prMergeQueueEnable
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                bypass_rules:
+                  type: boolean
+                delete_source_branch:
+                  type: boolean
+                message:
+                  type: string
+                method:
+                  $ref: '#/components/schemas/EnumMergeMethod'
+                title:
+                  type: string
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesMergeQueueInfo'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Place the pull request to the target branch's merge queue
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/mergequeue/prioritize:
+    post:
+      operationId: prMergeQueuePrioritize
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Reorder the merge queue so that this PR is at the head of the queue
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/metadata:
+    get:
+      operationId: pullReqMetaData
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqStats'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get metadata
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/revert:
+    post:
+      operationId: revertPullReqOp
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                message:
+                  type: string
+                revert_branch:
+                  type: string
+                title:
+                  type: string
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRevertResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Method Not Allowed
+      summary: Revert of a merged pull request
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/reviewers:
+    get:
+      operationId: reviewerListPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesPullReqReviewer'
+                type: array
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List reviewers
+      tags:
+      - pullreq
+    put:
+      operationId: reviewerAddPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiReviewerAddPullReqRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqReviewer'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Add reviewer
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/reviewers/{pullreq_reviewer_id}:
+    delete:
+      operationId: reviewerDeletePullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: pullreq_reviewer_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Remove reviewer
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/reviewers/combined:
+    get:
+      operationId: reviewerCombinedListPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullreqCombinedListResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - pullreq
+      summary: Reviewer combined list pull req
+      x-summary-source: derived
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/reviewers/usergroups:
+    put:
+      operationId: userGroupReviewerAddPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiUserGroupReviewerAddRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesUserGroupReviewer'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - pullreq
+      summary: User group reviewer add pull req
+      x-summary-source: derived
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/reviewers/usergroups/{user_group_id}:
+    delete:
+      operationId: userGroupReviewerDeletePullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: user_group_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - pullreq
+      summary: User group reviewer delete pull req
+      x-summary-source: derived
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/reviews:
+    post:
+      operationId: reviewSubmitPullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiReviewSubmitPullReqRequest'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Submit review
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/state:
+    post:
+      operationId: statePullReq
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiStatePullReqRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReq'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Update state of pull request
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/suggestions/labels:
+    get:
+      operationId: listSuggestedLabels
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesPullReqLabelSuggestionResponse'
+                type: array
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List suggested labels
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/suggestions/labels/{label_id}:
+    delete:
+      operationId: removeSuggestedLabel
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: label_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Remove suggested label
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/suggestions/labels/{label_id}/apply:
+    post:
+      operationId: applySuggestedLabel
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: label_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqLabel'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Apply suggested label
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/suggestions/labels/batch:
+    post:
+      operationId: suggestLabelsBatch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiPullReqSuggestLabelsBatchRequest'
+      responses:
+        '200':
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Create label suggestions
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/suggestions/reviewers:
+    get:
+      operationId: listSuggestedReviewers
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesListReviewerSuggestionsOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List suggested reviewers
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/suggestions/reviewers/{principal_id}:
+    delete:
+      operationId: removeSuggestedReviewer
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: principal_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Remove suggested reviewer
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/suggestions/reviewers/{principal_id}/apply:
+    post:
+      operationId: applySuggestedReviewer
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: principal_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesPullReqReviewer'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Apply suggested reviewer
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/suggestions/reviewers/batch:
+    post:
+      operationId: suggestReviewersBatch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiPullReqSuggestReviewersBatchRequest'
+      responses:
+        '200':
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Create reviewer suggestions
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/{pullreq_number}/view:
+    get:
+      operationId: pullReqViewGet
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullreqPullReqViewResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get pull request view
+      tags:
+      - pullreq
+    put:
+      operationId: pullReqViewCreate
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: pullreq_number
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiPullReqViewCreateRequest'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Create or update pull request view
+      tags:
+      - pullreq
+  /code/api/v1/repos/{repo_identifier}/pullreq/candidates:
+    get:
+      operationId: prCandidates
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesBranchTable'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - pullreq
+      summary: Pr candidates
+      x-summary-source: derived
+components:
+  schemas:
+    TypesCommit:
+      properties:
+        author:
+          $ref: '#/components/schemas/TypesSignature'
+        committer:
+          $ref: '#/components/schemas/TypesSignature'
+        message:
+          type: string
+        parent_shas:
+          items:
+            $ref: '#/components/schemas/ShaSHA'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+        signature:
+          $ref: '#/components/schemas/TypesGitSignatureResult'
+        stats:
+          $ref: '#/components/schemas/TypesCommitStats'
+        title:
+          type: string
+      type: object
+    LabelCreatePullReqLabelSuggestionInput:
+      properties:
+        label_id:
+          type: integer
+        value_id:
+          type:
+          - integer
+          - 'null'
+      type: object
+    EnumPublicKeyScheme:
+      enum:
+      - pgp
+      - ssh
+      type: string
+    PullreqCommentApplySuggestionsOutput:
+      properties:
+        commit_id:
+          type: string
+        dry_run_rules:
+          type: boolean
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    PullreqSuggestionReference:
+      properties:
+        check_sum:
+          type: string
+        comment_id:
+          type: integer
+      type: object
+    EnumPullReqSubState:
+      enum:
+      - ''
+      - auto_merge
+      - merge_queue
+      type: string
+    EnumPullReqActivityType:
+      enum:
+      - auto-merge-unsupported-merge-method
+      - branch-delete
+      - branch-restore
+      - branch-update
+      - code-comment
+      - comment
+      - label-modify
+      - merge
+      - merge-queue-added
+      - merge-queue-removed
+      - non-unique-merge-base
+      - review-submit
+      - reviewer-add
+      - reviewer-delete
+      - state-change
+      - target-branch-change
+      - target-branch-deleted
+      - title-change
+      - user-group-reviewer-add
+      - user-group-reviewer-delete
+      type: string
+    EnumPullReqActivityKind:
+      enum:
+      - change-comment
+      - comment
+      - system
+      type: string
+    TypesOwnerEvaluation:
+      properties:
+        owner:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        review_decision:
+          $ref: '#/components/schemas/EnumPullReqReviewDecision'
+        review_sha:
+          type: string
+      type: object
+    PullreqPullReqViewResponse:
+      properties:
+        groups:
+          items:
+            $ref: '#/components/schemas/TypesPullReqFileGroupWithFiles'
+          type:
+          - array
+          - 'null'
+      type: object
+    OpenapiCreatePullReqRequest:
+      properties:
+        bypass_rules:
+          type: boolean
+        description:
+          type: string
+        is_draft:
+          type: boolean
+        labels:
+          items:
+            $ref: '#/components/schemas/TypesPullReqLabelAssignInput'
+          type:
+          - array
+          - 'null'
+        reviewer_ids:
+          items:
+            type: integer
+          type:
+          - array
+          - 'null'
+        source_branch:
+          type: string
+        source_repo_ref:
+          type: string
+        target_branch:
+          type: string
+        title:
+          type: string
+        user_group_reviewer_ids:
+          items:
+            type: integer
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesCodeOwnerEvaluation:
+      properties:
+        evaluation_entries:
+          items:
+            $ref: '#/components/schemas/TypesCodeOwnerEvaluationEntry'
+          type:
+          - array
+          - 'null'
+        file_sha:
+          type: string
+      type: object
+    EnumRuleState:
+      enum:
+      - active
+      - disabled
+      - monitor
+      type:
+      - string
+      - 'null'
+    TypesPullReqReviewer:
+      properties:
+        added_by:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        created:
+          type: integer
+        latest_review_id:
+          type:
+          - integer
+          - 'null'
+        review_decision:
+          $ref: '#/components/schemas/EnumPullReqReviewDecision'
+        reviewer:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        sha:
+          type: string
+        type:
+          $ref: '#/components/schemas/EnumPullReqReviewerType'
+        updated:
+          type: integer
+      type: object
+    OpenapiPullReqViewCreateRequest:
+      properties:
+        groups:
+          items:
+            $ref: '#/components/schemas/PullreqPullReqViewCreateInputGroup'
+          type:
+          - array
+          - 'null'
+        merge_base_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        source_sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    EnumMergeCheckStatus:
+      type: string
+    TypesIdentity:
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+      type: object
+    TypesPullReqActivityMentionsMetadata:
+      properties:
+        ids:
+          items:
+            type: integer
+          type: array
+        user_group_ids:
+          items:
+            type: integer
+          type: array
+      type: object
+    OpenapiPullReqSuggestLabelsBatchRequest:
+      properties:
+        labels:
+          items:
+            $ref: '#/components/schemas/LabelCreatePullReqLabelSuggestionInput'
+          type:
+          - array
+          - 'null'
+      type: object
+    UsererrorError:
+      properties:
+        message:
+          type: string
+        values:
+          additionalProperties: {}
+          type: object
+      type: object
+    PullreqCombinedListResponse:
+      properties:
+        reviewers:
+          items:
+            $ref: '#/components/schemas/TypesPullReqReviewer'
+          type: array
+        user_group_reviewers:
+          items:
+            $ref: '#/components/schemas/TypesUserGroupReviewer'
+          type: array
+      type: object
+    TypesRuleInfo:
+      properties:
+        identifier:
+          type: string
+        repo_path:
+          type: string
+        space_path:
+          type: string
+        state:
+          $ref: '#/components/schemas/EnumRuleState'
+        type:
+          $ref: '#/components/schemas/EnumRuleType'
+      type: object
+    OpenapiFileViewAddPullReqRequest:
+      properties:
+        commit_sha:
+          type: string
+        path:
+          type: string
+      type: object
+    EnumPrincipalType:
+      enum:
+      - service
+      - serviceaccount
+      - user
+      type: string
+    TypesCheckPayload:
+      properties:
+        data: {}
+        kind:
+          $ref: '#/components/schemas/EnumCheckPayloadKind'
+        version:
+          type: string
+      type: object
+    OpenapiCommentCreatePullReqRequest:
+      properties:
+        line_end:
+          type: integer
+        line_end_new:
+          type: boolean
+        line_start:
+          type: integer
+        line_start_new:
+          type: boolean
+        parent_id:
+          type: integer
+        path:
+          type: string
+        source_commit_sha:
+          type: string
+        target_commit_sha:
+          type: string
+        text:
+          type: string
+      type: object
+    TypesLabelValueInfo:
+      properties:
+        color:
+          type:
+          - string
+          - 'null'
+        id:
+          type:
+          - integer
+          - 'null'
+        value:
+          type:
+          - string
+          - 'null'
+      type: object
+    EnumGitSignatureResult:
+      enum:
+      - bad
+      - good
+      - invalid
+      - key_expired
+      - revoked
+      - unsupported
+      - unverified
+      type: string
+    TypesMergeQueueInfo:
+      properties:
+        checks:
+          items:
+            $ref: '#/components/schemas/TypesPullReqCheck'
+          type:
+          - array
+          - 'null'
+        checks_commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        merge_commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        pull_requests_ahead:
+          type: integer
+        state:
+          $ref: '#/components/schemas/EnumMergeQueueEntryState'
+      type:
+      - object
+      - 'null'
+    TypesPullReqStats:
+      properties:
+        additions:
+          type:
+          - integer
+          - 'null'
+        commits:
+          type:
+          - integer
+          - 'null'
+        conversations:
+          type: integer
+        deletions:
+          type:
+          - integer
+          - 'null'
+        files_changed:
+          type:
+          - integer
+          - 'null'
+        unresolved_count:
+          type: integer
+      type: object
+    TypesPullReqFileGroupFile:
+      properties:
+        new_sha:
+          type: string
+        old_sha:
+          type: string
+        path:
+          type: string
+      type: object
+    TypesPullReqActivitySuggestionsMetadata:
+      properties:
+        applied_check_sum:
+          type: string
+        applied_commit_sha:
+          type: string
+        check_sums:
+          items:
+            type: string
+          type: array
+      type: object
+    TypesSignature:
+      properties:
+        identity:
+          $ref: '#/components/schemas/TypesIdentity'
+        when:
+          format: date-time
+          type: string
+      type: object
+    OpenapiCommentApplySuggestionstRequest:
+      properties:
+        bypass_rules:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        message:
+          type: string
+        suggestions:
+          items:
+            $ref: '#/components/schemas/PullreqSuggestionReference'
+          type:
+          - array
+          - 'null'
+        title:
+          type: string
+      type: object
+    TypesBranchTable:
+      properties:
+        created:
+          type: integer
+        created_by:
+          type: integer
+        last_created_pull_req_id:
+          type:
+          - integer
+          - 'null'
+        name:
+          type: string
+        updated:
+          type: integer
+        updated_by:
+          type: integer
+      type: object
+    TypesPullReqLabelSuggestionResponse:
+      properties:
+        label:
+          $ref: '#/components/schemas/TypesLabelInfo'
+        suggested:
+          type: integer
+        suggested_by:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        value:
+          $ref: '#/components/schemas/TypesLabelValueInfo'
+      type: object
+    EnumCheckPayloadKind:
+      enum:
+      - ''
+      - markdown
+      - pipeline
+      - raw
+      type: string
+    EnumMergeQueueEntryState:
+      enum:
+      - checks_in_progress
+      - checks_pending
+      - merge_group
+      - merge_pending
+      type: string
+    OpenapiCommentUpdatePullReqRequest:
+      properties:
+        text:
+          type: string
+      type: object
+    TypesPullReqRepo:
+      properties:
+        pull_request:
+          $ref: '#/components/schemas/TypesPullReq'
+        repository:
+          $ref: '#/components/schemas/TypesRepositoryCore'
+      type: object
+    TypesAutoMergeResponse:
+      properties:
+        created:
+          type: integer
+        delete_branch:
+          type: boolean
+        merge_method:
+          $ref: '#/components/schemas/EnumMergeMethod'
+        merge_response:
+          $ref: '#/components/schemas/TypesMergeResponse'
+        message:
+          type: string
+        pull_request_state:
+          $ref: '#/components/schemas/EnumPullReqState'
+        pull_request_sub_state:
+          $ref: '#/components/schemas/EnumPullReqSubState'
+        requested_by:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        title:
+          type: string
+      type: object
+    EnumPullReqReviewDecision:
+      enum:
+      - approved
+      - changereq
+      - pending
+      - reviewed
+      type: string
+    TypesMergeViolations:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type: array
+        message:
+          type: string
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    TypesCommitFileStats:
+      properties:
+        changes:
+          type: integer
+        deletions:
+          type: integer
+        insertions:
+          type: integer
+        old_path:
+          type: string
+        path:
+          type: string
+        status:
+          $ref: '#/components/schemas/EnumFileDiffStatus'
+      type: object
+    TypesPullReqLabel:
+      properties:
+        created:
+          type: integer
+        created_by:
+          type: integer
+        label_id:
+          type: integer
+        pullreq_id:
+          type: integer
+        updated:
+          type: integer
+        updated_by:
+          type: integer
+        value_id:
+          type:
+          - integer
+          - 'null'
+      type: object
+    TypesUserGroupInfo:
+      properties:
+        description:
+          type: string
+        id:
+          type: integer
+        identifier:
+          type: string
+        name:
+          type: string
+        scope:
+          type: integer
+      type: object
+    EnumPullReqCommentStatus:
+      enum:
+      - active
+      - resolved
+      type: string
+    TypesRuleViolations:
+      properties:
+        bypassable:
+          type: boolean
+        bypassed:
+          type: boolean
+        rule:
+          $ref: '#/components/schemas/TypesRuleInfo'
+        violations:
+          items:
+            $ref: '#/components/schemas/TypesViolation'
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesPullReqLabelAssignInput:
+      properties:
+        label_id:
+          type: integer
+        value:
+          type: string
+        value_id:
+          type:
+          - integer
+          - 'null'
+      type: object
+    EnumRepoType:
+      type: string
+    TypesPullReqCommentReaction:
+      properties:
+        author:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        emoji:
+          type: string
+      type: object
+    OpenapiPullReqSuggestReviewersBatchRequest:
+      properties:
+        reviewer_ids:
+          items:
+            type: integer
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesPullReqActivity:
+      properties:
+        author:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        code_comment:
+          $ref: '#/components/schemas/TypesCodeCommentFields'
+        created:
+          type: integer
+        deleted:
+          type:
+          - integer
+          - 'null'
+        edited:
+          type: integer
+        id:
+          type: integer
+        kind:
+          $ref: '#/components/schemas/EnumPullReqActivityKind'
+        mentions:
+          additionalProperties:
+            $ref: '#/components/schemas/TypesPrincipalInfo'
+          type: object
+        metadata:
+          $ref: '#/components/schemas/TypesPullReqActivityMetadata'
+        order:
+          type: integer
+        parent_id:
+          type:
+          - integer
+          - 'null'
+        payload: {}
+        pullreq_id:
+          type: integer
+        reactions:
+          items:
+            $ref: '#/components/schemas/TypesPullReqCommentReaction'
+          type: array
+        repo_id:
+          type: integer
+        resolved:
+          type:
+          - integer
+          - 'null'
+        resolver:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        sub_order:
+          type: integer
+        text:
+          type: string
+        type:
+          $ref: '#/components/schemas/EnumPullReqActivityType'
+        updated:
+          type: integer
+        user_group_mentions:
+          additionalProperties:
+            $ref: '#/components/schemas/TypesUserGroupInfo'
+          type: object
+      type: object
+    OpenapiUpdatePullReqRequest:
+      properties:
+        description:
+          type: string
+        title:
+          type: string
+      type: object
+    TypesLabelInfo:
+      properties:
+        assigned:
+          type:
+          - boolean
+          - 'null'
+        color:
+          $ref: '#/components/schemas/EnumLabelColor'
+        id:
+          type: integer
+        key:
+          type: string
+        scope:
+          type: integer
+        type:
+          $ref: '#/components/schemas/EnumLabelType'
+      type:
+      - object
+      - 'null'
+    TypesCheckCountSummary:
+      properties:
+        error:
+          type: integer
+        failure:
+          type: integer
+        failure_ignored:
+          type: integer
+        pending:
+          type: integer
+        running:
+          type: integer
+        success:
+          type: integer
+      type: object
+    EnumFileDiffStatus:
+      type: string
+    TypesChangeStats:
+      properties:
+        changes:
+          type: integer
+        deletions:
+          type: integer
+        insertions:
+          type: integer
+      type: object
+    OpenapiReviewerAddPullReqRequest:
+      properties:
+        reviewer_id:
+          type: integer
+      type: object
+    TypesCodeOwnerEvaluationEntry:
+      properties:
+        line_number:
+          type: integer
+        owner_evaluations:
+          items:
+            $ref: '#/components/schemas/TypesOwnerEvaluation'
+          type:
+          - array
+          - 'null'
+        pattern:
+          type: string
+        user_group_owner_evaluations:
+          items:
+            $ref: '#/components/schemas/TypesUserGroupOwnerEvaluation'
+          type:
+          - array
+          - 'null'
+      type: object
+    OpenapiReviewSubmitPullReqRequest:
+      properties:
+        commit_sha:
+          type: string
+        decision:
+          $ref: '#/components/schemas/EnumPullReqReviewDecision'
+      type: object
+    ApiFileDiffRequest:
+      properties:
+        path:
+          type: string
+        start_line:
+          type: integer
+      type: object
+    TypesMergeResponse:
+      properties:
+        allowed_methods:
+          items:
+            $ref: '#/components/schemas/EnumMergeMethod'
+          type: array
+        branch_deleted:
+          type: boolean
+        conflict_files:
+          items:
+            type: string
+          type: array
+        default_reviewer_approvals:
+          items:
+            $ref: '#/components/schemas/TypesDefaultReviewerApprovalsResponse'
+          type: array
+        dry_run:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        mergeable:
+          type: boolean
+        minimum_required_approvals_count:
+          type: integer
+        minimum_required_approvals_count_latest:
+          type: integer
+        requires_bypass_message:
+          type: boolean
+        requires_code_owners_approval:
+          type: boolean
+        requires_code_owners_approval_latest:
+          type: boolean
+        requires_comment_resolution:
+          type: boolean
+        requires_merge_queue:
+          type: boolean
+        requires_no_change_requests:
+          type: boolean
+        requires_target_is_ancestor:
+          type: boolean
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+        sha:
+          type: string
+      type: object
+    EnumPullReqState:
+      enum:
+      - closed
+      - merged
+      - open
+      type: string
+    OpenapiMergePullReq:
+      properties:
+        bypass_message:
+          type: string
+        bypass_rules:
+          type: boolean
+        delete_source_branch:
+          type: boolean
+        dry_run:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        message:
+          type: string
+        method:
+          $ref: '#/components/schemas/EnumMergeMethod'
+        source_sha:
+          type: string
+        title:
+          type: string
+      type: object
+    EnumPullReqType:
+      type:
+      - string
+      - 'null'
+    PullreqPullReqViewCreateInputGroup:
+      properties:
+        description:
+          type: string
+        files:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+        tags:
+          additionalProperties:
+            type: string
+          type:
+          - object
+          - 'null'
+        title:
+          type: string
+      type: object
+    ShaSHA:
+      description: Git object hash
+      type: string
+    EnumRuleType:
+      enum:
+      - branch
+      - push
+      - tag
+      type: string
+    TypesUserGroupOwnerEvaluation:
+      properties:
+        evaluations:
+          items:
+            $ref: '#/components/schemas/TypesOwnerEvaluation'
+          type:
+          - array
+          - 'null'
+        id:
+          type: string
+        name:
+          type: string
+      type: object
+    TypesCheck:
+      properties:
+        bypassed_by:
+          type:
+          - integer
+          - 'null'
+        created:
+          type: integer
+        ended:
+          type: integer
+        id:
+          type: integer
+        identifier:
+          type: string
+        link:
+          type: string
+        metadata: {}
+        payload:
+          $ref: '#/components/schemas/TypesCheckPayload'
+        reported_by:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        started:
+          type: integer
+        status:
+          $ref: '#/components/schemas/EnumCheckStatus'
+        summary:
+          type: string
+        updated:
+          type: integer
+      type: object
+    TypesListReviewerSuggestionsOutput:
+      properties:
+        suggestions:
+          items:
+            $ref: '#/components/schemas/TypesPullReqReviewerSuggestionInfo'
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesRepositoryCore:
+      properties:
+        default_branch:
+          type: string
+        fork_id:
+          type: integer
+        id:
+          type: integer
+        identifier:
+          type: string
+        parent_id:
+          type: integer
+        path:
+          type: string
+        type:
+          $ref: '#/components/schemas/EnumRepoType'
+      type: object
+    TypesReviewerEvaluation:
+      properties:
+        decision:
+          $ref: '#/components/schemas/EnumPullReqReviewDecision'
+        reviewer:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        sha:
+          type: string
+        updated:
+          type: integer
+      type: object
+    EnumLabelColor:
+      enum:
+      - blue
+      - brown
+      - cyan
+      - green
+      - indigo
+      - lime
+      - mint
+      - orange
+      - pink
+      - purple
+      - red
+      - violet
+      - yellow
+      type: string
+    OpenapiUserGroupReviewerAddRequest:
+      properties:
+        usergroup_id:
+          type: integer
+      type: object
+    TypesLabelPullReqAssignmentInfo:
+      properties:
+        color:
+          $ref: '#/components/schemas/EnumLabelColor'
+        id:
+          type: integer
+        key:
+          type: string
+        scope:
+          type: integer
+        value:
+          type:
+          - string
+          - 'null'
+        value_color:
+          $ref: '#/components/schemas/EnumLabelColor'
+        value_count:
+          type: integer
+        value_id:
+          type:
+          - integer
+          - 'null'
+      type: object
+    TypesPullReqChecks:
+      properties:
+        checks:
+          items:
+            $ref: '#/components/schemas/TypesPullReqCheck'
+          type:
+          - array
+          - 'null'
+        commit_sha:
+          type: string
+      type: object
+    OpenapiPostRawPRDiffRequest:
+      items:
+        $ref: '#/components/schemas/ApiFileDiffRequest'
+      type:
+      - array
+      - 'null'
+    TypesUserGroupReviewer:
+      properties:
+        added_by:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        created:
+          type: integer
+        decision:
+          $ref: '#/components/schemas/EnumPullReqReviewDecision'
+        sha:
+          type: string
+        updated:
+          type: integer
+        user_decisions:
+          items:
+            $ref: '#/components/schemas/TypesReviewerEvaluation'
+          type: array
+        user_group:
+          $ref: '#/components/schemas/TypesUserGroupInfo'
+      type: object
+    TypesPullReqCheck:
+      properties:
+        bypassable:
+          type: boolean
+        check:
+          $ref: '#/components/schemas/TypesCheck'
+        required:
+          type: boolean
+      type: object
+    TypesPrincipalInfo:
+      properties:
+        created:
+          type: integer
+        display_name:
+          type: string
+        email:
+          type: string
+        id:
+          type: integer
+        type:
+          $ref: '#/components/schemas/EnumPrincipalType'
+        uid:
+          type: string
+        updated:
+          type: integer
+      type:
+      - object
+      - 'null'
+    TypesViolation:
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        params:
+          items: {}
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesPullReq:
+      properties:
+        author:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        check_summary:
+          $ref: '#/components/schemas/TypesCheckCountSummary'
+        closed:
+          type:
+          - integer
+          - 'null'
+        created:
+          type: integer
+        description:
+          type: string
+        edited:
+          type: integer
+        is_draft:
+          type: boolean
+        labels:
+          items:
+            $ref: '#/components/schemas/TypesLabelPullReqAssignmentInfo'
+          type: array
+        merge_base_sha:
+          type: string
+        merge_check_status:
+          $ref: '#/components/schemas/EnumMergeCheckStatus'
+        merge_conflicts:
+          items:
+            type: string
+          type: array
+        merge_method:
+          $ref: '#/components/schemas/EnumMergeMethod'
+        merge_target_sha:
+          type:
+          - string
+          - 'null'
+        merge_violations_bypassed:
+          type:
+          - boolean
+          - 'null'
+        merged:
+          type:
+          - integer
+          - 'null'
+        merger:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        number:
+          type: integer
+        pullreq_type:
+          $ref: '#/components/schemas/EnumPullReqType'
+        rebase_check_status:
+          $ref: '#/components/schemas/EnumMergeCheckStatus'
+        rebase_conflicts:
+          items:
+            type: string
+          type: array
+        root_space_id:
+          type: integer
+        root_space_identifier:
+          type: string
+        rules:
+          items:
+            $ref: '#/components/schemas/TypesRuleInfo'
+          type: array
+        source_branch:
+          type: string
+        source_repo:
+          $ref: '#/components/schemas/TypesRepositoryCore'
+        source_repo_id:
+          type:
+          - integer
+          - 'null'
+        source_sha:
+          type: string
+        state:
+          $ref: '#/components/schemas/EnumPullReqState'
+        stats:
+          $ref: '#/components/schemas/TypesPullReqStats'
+        substate:
+          $ref: '#/components/schemas/EnumPullReqSubState'
+        target_branch:
+          type: string
+        target_repo_id:
+          type: integer
+        title:
+          type: string
+        updated:
+          type: integer
+      type: object
+    TypesPullReqFileView:
+      properties:
+        obsolete:
+          type: boolean
+        path:
+          type: string
+        sha:
+          type: string
+      type: object
+    TypesGitSignatureResult:
+      properties:
+        created:
+          type: integer
+        key_fingerprint:
+          type: string
+        key_id:
+          type: string
+        key_scheme:
+          $ref: '#/components/schemas/EnumPublicKeyScheme'
+        result:
+          $ref: '#/components/schemas/EnumGitSignatureResult'
+        updated:
+          type: integer
+      type:
+      - object
+      - 'null'
+    TypesPullReqFileGroupWithFiles:
+      properties:
+        created:
+          type: integer
+        description:
+          type: string
+        files:
+          items:
+            $ref: '#/components/schemas/TypesPullReqFileGroupFile'
+          type: array
+        tags:
+          additionalProperties:
+            type: string
+          type: object
+        title:
+          type: string
+        updated:
+          type: integer
+      type: object
+    TypesCommitStats:
+      properties:
+        files:
+          items:
+            $ref: '#/components/schemas/TypesCommitFileStats'
+          type: array
+        total:
+          $ref: '#/components/schemas/TypesChangeStats'
+      type: object
+    TypesRulesViolations:
+      properties:
+        message:
+          type: string
+        violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type:
+          - array
+          - 'null'
+      type: object
+    EnumCheckStatus:
+      enum:
+      - error
+      - failure
+      - failure_ignored
+      - pending
+      - running
+      - success
+      type: string
+    GitFileDiff:
+      properties:
+        additions:
+          type: integer
+        changes:
+          type: integer
+        deletions:
+          type: integer
+        is_binary:
+          type: boolean
+        is_submodule:
+          type: boolean
+        old_path:
+          type: string
+        old_sha:
+          type: string
+        patch:
+          items:
+            minimum: 0
+            type: integer
+          type: array
+        path:
+          type: string
+        sha:
+          type: string
+        status:
+          $ref: '#/components/schemas/EnumFileDiffStatus'
+      type: object
+    TypesPullReqActivityMetadata:
+      properties:
+        mentions:
+          $ref: '#/components/schemas/TypesPullReqActivityMentionsMetadata'
+        reactions:
+          $ref: '#/components/schemas/TypesPullReqActivityReactionsMetadata'
+        suggestions:
+          $ref: '#/components/schemas/TypesPullReqActivitySuggestionsMetadata'
+      type: object
+    TypesPullReqReviewerSuggestionInfo:
+      properties:
+        reviewer:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        suggested_at:
+          type: integer
+        suggested_by:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+      type: object
+    EnumPullReqReviewerType:
+      enum:
+      - assigned
+      - code_owners
+      - default
+      - requested
+      - self_assigned
+      type: string
+    TypesCodeCommentFields:
+      properties:
+        line_new:
+          type: integer
+        line_old:
+          type: integer
+        merge_base_sha:
+          type: string
+        outdated:
+          type: boolean
+        path:
+          type: string
+        source_sha:
+          type: string
+        span_new:
+          type: integer
+        span_old:
+          type: integer
+      type: object
+    TypesPullReqActivityReactionsMetadata:
+      properties:
+        counts:
+          additionalProperties:
+            items:
+              type: integer
+            type: array
+          type: object
+      type: object
+    TypesCreateBranchOutput:
+      properties:
+        commit:
+          $ref: '#/components/schemas/TypesCommit'
+        dry_run_rules:
+          type: boolean
+        name:
+          type: string
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    EnumMergeMethod:
+      enum:
+      - fast-forward
+      - merge
+      - rebase
+      - squash
+      type: string
+    EnumLabelType:
+      enum:
+      - dynamic
+      - static
+      type: string
+    TypesDefaultReviewerApprovalsResponse:
+      properties:
+        current_count:
+          type: integer
+        evaluations:
+          items:
+            $ref: '#/components/schemas/TypesReviewerEvaluation'
+          type:
+          - array
+          - 'null'
+        minimum_required_count:
+          type: integer
+        minimum_required_count_latest:
+          type: integer
+        principals:
+          items:
+            $ref: '#/components/schemas/TypesPrincipalInfo'
+          type:
+          - array
+          - 'null'
+        user_groups:
+          items:
+            $ref: '#/components/schemas/TypesUserGroupInfo'
+          type:
+          - array
+          - 'null'
+      type: object
+    OpenapiCommentStatusPullReqRequest:
+      properties:
+        status:
+          $ref: '#/components/schemas/EnumPullReqCommentStatus'
+      type: object
+    TypesRevertResponse:
+      properties:
+        branch:
+          type: string
+        commit:
+          $ref: '#/components/schemas/TypesCommit'
+      type: object
+    OpenapiStatePullReqRequest:
+      properties:
+        is_draft:
+          type: boolean
+        state:
+          $ref: '#/components/schemas/EnumPullReqState'
+      type: object
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

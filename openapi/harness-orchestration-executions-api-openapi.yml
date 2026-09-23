@@ -1,0 +1,2420 @@
+openapi: 3.2.0
+info:
+  title: Harness Orchestration Executions API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Orchestration Executions
+  x-displayName: Orchestration Executions [Beta]
+paths:
+  /rmg/api/orchestration/execution/startRelease/{id}:
+    post:
+      summary: Start Release Execution
+      tags:
+      - Orchestration Executions
+      operationId: startReleaseExecution
+      description: Start a new release execution for the given identifier
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique id of the release to execute
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - releaseInputYaml
+              properties:
+                releaseInputYaml:
+                  type: string
+                  description: YAML configuration for release input
+      responses:
+        '200':
+          description: Release execution started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - identifier
+                - yaml
+                properties:
+                  identifier:
+                    type: string
+                    description: Identifier of the started execution
+                  yaml:
+                    type: string
+                    description: YAML content of the release
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: start-release-execution
+  /rmg/api/orchestration/execution/{releaseId}/phases:
+    get:
+      summary: Get Phases by Release ID
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-phases
+      description: Retrieve all phases for a specific release. Returns phase details including their YAML configurations.
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+        description: Filter phases by status (can specify multiple statuses)
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          description: Successfully retrieved phases
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - release_id
+                - phases
+                - total_running_phases
+                properties:
+                  release_id:
+                    type: string
+                    description: ID of the release
+                  process_execution_id:
+                    type: string
+                    description: ID of the process execution
+                    x-omitempty: true
+                  total_running_phases:
+                    type: integer
+                    description: Total number of currently running phases
+                  phases:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrchestrationExecutionPhase'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-phases-by-release
+  /rmg/api/orchestration/execution/{releaseId}/phase/{phaseIdentifier}/activities:
+    get:
+      summary: Get Activities by Release and Phase ID
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-activities
+      description: Retrieve all activities for a specific release and phase execution. If no activities exist in the database, it will fetch them from the phase YAML configuration.
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - name: phaseIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the phase execution
+      - name: phaseExecutionId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: The ID of the phase execution
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          description: Successfully retrieved activities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - release_id
+                - process_execution_id
+                - phase_execution_id
+                - activities
+                - total_running_activities
+                properties:
+                  release_id:
+                    type: string
+                    description: ID of the release
+                  process_execution_id:
+                    type: string
+                    description: ID of the process execution
+                    x-omitempty: true
+                  phase_execution_id:
+                    type: string
+                    description: ID of the phase execution
+                    x-omitempty: true
+                  total_running_activities:
+                    type: integer
+                    description: Total number of currently running activities
+                  activities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrchestrationExecutionActivity'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-activities-by-release-phase
+  /rmg/api/orchestration/execution/{releaseId}/phase/{phaseIdentifier}/activity/{activityIdentifier}/tasks:
+    get:
+      summary: Get Orchestration Execution Tasks by Activity
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-tasks
+      description: Retrieve all orchestration execution tasks for a specific activity in a release phase
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - name: phaseIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the phase
+      - name: activityIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the activity
+      - name: activityExecutionId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: The ID of the activity execution
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ExecutionTasksListResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-execution-tasks
+  /rmg/api/orchestration/execution/release/{releaseId}/phase/{phaseIdentifier}/activity/{activityIdentifier}/retry-history:
+    get:
+      summary: Get Activity Retry History By Identifiers
+      tags:
+      - Orchestration Executions
+      operationId: get-activity-retry-history-by-identifiers
+      description: Retrieve the retry history for a specific activity by release ID, phase identifier, and activity identifier
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - name: phaseIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the phase
+      - name: activityIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the activity
+      - name: activityExecutionId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: The ID of the activity execution
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/RmLimit'
+      - name: maxRetryIndex
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+        description: Maximum retry index to include (optional filter)
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          description: Successfully retrieved activity retry history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityRetryHistoryResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-activity-retry-history-by-identifiers
+  /rmg/api/orchestration/execution/activity/{activityId}/input:
+    get:
+      summary: Get Activity Execution Inputs
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-activity-inputs
+      description: Retrieve input values for a specific activity execution
+      parameters:
+      - name: activityId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The activity execution ID
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ActivityExecutionInputsResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-orchestration-execution-activity-inputs
+  /rmg/api/orchestration/release/{releaseId}/phase/{phaseIdentifier}/activity/{activityIdentifier}:
+    get:
+      summary: Get Activity Execution Detail
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-activity
+      description: Retrieve detailed information about an activity execution including phase info, yaml, and pipeline/subprocess execution details. If activityExecutionId is provided, filters by it directly. Otherwise, filters by releaseId, phaseIdentifier, activityIdentifier, and retryIndex (defaults to 0 if not provided).
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - name: phaseIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the phase
+      - name: activityIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the activity
+      - name: activityExecutionId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional activity execution ID. If provided, filters by this ID directly.
+      - name: retryIndex
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+        description: Optional retry index. Used when activityExecutionId is not provided. Defaults to 0 if not specified.
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          description: Successfully retrieved activity execution details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchestrationExecutionActivityDetail'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-orchestration-execution-activity
+  /rmg/api/orchestration/execution/release/{releaseId}/phase/{phaseIdentifier}/output:
+    get:
+      summary: Get Phase Execution Outputs
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-phase-outputs
+      description: Retrieve output values for a specific phase execution
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - name: phaseIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the phase
+      - name: phaseExecutionId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: The ID of the phase execution
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ExecutionOutputsResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-orchestration-execution-phase-outputs
+  /rmg/api/orchestration/execution/release/{releaseId}/phase/{phaseIdentifier}/activity/{activityIdentifier}/output:
+    get:
+      summary: Get Activity Execution Outputs
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-activity-outputs
+      description: Retrieve output values for a specific activity execution
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - name: phaseIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the phase
+      - name: activityIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the activity
+      - name: activityExecutionId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: The ID of the activity execution
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ExecutionOutputsResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-orchestration-execution-activity-outputs
+  /rmg/api/orchestration/execution/activity/{activityId}/output:
+    post:
+      summary: Submit Activity Execution Outputs
+      tags:
+      - Orchestration Executions
+      operationId: post-activity-execution-output
+      description: Submit outputs for a manual activity execution that is waiting for outputs
+      parameters:
+      - name: activityId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The activity execution ID
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - outputs
+              properties:
+                outputs:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ExecutionOutputDTO'
+      responses:
+        '200':
+          description: Outputs accepted
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '409':
+          $ref: '#/components/responses/RmErrorResponse'
+        '422':
+          $ref: '#/components/responses/RmErrorResponse'
+  /rmg/api/orchestration/execution/task/{taskExecutionId}/comment:
+    post:
+      summary: Create Task Comment
+      tags:
+      - Orchestration Executions
+      operationId: createTaskComment
+      description: Create a new comment for a specific execution task
+      parameters:
+      - name: taskExecutionId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the execution task
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - comment
+              properties:
+                comment:
+                  type: string
+                  description: The comment text
+                  x-oapi-codegen-extra-tags:
+                    validate: required,max=1024
+      responses:
+        '200':
+          $ref: '#/components/responses/CreateTaskCommentResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: create-task-comment
+  /rmg/api/orchestration/execution/task/comment/{commentId}:
+    put:
+      summary: Update Task Comment
+      tags:
+      - Orchestration Executions
+      operationId: updateTaskComment
+      description: Update an existing task comment
+      parameters:
+      - name: commentId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the comment to update
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - comment
+              properties:
+                comment:
+                  type: string
+                  description: The updated comment text
+                  x-oapi-codegen-extra-tags:
+                    validate: required,max=1024
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdateTaskCommentResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: update-task-comment
+    delete:
+      summary: Delete Task Comment
+      tags:
+      - Orchestration Executions
+      operationId: deleteTaskComment
+      description: Delete a specific task comment
+      parameters:
+      - name: commentId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the comment to delete
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '204':
+          description: Comment deleted successfully
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: delete-task-comment
+  /rmg/api/orchestration/execution/task/{taskExecutionId}/comment/summary:
+    get:
+      summary: Get Task Comments Summary
+      tags:
+      - Orchestration Executions
+      operationId: getTaskCommentsSummary
+      description: Retrieve a cursor based paginated list of comments for a specific execution task
+      parameters:
+      - name: taskExecutionId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the execution task
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/RmLimit'
+      responses:
+        '200':
+          $ref: '#/components/responses/TaskCommentsListResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: list-task-comments
+  /rmg/api/orchestration/execution/task/{taskExecutionId}/status:
+    put:
+      summary: Update Execution Task Status
+      tags:
+      - Orchestration Executions
+      operationId: updateExecutionTaskStatus
+      description: Update the status of a specific execution task
+      parameters:
+      - name: taskExecutionId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the execution task
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - status
+              properties:
+                status:
+                  type: string
+                  description: The new status for the task
+                  $ref: '#/components/schemas/ExecutionTaskStatus'
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdateExecutionTaskStatusResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: update-execution-task-status
+  /rmg/api/orchestration/execution/task/{taskExecutionId}/metadata:
+    put:
+      summary: Update Execution Task Metadata
+      tags:
+      - Orchestration Executions
+      operationId: updateExecutionTaskMetadata
+      description: Update the metadata (name and description) of a specific execution task
+      parameters:
+      - name: taskExecutionId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the execution task
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Updated name for the task
+                  x-oapi-codegen-extra-tags:
+                    validate: required_without_all=Description
+                description:
+                  type: string
+                  description: Updated description for the task
+                  x-oapi-codegen-extra-tags:
+                    validate: required_without_all=Name
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdateExecutionTaskMetadataResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+  /rmg/api/orchestration/{entityType}/events/{entityId}:
+    get:
+      summary: Get Events by Entity Type and Entity ID
+      tags:
+      - Orchestration Executions
+      operationId: getEventsByEntityTypeAndId
+      description: Retrieve a cursor-based paginated list of events for a specific entity type and entity ID, sorted by created_at in descending order
+      parameters:
+      - $ref: '#/components/parameters/EventEntityTypeParam'
+      - $ref: '#/components/parameters/EventEntityIdParam'
+      - $ref: '#/components/parameters/EventTypeParam'
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/RmLimit'
+      responses:
+        '200':
+          $ref: '#/components/responses/EventsResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-events-by-entity-type-and-id
+  /rmg/api/release/{releaseId}/execution/activities:
+    get:
+      summary: Get Paginated Activities by Release ID
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-activities-paginated
+      description: 'Retrieve a paginated list of orchestration execution activities for a specific release with optional filters.
+
+
+        **Sortable fields:** `start_ts`, `startTs`, `end_ts`, `endTs`, `last_updated_at`, `lastUpdatedAt`, `created_at`, `createdAt`, `name`, `identifier`, `status`, `type`.
+
+        Sort format: `sort=field_name&sort=direction` where direction is `asc` or `desc`.
+
+        Examples: `sort=start_ts&sort=desc` or `sort=endTs&sort=asc`.'
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      - $ref: '#/components/parameters/RmPage'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/RmSort'
+      - $ref: '#/components/parameters/OrchestrationStatusListParam'
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - PIPELINE
+            - SUBPROCESS
+            - MANUAL
+        description: Filter activities by type (PIPELINE, SUBPROCESS, MANUAL)
+      - name: phaseIdentifier
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter activities by phase identifier
+      - name: startTs
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+        description: Filter activities that started on or after this timestamp (in milliseconds). Activities with start_ts >= startTs will be included.
+      - name: endTs
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+        description: Filter activities that started on or before this timestamp (in milliseconds). Activities with start_ts <= endTs will be included.
+      - name: taskUserReferenceId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter activities that were triggered by tasks with the specified user_reference_id. Only activities linked to tasks via the activity_task_id table will be returned.
+      responses:
+        '200':
+          $ref: '#/components/responses/OrchestrationExecutionActivitiesPaginatedResponse'
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+  /rmg/api/orchestration/execution/releaseInput/{releaseId}:
+    get:
+      summary: Get Latest Release Input by Release ID
+      tags:
+      - Orchestration Executions
+      operationId: get-orchestration-execution-release-input
+      description: Retrieve the latest release input for a specific release ID
+      parameters:
+      - name: releaseId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the release
+      - $ref: '#/components/parameters/AccountParam'
+      - $ref: '#/components/parameters/RmOrgParam'
+      - $ref: '#/components/parameters/RmProjectParam'
+      responses:
+        '200':
+          description: Successfully retrieved release input
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - release_id
+                - process_execution_id
+                - yaml
+                properties:
+                  release_id:
+                    type: string
+                    description: ID of the release
+                  process_execution_id:
+                    type: string
+                    description: ID of the process execution
+                  yaml:
+                    type: string
+                    description: YAML content of the release input
+        '400':
+          $ref: '#/components/responses/RmErrorResponse'
+        '403':
+          $ref: '#/components/responses/RmErrorResponse'
+        '404':
+          $ref: '#/components/responses/RmErrorResponse'
+        '500':
+          $ref: '#/components/responses/RmErrorResponse'
+      x-stoplight:
+        id: get-orchestration-execution-release-input
+components:
+  responses:
+    UpdateTaskCommentResponse:
+      description: Response for successful task comment update
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - commentId
+            properties:
+              commentId:
+                type: string
+                description: UUID of the updated comment
+    OrchestrationExecutionActivitiesPaginatedResponse:
+      description: Paginated orchestration execution activities
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - content
+            - totalPages
+            - totalElements
+            - size
+            - number
+            - numberOfElements
+            - first
+            - last
+            - empty
+            properties:
+              content:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrchestrationExecutionActivityPaginated'
+              totalPages:
+                type: integer
+                description: Total number of pages
+              totalElements:
+                type: integer
+                description: Total number of activities across all pages
+              size:
+                type: integer
+                description: Number of items per page
+              number:
+                type: integer
+                description: Current page number (0-indexed)
+              numberOfElements:
+                type: integer
+                description: Number of items in the current page
+              first:
+                type: boolean
+                description: Whether this is the first page
+              last:
+                type: boolean
+                description: Whether this is the last page
+              empty:
+                type: boolean
+                description: Whether the current page is empty
+              pageable:
+                $ref: '#/components/schemas/RmPageable'
+                description: Pagination metadata
+              sort:
+                $ref: '#/components/schemas/PageableSort'
+                description: Sorting information
+    ActivityExecutionInputsResponse:
+      description: Response containing list of activity execution input values
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - inputs
+            properties:
+              inputs:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityExecutionInputDTO'
+                description: List of input values for the activity execution
+    ExecutionTasksListResponse:
+      description: Response containing list of execution tasks
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - tasks
+            properties:
+              tasks:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExecutionTaskDTO'
+                description: List of execution tasks
+    ExecutionOutputsResponse:
+      description: Response containing list of phase execution output values
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - outputs
+            properties:
+              outputs:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExecutionOutputDTO'
+                description: List of output values for the phase execution
+    UpdateExecutionTaskMetadataResponse:
+      description: Response for successful task metadata update
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - taskExecutionId
+            properties:
+              taskExecutionId:
+                type: string
+                description: UUID of the updated task
+    EventsResponse:
+      description: Successful response for events
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - events
+            - nextRequest
+            - last
+            properties:
+              events:
+                type: array
+                description: List of events
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+              nextRequest:
+                $ref: '#/components/schemas/NextRequest'
+              last:
+                type: boolean
+                description: Whether this is the last page of results
+    RmErrorResponse:
+      description: Error Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RmError'
+    CreateTaskCommentResponse:
+      description: Response for successful task comment creation
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - commentId
+            properties:
+              commentId:
+                type: string
+                description: UUID of the created comment
+    TaskCommentsListResponse:
+      description: Paginated list of task comments
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TaskCommentsListResponseDTO'
+    UpdateExecutionTaskStatusResponse:
+      description: Response for successful task status update
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - taskExecutionId
+            - status
+            properties:
+              taskExecutionId:
+                type: string
+                description: UUID of the updated task
+              status:
+                $ref: '#/components/schemas/ExecutionTaskStatus'
+  schemas:
+    EventEntity:
+      type: string
+      enum:
+      - Task
+      description: Type of entity for events
+    ActivityExecutionInputDTO:
+      type: object
+      description: Input value for an activity execution
+      required:
+      - name
+      - value
+      - type
+      properties:
+        name:
+          type: string
+          description: Name of the input parameter
+        value:
+          $ref: '#/components/schemas/AnyValue'
+          description: Value of the input parameter (can be string, number, boolean, object, array, etc.)
+        type:
+          $ref: '#/components/schemas/InputVariableType'
+          description: Type of the input parameter
+    OrchestrationStatus:
+      type: string
+      description: Status of orchestration execution activities
+      enum:
+      - SCHEDULED
+      - RUNNING
+      - OUTPUT_WAITING
+      - SUCCEEDED
+      - FAILED
+      - ABORTED
+      - ON_HOLD
+      - RETRIED
+      - IGNORED
+      - SKIPPED
+      - QUEUED
+    ExecutionOutputDTO:
+      type: object
+      description: Output value for a phase execution
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+          description: Name of the output parameter
+        value:
+          $ref: '#/components/schemas/AnyValue'
+          description: Value of the output parameter (can be string, number, boolean, object, array, etc.)
+    NextRequest:
+      type: object
+      properties:
+        cursor:
+          type: string
+        limit:
+          type: integer
+    RmPageable:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          $ref: '#/components/schemas/PageableSort'
+        offset:
+          type: integer
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+    OrchestrationExecutionPhase:
+      type: object
+      description: Represents a phase in the orchestration execution
+      required:
+      - name
+      - identifier
+      - status
+      - completed_activities
+      - total_activities
+      - activityCounts
+      properties:
+        name:
+          type: string
+          description: Name of the phase
+        identifier:
+          type: string
+          description: Unique identifier of the phase
+        description:
+          type: string
+          description: Description of the phase
+        owners:
+          type: array
+          items:
+            type: string
+          description: List of owners for the phase
+        depends_on:
+          type: array
+          items:
+            type: string
+          description: List of phase identifiers this phase depends on
+        status:
+          $ref: '#/components/schemas/OrchestrationStatus'
+        start_ts:
+          type: integer
+          format: int64
+          description: Start timestamp in milliseconds
+        end_ts:
+          type: integer
+          format: int64
+          description: End timestamp in milliseconds
+        phase_execution_id:
+          type: string
+          description: ID of the phase execution
+        completed_activities:
+          type: integer
+          description: Number of completed activities in the phase
+        total_activities:
+          type: integer
+          description: Total number of activities in the phase
+        activityCounts:
+          $ref: '#/components/schemas/ActivityCounts'
+          description: Activity counts for this phase grouped by type and status
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+    CommentedByDTO:
+      type: object
+      required:
+      - email
+      - name
+      properties:
+        name:
+          type: string
+          description: Name of the person who approved the step.
+        email:
+          type: string
+          description: Email of the person who approved the step.
+    SubprocessActivityInfo:
+      type: object
+      description: Subprocess execution information for activities
+      required:
+      - releaseId
+      - identifier
+      properties:
+        releaseId:
+          type: string
+          description: ID of the subprocess release
+        identifier:
+          type: string
+          description: Process identifier for SUBPROCESS type activities
+    ActivityTypeCounts:
+      type: object
+      description: Counts of activities by status for a specific activity type
+      required:
+      - running
+      - userAction
+      properties:
+        running:
+          type: integer
+          default: 0
+          description: Number of running activities of this type
+        userAction:
+          type: integer
+          default: 0
+          description: Number of activities of this type requiring user action
+    OrchestrationExecutionActivity:
+      type: object
+      description: Represents an activity in the orchestration execution
+      required:
+      - identifier
+      - name
+      - status
+      - yaml
+      - depends_on
+      properties:
+        identifier:
+          type: string
+          description: Identifier of the activity
+        name:
+          type: string
+          description: Name of the activity
+        description:
+          type: string
+          description: Description of the activity
+        status:
+          $ref: '#/components/schemas/OrchestrationStatus'
+        start_ts:
+          type: integer
+          format: int64
+          description: Start timestamp in milliseconds
+        end_ts:
+          type: integer
+          format: int64
+          description: End timestamp in milliseconds
+        yaml:
+          type: string
+          description: YAML configuration of the activity
+        depends_on:
+          type: array
+          items:
+            type: string
+          description: List of activity identifiers this activity depends on
+        activity_execution_id:
+          type: string
+          description: ID of the activity execution
+        retry_index:
+          type: integer
+          format: int32
+          description: Retry index of the activity execution
+        pipeline:
+          $ref: '#/components/schemas/PipelineActivityInfo'
+          description: Pipeline execution information for activities
+        subprocess:
+          $ref: '#/components/schemas/SubprocessActivityInfo'
+          description: Subprocess execution information for activities
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+    RmFailureInfo:
+      type: object
+      description: Information about a failure that occurred
+      required:
+      - msg
+      properties:
+        msg:
+          type: string
+          description: The failure message describing what went wrong
+        code:
+          type: string
+          description: The failure code indicating the type of failure
+    ActivityCounts:
+      type: object
+      description: Activity counts grouped by type and status
+      required:
+      - pipeline
+      - subprocess
+      - manual
+      properties:
+        pipeline:
+          $ref: '#/components/schemas/ActivityTypeCounts'
+          description: Pipeline activity counts
+        subprocess:
+          $ref: '#/components/schemas/ActivityTypeCounts'
+          description: Subprocess activity counts
+        manual:
+          $ref: '#/components/schemas/ActivityTypeCounts'
+          description: Manual activity counts
+    ActivityRetryInfo:
+      type: object
+      description: Information about a single retry attempt
+      required:
+      - activityExecutionId
+      - retryIndex
+      - status
+      - createdAt
+      - activityName
+      - identifier
+      - yaml
+      properties:
+        activityExecutionId:
+          type: string
+          description: The ID of the activity execution
+        phaseId:
+          type: string
+          description: The ID of the phase this activity belongs to
+        activityName:
+          type: string
+          description: The name of the activity
+        identifier:
+          type: string
+          description: The identifier of the activity
+        retryIndex:
+          type: integer
+          format: int32
+          description: The retry index (0 for original, 1+ for retries)
+        status:
+          $ref: '#/components/schemas/OrchestrationStatus'
+          description: The status of this retry attempt
+        createdAt:
+          type: integer
+          format: int64
+          description: Creation timestamp in milliseconds
+        startTs:
+          type: integer
+          format: int64
+          description: Start timestamp in milliseconds
+        endTs:
+          type: integer
+          format: int64
+          description: End timestamp in milliseconds
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+          description: Information about a failure that occurred during the retry
+        canRetry:
+          type: boolean
+          description: Whether this activity can be retried (true if status is not RETRIED, false otherwise)
+        yaml:
+          type: string
+          description: YAML representation of the activity
+        triggerInfo:
+          $ref: '#/components/schemas/ActivityTriggerInfo'
+          description: Trigger information for the activity
+        pipeline:
+          $ref: '#/components/schemas/PipelineActivityInfo'
+          description: Pipeline execution information for activities
+        subprocess:
+          $ref: '#/components/schemas/SubprocessActivityInfo'
+          description: Subprocess execution information for activities
+    ExecutionTaskStatus:
+      type: string
+      description: Current status of the execution task
+      enum:
+      - TODO
+      - IN_PROGRESS
+      - SUCCEEDED
+      - FAILED
+      - BLOCKED
+      x-oapi-codegen-extra-tags:
+        validate: required
+    InputVariableType:
+      type: string
+      description: Type of an input variable for parameters and process inputs.
+      enum:
+      - string
+      - list
+      - boolean
+      - number
+      - object
+      - service
+      - multiService
+      - environment
+      - multiEnvironment
+      - infrastructure
+      - multiInfrastructure
+      - connector
+    TaskCommentDTO:
+      title: TaskCommentDTO
+      type: object
+      description: Represents a comment on an execution task
+      required:
+      - commentId
+      - comment
+      - commentedBy
+      - createdAt
+      - lastUpdatedAt
+      - isEdited
+      properties:
+        commentId:
+          type: string
+          description: UUID of the comment
+        comment:
+          type: string
+          description: The comment text
+        commentedBy:
+          description: Details of the person who created the comment
+          $ref: '#/components/schemas/CommentedByDTO'
+        createdAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the comment was created
+        lastUpdatedAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the comment was last updated
+        isEdited:
+          type: boolean
+          description: Whether the comment has been edited since creation
+      x-stoplight:
+        id: task-comment-dto
+    StringOrStringArray:
+      oneOf:
+      - type: string
+        description: Reference as a string
+      - type: array
+        items:
+          type: string
+        description: Array of references as strings
+      description: Flexible type that accepts either a single string or an array of strings for user references
+    RmError:
+      title: Error Response
+      x-stoplight:
+        id: d53gtsgvwyk44
+      type: object
+      description: Error Response
+      required:
+      - message
+      properties:
+        message:
+          type: string
+          x-stoplight:
+            id: 5n8vetciod7k8
+          description: error message detail
+        code:
+          type: string
+          description: canonical error code name
+          enum:
+          - BAD_REQUEST
+          - UNAUTHORIZED
+          - FORBIDDEN
+          - NOT_FOUND
+          - INTERNAL_SERVER_ERROR
+    ActivityRetryHistoryResponse:
+      type: object
+      description: Response containing the retry history for an activity execution
+      required:
+      - retries
+      - last
+      - nextRequest
+      properties:
+        retries:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityRetryInfo'
+          description: List of retry attempts for the activity
+        last:
+          type: boolean
+          description: Whether this is the last page of results
+        nextRequest:
+          $ref: '#/components/schemas/NextRequest'
+          description: Information for the next page request
+    ExecutionTaskDTO:
+      type: object
+      description: Represents an execution task for a specific activity
+      required:
+      - identifier
+      - name
+      - status
+      - required
+      - userGroups
+      - expectedDuration
+      properties:
+        identifier:
+          type: string
+          description: Unique identifier of the task
+        name:
+          type: string
+          description: Name of the task
+        description:
+          type: string
+          description: Description of the task
+        status:
+          $ref: '#/components/schemas/ExecutionTaskStatus'
+        required:
+          $ref: '#/components/schemas/StringOrBool'
+          description: Whether this task is required
+        userGroups:
+          $ref: '#/components/schemas/StringOrStringArray'
+          description: List of user group identifiers assigned to this task
+        expectedDuration:
+          type: string
+          description: Expected duration for the task (e.g., "1d 12h")
+        actualDuration:
+          type: string
+          description: Actual duration taken for the task (e.g., "7h")
+        createdAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the task was created
+        lastUpdatedAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the task was last updated
+        taskExecutionId:
+          type: string
+          description: ID of the task execution
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+    StringOrBool:
+      oneOf:
+      - type: boolean
+        description: Boolean value
+      - type: string
+        description: String value
+      description: Flexible type that accepts either a boolean or a string
+    OrchestrationExecutionActivityDetail:
+      type: object
+      description: Detailed information about an activity execution
+      required:
+      - identifier
+      - name
+      - status
+      - yaml
+      - phaseIdentifier
+      - phaseName
+      - activity_execution_id
+      - phase_execution_id
+      - process_execution_id
+      properties:
+        identifier:
+          type: string
+          description: Identifier of the activity
+        name:
+          type: string
+          description: Name of the activity
+        status:
+          $ref: '#/components/schemas/OrchestrationStatus'
+        yaml:
+          type: string
+          description: YAML configuration of the activity
+        phaseIdentifier:
+          type: string
+          description: Identifier of the phase
+        phaseName:
+          type: string
+          description: Name of the phase
+        activity_execution_id:
+          type: string
+          description: ID of the activity execution
+        phase_execution_id:
+          type: string
+          description: ID of the phase execution
+        process_execution_id:
+          type: string
+          description: ID of the process execution
+        retry_index:
+          type: integer
+          format: int32
+          description: Retry index of the activity execution
+        retry_id:
+          type: string
+          description: Retry ID of the activity execution
+        root_retry_id:
+          type: string
+          description: Root retry ID of the activity execution
+        start_ts:
+          type: integer
+          format: int64
+          description: Start timestamp in milliseconds
+        end_ts:
+          type: integer
+          format: int64
+          description: End timestamp in milliseconds
+        triggerInfo:
+          $ref: '#/components/schemas/ActivityTriggerInfo'
+          description: Trigger information for the activity
+        pipeline:
+          $ref: '#/components/schemas/PipelineActivityInfo'
+          description: Pipeline execution information for activities
+        subprocess:
+          $ref: '#/components/schemas/SubprocessActivityInfo'
+          description: Subprocess execution information for activities
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+    EventMetadata:
+      type: object
+      description: Metadata for an event
+      required:
+      - from
+      - to
+      properties:
+        from:
+          type: string
+          description: The previous state/value
+        to:
+          type: string
+          description: The new state/value
+    AnyValue:
+      oneOf:
+      - type: string
+      - type: number
+      - type: boolean
+      - type: object
+        additionalProperties: true
+      - type: array
+        items:
+          type: object
+      x-go-type: interface{}
+      description: Flexible type that accepts any JSON value (string, number, boolean, object, or array)
+    ActivityTriggerInfo:
+      type: object
+      description: Trigger information for an activity
+      properties:
+        identifier:
+          type:
+          - string
+          - 'null'
+          description: Identifier of the person who triggered the activity
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the person who triggered the activity
+        email:
+          type:
+          - string
+          - 'null'
+          description: Email of the person who triggered the activity
+    EventType:
+      type: string
+      enum:
+      - Status
+      description: Type of event
+    ManualActivityInfo:
+      type: object
+      description: Manual activity execution information
+      properties:
+        taskCount:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          description: Total number of tasks in this manual activity
+    TaskCommentsListResponseDTO:
+      type: object
+      description: Paginated response containing task comments
+      required:
+      - comments
+      - nextRequest
+      - last
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskCommentDTO'
+          description: List of task comments
+        nextRequest:
+          $ref: '#/components/schemas/NextRequest'
+        last:
+          type: boolean
+          description: Whether this is the last page of results
+      x-stoplight:
+        id: task-comments-list-response-dto
+    PipelineActivityInfo:
+      type: object
+      description: Pipeline execution information for activities
+      required:
+      - executionId
+      - identifier
+      properties:
+        executionId:
+          type: string
+          description: ID of the pipeline execution
+        identifier:
+          type: string
+          description: Pipeline identifier for PIPELINE type activities in format org/project/pipelineIdentifier
+    CreatedByDTO:
+      type: object
+      description: Details of the user who created the event
+      required:
+      - name
+      - email
+      properties:
+        name:
+          type: string
+          description: Name of the user who created the event
+        email:
+          type: string
+          description: Email of the user who created the event
+        identifier:
+          type: string
+          description: Identifier of the user who created the event
+      x-stoplight:
+        id: created-by-dto
+    PageableSort:
+      type: object
+      x-go-name: PageableSort
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    OrchestrationExecutionActivityPaginated:
+      type: object
+      description: Represents an activity in the paginated orchestration execution activities response
+      required:
+      - identifier
+      - name
+      - status
+      - phaseIdentifier
+      - phaseName
+      - rootReleaseId
+      - type
+      - phaseExecutionId
+      - processExecutionId
+      properties:
+        identifier:
+          type: string
+          description: Unique identifier of the activity
+        name:
+          type: string
+          description: Name of the activity
+        status:
+          $ref: '#/components/schemas/OrchestrationStatus'
+          description: Current status of the activity
+        phaseIdentifier:
+          type: string
+          description: Identifier of the phase this activity belongs to
+        phaseName:
+          type: string
+          description: Name of the phase this activity belongs to
+        rootReleaseId:
+          type: string
+          description: Root release ID for this activity (used to group activities from child releases)
+        type:
+          type: string
+          enum:
+          - PIPELINE
+          - SUBPROCESS
+          - MANUAL
+          description: Type of the activity
+        startTs:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: Start timestamp in milliseconds
+        endTs:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: End timestamp in milliseconds
+        processExecutionId:
+          type: string
+          description: Process execution ID
+        phaseExecutionId:
+          type: string
+          description: Phase execution ID
+        activityExecutionId:
+          type:
+          - string
+          - 'null'
+          description: Activity execution ID
+        retryIndex:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          description: Retry index if this is a retry
+        retryId:
+          type:
+          - string
+          - 'null'
+          description: Retry ID
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+          description: Failure information if the activity failed
+        triggerInfo:
+          $ref: '#/components/schemas/ActivityTriggerInfo'
+          description: Trigger information for the activity
+        pipeline:
+          $ref: '#/components/schemas/PipelineActivityInfo'
+          description: Pipeline execution information for activities
+        subprocess:
+          $ref: '#/components/schemas/SubprocessActivityInfo'
+          description: Subprocess execution information for activities
+        manual:
+          $ref: '#/components/schemas/ManualActivityInfo'
+          description: Manual activity execution information
+    EventDTO:
+      type: object
+      description: Represents an event for an entity
+      required:
+      - entityId
+      - entityType
+      - type
+      - eventMetadata
+      - createdBy
+      - createdAt
+      properties:
+        entityId:
+          type: string
+          description: The ID of the entity
+        entityType:
+          $ref: '#/components/schemas/EventEntity'
+          description: The type of entity
+        type:
+          $ref: '#/components/schemas/EventType'
+          description: The type of event
+        eventMetadata:
+          $ref: '#/components/schemas/EventMetadata'
+          description: Event metadata containing from and to fields
+        createdBy:
+          $ref: '#/components/schemas/CreatedByDTO'
+          description: Information about the user who created the event
+        createdAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the event was created
+  parameters:
+    RmSort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      description: 'Sort parameters as an array. Format: `[field_name, direction]` where direction is `asc` or `desc`.
+
+        Supported fields: `start_ts`, `startTs`, `end_ts`, `endTs`, `last_updated_at`, `lastUpdatedAt`, `created_at`, `createdAt`, `name`, `identifier`, `status`, `type`.
+
+        When used in query params, use format: `sort=field_name&sort=direction` (e.g., `sort=start_ts&sort=desc`).
+
+        '
+      examples:
+        example1:
+          value:
+          - created_at,asc
+        example2:
+          value:
+          - last_updated_at,desc
+        example3:
+          value:
+          - start_ts,desc
+        example4:
+          value:
+          - end_ts,asc
+    RmOrgParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Organisation Identifier
+    RmProjectParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Project Identifier
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+    EventEntityIdParam:
+      name: entityId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the entity
+    RmLimit:
+      name: limit
+      in: query
+      schema:
+        type: number
+        default: 500
+        maximum: 500
+      description: The number of records expected
+    AccountParam:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Account Identifier
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+      description: Cursor Based Pagination
+    OrchestrationStatusListParam:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - SCHEDULED
+          - RUNNING
+          - OUTPUT_WAITING
+          - QUEUED
+          - SUCCEEDED
+          - FAILED
+          - ABORTED
+          - ON_HOLD
+          - RETRIED
+          - IGNORED
+          - SKIPPED
+        uniqueItems: false
+      description: 'Filter activities by status (can specify multiple statuses).
+
+        Valid values: SCHEDULED, QUEUED, RUNNING, OUTPUT_WAITING, SUCCEEDED, FAILED, ABORTED, ON_HOLD, RETRIED, IGNORED, SKIPPED.
+
+        '
+    EventEntityTypeParam:
+      name: entityType
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - Task
+      description: Type of entity for events
+    RmPage:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+    EventTypeParam:
+      name: eventType
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Optional filter by event type
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

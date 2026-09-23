@@ -1,0 +1,1082 @@
+openapi: 3.2.0
+info:
+  title: Harness Ssca Pipeline View API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: sscaPipelineView
+paths:
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/executions/{execution}/ssca-summary:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: pipeline
+      in: path
+      required: true
+      description: Harness pipeline ID
+    - schema:
+        type: string
+      name: execution
+      in: path
+      required: true
+      description: Harness execution ID
+    get:
+      summary: Get Summary for SSCA Tab
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SSCASummary'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      operationId: getSSCASummary
+      x-stoplight:
+        id: o6bx01jzbku58
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      tags:
+      - sscaPipelineView
+  /v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/executions/{execution}/artifacts:
+    parameters:
+    - $ref: '#/components/parameters/OrgParam1'
+    - $ref: '#/components/parameters/ProjectParam1'
+    - schema:
+        type: string
+      name: pipeline
+      in: path
+      required: true
+      description: Harness pipeline ID
+    - schema:
+        type: string
+      name: execution
+      in: path
+      required: true
+      description: Harness execution ID
+    post:
+      summary: Get Artifact List for Pipeline View
+      security:
+      - x-api-key: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ArtifactListingResponsePipelineBody'
+      operationId: getPipelineArtifactList
+      x-stoplight:
+        id: egrnx9jyyfjxz
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader6'
+      requestBody:
+        $ref: '#/components/requestBodies/ArtifactListingPipelineRequestBody'
+      tags:
+      - sscaPipelineView
+components:
+  schemas:
+    ArtifactListingPipelineResponse:
+      title: ArtifactListingPipelineResponse
+      x-stoplight:
+        id: aeh4bb2etl1zj
+      type: object
+      properties:
+        org_id:
+          type: string
+          x-stoplight:
+            id: otu437vy8o9m4
+        project_id:
+          type: string
+          x-stoplight:
+            id: iqi70origyrml
+        pipeline_id:
+          type: string
+          x-stoplight:
+            id: j4q0jvsik5xfl
+        pipeline_execution_id:
+          type: string
+          x-stoplight:
+            id: 8xlxngqfeu81e
+        artifact:
+          $ref: '#/components/schemas/ArtifactModelPipeline'
+        orchestration:
+          $ref: '#/components/schemas/OrchestrationModelPipeline'
+        enforcement:
+          $ref: '#/components/schemas/EnforcementModelPipeline'
+        slsa:
+          $ref: '#/components/schemas/SlsaModelPipeline'
+        verification:
+          $ref: '#/components/schemas/IntegrityVerificationModelPipeline'
+    LicenseDriftSummary:
+      title: LicenseDriftSummary
+      x-stoplight:
+        id: xqrznhby6s5pm
+      type: object
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: rv3e26us1gpns
+          description: Total number of license drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: i712aeyzprqnp
+          description: Total number of licenses added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: 78xi96muf5dzy
+          description: Total number of licenses deleted
+      required:
+      - total
+      - added
+      - deleted
+      description: Provides License Drift Summary
+    ArtifactSbomDriftResponse:
+      title: ArtifactSbomDriftResponse
+      x-stoplight:
+        id: 8wtldj2bdrxbl
+      type: object
+      description: Response body for sbom drift calculation between 2 artifact versions.
+      required:
+      - drift_id
+      - tag
+      - base_tag
+      - artifact_name
+      - total_drifts
+      properties:
+        drift_id:
+          type: string
+          x-stoplight:
+            id: abkvlxxav7a0m
+          description: Drift ID to get the drift results
+        tag:
+          type: string
+          x-stoplight:
+            id: r8jspopjepniy
+          description: Tag on which drift was calculated
+        base_tag:
+          type: string
+          x-stoplight:
+            id: vp5s1sanmd26h
+          description: Base tag from which drift was calculated
+        artifact_name:
+          type: string
+          x-stoplight:
+            id: v2iqwtzrsb78d
+          description: Artifact name
+        total_drifts:
+          type: integer
+          x-stoplight:
+            id: qii5blwextc6b
+          description: Sum total of component and license drifts.
+        component_drift_summary:
+          $ref: '#/components/schemas/ComponentDriftSummary'
+        license_drift_summary:
+          $ref: '#/components/schemas/LicenseDriftSummary'
+    VerificationStatus:
+      type: string
+      enum:
+      - PASSED
+      - FAILED
+    ArtifactModelPipeline:
+      title: ArtifactModelPipeline
+      x-stoplight:
+        id: 61ctnoe7t4ss3
+      type: object
+      properties:
+        id:
+          type: string
+          x-stoplight:
+            id: yefth9vlf9svq
+        type:
+          type: string
+          x-stoplight:
+            id: tv59jsryuwpbn
+          enum:
+          - image
+          - repository
+        name:
+          type: string
+          x-stoplight:
+            id: 1pqx5aj5zkzlf
+        registry_url:
+          type: string
+          x-stoplight:
+            id: 2d0pchss1tcw3
+        variant:
+          $ref: '#/components/schemas/ArtifactVariant'
+        tag:
+          type: string
+          x-stoplight:
+            id: 69micl0vn4rn8
+        digest:
+          type: string
+          x-stoplight:
+            id: 6z1z7v5v1zv5z
+        metadata:
+          type: object
+          additionalProperties: true
+          x-stoplight:
+            id: bcmiu856m2sf8
+        source_id:
+          type: string
+          x-stoplight:
+            id: fstrqsl3noow2
+    SlsaModelPipeline:
+      title: SlsaModelPipeline
+      x-stoplight:
+        id: 1z6mnbbfer07f
+      type: object
+      properties:
+        provenance:
+          type: object
+          x-stoplight:
+            id: 29j0fyhin0nuj
+          properties:
+            stage_identifier:
+              type: string
+              x-stoplight:
+                id: rqs5xr64xzbxo
+            stage_name:
+              type: string
+              x-stoplight:
+                id: 6ybgbfkjwuufx
+            step_identifier:
+              type: string
+              x-stoplight:
+                id: arvcco3se0mxz
+            stage_execution_identifier:
+              type: string
+              x-stoplight:
+                id: yz44a4c1khoxk
+            step_execution_identifier:
+              type: string
+              x-stoplight:
+                id: gbr8qzstojw7k
+            step_name:
+              type: string
+              x-stoplight:
+                id: pnrz6vu99auuc
+        verification:
+          type: object
+          x-stoplight:
+            id: ikcpg6cglf5wi
+          properties:
+            stage_identifier:
+              type: string
+              x-stoplight:
+                id: 4az31tpd3pkqi
+            stage_name:
+              type: string
+              x-stoplight:
+                id: bp57ajwvnyaxp
+            step_identifier:
+              type: string
+              x-stoplight:
+                id: djmajul37bqb9
+            stage_execution_identifier:
+              type: string
+              x-stoplight:
+                id: 8u6s0pzqjd3vf
+            step_execution_identifier:
+              type: string
+              x-stoplight:
+                id: yhftfabswfwb2
+            step_name:
+              type: string
+              x-stoplight:
+                id: lmhd1iss860xs
+            verification_details:
+              type: object
+              x-stoplight:
+                id: qvol899j1bvrm
+              properties:
+                verification_status:
+                  type: string
+                  x-stoplight:
+                    id: 2vckjnzizsiaf
+                  enum:
+                  - passed
+                  - failed
+                policy_enforcement_status:
+                  type: string
+                  x-stoplight:
+                    id: mjtplnggn4n6m
+    SSCASummary:
+      title: SSCASummary
+      x-stoplight:
+        id: nxdskdfanqumz
+      type: object
+      description: Summary Information for SSCA Tab
+      properties:
+        artifacts:
+          type: object
+          x-stoplight:
+            id: 91l0sh6kha2zv
+          properties:
+            containers:
+              type: integer
+              x-stoplight:
+                id: oxd1zvncj6awh
+            repositories:
+              type: integer
+              x-stoplight:
+                id: 6xxw06b4hfsld
+        drifts:
+          type: object
+          x-stoplight:
+            id: hw1zb5ejf1w1i
+          properties:
+            components:
+              type: integer
+              x-stoplight:
+                id: 3iy0vc2a04hxp
+            licenses:
+              type: integer
+              x-stoplight:
+                id: hhnol4fe7ernr
+        policy_violations:
+          type: object
+          x-stoplight:
+            id: ei3f7t0ecocop
+          properties:
+            allow_list:
+              type: integer
+              x-stoplight:
+                id: wwlnvezrq03nf
+            deny_list:
+              type: integer
+              x-stoplight:
+                id: h6yvi446m6gyk
+        slsa_verifications:
+          type: object
+          x-stoplight:
+            id: 5vvs0i80gklzr
+          properties:
+            successes:
+              type: integer
+              x-stoplight:
+                id: 9lr6ydad1ymyc
+            failures:
+              type: integer
+              x-stoplight:
+                id: u3it6zwcsf9yk
+        verification:
+          type: object
+          x-stoplight:
+            id: po2bjbscxrm9e
+          properties:
+            success_count:
+              type: integer
+              x-stoplight:
+                id: z5xbbgwxo87vu
+            failure_count:
+              type: integer
+              x-stoplight:
+                id: a68y3zknjhgm8
+    ArtifactVariant:
+      title: ArtifactVariant
+      x-stoplight:
+        id: uyb3jwhgs9wjh
+      type: object
+      properties:
+        type:
+          type: string
+          x-stoplight:
+            id: 2r8lmxejmwqbf
+          enum:
+          - tag
+          - branch
+          - gitTag
+          - commit
+          description: type of the variant of the artifact.
+        value:
+          type: string
+          x-stoplight:
+            id: hd1p3s7bugn88
+          description: Value of the variant of the artifact.
+    ArtifactListingPipelineRequestBody:
+      title: ArtifactListingPipelineRequestBody
+      x-stoplight:
+        id: d4ha2g16j957p
+      type: object
+      properties:
+        search_term:
+          type: string
+          x-stoplight:
+            id: dlr5jr8z718u8
+          description: Search Artifact By name
+        artifact_type:
+          type: string
+          x-stoplight:
+            id: w4rkgep4sfhkl
+          description: Filter Artifacts By type
+          enum:
+          - image
+          - repository
+    EnforcementModelPipeline:
+      title: EnforcementModelPipeline
+      x-stoplight:
+        id: ut3o0hygwe7ix
+      type: object
+      properties:
+        enforcement_id:
+          type: string
+          x-stoplight:
+            id: b2hgfv4mj8241
+        stage_identifier:
+          type: string
+          x-stoplight:
+            id: oz5ws0a02laui
+        stage_execution_identifier:
+          type: string
+          x-stoplight:
+            id: whewc03m3qozi
+        stage_name:
+          type: string
+          x-stoplight:
+            id: ikgtltwwdg0rw
+        step_identifier:
+          type: string
+          x-stoplight:
+            id: orepr0579uyzj
+        step_name:
+          type: string
+          x-stoplight:
+            id: kbee31r1eoczc
+        step_execution_identifier:
+          type: string
+          x-stoplight:
+            id: yjzg8nk78u4iu
+        violations:
+          type: object
+          x-stoplight:
+            id: rvy4v3poiwxzh
+          properties:
+            allow_list_violation_count:
+              type: integer
+              x-stoplight:
+                id: t7h07x2uykclv
+            deny_list_violation_count:
+              type: integer
+              x-stoplight:
+                id: x443igjdrgko3
+    IntegrityVerificationModelPipeline:
+      title: IntegrityVerificationModelPipeline
+      x-stoplight:
+        id: xwfsxgb9yu8ji
+      type: object
+      properties:
+        stage_identifier:
+          type: string
+          x-stoplight:
+            id: gr8axhf45jpge
+        stage_execution_identifier:
+          type: string
+          x-stoplight:
+            id: kcmobatnnddtg
+        stage_name:
+          type: string
+          x-stoplight:
+            id: q6f06mp4lmtxz
+        step_name:
+          type: string
+          x-stoplight:
+            id: w6m4q6vh272rm
+        step_identifier:
+          type: string
+          x-stoplight:
+            id: w33jxve6yupz8
+        step_execution_identifier:
+          type: string
+          x-stoplight:
+            id: 84al2ba43212l
+        integrity_verification:
+          $ref: '#/components/schemas/IntegrityVerification'
+    OrchestrationModelPipeline:
+      title: OrchestrationModePipeline
+      x-stoplight:
+        id: 61x767p8t90t2
+      type: object
+      properties:
+        scorecard:
+          type: object
+          x-stoplight:
+            id: ci34722bpbodk
+          properties:
+            avg_score:
+              type: string
+              x-stoplight:
+                id: ewa6ci4p65agj
+            max_score:
+              type: string
+              x-stoplight:
+                id: 3nj5re44p2k22
+        orchestration_id:
+          type: string
+          x-stoplight:
+            id: u1o02n7nepeuy
+        stage_identifier:
+          type: string
+          x-stoplight:
+            id: vplf4ny64cwtg
+        stage_execution_identifier:
+          type: string
+          x-stoplight:
+            id: o99jmwgk54yzx
+        stage_name:
+          type: string
+          x-stoplight:
+            id: 9k096jp7uh1tj
+        step_identifier:
+          type: string
+          x-stoplight:
+            id: 11j0xvak1mwzi
+        step_name:
+          type: string
+          x-stoplight:
+            id: vcpzjyxv1p82p
+        step_execution_identifier:
+          type: string
+          x-stoplight:
+            id: x63abctu3ltn5
+        drift:
+          $ref: '#/components/schemas/ArtifactSbomDriftResponse'
+    RekorLog:
+      title: RekorLogDataModel
+      x-stoplight:
+        id: 2tz0t40gohsnp
+      type: object
+      properties:
+        hash:
+          type: string
+          x-stoplight:
+            id: pw8nommavkh17
+        t_log_index:
+          type: string
+          x-stoplight:
+            id: 3h63tu9ilxhaq
+        signature:
+          type: string
+          x-stoplight:
+            id: f2uvqh6uh4dj0
+        entry_uuid:
+          type: string
+          x-stoplight:
+            id: 04859pdq51kvo
+        signed_at:
+          type: string
+          x-stoplight:
+            id: w0tobwpwa3kcs
+        signed_by:
+          type: string
+          x-stoplight:
+            id: x13syvivwlh3c
+    IntegrityVerification:
+      title: IntegrityVerification
+      x-stoplight:
+        id: o67gzhl92dluh
+      type: object
+      properties:
+        rekor:
+          $ref: '#/components/schemas/RekorLog'
+        error_message:
+          type: string
+          x-stoplight:
+            id: n4kkqgdolwbxh
+        status:
+          $ref: '#/components/schemas/VerificationStatus'
+        pipeline_id:
+          type: string
+          x-stoplight:
+            id: 1oh36wopxh7ek
+        pipeline_execution_id:
+          type: string
+          x-stoplight:
+            id: wqwwxp6452gmd
+    ComponentDriftSummary:
+      title: ComponentDriftSummary
+      x-stoplight:
+        id: b32uzhtuywe2w
+      type: object
+      description: Component drift summary
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: hxyal6jm7n1op
+          description: Total number of component drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: r0v4mbai7xjnj
+          description: Number of components added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: cloho1oa3yqwg
+          description: Number of components deleted.
+        modified:
+          type: integer
+          x-stoplight:
+            id: eg71m292ud719
+          description: Number of components modified.
+      required:
+      - total
+      - added
+      - deleted
+      - modified
+  requestBodies:
+    ArtifactListingPipelineRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ArtifactListingPipelineRequestBody'
+  parameters:
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+  responses:
+    ArtifactListingResponsePipelineBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ArtifactListingPipelineResponse'
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

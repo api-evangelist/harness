@@ -1,0 +1,5750 @@
+openapi: 3.2.0
+info:
+  title: Harness Repository API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Repository
+paths:
+  /code/api/v1/repos:
+    get:
+      operationId: listRepos
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The substring which is used to filter the repositories by their path name.
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+      - description: The data by which the repositories are sorted.
+        in: query
+        name: sort
+        required: false
+        schema:
+          default: identifier
+          enum:
+          - identifier
+          - created
+          - updated
+          type: string
+      - description: The order of the output.
+        in: query
+        name: order
+        required: false
+        schema:
+          default: asc
+          enum:
+          - asc
+          - desc
+          type: string
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - description: The result should contain only the favorite entries for the logged in user.
+        in: query
+        name: only_favorites
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: The result should include entities from child spaces.
+        in: query
+        name: recursive
+        required: false
+        schema:
+          default: false
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RepoRepositoryOutput'
+                type: array
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List repositories
+      tags:
+      - Repository
+    post:
+      operationId: createRepository
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCreateRepositoryRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoRepositoryOutput'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Create repository
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}:
+    delete:
+      operationId: deleteRepository
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoSoftDeleteResponse'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Soft delete repository
+      tags:
+      - Repository
+    get:
+      operationId: getRepository
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoRepositoryOutput'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get repository
+      tags:
+      - Repository
+    patch:
+      operationId: updateRepository
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiUpdateRepoRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoRepositoryOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Update repository
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/activities:
+    get:
+      operationId: listRepoActivities
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The result should contain only entries created at and after this timestamp (unix millis).
+        in: query
+        name: after
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The result should contain only entries created before this timestamp (unix millis).
+        in: query
+        name: before
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesRepoActivity'
+                type: array
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List repository activities
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/archive/{git_ref}.{format}:
+    get:
+      operationId: archive
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Without an optional path parameter, all files and subdirectories of the current working directory are included in the archive. If one or more paths are specified, only these are included.
+        in: query
+        name: path
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+      - description: Prepend <prefix>/ to paths in the archive.
+        in: query
+        name: prefix
+        required: false
+        schema:
+          type: string
+      - description: Look for attributes in .gitattributes files in the working tree as well
+        in: query
+        name: attributes
+        required: false
+        schema:
+          type: string
+      - description: Set modification time of archive entries. Without this option the committer time is used if <tree-ish> is a commit or tag, and the current time if it is a tree.
+        in: query
+        name: time
+        required: false
+        schema:
+          type: string
+      - description: Specify compression level. Larger values allow the command to spend more time to compress to smaller size.
+        in: query
+        name: compression
+        required: false
+        schema:
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: git_ref
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: format
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/gzip:
+              schema:
+                type: string
+            application/tar:
+              schema:
+                type: string
+            application/zip:
+              schema:
+                type: string
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Download repo in archived format
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/blame/{path}:
+    get:
+      operationId: getBlame
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The git reference (branch / tag / commitID) that will be used to retrieve the data. If no value is provided the default branch of the repository is used.
+        in: query
+        name: git_ref
+        required: false
+        schema:
+          default: '{Repository Default Branch}'
+          type: string
+      - description: Line number from which the file data is considered
+        in: query
+        name: line_from
+        required: false
+        schema:
+          default: 0
+          type: integer
+      - description: Line number to which the file data is considered
+        in: query
+        name: line_to
+        required: false
+        schema:
+          default: 0
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GitBlamePart'
+                type: array
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get git blame
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/branches:
+    get:
+      operationId: listBranches
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Indicates whether optional commit information should be included in the response.
+        in: query
+        name: include_commit
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: The substring by which the branches are filtered.
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+      - description: The order of the output.
+        in: query
+        name: order
+        required: false
+        schema:
+          default: asc
+          enum:
+          - asc
+          - desc
+          type: string
+      - description: The data by which the branches are sorted.
+        in: query
+        name: sort
+        required: false
+        schema:
+          default: name
+          enum:
+          - name
+          - date
+          type: string
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - description: If true, the summary of check for the branch commit SHA would be included in the response.
+        in: query
+        name: include_checks
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If true, a list of rules that apply to this branch would be included in the response.
+        in: query
+        name: include_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If true, a list of pull requests from the branch would be included in the response.
+        in: query
+        name: include_pullreqs
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If greater than zero, branch divergence from the default branch will be included in the response. The divergence would be calculated up the this many commits.
+        in: query
+        name: max_divergence
+        required: false
+        schema:
+          default: 0
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesBranchExtended'
+                type: array
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List branches
+      tags:
+      - Repository
+    post:
+      operationId: createBranch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCreateBranchRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesCreateBranchOutput'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRulesViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Create branch
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/branches/{branch_name}:
+    delete:
+      operationId: deleteBranch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Bypass rule violations if possible.
+        in: query
+        name: bypass_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: Dry run rules for operations
+        in: query
+        name: dry_run_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: branch_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesDeleteBranchOutput'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRulesViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Delete branch
+      tags:
+      - Repository
+    get:
+      operationId: getBranch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: If true, the summary of check for the branch commit SHA would be included in the response.
+        in: query
+        name: include_checks
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If true, a list of rules that apply to this branch would be included in the response.
+        in: query
+        name: include_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If true, a list of pull requests from the branch would be included in the response.
+        in: query
+        name: include_pullreqs
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: If greater than zero, branch divergence from the default branch will be included in the response. The divergence would be calculated up the this many commits.
+        in: query
+        name: max_divergence
+        required: false
+        schema:
+          default: 0
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: branch_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesBranchExtended'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get branch
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/codeowners/validate:
+    get:
+      operationId: codeOwnersValidate
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The git reference (branch / tag / commitID) that will be used to retrieve the data. If no value is provided the default branch of the repository is used.
+        in: query
+        name: git_ref
+        required: false
+        schema:
+          default: '{Repository Default Branch}'
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Validate code owners file
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/commits:
+    get:
+      operationId: listCommits
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The git reference (branch / tag / commitID) that will be used to retrieve the data. If no value is provided the default branch of the repository is used.
+        in: query
+        name: git_ref
+        required: false
+        schema:
+          default: '{Repository Default Branch}'
+          type: string
+      - description: The result should only contain commits that occurred after the provided reference.
+        in: query
+        name: after
+        required: false
+        schema:
+          type: string
+      - description: Path for which commit information should be retrieved
+        in: query
+        name: path
+        required: false
+        schema:
+          default: ''
+          type: string
+      - description: Epoch timestamp since when commit information should be retrieved.
+        in: query
+        name: since
+        required: false
+        schema:
+          example: 1728348213
+          type: integer
+      - description: Epoch timestamp until when commit information should be retrieved.
+        in: query
+        name: until
+        required: false
+        schema:
+          example: 1746668446
+          type: integer
+      - description: Committer pattern for which commit information should be retrieved.
+        in: query
+        name: committer
+        required: false
+        schema:
+          type: string
+      - description: Committer principal IDs list for which commit information should be retrieved.
+        explode: true
+        in: query
+        name: committer_id
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: Author pattern for which commit information should be retrieved.
+        in: query
+        name: author
+        required: false
+        schema:
+          type: string
+      - description: Author principal IDs for which commit information should be retrieved.
+        explode: true
+        in: query
+        name: author_id
+        required: false
+        schema:
+          items:
+            type: integer
+          type: array
+        style: form
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - description: Indicates whether optional stats should be included in the response.
+        in: query
+        name: include_stats
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesListCommitResponse'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List commits
+      tags:
+      - Repository
+    post:
+      operationId: commitFiles
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCommitFilesRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesCommitFilesResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRulesViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Commit files
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/commits/{commit_sha}:
+    get:
+      operationId: getCommit
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: commit_sha
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesCommit'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get commit
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/commits/{commit_sha}/diff:
+    get:
+      operationId: getCommitDiff
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: commit_sha
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get raw git diff of a commit
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/commits/calculate-divergence:
+    post:
+      operationId: calculateCommitDivergence
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCalculateCommitDivergenceRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesCommitDivergence'
+                type: array
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get commit divergence
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/content/{path}:
+    get:
+      operationId: getContent
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The git reference (branch / tag / commitID) that will be used to retrieve the data. If no value is provided the default branch of the repository is used.
+        in: query
+        name: git_ref
+        required: false
+        schema:
+          default: '{Repository Default Branch}'
+          type: string
+      - description: Indicates whether optional commit information should be included in the response.
+        in: query
+        name: include_commit
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: Flatten directories that contain just one subdirectory.
+        in: query
+        name: flatten_directories
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenapiGetContentOutput'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get content of a file
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/default-branch:
+    post:
+      operationId: updateDefaultBranch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiUpdateDefaultBranchRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoRepositoryOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Update default branch
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/diff-stats/{range}:
+    get:
+      operationId: diffStats
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: provide path for diff operation
+        in: query
+        name: path
+        schema:
+          description: provide path for diff operation
+          items:
+            type: string
+          type: array
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: range
+        required: true
+        schema:
+          example: main..dev
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesDiffStats'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get diff stats
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/diff/{range}:
+    get:
+      operationId: rawDiff
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: provide path for diff operation
+        in: query
+        name: path
+        schema:
+          description: provide path for diff operation
+          items:
+            type: string
+          type: array
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: range
+        required: true
+        schema:
+          example: main..dev
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GitFileDiff'
+                type: array
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get raw diff
+      tags:
+      - Repository
+    post:
+      operationId: rawDiffPost
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: range
+        required: true
+        schema:
+          example: main..dev
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiPostRawDiffRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GitFileDiff'
+                type: array
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get raw diff
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/fork:
+    post:
+      operationId: forkCreate
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                fork_branch:
+                  type: string
+                identifier:
+                  type: string
+                parent_ref:
+                  type: string
+              type: object
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoRepositoryOutput'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - Repository
+      summary: Fork create
+      x-summary-source: derived
+  /code/api/v1/repos/{repo_identifier}/fork-sync:
+    post:
+      operationId: forkSyncBranch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                branch:
+                  type: string
+                branch_commit_sha:
+                  $ref: '#/components/schemas/ShaSHA'
+                branch_upstream:
+                  type: string
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesForkSyncOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesForkSyncConflict'
+          description: Conflict
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - Repository
+      summary: Fork sync branch
+      x-summary-source: derived
+  /code/api/v1/repos/{repo_identifier}/languages:
+    get:
+      operationId: getRepoLanguages
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesRepoLangStat'
+                type: array
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get repository language statistics
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/linked/source:
+    get:
+      operationId: getLinkedSource
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoLinkedSourceOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - Repository
+      summary: Get linked source
+      x-summary-source: derived
+  /code/api/v1/repos/{repo_identifier}/linked/sync:
+    post:
+      operationId: linkedSync
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                branches:
+                  items:
+                    type: string
+                  type:
+                  - array
+                  - 'null'
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoLinkedSyncOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - Repository
+      summary: Linked sync
+      x-summary-source: derived
+  /code/api/v1/repos/{repo_identifier}/merge-check/{range}:
+    post:
+      operationId: mergeCheck
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: provide path for diff operation
+        in: query
+        name: path
+        schema:
+          description: provide path for diff operation
+          items:
+            type: string
+          type: array
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: range
+        required: true
+        schema:
+          example: main..dev
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoMergeCheck'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Check mergeability
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/merge-commit:
+    post:
+      operationId: mergeCommit
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                base_branch:
+                  type: string
+                base_commit_sha:
+                  $ref: '#/components/schemas/ShaSHA'
+                bypass_rules:
+                  type: boolean
+                dry_run:
+                  type: boolean
+                dry_run_rules:
+                  type: boolean
+                head_branch:
+                  type: string
+                head_commit_sha:
+                  $ref: '#/components/schemas/ShaSHA'
+                message:
+                  type: string
+                title:
+                  type: string
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesMergeCommitResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesMergeViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Creates a merge commit on the head branch with changes from the base
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/mergequeue/{branch_name}:
+    delete:
+      operationId: mergeQueueClear
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: branch_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - Repository
+      summary: Merge queue clear
+      x-summary-source: derived
+    get:
+      operationId: mergeQueueListEntries
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: branch_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoMergeQueueFullInfo'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - Repository
+      summary: Merge queue list entries
+      x-summary-source: derived
+  /code/api/v1/repos/{repo_identifier}/path-details:
+    post:
+      operationId: pathDetails
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The git reference (branch / tag / commitID) that will be used to retrieve the data. If no value is provided the default branch of the repository is used.
+        in: query
+        name: git_ref
+        required: false
+        schema:
+          default: '{Repository Default Branch}'
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiPathsDetailsRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoPathsDetailsOutput'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get commit details
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/paths:
+    get:
+      operationId: listPaths
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The git reference (branch / tag / commitID) that will be used to retrieve the data. If no value is provided the default branch of the repository is used.
+        in: query
+        name: git_ref
+        required: false
+        schema:
+          default: '{Repository Default Branch}'
+          type: string
+      - description: Indicates whether directories should be included in the response.
+        in: query
+        name: include_directories
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoListPathsOutput'
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List all paths
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/purge:
+    post:
+      operationId: purgeRepository
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The exact time the resource was delete at in epoch format.
+        in: query
+        name: deleted_at
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Purge repository
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/raw/{path}:
+    get:
+      operationId: getRaw
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The git reference (branch / tag / commitID) that will be used to retrieve the data. If no value is provided the default branch of the repository is used.
+        in: query
+        name: git_ref
+        required: false
+        schema:
+          default: '{Repository Default Branch}'
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get raw file content
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/rebase:
+    post:
+      operationId: rebaseBranch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                base_branch:
+                  type: string
+                base_commit_sha:
+                  $ref: '#/components/schemas/ShaSHA'
+                bypass_rules:
+                  type: boolean
+                dry_run:
+                  type: boolean
+                dry_run_rules:
+                  type: boolean
+                head_branch:
+                  type: string
+                head_commit_sha:
+                  $ref: '#/components/schemas/ShaSHA'
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRebaseResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesMergeViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Rebase a branch relative to another branch or a commit
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/restore:
+    post:
+      operationId: restoreRepository
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: The exact time the resource was delete at in epoch format.
+        in: query
+        name: deleted_at
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiRestoreRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoRepositoryOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Restore repository
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/settings/general:
+    get:
+      operationId: findGeneralSettings
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsGeneralSettings'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get general settings
+      tags:
+      - Repository
+    patch:
+      operationId: updateGeneralSettings
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiGeneralSettingsRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsGeneralSettings'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Update general settings
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/settings/security:
+    get:
+      operationId: findSecuritySettings
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsSecuritySettings'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get security settings
+      tags:
+      - Repository
+    patch:
+      operationId: updateSecuritySettings
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiSecuritySettingsRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsSecuritySettings'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Update security settings
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/squash:
+    post:
+      operationId: squashBranch
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                base_branch:
+                  type: string
+                base_commit_sha:
+                  $ref: '#/components/schemas/ShaSHA'
+                bypass_rules:
+                  type: boolean
+                dry_run:
+                  type: boolean
+                dry_run_rules:
+                  type: boolean
+                head_branch:
+                  type: string
+                head_commit_sha:
+                  $ref: '#/components/schemas/ShaSHA'
+                message:
+                  type: string
+                title:
+                  type: string
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesSquashResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesMergeViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Squashes commits in a branch relative to another branch or a commit
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/summary:
+    get:
+      operationId: summary
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRepositorySummary'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Get repository summary
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/tags:
+    get:
+      operationId: listTags
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Indicates whether optional commit information should be included in the response.
+        in: query
+        name: include_commit
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: The substring by which the tags are filtered.
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+      - description: The order of the output.
+        in: query
+        name: order
+        required: false
+        schema:
+          default: asc
+          enum:
+          - asc
+          - desc
+          type: string
+      - description: The data by which the tags are sorted.
+        in: query
+        name: sort
+        required: false
+        schema:
+          default: name
+          enum:
+          - name
+          - date
+          type: string
+      - description: The page to return.
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 30
+          maximum: 100
+          minimum: 1
+          type: integer
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TypesCommitTag'
+                type: array
+          description: OK
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: List tags
+      tags:
+      - Repository
+    post:
+      operationId: createTag
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenapiCreateTagRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesCommitTag'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRulesViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Create tag
+      tags:
+      - Repository
+  /code/api/v1/repos/{repo_identifier}/tags/{tag_name}:
+    delete:
+      operationId: deleteTag
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Bypass rule violations if possible.
+        in: query
+        name: bypass_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - description: Dry run rules for operations
+        in: query
+        name: dry_run_rules
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - in: path
+        name: repo_identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tag_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypesRulesViolations'
+          description: Unprocessable Entity
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Delete tag
+      tags:
+      - Repository
+  /code/api/v1/repos/import:
+    post:
+      operationId: importRepository
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                description:
+                  type: string
+                identifier:
+                  type: string
+                parent_ref:
+                  type: string
+                pipelines:
+                  $ref: '#/components/schemas/ImporterPipelineOption'
+                provider:
+                  $ref: '#/components/schemas/ImporterProvider'
+                provider_repo:
+                  type: string
+                uid:
+                  deprecated: true
+                  type: string
+              type: object
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoRepositoryOutput'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      summary: Import repository
+      tags:
+      - Repository
+  /code/api/v1/repos/link:
+    post:
+      operationId: linkedCreate
+      parameters:
+      - description: Account Identifier for the Entity.
+        in: query
+        name: accountIdentifier
+        required: true
+        schema:
+          type: string
+      - description: Organization Identifier for the Entity.
+        in: query
+        name: orgIdentifier
+        required: false
+        schema:
+          type: string
+      - description: Project Identifier for the Entity.
+        in: query
+        name: projectIdentifier
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                connector_ref:
+                  type: string
+                description:
+                  type: string
+                identifier:
+                  type: string
+                is_public:
+                  type: boolean
+                parent_ref:
+                  type: string
+                repo_identifier:
+                  type: string
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoRepositoryOutput'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Not Found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsererrorError'
+          description: Internal Server Error
+      tags:
+      - Repository
+      summary: Linked create
+      x-summary-source: derived
+components:
+  schemas:
+    TypesCommit:
+      properties:
+        author:
+          $ref: '#/components/schemas/TypesSignature'
+        committer:
+          $ref: '#/components/schemas/TypesSignature'
+        message:
+          type: string
+        parent_shas:
+          items:
+            $ref: '#/components/schemas/ShaSHA'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+        signature:
+          $ref: '#/components/schemas/TypesGitSignatureResult'
+        stats:
+          $ref: '#/components/schemas/TypesCommitStats'
+        title:
+          type: string
+      type: object
+    EnumPublicKeyScheme:
+      enum:
+      - pgp
+      - ssh
+      type: string
+    RepoCommitFileAction:
+      properties:
+        action:
+          $ref: '#/components/schemas/GitFileAction'
+        encoding:
+          $ref: '#/components/schemas/EnumContentEncodingType'
+        path:
+          type: string
+        payload:
+          type: string
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    EnumPullReqSubState:
+      enum:
+      - ''
+      - auto_merge
+      - merge_queue
+      type: string
+    RepoFileContent:
+      properties:
+        data:
+          type: string
+        data_size:
+          type: integer
+        encoding:
+          $ref: '#/components/schemas/EnumContentEncodingType'
+        lfs_object_id:
+          type: string
+        lfs_object_size:
+          type: integer
+        size:
+          type: integer
+      type: object
+    OpenapiCreateBranchRequest:
+      properties:
+        bypass_rules:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        name:
+          type: string
+        target:
+          type: string
+      type: object
+    EnumContentEncodingType:
+      enum:
+      - base64
+      - utf8
+      type: string
+    TypesDeleteBranchOutput:
+      properties:
+        dry_run_rules:
+          type: boolean
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    EnumRuleState:
+      enum:
+      - active
+      - disabled
+      - monitor
+      type:
+      - string
+      - 'null'
+    ProtectionMergeQueueSetup:
+      properties:
+        checks_concurrency:
+          type: integer
+        group_size:
+          type: integer
+        max_check_duration_seconds:
+          type: integer
+        required_checks:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+      type: object
+    RepoSoftDeleteResponse:
+      properties:
+        deleted_at:
+          type: integer
+      type: object
+    EnumMergeCheckStatus:
+      type: string
+    TypesIdentity:
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+      type: object
+    UsererrorError:
+      properties:
+        message:
+          type: string
+        values:
+          additionalProperties: {}
+          type: object
+      type: object
+    TypesRuleInfo:
+      properties:
+        identifier:
+          type: string
+        repo_path:
+          type: string
+        space_path:
+          type: string
+        state:
+          $ref: '#/components/schemas/EnumRuleState'
+        type:
+          $ref: '#/components/schemas/EnumRuleType'
+      type: object
+    EnumPrincipalType:
+      enum:
+      - service
+      - serviceaccount
+      - user
+      type: string
+    TypesSquashResponse:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type: array
+        dry_run:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        new_head_branch_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    RepoSubmoduleContent:
+      properties:
+        commit_sha:
+          type: string
+        url:
+          type: string
+      type: object
+    TypesCheckPayload:
+      properties:
+        data: {}
+        kind:
+          $ref: '#/components/schemas/EnumCheckPayloadKind'
+        version:
+          type: string
+      type: object
+    OpenapiSecuritySettingsRequest:
+      properties:
+        principal_committer_match:
+          type:
+          - boolean
+          - 'null'
+        secret_scanning_enabled:
+          type:
+          - boolean
+          - 'null'
+        vulnerability_scanning_mode:
+          $ref: '#/components/schemas/SettingsVulnerabilityScanningMode'
+      type: object
+    TypesCommitTag:
+      properties:
+        commit:
+          $ref: '#/components/schemas/TypesCommit'
+        is_annotated:
+          type: boolean
+        message:
+          type: string
+        name:
+          type: string
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+        signature:
+          $ref: '#/components/schemas/TypesGitSignatureResult'
+        tagger:
+          $ref: '#/components/schemas/TypesSignature'
+        title:
+          type: string
+      type: object
+    TypesDiffStats:
+      properties:
+        additions:
+          type:
+          - integer
+          - 'null'
+        commits:
+          type:
+          - integer
+          - 'null'
+        deletions:
+          type:
+          - integer
+          - 'null'
+        files_changed:
+          type:
+          - integer
+          - 'null'
+      type: object
+    EnumGitSignatureResult:
+      enum:
+      - bad
+      - good
+      - invalid
+      - key_expired
+      - revoked
+      - unsupported
+      - unverified
+      type: string
+    TypesMergeQueueInfo:
+      properties:
+        checks:
+          items:
+            $ref: '#/components/schemas/TypesPullReqCheck'
+          type:
+          - array
+          - 'null'
+        checks_commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        merge_commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        pull_requests_ahead:
+          type: integer
+        state:
+          $ref: '#/components/schemas/EnumMergeQueueEntryState'
+      type:
+      - object
+      - 'null'
+    TypesPullReqStats:
+      properties:
+        additions:
+          type:
+          - integer
+          - 'null'
+        commits:
+          type:
+          - integer
+          - 'null'
+        conversations:
+          type: integer
+        deletions:
+          type:
+          - integer
+          - 'null'
+        files_changed:
+          type:
+          - integer
+          - 'null'
+        unresolved_count:
+          type: integer
+      type: object
+    TypesSignature:
+      properties:
+        identity:
+          $ref: '#/components/schemas/TypesIdentity'
+        when:
+          format: date-time
+          type: string
+      type: object
+    TypesRepositoryPullReqSummary:
+      properties:
+        closed_count:
+          type: integer
+        merged_count:
+          type: integer
+        open_count:
+          type: integer
+      type: object
+    TypesForkSyncOutput:
+      properties:
+        already_ancestor:
+          type: boolean
+        new_commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    OpenapiCreateRepositoryRequest:
+      properties:
+        default_branch:
+          type: string
+        description:
+          type: string
+        git_ignore:
+          type: string
+        identifier:
+          type: string
+        is_public:
+          type: boolean
+        license:
+          type: string
+        parent_ref:
+          type: string
+        readme:
+          type: boolean
+        tags:
+          $ref: '#/components/schemas/TypesRepoTags'
+        uid:
+          deprecated: true
+          type: string
+      type: object
+    TypesCommitFilesResponse:
+      properties:
+        changed_files:
+          items:
+            $ref: '#/components/schemas/TypesFileReference'
+          type:
+          - array
+          - 'null'
+        commit_id:
+          $ref: '#/components/schemas/ShaSHA'
+        dry_run_rules:
+          type: boolean
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    EnumCheckPayloadKind:
+      enum:
+      - ''
+      - markdown
+      - pipeline
+      - raw
+      type: string
+    SettingsSecuritySettings:
+      properties:
+        principal_committer_match:
+          type:
+          - boolean
+          - 'null'
+        secret_scanning_enabled:
+          type:
+          - boolean
+          - 'null'
+        vulnerability_scanning_mode:
+          $ref: '#/components/schemas/SettingsVulnerabilityScanningMode'
+      type: object
+    EnumMergeQueueEntryState:
+      enum:
+      - checks_in_progress
+      - checks_pending
+      - merge_group
+      - merge_pending
+      type: string
+    RepoListPathsOutput:
+      properties:
+        directories:
+          items:
+            type: string
+          type: array
+        files:
+          items:
+            type: string
+          type: array
+      type: object
+    TypesCommitDivergence:
+      properties:
+        ahead:
+          type: integer
+        behind:
+          type: integer
+      type: object
+    OpenapiCommitFilesRequest:
+      properties:
+        actions:
+          items:
+            $ref: '#/components/schemas/RepoCommitFileAction'
+          type:
+          - array
+          - 'null'
+        author:
+          $ref: '#/components/schemas/GitIdentity'
+        branch:
+          type: string
+        bypass_rules:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        message:
+          type: string
+        new_branch:
+          type: string
+        title:
+          type: string
+      type: object
+    RepoRepositoryOutput:
+      properties:
+        archived:
+          type: boolean
+        created:
+          type: integer
+        created_by:
+          type: integer
+        default_branch:
+          type: string
+        deleted:
+          type:
+          - integer
+          - 'null'
+        description:
+          type: string
+        fork_id:
+          type: integer
+        git_ssh_url:
+          type: string
+        git_url:
+          type: string
+        id:
+          type: integer
+        identifier:
+          type: string
+        importing:
+          type: boolean
+        is_empty:
+          type: boolean
+        is_favorite:
+          type: boolean
+        is_public:
+          type: boolean
+        language:
+          type: string
+        last_git_push:
+          type: integer
+        num_closed_pulls:
+          type: integer
+        num_forks:
+          type: integer
+        num_merged_pulls:
+          type: integer
+        num_open_pulls:
+          type: integer
+        num_pulls:
+          type: integer
+        parent_id:
+          type: integer
+        path:
+          type: string
+        repo_type:
+          $ref: '#/components/schemas/EnumRepoType'
+        root_space_id:
+          type: integer
+        root_space_identifier:
+          type: string
+        size:
+          description: size of the repository in KiB
+          type: integer
+        size_lfs:
+          description: size of the repository LFS in KiB
+          type: integer
+        size_updated:
+          type: integer
+        state:
+          $ref: '#/components/schemas/EnumRepoState'
+        tags: {}
+        updated:
+          type: integer
+        upstream:
+          $ref: '#/components/schemas/TypesRepositoryCore'
+      type: object
+    TypesMergeViolations:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type: array
+        message:
+          type: string
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    TypesCommitFileStats:
+      properties:
+        changes:
+          type: integer
+        deletions:
+          type: integer
+        insertions:
+          type: integer
+        old_path:
+          type: string
+        path:
+          type: string
+        status:
+          $ref: '#/components/schemas/EnumFileDiffStatus'
+      type: object
+    GitSignature:
+      properties:
+        identity:
+          $ref: '#/components/schemas/GitIdentity'
+        when:
+          format: date-time
+          type: string
+      type: object
+    OpenapiContentType:
+      enum:
+      - file
+      - dir
+      - symlink
+      - submodule
+      type: string
+    TypesRuleViolations:
+      properties:
+        bypassable:
+          type: boolean
+        bypassed:
+          type: boolean
+        rule:
+          $ref: '#/components/schemas/TypesRuleInfo'
+        violations:
+          items:
+            $ref: '#/components/schemas/TypesViolation'
+          type:
+          - array
+          - 'null'
+      type: object
+    EnumRepoType:
+      type: string
+    OpenapiDirContent:
+      properties:
+        entries:
+          items:
+            $ref: '#/components/schemas/OpenapiContentInfo'
+          type:
+          - array
+          - 'null'
+      type: object
+    GitIdentity:
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+      type:
+      - object
+      - 'null'
+    TypesCheckCountSummary:
+      properties:
+        error:
+          type: integer
+        failure:
+          type: integer
+        failure_ignored:
+          type: integer
+        pending:
+          type: integer
+        running:
+          type: integer
+        success:
+          type: integer
+      type: object
+    EnumFileDiffStatus:
+      type: string
+    TypesChangeStats:
+      properties:
+        changes:
+          type: integer
+        deletions:
+          type: integer
+        insertions:
+          type: integer
+      type: object
+    TypesRepoActivity:
+      properties:
+        payload:
+          $ref: '#/components/schemas/TypesRepoActivityPayload'
+        principal_id:
+          type: integer
+        repo_id:
+          type: integer
+        timestamp:
+          type: integer
+        type:
+          $ref: '#/components/schemas/EnumRepoActivityType'
+      type: object
+    TypesRepositorySummary:
+      properties:
+        branch_count:
+          type: integer
+        default_branch_commit_count:
+          type: integer
+        pull_req_summary:
+          $ref: '#/components/schemas/TypesRepositoryPullReqSummary'
+        tag_count:
+          type: integer
+      type: object
+    ApiFileDiffRequest:
+      properties:
+        path:
+          type: string
+        start_line:
+          type: integer
+      type: object
+    OpenapiUpdateRepoRequest:
+      properties:
+        description:
+          type:
+          - string
+          - 'null'
+        state:
+          $ref: '#/components/schemas/EnumRepoState'
+        tags:
+          $ref: '#/components/schemas/TypesRepoTags'
+      type: object
+    EnumPullReqState:
+      enum:
+      - closed
+      - merged
+      - open
+      type: string
+    RepoMergeCheck:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type: array
+        mergeable:
+          type: boolean
+      type: object
+    TypesMergeQueueListItem:
+      properties:
+        merge_queue_info:
+          $ref: '#/components/schemas/TypesMergeQueueInfo'
+        pull_request:
+          $ref: '#/components/schemas/TypesPullReq'
+      type: object
+    OpenapiContent:
+      oneOf:
+      - $ref: '#/components/schemas/RepoFileContent'
+      - $ref: '#/components/schemas/OpenapiDirContent'
+      - $ref: '#/components/schemas/RepoSymlinkContent'
+      - $ref: '#/components/schemas/RepoSubmoduleContent'
+      type: object
+    TypesRepoTags:
+      additionalProperties:
+        type: string
+      type:
+      - object
+      - 'null'
+    EnumRepoActivityType:
+      enum:
+      - branch-created
+      - branch-deleted
+      - branch-updated
+      type: string
+    EnumPullReqType:
+      type:
+      - string
+      - 'null'
+    TypesPathDetails:
+      properties:
+        last_commit:
+          $ref: '#/components/schemas/TypesCommit'
+        path:
+          type: string
+      type: object
+    OpenapiGeneralSettingsRequest:
+      properties:
+        auto_merge_enabled:
+          type:
+          - boolean
+          - 'null'
+        file_size_limit:
+          description: file size limit in bytes
+          type:
+          - integer
+          - 'null'
+        git_lfs_enabled:
+          type:
+          - boolean
+          - 'null'
+      type: object
+    ShaSHA:
+      description: Git object hash
+      type: string
+    EnumRuleType:
+      enum:
+      - branch
+      - push
+      - tag
+      type: string
+    TypesRepoLangStat:
+      type: object
+    RepoPathsDetailsOutput:
+      properties:
+        details:
+          items:
+            $ref: '#/components/schemas/TypesPathDetails'
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesCheck:
+      properties:
+        bypassed_by:
+          type:
+          - integer
+          - 'null'
+        created:
+          type: integer
+        ended:
+          type: integer
+        id:
+          type: integer
+        identifier:
+          type: string
+        link:
+          type: string
+        metadata: {}
+        payload:
+          $ref: '#/components/schemas/TypesCheckPayload'
+        reported_by:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        started:
+          type: integer
+        status:
+          $ref: '#/components/schemas/EnumCheckStatus'
+        summary:
+          type: string
+        updated:
+          type: integer
+      type: object
+    TypesRepositoryCore:
+      properties:
+        default_branch:
+          type: string
+        fork_id:
+          type: integer
+        id:
+          type: integer
+        identifier:
+          type: string
+        parent_id:
+          type: integer
+        path:
+          type: string
+        type:
+          $ref: '#/components/schemas/EnumRepoType'
+      type: object
+    EnumLabelColor:
+      enum:
+      - blue
+      - brown
+      - cyan
+      - green
+      - indigo
+      - lime
+      - mint
+      - orange
+      - pink
+      - purple
+      - red
+      - violet
+      - yellow
+      type: string
+    OpenapiRestoreRequest:
+      properties:
+        new_identifier:
+          type:
+          - string
+          - 'null'
+        new_parent_ref:
+          type:
+          - string
+          - 'null'
+      type: object
+    GitBlamePart:
+      properties:
+        commit:
+          $ref: '#/components/schemas/GitCommit'
+        lines:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+        previous:
+          $ref: '#/components/schemas/GitBlamePartPrevious'
+      type: object
+    TypesFileReference:
+      properties:
+        blob_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        path:
+          type: string
+      type: object
+    TypesLabelPullReqAssignmentInfo:
+      properties:
+        color:
+          $ref: '#/components/schemas/EnumLabelColor'
+        id:
+          type: integer
+        key:
+          type: string
+        scope:
+          type: integer
+        value:
+          type:
+          - string
+          - 'null'
+        value_color:
+          $ref: '#/components/schemas/EnumLabelColor'
+        value_count:
+          type: integer
+        value_id:
+          type:
+          - integer
+          - 'null'
+      type: object
+    GitCommit:
+      properties:
+        author:
+          $ref: '#/components/schemas/GitSignature'
+        committer:
+          $ref: '#/components/schemas/GitSignature'
+        file_stats:
+          items:
+            $ref: '#/components/schemas/GitCommitFileStats'
+          type: array
+        message:
+          type: string
+        parent_shas:
+          items:
+            $ref: '#/components/schemas/ShaSHA'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+        title:
+          type: string
+      type:
+      - object
+      - 'null'
+    OpenapiPostRawDiffRequest:
+      items:
+        $ref: '#/components/schemas/ApiFileDiffRequest'
+      type:
+      - array
+      - 'null'
+    SettingsGeneralSettings:
+      properties:
+        auto_merge_enabled:
+          type:
+          - boolean
+          - 'null'
+        file_size_limit:
+          description: file size limit in bytes
+          type:
+          - integer
+          - 'null'
+        git_lfs_enabled:
+          type:
+          - boolean
+          - 'null'
+      type: object
+    GitFileAction:
+      enum:
+      - CREATE
+      - UPDATE
+      - DELETE
+      - MOVE
+      - PATCH_TEXT
+      type: string
+    TypesPullReqCheck:
+      properties:
+        bypassable:
+          type: boolean
+        check:
+          $ref: '#/components/schemas/TypesCheck'
+        required:
+          type: boolean
+      type: object
+    TypesViolation:
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        params:
+          items: {}
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesPrincipalInfo:
+      properties:
+        created:
+          type: integer
+        display_name:
+          type: string
+        email:
+          type: string
+        id:
+          type: integer
+        type:
+          $ref: '#/components/schemas/EnumPrincipalType'
+        uid:
+          type: string
+        updated:
+          type: integer
+      type:
+      - object
+      - 'null'
+    TypesPullReq:
+      properties:
+        author:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        check_summary:
+          $ref: '#/components/schemas/TypesCheckCountSummary'
+        closed:
+          type:
+          - integer
+          - 'null'
+        created:
+          type: integer
+        description:
+          type: string
+        edited:
+          type: integer
+        is_draft:
+          type: boolean
+        labels:
+          items:
+            $ref: '#/components/schemas/TypesLabelPullReqAssignmentInfo'
+          type: array
+        merge_base_sha:
+          type: string
+        merge_check_status:
+          $ref: '#/components/schemas/EnumMergeCheckStatus'
+        merge_conflicts:
+          items:
+            type: string
+          type: array
+        merge_method:
+          $ref: '#/components/schemas/EnumMergeMethod'
+        merge_target_sha:
+          type:
+          - string
+          - 'null'
+        merge_violations_bypassed:
+          type:
+          - boolean
+          - 'null'
+        merged:
+          type:
+          - integer
+          - 'null'
+        merger:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        number:
+          type: integer
+        pullreq_type:
+          $ref: '#/components/schemas/EnumPullReqType'
+        rebase_check_status:
+          $ref: '#/components/schemas/EnumMergeCheckStatus'
+        rebase_conflicts:
+          items:
+            type: string
+          type: array
+        root_space_id:
+          type: integer
+        root_space_identifier:
+          type: string
+        rules:
+          items:
+            $ref: '#/components/schemas/TypesRuleInfo'
+          type: array
+        source_branch:
+          type: string
+        source_repo:
+          $ref: '#/components/schemas/TypesRepositoryCore'
+        source_repo_id:
+          type:
+          - integer
+          - 'null'
+        source_sha:
+          type: string
+        state:
+          $ref: '#/components/schemas/EnumPullReqState'
+        stats:
+          $ref: '#/components/schemas/TypesPullReqStats'
+        substate:
+          $ref: '#/components/schemas/EnumPullReqSubState'
+        target_branch:
+          type: string
+        target_repo_id:
+          type: integer
+        title:
+          type: string
+        updated:
+          type: integer
+      type: object
+    TypesGitSignatureResult:
+      properties:
+        created:
+          type: integer
+        key_fingerprint:
+          type: string
+        key_id:
+          type: string
+        key_scheme:
+          $ref: '#/components/schemas/EnumPublicKeyScheme'
+        result:
+          $ref: '#/components/schemas/EnumGitSignatureResult'
+        updated:
+          type: integer
+      type:
+      - object
+      - 'null'
+    OpenapiContentInfo:
+      properties:
+        latest_commit:
+          $ref: '#/components/schemas/TypesCommit'
+        name:
+          type: string
+        path:
+          type: string
+        sha:
+          type: string
+        type:
+          $ref: '#/components/schemas/OpenapiContentType'
+      type: object
+    ImporterPipelineOption:
+      enum:
+      - convert
+      - ignore
+      type: string
+    TypesRebaseResponse:
+      properties:
+        already_ancestor:
+          type: boolean
+        conflict_files:
+          items:
+            type: string
+          type: array
+        dry_run:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        new_head_branch_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    TypesCommitStats:
+      properties:
+        files:
+          items:
+            $ref: '#/components/schemas/TypesCommitFileStats'
+          type: array
+        total:
+          $ref: '#/components/schemas/TypesChangeStats'
+      type: object
+    HookReferenceUpdate:
+      properties:
+        new:
+          $ref: '#/components/schemas/ShaSHA'
+        old:
+          $ref: '#/components/schemas/ShaSHA'
+        ref:
+          type: string
+      type: object
+    TypesRulesViolations:
+      properties:
+        message:
+          type: string
+        violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type:
+          - array
+          - 'null'
+      type: object
+    EnumCheckStatus:
+      enum:
+      - error
+      - failure
+      - failure_ignored
+      - pending
+      - running
+      - success
+      type: string
+    ImporterProviderType:
+      enum:
+      - github
+      - gitlab
+      - bitbucket
+      - stash
+      - gitea
+      - gogs
+      - azure
+      type: string
+    ImporterProvider:
+      properties:
+        host:
+          type: string
+        password:
+          type: string
+        type:
+          $ref: '#/components/schemas/ImporterProviderType'
+        username:
+          type: string
+      type: object
+    GitBlamePartPrevious:
+      properties:
+        commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        file_name:
+          type: string
+      type: object
+    GitFileDiff:
+      properties:
+        additions:
+          type: integer
+        changes:
+          type: integer
+        deletions:
+          type: integer
+        is_binary:
+          type: boolean
+        is_submodule:
+          type: boolean
+        old_path:
+          type: string
+        old_sha:
+          type: string
+        patch:
+          items:
+            minimum: 0
+            type: integer
+          type: array
+        path:
+          type: string
+        sha:
+          type: string
+        status:
+          $ref: '#/components/schemas/EnumFileDiffStatus'
+      type: object
+    RepoLinkedSourceOutput:
+      properties:
+        url:
+          type: string
+      type: object
+    OpenapiGetContentOutput:
+      properties:
+        content:
+          $ref: '#/components/schemas/OpenapiContent'
+        latest_commit:
+          $ref: '#/components/schemas/TypesCommit'
+        name:
+          type: string
+        path:
+          type: string
+        sha:
+          type: string
+        type:
+          $ref: '#/components/schemas/OpenapiContentType'
+      type: object
+    RepoCommitDivergenceRequest:
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+      type: object
+    RepoMergeQueueFullInfo:
+      properties:
+        active:
+          type: boolean
+        entries:
+          items:
+            $ref: '#/components/schemas/TypesMergeQueueListItem'
+          type:
+          - array
+          - 'null'
+        setup:
+          $ref: '#/components/schemas/ProtectionMergeQueueSetup'
+      type: object
+    RepoSymlinkContent:
+      properties:
+        size:
+          type: integer
+        target:
+          type: string
+      type: object
+    TypesCreateBranchOutput:
+      properties:
+        commit:
+          $ref: '#/components/schemas/TypesCommit'
+        dry_run_rules:
+          type: boolean
+        name:
+          type: string
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    EnumMergeMethod:
+      enum:
+      - fast-forward
+      - merge
+      - rebase
+      - squash
+      type: string
+    RepoLinkedSyncOutput:
+      properties:
+        branches:
+          items:
+            $ref: '#/components/schemas/HookReferenceUpdate'
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesForkSyncConflict:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+        message:
+          type: string
+      type: object
+    TypesBranchExtended:
+      properties:
+        check_summary:
+          $ref: '#/components/schemas/TypesCheckCountSummary'
+        commit:
+          $ref: '#/components/schemas/TypesCommit'
+        commit_divergence:
+          $ref: '#/components/schemas/TypesCommitDivergence'
+        is_default:
+          type: boolean
+        name:
+          type: string
+        pull_requests:
+          items:
+            $ref: '#/components/schemas/TypesPullReq'
+          type: array
+        rules:
+          items:
+            $ref: '#/components/schemas/TypesRuleInfo'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    TypesListCommitResponse:
+      properties:
+        commits:
+          items:
+            $ref: '#/components/schemas/TypesCommit'
+          type:
+          - array
+          - 'null'
+        rename_details:
+          items:
+            $ref: '#/components/schemas/TypesRenameDetails'
+          type:
+          - array
+          - 'null'
+        total_commits:
+          type: integer
+      type: object
+    TypesMergeCommitResponse:
+      properties:
+        already_ancestor:
+          type: boolean
+        conflict_files:
+          items:
+            type: string
+          type: array
+        dry_run:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        new_head_branch_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    TypesRenameDetails:
+      properties:
+        commit_sha_after:
+          type: string
+        commit_sha_before:
+          type: string
+        new_path:
+          type: string
+        old_path:
+          type: string
+      type: object
+    OpenapiUpdateDefaultBranchRequest:
+      properties:
+        name:
+          type: string
+      type: object
+    OpenapiPathsDetailsRequest:
+      properties:
+        paths:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+      type: object
+    SettingsVulnerabilityScanningMode:
+      enum:
+      - disabled
+      - detect
+      - block
+      type:
+      - string
+      - 'null'
+    TypesRepoActivityPayload: {}
+    OpenapiCalculateCommitDivergenceRequest:
+      properties:
+        max_count:
+          type: integer
+        requests:
+          items:
+            $ref: '#/components/schemas/RepoCommitDivergenceRequest'
+          type:
+          - array
+          - 'null'
+      type: object
+    OpenapiCreateTagRequest:
+      properties:
+        bypass_rules:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        message:
+          type: string
+        name:
+          type: string
+        target:
+          type: string
+      type: object
+    EnumRepoState:
+      type:
+      - integer
+      - 'null'
+    GitCommitFileStats:
+      type: object
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

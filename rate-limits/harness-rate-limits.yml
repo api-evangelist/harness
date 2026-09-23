@@ -4,84 +4,127 @@ schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main
 provider: Harness
 providerId: harness
 created: '2026-05-04'
-# Provenance stamped 2026-08-11: this artifact was written by the API Evangelist
-# bulk sweep dated 2026-05-04, not harvested from the provider. See roadmap#35.
-method: generated
-modified: '2026-05-05'
-reconciled: false
+modified: '2026-09-12'
+generated: '2026-09-12'
+method: searched
+source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+reconciled: true
+supersedes: The 2026-05-04 bulk-sweep version of this file recorded "Public rate-limit documentation could not be
+  located" and carried placeholder per-second numbers. It was wrong. Harness publishes a Platform Rate Limits page
+  with six explicit limits, fetched verbatim on 2026-09-12; every number below comes from that page.
 tags:
-  - DevOps
-  - GitOps
-  - Internal Developer Portal
-  - Lifecycle
-  - Software Delivery
-  - Rate Limiting
-  - Quotas
-  - Throttling
-description: Harness does not publish a single consolidated API rate-limit table at a public URL.
-  Limits are governed at the platform level per account, with documented capacity ceilings on
-  concurrent pipeline executions per plan (60 on Essentials, 500 on Enterprise). Specific per-second
-  request-rate numbers are not publicly disclosed; raise via support.
-notes: Public rate-limit documentation could not be located at the time of reconciliation. Numeric
-  per-second limits are placeholder; verify with the Harness API reference or support before
-  production sizing.
-sources:
-  - https://www.harness.io/pricing
-  - https://apidocs.harness.io/
+- DevOps
+- GitOps
+- Rate Limiting
+- Quotas
+- Throttling
+description: Harness publishes its platform rate limits on the developer hub. Limits are enforced at two layers
+  with different keys — an IP-address limit at the edge (Google Cloud Armor) and an API-key limit at the platform.
+  Exhaustion returns 429. Harness reserves the right to change these at any time.
+limit_count: 7
+limits:
+- name: Any call (per IP)
+  scope: ip
+  metric: requests
+  limit: 5000
+  window: 10s
+  derived_per_minute: 30000
+  enforcement: edge (Google Cloud Armor)
+  source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+- name: API calls (per API key)
+  scope: api-key
+  metric: requests
+  limit: 1000
+  window: 1m
+  enforcement: platform
+  source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+- name: External API requests (per X-API-Key)
+  scope: api-key
+  metric: requests
+  limit: 400
+  window: 1m
+  enforcement: platform
+  note: A tighter limit than the general per-key limit. Harness distinguishes "API calls" from "external API requests"
+    on the page without defining the boundary; treat 400/min as the ceiling for third-party integration traffic.
+  source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+- name: GraphQL APIs (FirstGen only, per IP)
+  scope: ip
+  metric: requests
+  limit: 1000
+  window: 1m
+  applies_to: Harness FirstGen GraphQL API
+  source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+- name: Large requests (payload > 500,000 characters)
+  scope: ip
+  metric: payloads
+  limit: 1
+  window: 10s
+  note: A separate limiter for oversized bodies — relevant for large pipeline/template YAML writes.
+  source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+- name: Reset password
+  scope: ip
+  metric: requests
+  limit: 5
+  window: 1m
+  source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+- name: User invites
+  scope: ip
+  metric: requests
+  limit: 10
+  window: 1m
+  source: https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+quota_limits:
+- name: User invitation emails (per account, per license edition)
+  scope: account
+  metric: invitation emails
+  window: rolling 24h
+  tiers:
+  - edition: Free
+    limit: 50
+  - edition: Community
+    limit: 50
+  - edition: Team
+    limit: 1000
+  - edition: Startup
+    limit: 1000
+  - edition: DevOps Essentials
+    limit: 1000
+  - edition: Enterprise
+    limit: 5000
+  - edition: Essentials
+    limit: 5000
+  exempt: Invitations provisioned through SCIM or LDAP
+  source: https://developer.harness.io/release-notes/platform (version 1.163.x, September 2026)
 headers:
-  retryAfter: Retry-After
+  request: []
+  response:
+  - name: Retry-After
+    status: documented-but-unreliable
+    caveat: Harness states explicitly that "Retry-After in the 429 error responses is not currently supported by
+      Google Cloud Armor". An agent MUST back off on the 429 status alone and cannot depend on this header being
+      present.
+  absent:
+  - X-RateLimit-Limit
+  - X-RateLimit-Remaining
+  - X-RateLimit-Reset
+  - RateLimit-Limit
+  - RateLimit-Remaining
+  - RateLimit-Reset
+  finding: No RateLimit-* or X-RateLimit-* headers are declared on any of the 2,883 operations in the published
+    contract, and none were observed. A client has no runtime budget signal — it learns it has exhausted the limit
+    only by being throttled.
 responseCodes:
   throttled: 429
   serviceUnavailable: 503
-limits:
-  - tier: free
-    name: Free Tier (Harness Open Source / Litmus Chaos)
-    scope: account
-    metric: requests_per_minute
-    limit: see Harness support / API reference
-    applies:
-      - Harness Platform API
-      - Harness Continuous Integration API
-      - Harness Continuous Delivery and GitOps API
-  - tier: essentials
-    name: Essentials Concurrent Pipelines
-    scope: account
-    metric: concurrent_executions
-    limit: 60
-    timeFrame: usage
-    applies:
-      - Harness Continuous Integration API
-      - Harness Continuous Delivery and GitOps API
-  - tier: enterprise
-    name: Enterprise Concurrent Pipelines
-    scope: account
-    metric: concurrent_executions
-    limit: 500
-    timeFrame: usage
-    applies:
-      - Harness Continuous Integration API
-      - Harness Continuous Delivery and GitOps API
-  - tier: enterprise
-    name: Enterprise Code Repository Storage
-    scope: account
-    metric: gb_total
-    limit: 250
-    timeFrame: usage
-    applies:
-      - Harness Code Repository API
-policies:
-  - name: Backoff Strategy
-    description: Clients should implement exponential backoff with jitter and honor the Retry-After
-      header on 429 responses.
-  - name: Account Scoping
-    description: Limits are enforced per Harness account, not per individual API key.
-  - name: Plan-based Capacity
-    description: Concurrent pipeline ceilings are tied to the account's plan tier (Essentials or
-      Enterprise); raises require plan upgrade or sales engagement.
-  - name: Fair Use
-    description: Even on Enterprise, sustained traffic that materially impacts shared infrastructure
-      may be subject to fair-use throttling.
+plan_related_capacity:
+  note: Distinct from request rate limits, Harness publishes per-plan concurrency ceilings on the pricing page —
+    60 concurrent pipeline executions on Essentials, up to 500 on Enterprise, 250 GB code repository storage. See
+    plans/harness-plans-pricing.yml.
+sources:
+- https://developer.harness.io/harness-platform/use-harness-platform/rate-limits
+- https://developer.harness.io/release-notes/platform
+- https://www.harness.io/pricing
 maintainers:
-  - FN: Kin Lane
-    email: kin@apievangelist.com
-    url: https://apievangelist.com
+- FN: Kin Lane
+  email: kin@apievangelist.com
+  url: https://apievangelist.com

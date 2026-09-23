@@ -1,0 +1,750 @@
+openapi: 3.2.0
+info:
+  title: Harness Dashboard API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Dashboard
+  description: Aggregate summary of policies, policy sets and evaluations for display on the dashboard
+paths:
+  /pm/api/v1/dashboard:
+    get:
+      tags:
+      - Dashboard
+      description: Get metrics about policies, policy sets and evaluations
+      operationId: dashboard#metrics
+      parameters:
+      - name: range
+        in: query
+        description: 'The time period over which to aggregate dashboard data. Can be: 24 hours, 7 days or 30 days'
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: 'The time period over which to aggregate dashboard data. Can be: 24 hours, 7 days or 30 days'
+          default: 30d
+          example: 30d
+          enum:
+          - 24h
+          - 7d
+          - 30d
+        example: 30d
+      - name: accountIdentifier
+        in: query
+        description: Harness account ID
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Harness account ID
+          default: ''
+          example: eBqAoNchMLKigC_qZ5EdC
+        example: eBqAoNchMLKigC_qZ5EdC
+      - name: orgIdentifier
+        in: query
+        description: Harness organization ID
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Harness organization ID
+          default: ''
+          example: test-org
+        example: test-org
+      - name: projectIdentifier
+        in: query
+        description: Harness project ID
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Harness project ID
+          default: ''
+          example: test-project
+        example: test-project
+      - name: x-api-key
+        in: header
+        description: Harness PAT key used to perform authorization
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Harness PAT key used to perform authorization
+          example: Suscipit quibusdam vero et et saepe mollitia.
+        example: Dolor ad.
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardMetrics'
+              example:
+                aggregates:
+                - error: 2668095310586059300
+                  pass: 7917376174519928000
+                  time: 877082768067338000
+                  warning: 7963367341719450000
+                - error: 2668095310586059300
+                  pass: 7917376174519928000
+                  time: 877082768067338000
+                  warning: 7963367341719450000
+                policy_health:
+                  total_evaluation_count: 6633902564523388000
+                  total_evaluation_entity_count:
+                    error: 1424236024467160800
+                    pass: 46865177373020330
+                    warning: 1751867406371044400
+                  total_policy_count: 3340742178032407600
+                  total_policy_set_count: 7213994061844399000
+                  total_policy_set_entity_count:
+                    Ad facere minima.: 1607291756625562600
+                    Eum necessitatibus et fugit voluptatem ducimus quia.: 7181021126027306000
+                    Quas cum est beatae eos voluptate.: 6670231524980875000
+        '400':
+          description: 'BadRequest: Bad Request response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '401':
+          description: 'Unauthorized: Unauthorized response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '403':
+          description: 'Forbidden: Forbidden response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '404':
+          description: 'NotFound: Not Found response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '500':
+          description: 'InternalServer: Internal Server Error response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '502':
+          description: 'BadGateway: Bad Gateway response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+      security:
+      - jwt_header_Authorization:
+        - core_governancePolicy_view
+      - api_key_header_x-api-key: []
+      summary: Dashboard#metrics
+      x-summary-source: derived
+components:
+  schemas:
+    EvaluationCounts:
+      type: object
+      properties:
+        error:
+          type: integer
+          description: Count of evaluations that have a status of 'error'
+          example: 4663569050123033000
+          format: int64
+        pass:
+          type: integer
+          description: Count of evaluations that have a status of 'pass'
+          example: 2966700406645896000
+          format: int64
+        warning:
+          type: integer
+          description: Count of evaluations that have a status of 'warning'
+          example: 5239184726483167000
+          format: int64
+      description: Evaluation counts by status
+      example:
+        error: 928005298931460400
+        pass: 335454362103582900
+        warning: 4515572488302898700
+      required:
+      - error
+      - warning
+      - pass
+    PolicyManagementError:
+      type: object
+      properties:
+        fault:
+          type: boolean
+          description: Is the error a server-side fault?
+          example: true
+        id:
+          type: string
+          description: ID is a unique identifier for this particular occurrence of the problem.
+          example: 123abc
+        message:
+          type: string
+          description: Message is a human-readable explanation specific to this occurrence of the problem.
+          example: parameter 'p' must be an integer
+        name:
+          type: string
+          description: Name is the name of this class of errors.
+          example: bad_request
+        temporary:
+          type: boolean
+          description: Is the error temporary?
+          example: true
+        timeout:
+          type: boolean
+          description: Is the error a timeout?
+          example: true
+      example:
+        fault: false
+        id: 123abc
+        message: parameter 'p' must be an integer
+        name: bad_request
+        temporary: true
+        timeout: false
+      required:
+      - name
+      - id
+      - message
+      - temporary
+      - timeout
+      - fault
+    AggregateStatus:
+      type: object
+      properties:
+        error:
+          type: integer
+          description: Count of evaluations that have a status of 'error'
+          example: 2751035022659569700
+          format: int64
+        pass:
+          type: integer
+          description: Count of evaluations that have a status of 'pass'
+          example: 5303592115568878000
+          format: int64
+        time:
+          type: integer
+          description: The Unix time of this particular aggregation
+          example: 3145419320740094500
+          format: int64
+        warning:
+          type: integer
+          description: Count of evaluations that have a status of 'warning'
+          example: 340622624256371100
+          format: int64
+      description: Aggregate metrics for evaluations on a single day
+      example:
+        error: 9048868753144394000
+        pass: 176462118679014430
+        time: 7653355816170778000
+        warning: 6049873326869507000
+      required:
+      - time
+      - error
+      - warning
+      - pass
+    PolicyHealth:
+      type: object
+      properties:
+        total_evaluation_count:
+          type: integer
+          description: Total number of evaluations that have occurred
+          example: 75437627954788050
+          format: int64
+        total_evaluation_entity_count:
+          $ref: '#/components/schemas/EvaluationCounts'
+        total_policy_count:
+          type: integer
+          description: Total number of policies stored
+          example: 5950392290614700000
+          format: int64
+        total_policy_set_count:
+          type: integer
+          description: Total number of policy sets stored
+          example: 8287301806429450000
+          format: int64
+        total_policy_set_entity_count:
+          type: object
+          description: Total number of policy sets by type
+          example:
+            Commodi voluptatibus vero incidunt eaque in.: 9200198533272049000
+            Ducimus expedita explicabo iusto qui dolorem aut.: 7550005332586422000
+            Et illum.: 3675828363000460000
+          additionalProperties:
+            type: integer
+            example: 813971292877941800
+            format: int64
+      description: Policy health metrics
+      example:
+        total_evaluation_count: 1318321415066751700
+        total_evaluation_entity_count:
+          error: 9002233923235186000
+          pass: 293819207662024000
+          warning: 6268702180178596000
+        total_policy_count: 4771049535822116000
+        total_policy_set_count: 3597928176086543400
+        total_policy_set_entity_count:
+          Doloremque fugit cumque est quidem.: 3052257588720812000
+          Excepturi omnis at amet nam id.: 8751375528103369000
+          Suscipit saepe illum inventore et.: 7223041122375786000
+      required:
+      - total_policy_count
+      - total_policy_set_count
+      - total_policy_set_entity_count
+      - total_evaluation_count
+      - total_evaluation_entity_count
+    DashboardMetrics:
+      type: object
+      properties:
+        aggregates:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregateStatus'
+          description: Aggregate evaluation counts by day
+          example:
+          - error: 4519995479588995000
+            pass: 5494365916724000000
+            time: 8957006902264326000
+            warning: 1523657253567608600
+          - error: 4519995479588995000
+            pass: 5494365916724000000
+            time: 8957006902264326000
+            warning: 1523657253567608600
+        policy_health:
+          $ref: '#/components/schemas/PolicyHealth'
+      description: Policy, policy set and evaluation metrics
+      example:
+        aggregates:
+        - error: 4519995479588995000
+          pass: 5494365916724000000
+          time: 8957006902264326000
+          warning: 1523657253567608600
+        - error: 4519995479588995000
+          pass: 5494365916724000000
+          time: 8957006902264326000
+          warning: 1523657253567608600
+        policy_health:
+          total_evaluation_count: 1769564229833820400
+          total_evaluation_entity_count:
+            error: 9002233923235186000
+            pass: 293819207662024000
+            warning: 6268702180178596000
+          total_policy_count: 8586752919744530000
+          total_policy_set_count: 8225866832264513000
+          total_policy_set_entity_count:
+            Dolor mollitia ut veritatis ab et id.: 8973132261581407000
+            Facere voluptatem consequuntur esse ut quod.: 8214467751907685000
+      required:
+      - policy_health
+      - aggregates
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

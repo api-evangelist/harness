@@ -1,0 +1,980 @@
+openapi: 3.2.0
+info:
+  title: Harness Checks API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Checks
+paths:
+  /v1/checks:
+    get:
+      summary: Get all checks available
+      parameters:
+      - $ref: '#/components/parameters/CheckType'
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/Page1'
+      - $ref: '#/components/parameters/Limit5'
+      - $ref: '#/components/parameters/Sort6'
+      - $ref: '#/components/parameters/SearchTerm5'
+      tags:
+      - Checks
+      x-stoplight:
+        id: fybtgv0otf34d
+      operationId: get-checks
+      x-internal: false
+      security:
+      - x-api-key: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CheckResponseList'
+    post:
+      summary: Create a custom check
+      tags:
+      - Checks
+      operationId: create-check
+      responses:
+        '201':
+          $ref: '#/components/responses/DefaultSaveResponse'
+      x-stoplight:
+        id: pzk9h0n0suta2
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckDetailsRequest'
+      x-internal: false
+  /v1/checks/{check-id}:
+    get:
+      summary: Get check details for given checkId
+      tags:
+      - Checks
+      responses:
+        '200':
+          $ref: '#/components/responses/CheckDetailsResponse'
+      operationId: get-check
+      x-stoplight:
+        id: 7n0j23984d2ep
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/CheckIdentifier'
+      - $ref: '#/components/parameters/CheckType'
+      x-internal: false
+    put:
+      summary: Update check details for given checkId
+      tags:
+      - Checks
+      operationId: update-check
+      responses:
+        '200':
+          $ref: '#/components/responses/DefaultSaveResponse'
+      x-stoplight:
+        id: e6w24mxeru0p6
+      x-internal: false
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/CheckIdentifier'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckDetailsRequest'
+    delete:
+      summary: Delete check details for given checkId
+      operationId: delete-check
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/CheckIdentifier'
+      - $ref: '#/components/parameters/ForceDelete2'
+      x-internal: false
+      responses:
+        '204':
+          description: No Content
+      tags:
+      - Checks
+      x-stoplight:
+        id: pgtm5cqq7zqmt
+  /v1/checks/{check-id}/stats:
+    get:
+      summary: Get check stats for given checkId
+      tags:
+      - Checks
+      responses:
+        '200':
+          $ref: '#/components/responses/CheckStatsResponse'
+      operationId: get-check-stats
+      x-stoplight:
+        id: x6f6yi2hkheeh
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/CheckIdentifier'
+      - $ref: '#/components/parameters/CheckType'
+  /v1/checks/{check-id}/graph:
+    get:
+      summary: Get check graph data for given checkId
+      tags:
+      - Checks
+      responses:
+        '200':
+          $ref: '#/components/responses/CheckGraphResponse'
+      operationId: get-check-graph
+      x-stoplight:
+        id: x6f6yi2hkheeh
+      security:
+      - x-api-key: []
+      parameters:
+      - $ref: '#/components/parameters/AccountHeader5'
+      - $ref: '#/components/parameters/CheckIdentifier'
+      - $ref: '#/components/parameters/CheckType'
+components:
+  parameters:
+    CheckType:
+      name: custom
+      in: query
+      schema:
+        type: boolean
+        default: false
+      description: Type of checks to be returned
+      required: false
+    ForceDelete2:
+      name: force_delete
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: This is used if an entity need to be force deleted
+    Page1:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: null
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Limit5:
+      name: limit
+      in: query
+      required: false
+      schema:
+        default: null
+        type: integer
+      description: 'Pagination: Number of items to return'
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Sort6:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Parameter on the basis of which sorting is done.
+    SearchTerm5:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: This would be used to filter resources having attributes matching the search term.
+    CheckIdentifier:
+      name: check-id
+      in: path
+      description: Check Identifier
+      required: true
+      schema:
+        type: string
+  schemas:
+    CheckDetailsRequest:
+      title: CheckDetailsRequest
+      x-stoplight:
+        id: 386kfxi3e1k1m
+      type: object
+      properties:
+        check_details:
+          $ref: '#/components/schemas/CheckDetails'
+      x-internal: false
+    CheckGraph:
+      title: CheckGraph
+      x-stoplight:
+        id: 7z8uudt72xmej
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          x-stoplight:
+            id: 549864xz1sb1m
+          format: int64
+        count:
+          type: integer
+          x-stoplight:
+            id: irv1t5g39uexj
+    CheckListItem:
+      title: CheckListItem
+      x-stoplight:
+        id: 3t9wuamv3qncv
+      description: CheckListItem
+      allOf:
+      - $ref: '#/components/schemas/Check'
+      - type: object
+        x-stoplight:
+          id: wfv08rzs6qabm
+        properties:
+          data_source:
+            type: array
+            x-stoplight:
+              id: e6b90f62ht5fy
+            items:
+              x-stoplight:
+                id: nl4f2bigcjdmv
+              type: string
+          percentage:
+            type: number
+            x-stoplight:
+              id: kj6pmchmlzqn6
+            format: double
+            minimum: 0
+            maximum: 100
+        required:
+        - data_source
+      x-internal: false
+    CheckDetails:
+      title: CheckDetails
+      x-stoplight:
+        id: lv03ixht7mprr
+      allOf:
+      - $ref: '#/components/schemas/Check'
+      - type: object
+        properties:
+          rule_strategy:
+            x-stoplight:
+              id: vozvk20qb8f54
+            type: string
+            enum:
+            - ALL_OF
+            - ANY_OF
+          rules:
+            type: array
+            items:
+              $ref: '#/components/schemas/Rule'
+          harness_managed:
+            type: boolean
+            x-stoplight:
+              id: 98xzkzfnubveg
+          default_behaviour:
+            x-stoplight:
+              id: cdrzuq88hk9lo
+            type: string
+            enum:
+            - PASS
+            - FAIL
+          fail_message:
+            type: string
+            x-stoplight:
+              id: mqml3k84x10ot
+          percentage:
+            type: number
+            x-stoplight:
+              id: kp6ptdhmpvqn7
+            format: double
+            minimum: 0
+            maximum: 100
+        required:
+        - rule_strategy
+        - rules
+        - default_behaviour
+      x-internal: false
+    CheckStats:
+      title: CheckStats
+      x-stoplight:
+        id: mgzeoij8ddi8f
+      type: object
+      description: CheckStats
+      x-internal: false
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: tkt0gj9ivt90s
+        namespace:
+          type: string
+          x-stoplight:
+            id: pklu13i8o9rdb
+        owner:
+          type: string
+          x-stoplight:
+            id: piiw13t7o6uda
+        system:
+          type: string
+          x-stoplight:
+            id: pp1h022u2v98y
+        kind:
+          type: string
+          x-stoplight:
+            id: bzw80jiyldmxq
+        type:
+          type: string
+          x-stoplight:
+            id: pijvwg17eyejq
+        status:
+          type: string
+          x-stoplight:
+            id: fhz071o8ft8bg
+      required:
+      - name
+      - namespace
+      - owner
+      - system
+      - kind
+      - type
+      - status
+    Check:
+      title: Check
+      x-stoplight:
+        id: d3s3zmsa21jqu
+      type: object
+      description: Check
+      properties:
+        identifier:
+          type: string
+          x-stoplight:
+            id: u2xn1u2797lk3
+        name:
+          type: string
+          x-stoplight:
+            id: 0livvjhoy8g3l
+        description:
+          type: string
+          x-stoplight:
+            id: f7xb30y8u47he
+        expression:
+          type: string
+          x-stoplight:
+            id: 5g5fqsfh15x7r
+        tags:
+          type: array
+          x-stoplight:
+            id: mnwbadmsdi09d
+          items:
+            x-stoplight:
+              id: fitl6f8ktom9c
+            type: string
+        custom:
+          type: boolean
+          x-stoplight:
+            id: 04nibhaa1qklq
+      required:
+      - identifier
+      - name
+      - custom
+      x-internal: false
+    Rule:
+      title: Rule
+      x-stoplight:
+        id: 3heyk9rwc10qi
+      type: object
+      x-internal: false
+      properties:
+        identifier:
+          type: string
+          x-stoplight:
+            id: e3xw4o7mbekr2
+        data_source_identifier:
+          type: string
+          x-stoplight:
+            id: 1vt7g30hh6uh3
+        data_point_identifier:
+          type: string
+          x-stoplight:
+            id: g7l2155ej66ti
+        operator:
+          type: string
+          x-stoplight:
+            id: w06lgfpzf7czd
+        value:
+          type: string
+          x-stoplight:
+            id: ektxg0uwq30y7
+        input_values:
+          type: array
+          x-stoplight:
+            id: cllifz4ua1knq
+          items:
+            $ref: '#/components/schemas/InputValue'
+      required:
+      - data_source_identifier
+      - data_point_identifier
+      - operator
+      - value
+    CheckResponse:
+      title: CheckResponse
+      x-stoplight:
+        id: 8mglhh62xeh5i
+      type: object
+      properties:
+        check:
+          $ref: '#/components/schemas/CheckListItem'
+      x-internal: false
+    InputValue:
+      title: InputValue
+      x-stoplight:
+        id: optt6zoyoj558
+      type: object
+      properties:
+        key:
+          type: string
+          x-stoplight:
+            id: g1gwgcsubi0n0
+        value:
+          type: string
+          x-stoplight:
+            id: uf1wutejszt8j
+      required:
+      - key
+      - value
+    DefaultSaveResponse:
+      title: DefaultSaveResponse
+      x-stoplight:
+        id: 4dbdqgfzqv8nz
+      type: object
+      description: 'Default response for Save/Edit operations '
+      properties:
+        status:
+          type: string
+          x-stoplight:
+            id: cskevfqvaydbn
+      required:
+      - status
+    CheckDetailsResponse:
+      title: CheckDetailsResponse
+      x-stoplight:
+        id: 1wcwdvydnld0x
+      type: object
+      properties:
+        check_details:
+          $ref: '#/components/schemas/CheckDetails'
+      required:
+      - check_details
+      x-internal: false
+    CheckStatsResponse:
+      title: CheckStatsResponse
+      x-stoplight:
+        id: 1hhr4bzpt278k
+      type: object
+      description: CheckStatsResponse
+      x-internal: false
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: 5kkekddw3r1zh
+        timestamp:
+          type: integer
+          x-stoplight:
+            id: 5e8wpkrsax6xu
+          format: int64
+        stats:
+          x-stoplight:
+            id: nd4na7s04suxx
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckStats'
+      required:
+      - name
+      - stats
+  responses:
+    CheckStatsResponse:
+      description: Response for check stats
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CheckStatsResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/CheckStatsResponse'
+    CheckDetailsResponse:
+      description: Response for check details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CheckDetailsResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/CheckDetailsResponse'
+    CheckResponseList:
+      description: Response for all checks available
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CheckResponse'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CheckResponse'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+    CheckGraphResponse:
+      description: Response for check graph data
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CheckGraph'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CheckGraph'
+    DefaultSaveResponse:
+      description: Default response for Save/Edit operations
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultSaveResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/DefaultSaveResponse'
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

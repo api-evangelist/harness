@@ -1,0 +1,105 @@
+generated: '2026-09-12'
+method: searched
+source: >-
+  https://developer.harness.io/harness-platform/use-harness-platform/notifications-alerts-and-banners/notifications/configure-notifications.md,
+  https://developer.harness.io/harness-platform/use-harness-platform/triggers/triggers-reference,
+  https://github.com/harness/harness-schema/tree/main/cdevents,
+  and the webhook management operations in openapi/_original/harness-apis-openapi.yaml
+provider: Harness
+providerId: harness
+type: Webhooks
+asyncapi_published: false
+asyncapi_note: >-
+  Harness publishes NO AsyncAPI document. The event surface is real and substantial but it
+  is described in prose docs, in a CDEvents sample set, and in REST management operations —
+  never as an event contract. This is the single largest machine-readable gap in an
+  otherwise very well documented platform: an agent can discover every REST operation from
+  the OpenAPI, but must read documentation to learn which events exist.
+description: >-
+  Harness has three distinct event surfaces: OUTBOUND notifications it POSTs to your
+  endpoint when pipeline and stage events fire; INBOUND webhook triggers it receives from
+  Git providers and custom callers to start pipelines; and CDEvents it emits in the CD
+  Foundation's standard envelope.
+surfaces:
+  outbound_notifications:
+    direction: outbound
+    docs: https://developer.harness.io/harness-platform/use-harness-platform/notifications-alerts-and-banners/notifications/configure-notifications
+    transport: HTTP POST with a JSON body containing the properties of the triggered event
+    url_templating: >-
+      The target URL is composed with Harness expressions evaluated in the context of the
+      event, e.g. https://example.com/notify?execution=<+pipeline.executionId>. Stage-scoped
+      expressions are not valid on pipeline-level events.
+    channels: [Slack, Microsoft Teams, Email, Webhook, PagerDuty, Datadog]
+    scopes: [pipeline, stage]
+    templating: Custom notification templates can shape the payload per event.
+    events:
+      - {id: pipeline_start, name: Pipeline Start, scope: pipeline}
+      - {id: pipeline_end, name: Pipeline End, scope: pipeline}
+      - {id: pipeline_success, name: Pipeline Success, scope: pipeline}
+      - {id: pipeline_failed, name: Pipeline Failed, scope: pipeline}
+      - {id: pipeline_paused, name: Pipeline Paused, scope: pipeline}
+      - id: waiting_for_user_action
+        name: Waiting for User Action
+        scope: pipeline
+        note: >-
+          Fires whenever the pipeline pauses for human input — an Approval step, Manual
+          Intervention, or runtime execution input. This is the event an agent-driven
+          workflow must subscribe to in order to know it is blocked on a human.
+      - {id: stage_events, name: Stage-scoped equivalents, scope: stage, note: Selected per named stage.}
+    payload_schema:
+      published: false
+      note: >-
+        The docs state the POST carries "a JSON object containing the properties of the
+        triggered event" but do not publish that object's schema. No JSON Schema, no
+        AsyncAPI, no example payload reference was found.
+  inbound_triggers:
+    direction: inbound
+    docs: https://developer.harness.io/harness-platform/use-harness-platform/triggers/triggers-reference
+    description: >-
+      Harness receives webhooks to start pipelines. Three flavours are documented — Git
+      provider event triggers (GitHub, GitLab, Bitbucket, Azure Repos), custom triggers
+      invoked with cURL, and EventRelay generic/Slack webhook triggers.
+    kinds:
+      - {id: git, name: Git event triggers, docs: https://developer.harness.io/harness-platform/use-harness-platform/triggers/triggering-pipelines}
+      - {id: custom, name: Custom triggers, docs: https://developer.harness.io/harness-platform/use-harness-platform/triggers/trigger-deployments-using-custom-triggers}
+      - {id: eventrelay-generic, name: EventRelay generic webhook triggers, docs: https://developer.harness.io/harness-platform/use-harness-platform/triggers/trigger-pipelines-using-generic-events}
+      - {id: eventrelay-slack, name: EventRelay Slack webhook triggers, docs: https://developer.harness.io/harness-platform/use-harness-platform/triggers/trigger-pipelines-using-slack-events}
+    selective_execution: Triggers can execute a subset of pipeline stages.
+  cdevents:
+    direction: outbound
+    standard: CDEvents (CD Foundation)
+    spec_version: 0.5.0-draft
+    source: https://github.com/harness/harness-schema/tree/main/cdevents
+    saved: json-schema/harness-cdevents-*.json
+    event_types:
+      - dev.cdevents.build.started
+      - dev.cdevents.pipelinerun.started
+      - dev.cdevents.pipelinerun.finished.0.3.0-draft (success)
+      - dev.cdevents.pipelinerun.finished.0.3.0-draft (failure)
+    note: >-
+      This is the one part of the Harness event surface that IS standards-described. The
+      envelope carries context.{version,id,chainId,source,type,timestamp} and
+      subject.{id,source,type,content} with an app.harness.io source URI.
+management_api:
+  description: >-
+    Webhooks are first-class managed resources in the REST contract — an agent can create
+    and list them, it just cannot discover their payloads.
+  operations:
+    - {operationId: create-account-webhooks, path: /v1/webhooks, method: POST, scope: account}
+    - {operationId: list-account-webhooks, path: /v1/webhooks/list, method: POST, scope: account}
+    - {operationId: get-account-webhook, path: '/v1/webhooks/{webhook}', method: GET, scope: account}
+    - {operationId: update-account-webhook, path: '/v1/webhooks/{webhook}', method: PUT, scope: account}
+    - {operationId: delete-account-webhook, path: '/v1/webhooks/{webhook}', method: DELETE, scope: account}
+    - {operationId: create-org-webhooks, path: '/v1/orgs/{org}/webhooks', method: POST, scope: organization}
+    - {operationId: create-project-webhooks, path: '/v1/orgs/{org}/projects/{project}/webhooks', method: POST, scope: project}
+    - {operationId: create-gitx-webhook, path: /v1/gitx-webhooks, method: POST, scope: account, note: Git Experience bidirectional sync webhooks}
+    - {operationId: list-gitx-webhook-events, path: /v1/gitx-webhook-events, method: GET, note: Webhook event history for troubleshooting Git sync}
+  total_webhook_operations: 68
+  observability: >-
+    Harness ships a Webhooks page with event history, per-repository sync health and
+    webhook coverage reporting
+    (https://developer.harness.io/harness-platform/use-harness-platform/git-experience/monitor-git-experience/overview).
+recommendation: >-
+  Publishing an AsyncAPI 3.0 document for the outbound notification events — even just the
+  six pipeline events and their JSON payload — would close the only major contract gap in
+  this platform.

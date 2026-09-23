@@ -1,0 +1,927 @@
+openapi: 3.2.0
+info:
+  title: Harness Evaluate API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Evaluate
+  description: Perform evaluations
+paths:
+  /pm/api/v1/evaluate:
+    post:
+      tags:
+      - Evaluate
+      description: Evaluate arbitrary rego
+      operationId: evaluate#evaluate
+      parameters:
+      - name: accountIdentifier
+        in: query
+        description: Harness account ID
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Harness account ID
+          default: ''
+          example: eBqAoNchMLKigC_qZ5EdC
+        example: eBqAoNchMLKigC_qZ5EdC
+      - name: orgIdentifier
+        in: query
+        description: Harness organization ID
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Harness organization ID
+          default: ''
+          example: test-org
+        example: test-org
+      - name: projectIdentifier
+        in: query
+        description: Harness project ID
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Harness project ID
+          default: ''
+          example: test-project
+        example: test-project
+      - name: x-api-key
+        in: header
+        description: Harness PAT key used to perform authorization
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Harness PAT key used to perform authorization
+          example: Rerum itaque earum consequatur odit et.
+        example: Voluptatum sunt rerum quod quo velit.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateRequestBody'
+            example:
+              input:
+                message: everyone
+              rego: 'package test
+
+                deny["should say hello world"] {input.message != "world"}'
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluatedPolicy'
+              example:
+                deny_messages:
+                - deployment stage 'example-stage' does not have a HarnessApproval step
+                - deployment stage 'example-stage' has step 'run-script' that is forbidden type 'ShellScript'
+                error: 'policy.rego:25: rego_parse_error: non-terminated string m == "test'
+                output: "{\n    \"deny\": [\n        \"deployment stage 'deploy' does not have a HarnessApproval step\"\n    ],\n    \"stages_with_approval\": []\n}"
+                policy:
+                  account_id: eBqAoNchMLKigC_qZ5EdC
+                  cache_response:
+                    cache_state: STALE_CACHE
+                    is_sync_enabled: true
+                    last_updated_at: 1773917288158
+                    ttl_left: 258234442
+                  created: 1636669297674
+                  git_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+                  git_connector_ref: .
+                  git_default_branch: main
+                  git_default_branch_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+                  git_default_branch_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+                  git_default_branch_file_url: ''
+                  git_default_branch_update_error:
+                    explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+                    hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+                    message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+                  git_default_branch_updated: 1636669297674
+                  git_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+                  git_file_url: ''
+                  git_path: .harness/policy.rego
+                  git_repo: github.com/org/repo,omitempty
+                  identifier: policy-1
+                  name: Pipeline Approval
+                  org_id: test-org
+                  parent_unique_id: Molestias iure iste.
+                  polciy_size_in_bytes: 4614805459106866000
+                  policy_package_name: Et voluptate nobis ex quis distinctio quis.
+                  policy_set_count: 3
+                  project_id: test-project
+                  rego: ''
+                  unique_id: Excepturi hic.
+                  updated: 1636669297674
+                policy_severity: Warn & Continue
+                status: error
+        '400':
+          description: 'LargePayload: Bad Request response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '401':
+          description: 'Unauthorized: Unauthorized response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '403':
+          description: 'Forbidden: Forbidden response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '404':
+          description: 'NotFound: Not Found response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '500':
+          description: 'ScopeInfoError: Internal Server Error response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+        '502':
+          description: 'BadGateway: Bad Gateway response.'
+          content:
+            application/vnd.goa.error:
+              schema:
+                $ref: '#/components/schemas/PolicyManagementError'
+      security:
+      - jwt_header_Authorization: []
+      - api_key_header_x-api-key: []
+      summary: Evaluate#evaluate
+      x-summary-source: derived
+components:
+  schemas:
+    GitErrorResult:
+      type: object
+      properties:
+        explanation:
+          type: string
+          description: the explanation of the error
+          example: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+        hint:
+          type: string
+          description: the hint on how to resolve the error
+          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        message:
+          type: string
+          description: the message is a human-readable explanation specific to this occurrence of the problem
+          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+      example:
+        explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+        hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+      required:
+      - message
+      - explanation
+      - hint
+    PolicyManagementError:
+      type: object
+      properties:
+        fault:
+          type: boolean
+          description: Is the error a server-side fault?
+          example: true
+        id:
+          type: string
+          description: ID is a unique identifier for this particular occurrence of the problem.
+          example: 123abc
+        message:
+          type: string
+          description: Message is a human-readable explanation specific to this occurrence of the problem.
+          example: parameter 'p' must be an integer
+        name:
+          type: string
+          description: Name is the name of this class of errors.
+          example: bad_request
+        temporary:
+          type: boolean
+          description: Is the error temporary?
+          example: true
+        timeout:
+          type: boolean
+          description: Is the error a timeout?
+          example: true
+      example:
+        fault: false
+        id: 123abc
+        message: parameter 'p' must be an integer
+        name: bad_request
+        temporary: true
+        timeout: false
+      required:
+      - name
+      - id
+      - message
+      - temporary
+      - timeout
+      - fault
+    PolicyManagementPolicy:
+      type: object
+      properties:
+        account_id:
+          type: string
+          description: Harness account ID associated with this policy
+          default: ''
+          example: eBqAoNchMLKigC_qZ5EdC
+        cache_response:
+          $ref: '#/components/schemas/CacheResponse'
+        created:
+          type: integer
+          description: Time the policy was created
+          example: 1636669297674
+          format: int64
+        git_commit_sha:
+          type: string
+          description: The commit sha of the commit that last effected the file
+          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_connector_ref:
+          type: string
+          description: The harness connector used for authenticating on the git provider
+          example: .
+        git_default_branch:
+          type: string
+          description: The default branch, the service pulls in changes from this branch for policy evaluation
+          example: main
+        git_default_branch_commit_sha:
+          type: string
+          description: The commit sha of the commit that last effected the file in the default branch
+          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_default_branch_file_id:
+          type: string
+          description: The file id of the file in the default branch, may be empty for bitbucket files
+          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_default_branch_file_url:
+          type: string
+          description: The url of the file in the default branch
+          example: ''
+        git_default_branch_update_error:
+          $ref: '#/components/schemas/GitErrorResult'
+        git_default_branch_updated:
+          type: integer
+          description: The last time the service successfully pulled in changes from the default branch
+          example: 1636669297674
+          format: int64
+        git_file_id:
+          type: string
+          description: The file id of the file, may be empty for bitbucket files
+          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_file_url:
+          type: string
+          description: The url of the file on the fit provider
+          example: ''
+        git_path:
+          type: string
+          description: The path to the file in the git repo
+          example: .harness/policy.rego
+        git_repo:
+          type: string
+          description: The git repo the policy resides in
+          example: github.com/org/repo,omitempty
+        identifier:
+          type: string
+          description: identifier of the policy
+          example: policy-1
+          minLength: 1
+        name:
+          type: string
+          description: Name of the policy
+          example: Pipeline Approval
+          minLength: 1
+        org_id:
+          type: string
+          description: Harness organization ID associated with this policy
+          default: ''
+          example: test-org
+        parent_unique_id:
+          type: string
+          description: Parent unique identifier for the policy
+          example: Laborum reprehenderit aliquam voluptatem.
+        polciy_size_in_bytes:
+          type: integer
+          description: Size of the policy in bytes
+          example: 1710811858129014800
+          format: int64
+        policy_package_name:
+          type: string
+          description: Package name of the policy
+          example: Sequi blanditiis.
+        policy_set_count:
+          type: integer
+          description: Count of policy sets associated with this policy
+          example: 3
+          format: int64
+        project_id:
+          type: string
+          description: Harness project ID associated with this policy
+          default: ''
+          example: test-project
+        rego:
+          type: string
+          description: Rego that defines the policy
+          example: ''
+          minLength: 1
+        unique_id:
+          type: string
+          description: Unique identifier for the policy
+          example: Sit consequatur ea modi ullam a placeat.
+        updated:
+          type: integer
+          description: Time the policy was last updated
+          example: 1636669297674
+          format: int64
+      example:
+        account_id: eBqAoNchMLKigC_qZ5EdC
+        cache_response:
+          cache_state: STALE_CACHE
+          is_sync_enabled: true
+          last_updated_at: 1773917288158
+          ttl_left: 258234442
+        created: 1636669297674
+        git_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_connector_ref: .
+        git_default_branch: main
+        git_default_branch_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_default_branch_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_default_branch_file_url: ''
+        git_default_branch_update_error:
+          explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+          hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+          message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        git_default_branch_updated: 1636669297674
+        git_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_file_url: ''
+        git_path: .harness/policy.rego
+        git_repo: github.com/org/repo,omitempty
+        identifier: policy-1
+        name: Pipeline Approval
+        org_id: test-org
+        parent_unique_id: Eius voluptates maxime.
+        polciy_size_in_bytes: 696467044857856100
+        policy_package_name: Dolorem tempore repellat.
+        policy_set_count: 3
+        project_id: test-project
+        rego: ''
+        unique_id: Molestiae numquam consequatur aut temporibus rerum.
+        updated: 1636669297674
+      required:
+      - identifier
+      - name
+      - rego
+      - created
+      - updated
+      - account_id
+      - org_id
+      - project_id
+    EvaluatedPolicy:
+      type: object
+      properties:
+        deny_messages:
+          type: array
+          items:
+            type: string
+            example: Iste et dolores repellat atque est.
+          description: The values of any `deny` rego rules as returned by the rego engine
+          example:
+          - deployment stage 'example-stage' does not have a HarnessApproval step
+          - deployment stage 'example-stage' has step 'run-script' that is forbidden type 'ShellScript'
+        error:
+          type: string
+          description: Any errors returned by the rego engine when this policy was evaluated
+          example: 'policy.rego:25: rego_parse_error: non-terminated string m == "test'
+        output:
+          description: The output returned by the rego engine when this policy was evaluated
+          example: "{\n    \"deny\": [\n        \"deployment stage 'deploy' does not have a HarnessApproval step\"\n    ],\n    \"stages_with_approval\": []\n}"
+        policy:
+          $ref: '#/components/schemas/PolicyManagementPolicy'
+        policy_severity:
+          type: string
+          description: The severity of the policy that was selected while creating the policyset
+          example: Warn & Continue
+          enum:
+          - Warn & Continue
+          - Error & Exit
+        status:
+          type: string
+          description: The overall status for this individual policy indicating whether it passed
+          example: error
+          enum:
+          - error
+          - warning
+          - pass
+          - pending
+      example:
+        deny_messages:
+        - deployment stage 'example-stage' does not have a HarnessApproval step
+        - deployment stage 'example-stage' has step 'run-script' that is forbidden type 'ShellScript'
+        error: 'policy.rego:25: rego_parse_error: non-terminated string m == "test'
+        output: "{\n    \"deny\": [\n        \"deployment stage 'deploy' does not have a HarnessApproval step\"\n    ],\n    \"stages_with_approval\": []\n}"
+        policy:
+          account_id: eBqAoNchMLKigC_qZ5EdC
+          cache_response:
+            cache_state: STALE_CACHE
+            is_sync_enabled: true
+            last_updated_at: 1773917288158
+            ttl_left: 258234442
+          created: 1636669297674
+          git_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+          git_connector_ref: .
+          git_default_branch: main
+          git_default_branch_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+          git_default_branch_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+          git_default_branch_file_url: ''
+          git_default_branch_update_error:
+            explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+            hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+            message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+          git_default_branch_updated: 1636669297674
+          git_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+          git_file_url: ''
+          git_path: .harness/policy.rego
+          git_repo: github.com/org/repo,omitempty
+          identifier: policy-1
+          name: Pipeline Approval
+          org_id: test-org
+          parent_unique_id: Aliquam est.
+          polciy_size_in_bytes: 4204212102816286000
+          policy_package_name: Aspernatur in molestias recusandae odit quia.
+          policy_set_count: 3
+          project_id: test-project
+          rego: ''
+          unique_id: Ex consequuntur saepe.
+          updated: 1636669297674
+        policy_severity: Warn & Continue
+        status: error
+      required:
+      - status
+      - policy
+      - output
+      - deny_messages
+      - error
+    CacheResponse:
+      type: object
+      properties:
+        cache_state:
+          type: string
+          description: Cache state (UNKNOWN_STATE, VALID_CACHE, STALE_CACHE)
+          example: STALE_CACHE
+        is_sync_enabled:
+          type: boolean
+          description: Whether sync is enabled for this resource
+          example: true
+        last_updated_at:
+          type: integer
+          description: Timestamp (millis) when cache was last updated
+          example: 1773917288158
+          format: int64
+        ttl_left:
+          type: integer
+          description: Remaining time-to-live in milliseconds
+          example: 258234442
+          format: int64
+      description: Cache metadata from GitX getFile RPC
+      example:
+        cache_state: STALE_CACHE
+        is_sync_enabled: true
+        last_updated_at: 1773917288158
+        ttl_left: 258234442
+    EvaluateRequestBody:
+      type: object
+      properties:
+        input:
+          description: Input to evaluate
+          example:
+            message: everyone
+        rego:
+          type: string
+          description: Arbitrary rego to be evaluated
+          example: 'package test
+
+            deny["should say hello world"] {input.message != "world"}'
+          minLength: 1
+      example:
+        input:
+          message: everyone
+        rego: 'package test
+
+          deny["should say hello world"] {input.message != "world"}'
+      required:
+      - rego
+      - input
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

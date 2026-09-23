@@ -1,0 +1,284 @@
+generated: '2026-09-12'
+method: searched
+source: >-
+  https://apidocs.harness.io/ (info.description of the published OpenAPI bundle, saved at
+  openapi/_original/harness-apis-openapi.yaml),
+  https://developer.harness.io/harness-platform/use-harness-platform/automation/api/api-quickstart.md,
+  https://developer.harness.io/harness-platform/use-harness-platform/rate-limits.md,
+  plus derivation over the 2,883 operations in the saved spec
+provider: Harness
+providerId: harness
+description: >-
+  Cross-cutting runtime semantics for the Harness Platform API. Harness documents its
+  conventions inside the OpenAPI document itself — the Introduction section of
+  info.description carries the authentication, common-parameter, status-code, versioning
+  and pagination contracts, which is unusually good placement for an agent because the
+  rules travel with the contract.
+auth:
+  style: api-key
+  header: x-api-key
+  value_format: <prefix>.<accountId>.<tokenId>.<secret>
+  token_kinds: [PAT (personal access token), SAT (service account token)]
+  scheme_name: x-api-key
+  applied: 'globally — security is declared at document root as [{x-api-key: []}]'
+  cors: >-
+    Documented as supported; every request must still carry a personal or service-account
+    token.
+  oauth:
+    present: true
+    scope: hosted MCP server only
+    authorization_server: https://id.harness.io/idp/realms/HarnessIDP
+    note: >-
+      The REST API is API-key only. OAuth exists on the platform, but as the auth model of
+      the hosted MCP endpoint and the sign-in flow, not of the REST surface.
+  see_also: authentication/harness-authentication.yml, scopes/harness-scopes.yml
+scoping:
+  model: account > organization > project
+  description: >-
+    Almost every operation is scoped by a three-level hierarchy passed as query parameters
+    or path segments. This is the single most important convention for an agent: calling
+    without the right scope triplet is the dominant 400/403 cause.
+  parameters:
+    - name: accountIdentifier
+      in: query
+      operations: 1280
+    - name: orgIdentifier
+      in: query
+      operations: 708
+    - name: projectIdentifier
+      in: query
+      operations: 883
+    - name: Harness-Account
+      in: header
+      operations: 239
+      note: The v1-generation APIs carry account scope in a header instead of a query parameter.
+    - name: org
+      in: path
+      operations: 159
+    - name: project
+      in: path
+      operations: 152
+  generations_differ: >-
+    Legacy NextGen paths (/ng/api/..., /pipeline/api/...) use camelCase query parameters
+    (accountIdentifier/orgIdentifier/projectIdentifier). The v1 Generation paths
+    (/v1/orgs/{org}/projects/{project}/...) put org and project in the PATH and account in
+    the Harness-Account header. An agent must not mix the two shapes.
+pagination:
+  style: page-number
+  documented: https://apidocs.harness.io/#section/Introduction/Pagination-Beta
+  request_params:
+    - name: limit
+      default: 30
+      maximum: 100
+    - name: page
+      default: 1
+    - name: pageSize
+      note: legacy NextGen equivalent of limit
+    - name: pageIndex
+      note: legacy NextGen equivalent of page, 0-based
+  response_headers:
+    - X-Total-Elements
+    - X-Page-Number
+    - X-Page-Size
+    - X-Total-Items
+    - X-Total-Pages
+    - X-Page-Index
+    - X-Page-Item-Count
+    - Link
+  inconsistency: >-
+    The spec declares pagination headers in two casings — lowercase x-page-size /
+    x-total-items / x-total-pages on 26 operations and title-case X-Page-Number /
+    X-Page-Size / X-Total-Elements on 7. HTTP header names are case-insensitive so this is
+    cosmetic, but a client matching on exact case will miss one set.
+sorting:
+  params: [sort, order]
+  order_values: [asc, desc]
+  order_default: desc
+common_parameters:
+  documented: https://apidocs.harness.io/#section/Introduction/Common-Parameters-Beta
+  fields:
+    - {name: identifier, type: string, note: URL-friendly id, unique within its scope}
+    - {name: name, type: string, note: human-friendly name}
+    - {name: org, type: string}
+    - {name: project, type: string}
+    - {name: description, type: string}
+    - {name: tags, type: 'map[string]string'}
+    - {name: created, type: int64, note: Unix milliseconds}
+    - {name: updated, type: int64, note: Unix milliseconds}
+  timestamps: Unix epoch MILLISECONDS as int64, not ISO-8601 strings.
+content_negotiation:
+  request_formats: [application/json, application/yaml, form-data]
+  rule: The response format matches the request format.
+  note: >-
+    YAML is a first-class request/response media type here — 1,768 operations declare
+    application/yaml. Pipelines, templates, triggers and input sets are YAML documents,
+    and harness_schema in the MCP server exists specifically to hand an agent the exact
+    YAML shape before it writes one.
+versioning:
+  scheme: generation-in-path
+  documented: https://apidocs.harness.io/#section/Introduction/Versioning-Beta
+  current_generation: v1
+  description: >-
+    The API Generation appears in the path (app.harness.io/v1/...). Harness states the
+    Generation number changes only on a system-wide refactoring of core concepts, not on
+    routine change. A date-header version for Beta APIs is announced as planned but not
+    yet published. In practice operation-level versioning also happens by SUFFIX —
+    postPipelineV2, updateEnvironmentV2, retryPipelineV2, triggerRollbackV3 — with the
+    older operation marked deprecated in the spec rather than removed.
+  see_also: lifecycle/harness-lifecycle.yml
+errors:
+  envelope: proprietary
+  rfc9457: false
+  shapes:
+    - name: ErrorResponse
+      used_by: v1 Generation
+      fields: ['message', 'code', 'errors[].field_name', 'errors[].message', 'error_metadata']
+      codes: [RESOURCE_NOT_FOUND, INVALID_ARGUMENT, ENTITY_NOT_FOUND]
+    - name: Failure / ResponseMessage
+      used_by: legacy NextGen
+      fields: ['status', 'code', 'message', 'correlationId', 'responseMessages[]']
+      codes: 398 enumerated symbolic codes
+    - name: application/vnd.goa.error
+      used_by: Goa-generated services (IaCM, Chaos, Artifact Registry)
+      note: A third error media type appearing on 2,397 response bodies.
+  finding: >-
+    Three different error envelopes coexist across the platform, and none of them is
+    application/problem+json. An agent cannot parse Harness errors with one shape.
+  see_also: errors/harness-error-codes.yml
+status_codes:
+  documented: https://apidocs.harness.io/#section/Introduction/Status-Codes
+  success: [200, 201, 202, 204]
+  client_error: [400, 401, 403, 404, 409, 412, 415, 422, 423, 429]
+  server_error: [500, 501, 502, 504]
+  unusual:
+    - code: 499
+      note: Declared on 226 operations — a non-standard client-closed-request code.
+    - code: 423
+      note: Locked; declared on 226 operations.
+request_id_tracing:
+  parameter: correlationID
+  location: query
+  operations: 70
+  response_field: correlationId (in the Failure / ResponseMessage envelope)
+  note: >-
+    Harness echoes a correlation id in error envelopes and accepts one on a subset of
+    operations. There is no platform-wide X-Request-Id request header.
+rate_limit_signaling:
+  status: 429
+  documented_headers: [Retry-After]
+  caveat: >-
+    Harness states plainly that Retry-After in 429 responses is NOT currently supported by
+    Google Cloud Armor, the layer enforcing the IP-level limit. An agent must back off on
+    the status code alone and cannot rely on the header.
+  see_also: rate-limits/harness-rate-limits.yml
+idempotency:
+  coverage: partial
+  mechanism: Idempotency-Key request header
+  scope:
+    - uploadAttestation
+  scope_note: >-
+    Exactly ONE of 1,589 mutating operations in the published contract accepts an
+    Idempotency-Key header — uploadAttestation, POST
+    /gateway/ssca-manager/v2/orgs/{org}/projects/{project}/attestations/upload/{orchestration}.
+    There is no platform-wide replay-protection contract.
+  retention: not documented
+  concurrency_control:
+    mechanism: If-Match header (optimistic concurrency / ETag-style)
+    operations: 23
+    examples: [putOrganization, deleteOrganization, putProject, deleteProject, updateEnvironmentV2, updateServiceV2]
+    note: >-
+      If-Match is lost-update protection, not replay protection. It stops an agent
+      overwriting a change it did not see; it does NOT stop a retried create from creating
+      two resources.
+  practical_guidance: >-
+    Most Harness writes are declarative upserts against a stable, caller-chosen
+    `identifier`, so re-sending a create for the same identifier fails with a conflict
+    rather than duplicating. That is a real mitigation but it is a property of the data
+    model, not a documented idempotency guarantee, and it does not extend to execution
+    verbs (pipeline run, retry, trigger rollback), where a repeated call starts a second
+    execution.
+dry_run_mode:
+  available: partial
+  evidence:
+    - >-
+      Governance / OPA policy evaluation returns a policy_evaluation result on IaCM
+      workspace writes before the change lands.
+    - >-
+      canRetryExecution and canRetryExperimentCreation are pre-flight checks that answer
+      whether an action is permitted without performing it.
+    - >-
+      checkIfInstanceCanBeRolledBack answers whether a rollback is possible before
+      triggering one.
+  note: >-
+    There is no platform-wide dry-run flag. Pre-flight is per-surface and opt-in.
+reversibility:
+  grade: verified
+  applies: true
+  summary: >-
+    Harness has an unusually strong reversal surface for a write-heavy platform — it is a
+    deployment tool, so undo is the product. Reversal paths are documented per surface;
+    windows are stated for the ones below and NOT stated for the rest, which is recorded
+    as such rather than guessed.
+  surfaces:
+    - write: pipeline execution (postPipelineExecuteWithInputSetYaml)
+      reversal: putHandleInterrupt
+      kind: abort / interrupt
+      window: while the execution is still running
+      window_source: >-
+        https://developer.harness.io/harness-platform/use-harness-platform/pipelines (the
+        interrupt operation targets a planExecutionId and only applies to a live plan)
+      note: >-
+        Also handleStageInterrupt for a single stage, and bulkAbortQueuedPipelines for
+        queued executions.
+    - write: deployment
+      reversal: triggerRollback / triggerRollbackV2 / triggerRollbackV3
+      kind: post-deployment rollback
+      precondition: checkIfInstanceCanBeRolledBack answers whether the instance is rollback-eligible
+      window: >-
+        Not stated as a duration. Eligibility is answered at call time by
+        checkIfInstanceCanBeRolledBack rather than by a published time window.
+    - write: GitOps application sync
+      reversal: AgentApplicationService_Rollback
+      kind: rollback to a previous sync revision
+      window: not stated
+    - write: feature flag delete (DeleteFeatureFlag)
+      reversal: RestoreFeatureFlag
+      kind: restore
+      window: not stated
+    - write: code repository delete (soft delete)
+      reversal: restoreRepository
+      kind: restore
+      window: not stated
+    - write: pull request merge
+      reversal: revertPullReqOp
+      kind: revert commit
+      window: not stated
+      note: restorePullReqSourceBranch separately restores a deleted source branch.
+    - write: artifact registry / package / version delete
+      reversal: [RestoreRegistryV3, RestorePackageV3, RestoreVersionV3]
+      kind: restore
+      window: not stated
+    - write: IaCM Terraform state write
+      reversal: 'workspaces#rollback-state'
+      kind: state rollback to a prior state version
+      window: bounded by retained state versions, count not published
+    - write: pipeline / template / service / environment / connector / secret delete
+      reversal: none
+      kind: hard delete
+      window: na
+      note: >-
+        Core configuration deletes have NO reversal operation in the contract. If the
+        entity is Git-backed (Harness Git Experience), the YAML survives in the repository
+        and can be re-imported, but that is a recovery path outside the API, not an undo.
+  agent_guidance: >-
+    Execution verbs are abortable while running and deployments are rollback-eligible;
+    configuration deletes are not. An agent should treat harness_delete on a pipeline,
+    service, environment, connector or secret as terminal and gate it on human
+    confirmation — which is exactly what the MCP server's elicitation does.
+cross_links:
+  errors: errors/harness-error-codes.yml
+  lifecycle: lifecycle/harness-lifecycle.yml
+  authentication: authentication/harness-authentication.yml
+  scopes: scopes/harness-scopes.yml
+  rate_limits: rate-limits/harness-rate-limits.yml
+  conformance: conformance/harness-conformance.yml

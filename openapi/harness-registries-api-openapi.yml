@@ -1,0 +1,1328 @@
+openapi: 3.2.0
+info:
+  title: Harness Registries API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- description: APIs to create, update, list registries
+  name: Registries
+paths:
+  /har/api/v1/registry:
+    post:
+      description: Create a Registry.
+      operationId: CreateRegistry
+      parameters:
+      - $ref: '#/components/parameters/requiredSpaceRefQueryParam'
+      requestBody:
+        $ref: '#/components/requestBodies/RegistryRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/RegistryResponse'
+        '400':
+          $ref: '#/components/responses/RegistryBadRequest'
+        '401':
+          $ref: '#/components/responses/RegistryUnauthenticated'
+        '403':
+          $ref: '#/components/responses/RegistryUnauthorized'
+        '500':
+          $ref: '#/components/responses/RegistryInternalServerError'
+      summary: Create Registry
+      tags:
+      - Registries
+  /har/api/v1/registry/{registry_ref}:
+    delete:
+      description: Delete a Registry in the account for the given key
+      operationId: DeleteRegistry
+      parameters:
+      - $ref: '#/components/parameters/registryRefPathParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/RegistryBadRequest'
+        '401':
+          $ref: '#/components/responses/RegistryUnauthenticated'
+        '403':
+          $ref: '#/components/responses/RegistryUnauthorized'
+        '404':
+          $ref: '#/components/responses/RegistryNotFound'
+        '500':
+          $ref: '#/components/responses/RegistryInternalServerError'
+      summary: Delete a Registry
+      tags:
+      - Registries
+    get:
+      description: Returns Registry Details in the account for the given key
+      operationId: GetRegistry
+      parameters:
+      - $ref: '#/components/parameters/registryRefPathParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/RegistryResponse'
+        '400':
+          $ref: '#/components/responses/RegistryBadRequest'
+        '401':
+          $ref: '#/components/responses/RegistryUnauthenticated'
+        '403':
+          $ref: '#/components/responses/RegistryUnauthorized'
+        '404':
+          $ref: '#/components/responses/RegistryNotFound'
+        '500':
+          $ref: '#/components/responses/RegistryInternalServerError'
+      summary: Returns Registry Details
+      tags:
+      - Registries
+    put:
+      description: Updates a Registry in the account for the given key
+      operationId: ModifyRegistry
+      parameters:
+      - $ref: '#/components/parameters/registryRefPathParam'
+      requestBody:
+        $ref: '#/components/requestBodies/RegistryRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/RegistryResponse'
+        '400':
+          $ref: '#/components/responses/RegistryBadRequest'
+        '401':
+          $ref: '#/components/responses/RegistryUnauthenticated'
+        '403':
+          $ref: '#/components/responses/RegistryUnauthorized'
+        '404':
+          $ref: '#/components/responses/RegistryNotFound'
+        '500':
+          $ref: '#/components/responses/RegistryInternalServerError'
+      summary: Updates a Registry
+      tags:
+      - Registries
+  /har/api/v1/registry/{registry_ref}/artifacts:
+    get:
+      description: Lists all the Artifacts for Registry
+      operationId: GetAllArtifactsByRegistry
+      parameters:
+      - $ref: '#/components/parameters/registryRefPathParam'
+      - $ref: '#/components/parameters/LabelsParam'
+      - $ref: '#/components/parameters/RegistrypageNumber'
+      - $ref: '#/components/parameters/RegistrypageSize'
+      - $ref: '#/components/parameters/RegistrysortOrder'
+      - $ref: '#/components/parameters/sortField'
+      - $ref: '#/components/parameters/searchTerm'
+      - $ref: '#/components/parameters/artifactTypeParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ListRegistryArtifactResponse'
+        '400':
+          $ref: '#/components/responses/RegistryBadRequest'
+        '401':
+          $ref: '#/components/responses/RegistryUnauthenticated'
+        '403':
+          $ref: '#/components/responses/RegistryUnauthorized'
+        '404':
+          $ref: '#/components/responses/RegistryNotFound'
+        '500':
+          $ref: '#/components/responses/RegistryInternalServerError'
+      summary: List Artifacts for Registry
+      tags:
+      - Registries
+  /har/api/v1/registry/{registry_ref}/client-setup-details:
+    get:
+      description: Returns CLI Client Setup Details based on package type
+      operationId: GetClientSetupDetails
+      parameters:
+      - $ref: '#/components/parameters/registryRefPathParam'
+      - $ref: '#/components/parameters/artifactParam'
+      - $ref: '#/components/parameters/versionParam'
+      - $ref: '#/components/parameters/artifactTypeParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ClientSetupDetailsResponse'
+        '400':
+          $ref: '#/components/responses/RegistryBadRequest'
+        '401':
+          $ref: '#/components/responses/RegistryUnauthenticated'
+        '403':
+          $ref: '#/components/responses/RegistryUnauthorized'
+        '404':
+          $ref: '#/components/responses/RegistryNotFound'
+        '500':
+          $ref: '#/components/responses/RegistryInternalServerError'
+      summary: Returns CLI Client Setup Details
+      tags:
+      - Registries
+components:
+  schemas:
+    TabSetupStep:
+      description: Tab Setup step
+      properties:
+        header:
+          type: string
+        sections:
+          items:
+            $ref: '#/components/schemas/ClientSetupSection'
+          type: array
+      type: object
+    SectionType:
+      description: refers to client setup section type
+      discriminator:
+        propertyName: type
+      enum:
+      - INLINE
+      - TABS
+      type: string
+    RegistryArtifactMetadata:
+      description: Artifact Metadata
+      properties:
+        artifactType:
+          $ref: '#/components/schemas/RegistryArtifactType'
+        deletedAt:
+          description: Timestamp in milliseconds when the registry was soft-deleted
+          type: string
+        downloadsCount:
+          format: int64
+          type: integer
+        isPublic:
+          type: boolean
+        isQuarantined:
+          type: boolean
+        labels:
+          items:
+            type: string
+          type: array
+        lastModified:
+          type: string
+        latestVersion:
+          type: string
+        name:
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        registryIdentifier:
+          type: string
+        registryPath:
+          type: string
+        registryUUID:
+          type: string
+        uuid:
+          type: string
+      required:
+      - name
+      - registryIdentifier
+      - latestVersion
+      - registryPath
+      - packageType
+      - isPublic
+      - uuid
+      - registryUUID
+      type: object
+    ClientSetupStepType:
+      description: ClientSetupStepType type
+      enum:
+      - Static
+      - GenerateToken
+      type: string
+    RegistryArtifactType:
+      description: refers to artifact type
+      enum:
+      - model
+      - dataset
+      - module
+      - provider
+      type: string
+    ClientSetupStepConfig:
+      description: Client Setup Step
+      properties:
+        steps:
+          items:
+            $ref: '#/components/schemas/ClientSetupStep'
+          type: array
+      type: object
+    UpstreamConfig:
+      description: Configuration for Harness Artifact UpstreamProxies
+      properties:
+        auth:
+          oneOf:
+          - $ref: '#/components/schemas/UserPassword'
+          - $ref: '#/components/schemas/Anonymous'
+          - $ref: '#/components/schemas/AccessKeySecretKey'
+        authType:
+          $ref: '#/components/schemas/AuthType'
+        firewallMode:
+          $ref: '#/components/schemas/UpstreamProxyConfigFirewallMode'
+        metadataCacheTTL:
+          format: int64
+          type: integer
+        negativeCacheTTL:
+          format: int64
+          type: integer
+        remoteUrlSuffix:
+          description: 'Optional path suffix appended to the remote URL for this registry. For Python upstreams, this allows overriding the default `/simple` path used for PyPI-compatible indexes. Leading and trailing slashes are not required and will be normalized.
+
+            '
+          type: string
+        source:
+          enum:
+          - Dockerhub
+          - Custom
+          - AwsEcr
+          - MavenCentral
+          - PyPi
+          - NpmJs
+          - NugetOrg
+          - Crates
+          - RubyGems
+          - GoProxy
+          - HuggingFace
+          - Anaconda
+          - Pubdev
+          - Packagist
+          - PuppetForge
+          - HelmChartRepo
+          - ConanCenter
+          - TerraformRegistry
+          - CRAN
+          type: string
+        url:
+          type: string
+      required:
+      - authType
+      type: object
+      x-discriminator-value: UPSTREAM
+    Scanner:
+      description: Scanner for Harness Artifact Registries
+      properties:
+        name:
+          enum:
+          - AQUA_TRIVY
+          - GRYPE
+          type: string
+      type: object
+    CleanupPolicy:
+      description: Cleanup Policy for Harness Artifact Registries
+      properties:
+        expireDays:
+          type: integer
+        name:
+          type: string
+        packagePrefix:
+          items:
+            type: string
+          type: array
+        versionPrefix:
+          items:
+            type: string
+          type: array
+      type: object
+    Registry:
+      description: Harness Artifact Registry
+      properties:
+        allowedPattern:
+          items:
+            type: string
+          type: array
+        blockedPattern:
+          items:
+            type: string
+          type: array
+        cleanupPolicy:
+          items:
+            $ref: '#/components/schemas/CleanupPolicy'
+          type: array
+        config:
+          $ref: '#/components/schemas/RegistryConfig'
+        createdAt:
+          type: string
+        deletedAt:
+          description: Timestamp in milliseconds when the registry was soft-deleted. Null if not deleted.
+          type: string
+        description:
+          type: string
+        identifier:
+          type: string
+        isPublic:
+          type: boolean
+        labels:
+          items:
+            type: string
+          type: array
+        modifiedAt:
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        policyRefs:
+          items:
+            type: string
+          type: array
+        scanners:
+          items:
+            $ref: '#/components/schemas/Scanner'
+          type: array
+        url:
+          type: string
+        uuid:
+          type: string
+      required:
+      - name
+      - identifier
+      - type
+      - url
+      - packageType
+      - isPublic
+      - uuid
+      type: object
+    AuthType:
+      description: Authentication type
+      enum:
+      - UserPassword
+      - AccessKeySecretKey
+      - Anonymous
+      type: string
+    ClientSetupDetails:
+      description: Client Setup Details
+      properties:
+        mainHeader:
+          type: string
+        secHeader:
+          type: string
+        sections:
+          items:
+            $ref: '#/components/schemas/ClientSetupSection'
+          type: array
+      required:
+      - mainHeader
+      - secHeader
+      - sections
+      type: object
+    PackageType:
+      description: refers to package
+      enum:
+      - DOCKER
+      - MAVEN
+      - PYTHON
+      - GENERIC
+      - HELM
+      - NUGET
+      - NPM
+      - RPM
+      - CARGO
+      - COMPOSER
+      - GO
+      - HUGGINGFACE
+      - CONDA
+      - DART
+      - SWIFT
+      - PUPPET
+      - RUBY
+      - CRAN
+      - RAW
+      - HELM_HTTP
+      - DEBIAN
+      - CONAN
+      - TERRAFORM
+      type: string
+    ClientSetupStep:
+      description: Client Setup Step
+      properties:
+        commands:
+          items:
+            $ref: '#/components/schemas/ClientSetupStepCommand'
+          type: array
+        header:
+          type: string
+        type:
+          $ref: '#/components/schemas/ClientSetupStepType'
+      type: object
+    RegistryStatus:
+      description: Request processing status indicator
+      enum:
+      - SUCCESS
+      - FAILURE
+      - ERROR
+      type: string
+    UserPassword:
+      properties:
+        secretIdentifier:
+          type: string
+        secretSpaceId:
+          format: int64
+          type: integer
+        secretSpacePath:
+          type: string
+        userName:
+          type: string
+      required:
+      - userName
+    ListRegistryArtifact:
+      description: A list of Artifacts
+      properties:
+        artifacts:
+          description: A list of Artifact
+          items:
+            $ref: '#/components/schemas/RegistryArtifactMetadata'
+          type: array
+        itemCount:
+          description: The total number of items
+          example: 1
+          format: int64
+          type: integer
+        pageCount:
+          description: The total number of pages
+          example: 100
+          format: int64
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          format: int64
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+      required:
+      - artifacts
+      type: object
+    VirtualConfig:
+      description: Configuration for Harness Virtual Artifact Registries
+      properties:
+        debianConfig:
+          $ref: '#/components/schemas/DebianConfig'
+        upstreamProxies:
+          items:
+            type: string
+          type: array
+      type: object
+    RegistryError:
+      description: Standard error response with code, message and optional details
+      properties:
+        code:
+          description: The HTTP error code
+          example: '404'
+          type: string
+        details:
+          description: 'Additional context and details about the error.
+
+            May include field-specific validation errors or debugging information.
+
+            '
+          example:
+            field: registry_identifier
+            reason: Registry does not exist in the specified project
+            value: invalid-registry
+          type: object
+        message:
+          description: Human-readable error message explaining what went wrong
+          example: Registry not found
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    Anonymous: {}
+    AccessKeySecretKey:
+      properties:
+        accessKey:
+          type: string
+        accessKeySecretIdentifier:
+          type: string
+        accessKeySecretSpaceId:
+          format: int64
+          type: integer
+        accessKeySecretSpacePath:
+          type: string
+        secretKeyIdentifier:
+          type: string
+        secretKeySpaceId:
+          format: int64
+          type: integer
+        secretKeySpacePath:
+          type: string
+      required:
+      - secretKeyIdentifier
+    RegistryType:
+      description: refers to type of registry i.e virtual or upstream
+      discriminator:
+        propertyName: type
+      enum:
+      - VIRTUAL
+      - UPSTREAM
+      type: string
+    UpstreamProxyConfigFirewallMode:
+      description: Firewall mode applied to an upstream proxy.
+      enum:
+      - ALLOW
+      - ENABLED
+      - QUARANTINE
+      type: string
+    DebianConfig:
+      description: Debian-specific configuration, applicable only when packageType is DEBIAN.
+      properties:
+        optionalIndexCompressionFormats:
+          description: Optional additional compression formats to generate for index/metadata files.
+          items:
+            enum:
+            - .xz
+            type: string
+          type: array
+        remoteIndexedArchitectures:
+          default:
+          - amd64
+          - i386
+          - arm64
+          description: Architectures to index when building metadata from linked remote (upstream) registries.
+          items:
+            type: string
+          type: array
+      type: object
+    RegistryConfig:
+      description: SubConfig specific for Virtual or Upstream Registry
+      discriminator:
+        mapping:
+          UPSTREAM: '#/components/schemas/UpstreamConfig'
+          VIRTUAL: '#/components/schemas/VirtualConfig'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/VirtualConfig'
+      - $ref: '#/components/schemas/UpstreamConfig'
+      properties:
+        type:
+          $ref: '#/components/schemas/RegistryType'
+      required:
+      - type
+      type: object
+    ClientSetupStepCommand:
+      description: Client Setup Step Command
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+      type: object
+    TabSetupStepConfig:
+      description: Tab Setup step config
+      properties:
+        tabs:
+          items:
+            $ref: '#/components/schemas/TabSetupStep'
+          type: array
+      type: object
+    ClientSetupSection:
+      description: Client Setup Section
+      discriminator:
+        mapping:
+          INLINE: '#/components/schemas/ClientSetupStepConfig'
+          TABS: '#/components/schemas/TabSetupStepConfig'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/ClientSetupStepConfig'
+      - $ref: '#/components/schemas/TabSetupStepConfig'
+      properties:
+        header:
+          type: string
+        secHeader:
+          type: string
+        type:
+          $ref: '#/components/schemas/SectionType'
+      required:
+      - type
+      type: object
+    RegistryRequest:
+      properties:
+        allowedPattern:
+          items:
+            type: string
+          type: array
+        blockedPattern:
+          items:
+            type: string
+          type: array
+        cleanupPolicy:
+          items:
+            $ref: '#/components/schemas/CleanupPolicy'
+          type: array
+        config:
+          $ref: '#/components/schemas/RegistryConfig'
+        description:
+          type: string
+        identifier:
+          type: string
+        isPublic:
+          type: boolean
+        labels:
+          items:
+            type: string
+          type: array
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        parentRef:
+          description: 'Reference to the scope in which the registry exists.
+
+
+            Format depends on the scope:
+
+
+            - **Account-level**: `account_id`
+
+            - **Organization-level**: `account_id/org_id`
+
+            - **Project-level**: `account_id/org_id/project_id`
+
+            '
+          type: string
+        policyRefs:
+          items:
+            type: string
+          type: array
+        scanners:
+          items:
+            $ref: '#/components/schemas/Scanner'
+          type: array
+      required:
+      - identifier
+      - type
+      - packageType
+      - isPublic
+      - parentRef
+      type: object
+  parameters:
+    LabelsParam:
+      description: Label.
+      in: query
+      name: label
+      schema:
+        items:
+          type: string
+        type: array
+    RegistrysortOrder:
+      description: sortOrder
+      in: query
+      name: sort_order
+      schema:
+        type: string
+    versionParam:
+      description: Version
+      in: query
+      name: version
+      schema:
+        type: string
+    searchTerm:
+      description: search Term.
+      in: query
+      name: search_term
+      schema:
+        type: string
+    artifactTypeParam:
+      description: artifact type.
+      in: query
+      name: artifact_type
+      schema:
+        enum:
+        - model
+        - dataset
+        - module
+        - provider
+        type: string
+    RegistrypageSize:
+      description: Number of items per page
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        type: integer
+    sortField:
+      description: sortField
+      in: query
+      name: sort_field
+      schema:
+        type: string
+    RegistrypageNumber:
+      description: Current page number
+      in: query
+      name: page
+      schema:
+        default: 1
+        format: int64
+        type: integer
+    requiredSpaceRefQueryParam:
+      description: 'Reference to the scope in which the registry exists (required for registry creation).
+
+
+        Format depends on the scope:
+
+
+        - **Account-level**: `account_id/+`
+
+        - **Organization-level**: `account_id/org/+`
+
+        - **Project-level**: `account_id/org/project/+`
+
+
+        The `/+` suffix is used internally to route scoped requests.
+
+        It must be included **exactly as shown** in the URL.
+
+        '
+      examples:
+        accountLevel:
+          description: Only account ID, scoped at account level
+          summary: Account-level registry
+          value: acc123/+
+        orgLevel:
+          description: Account and org, scoped at org level
+          summary: Organization-level registry
+          value: acc123/org456/+
+        projectLevel:
+          description: Account, org, and project, scoped at project level
+          summary: Project-level registry
+          value: acc123/org456/proj789/+
+      in: query
+      name: space_ref
+      required: true
+      schema:
+        type: string
+    registryRefPathParam:
+      description: 'Reference to the scope in which the registry exists.
+
+
+        Format depends on the scope:
+
+
+        - **Account-level**: `account_id/registry_name/+`
+
+        - **Organization-level**: `account_id/org_id/registry_name/+`
+
+        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
+
+
+        The `/+` suffix is used internally to route scoped requests.
+
+        It must be included **exactly as shown** in the URL.
+
+        '
+      examples:
+        accountLevel:
+          description: Only account ID, scoped at account level
+          summary: Account-level registry
+          value: acc123/registry123/+
+        orgLevel:
+          description: Account and org ID, scoped at org level
+          summary: Organization-level registry
+          value: acc123/org456/registry123/+
+        projectLevel:
+          description: Account, org, and project ID, scoped at project level
+          summary: Project-level registry
+          value: acc123/org456/proj789/registry123/+
+      in: path
+      name: registry_ref
+      required: true
+      schema:
+        type: string
+    artifactParam:
+      description: Artifat
+      in: query
+      name: artifact
+      schema:
+        type: string
+  responses:
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
+    Success:
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            type: object
+      description: Generic success response
+    ListRegistryArtifactResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ListRegistryArtifact'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response for list artifact
+    ClientSetupDetailsResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ClientSetupDetails'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response for client setup details
+    RegistryResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/Registry'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response for create, get and update registry
+  requestBodies:
+    RegistryRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryRequest'
+      description: request for create and update registry
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

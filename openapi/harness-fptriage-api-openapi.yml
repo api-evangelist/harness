@@ -1,0 +1,1108 @@
+openapi: 3.2.0
+info:
+  title: Harness Fp Triage API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: FpTriage
+  description: Agent ingest endpoints for the FP Triage agent's pre- and post-plugins
+paths:
+  /sto/api/v2/fp-triage/occurrences-in-scope:
+    get:
+      tags:
+      - FpTriage
+      summary: ListOccurrencesInScope FpTriage
+      description: List the (issue, occurrence) tuples the FP Triage agent's pre-plugin needs to build LLM prompts. Without scanId, returns the baseline-only working set for the whole project (cron / project-level trigger). With scanId, narrows to the one scan's occurrences (scan-completion trigger). Optionally excludes occurrences that already have a verdict for the FP_TRIAGE workflow (cron-new-only mode).
+      operationId: FpTriage#ListOccurrencesInScope
+      parameters:
+      - name: accountId
+        in: query
+        description: Harness Account ID
+        allowEmptyValue: true
+        required: true
+        schema:
+          type: string
+          description: Harness Account ID
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        example: abcdef1234567890ghijkl
+      - name: orgId
+        in: query
+        description: Harness Organization ID
+        allowEmptyValue: true
+        required: true
+        schema:
+          type: string
+          description: Harness Organization ID
+          example: example_org
+          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+          maxLength: 128
+        example: example_org
+      - name: projectId
+        in: query
+        description: Harness Project ID
+        allowEmptyValue: true
+        required: true
+        schema:
+          type: string
+          description: Harness Project ID
+          example: example_project
+          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+          maxLength: 128
+        example: example_project
+      - name: scanId
+        in: query
+        description: Optional STO scan id. When set, the working set is narrowed to occurrences produced by that one scan (scan-completion trigger path). Omit on the cron / project-level trigger path. ssca-manager passes the scanId it received from the stoScanInfo Redis Streams event.
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Optional STO scan id. When set, the working set is narrowed to occurrences produced by that one scan (scan-completion trigger path). Omit on the cron / project-level trigger path. ssca-manager passes the scanId it received from the stoScanInfo Redis Streams event.
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        example: abcdef1234567890ghijkl
+      - name: targetId
+        in: query
+        description: Optional STO target id. Used in conjunction with scanId on the scan-completion trigger path as a defensive predicate against scan.target. Ignored when scanId is empty. ssca-manager passes the targetId it received from the stoScanInfo Redis Streams event.
+        allowEmptyValue: true
+        schema:
+          type: string
+          description: Optional STO target id. Used in conjunction with scanId on the scan-completion trigger path as a defensive predicate against scan.target. Ignored when scanId is empty. ssca-manager passes the targetId it received from the stoScanInfo Redis Streams event.
+          example: xyz987zyx654wvu321tsr9
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        example: xyz987zyx654wvu321tsr9
+      - name: includeAlreadyTriaged
+        in: query
+        description: Include occurrences that already have a verdict for FP_TRIAGE. Pass false for cron-new-only runs.
+        allowEmptyValue: true
+        schema:
+          type: boolean
+          description: Include occurrences that already have a verdict for FP_TRIAGE. Pass false for cron-new-only runs.
+          default: true
+          example: false
+        example: false
+      - name: limit
+        in: query
+        description: Maximum number of occurrences to return
+        allowEmptyValue: true
+        schema:
+          type: integer
+          description: Maximum number of occurrences to return
+          default: 1000
+          example: 1000
+          format: int64
+          minimum: 1
+          maximum: 10000
+        example: 1000
+      - name: scanTypes
+        in: query
+        description: 'Per-checkbox subset of the Configuration tab''s "Scan Types to Triage". Allowed: SCA (issue_type=SCA AND target.type=repository), SAST (issue_type=SAST), CONTAINER (issue_type=SCA AND target.type IN (''container'',''instance'')), SECRET (issue_type=SECRET), IAC (issue_type IN (''IAC'',''MISCONFIG'')), DAST (issue_type=DAST). Empty / absent means "include every supported (issue_type, target.type) tuple".'
+        allowEmptyValue: true
+        schema:
+          type: array
+          items:
+            type: string
+            example: IAC
+            enum:
+            - SCA
+            - SAST
+            - CONTAINER
+            - SECRET
+            - IAC
+            - DAST
+          description: 'Per-checkbox subset of the Configuration tab''s "Scan Types to Triage". Allowed: SCA (issue_type=SCA AND target.type=repository), SAST (issue_type=SAST), CONTAINER (issue_type=SCA AND target.type IN (''container'',''instance'')), SECRET (issue_type=SECRET), IAC (issue_type IN (''IAC'',''MISCONFIG'')), DAST (issue_type=DAST). Empty / absent means "include every supported (issue_type, target.type) tuple".'
+          example:
+          - SCA
+          - SAST
+          - SECRET
+        example:
+        - SCA
+        - SAST
+        - SECRET
+      - name: severityCodes
+        in: query
+        description: 'Per-checkbox subset of the Configuration tab''s "Severity Types to Triage". Allowed: CRITICAL, HIGH, MEDIUM, LOW, INFO (compared case-insensitively against per-occurrence severity). Empty / absent means "include every severity".'
+        allowEmptyValue: true
+        schema:
+          type: array
+          items:
+            type: string
+            example: INFO
+            enum:
+            - CRITICAL
+            - HIGH
+            - MEDIUM
+            - LOW
+            - INFO
+          description: 'Per-checkbox subset of the Configuration tab''s "Severity Types to Triage". Allowed: CRITICAL, HIGH, MEDIUM, LOW, INFO (compared case-insensitively against per-occurrence severity). Empty / absent means "include every severity".'
+          example:
+          - CRITICAL
+          - HIGH
+        example:
+        - CRITICAL
+        - HIGH
+      - name: excludeRepoPatterns
+        in: query
+        description: 'Glob patterns matching target.name on repository targets (target.type=''repository''). Any occurrence whose target name matches ANY pattern is excluded. Glob syntax: ''*'' = any run of chars, ''?'' = single char. The handler converts each glob to a Postgres LIKE pattern server-side. Empty / absent means "exclude no repositories".'
+        allowEmptyValue: true
+        schema:
+          type: array
+          items:
+            type: string
+            example: zhk
+            maxLength: 256
+          description: 'Glob patterns matching target.name on repository targets (target.type=''repository''). Any occurrence whose target name matches ANY pattern is excluded. Glob syntax: ''*'' = any run of chars, ''?'' = single char. The handler converts each glob to a Postgres LIKE pattern server-side. Empty / absent means "exclude no repositories".'
+          example:
+          - '*-test'
+          - dev-*
+          - sandbox/*
+        example:
+        - '*-test'
+        - dev-*
+        - sandbox/*
+      - name: excludeArtifactPatterns
+        in: query
+        description: Glob patterns matching target.name on artifact targets (target.type IN ('container','instance')). Same semantics as excludeRepoPatterns but applied to the artifact target buckets. Empty / absent means "exclude no artifacts".
+        allowEmptyValue: true
+        schema:
+          type: array
+          items:
+            type: string
+            example: qmj
+            maxLength: 256
+          description: Glob patterns matching target.name on artifact targets (target.type IN ('container','instance')). Same semantics as excludeRepoPatterns but applied to the artifact target buckets. Empty / absent means "exclude no artifacts".
+          example:
+          - org/frontend-app
+          - '*-SNAPSHOT'
+        example:
+        - org/frontend-app
+        - '*-SNAPSHOT'
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOccurrencesInScopeResponseBody'
+              example:
+                results:
+                - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+                  issueId: abcdef1234567890ghijkl
+                  issueInternalId: 12345
+                  issueTitle: SQL Injection vulnerability
+                  issueType: SAST
+                  occurrenceDetails: Sed ea est et fuga et.
+                  occurrenceInternalId: 67890
+                  productName: semgrep
+                  severityCode: High
+                  targetId: xyz987zyx654wvu321tsr9
+                  targetName: payment-service
+                - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+                  issueId: abcdef1234567890ghijkl
+                  issueInternalId: 12345
+                  issueTitle: SQL Injection vulnerability
+                  issueType: SAST
+                  occurrenceDetails: Sed ea est et fuga et.
+                  occurrenceInternalId: 67890
+                  productName: semgrep
+                  severityCode: High
+                  targetId: xyz987zyx654wvu321tsr9
+                  targetName: payment-service
+                - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+                  issueId: abcdef1234567890ghijkl
+                  issueInternalId: 12345
+                  issueTitle: SQL Injection vulnerability
+                  issueType: SAST
+                  occurrenceDetails: Sed ea est et fuga et.
+                  occurrenceInternalId: 67890
+                  productName: semgrep
+                  severityCode: High
+                  targetId: xyz987zyx654wvu321tsr9
+                  targetName: payment-service
+                - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+                  issueId: abcdef1234567890ghijkl
+                  issueInternalId: 12345
+                  issueTitle: SQL Injection vulnerability
+                  issueType: SAST
+                  occurrenceDetails: Sed ea est et fuga et.
+                  occurrenceInternalId: 67890
+                  productName: semgrep
+                  severityCode: High
+                  targetId: xyz987zyx654wvu321tsr9
+                  targetName: payment-service
+        '400':
+          description: 'BadRequest: Bad Request response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: 'Bad Request: accountId parameter is required'
+                status: 400
+        '401':
+          description: 'Unauthorized: Unauthorized response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: Unauthorized
+                status: 401
+        '403':
+          description: 'Forbidden: Forbidden response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: Forbidden
+                status: 403
+        '429':
+          description: 'TooManyRequests: Too Many Requests response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: Too Many Requests
+                status: 429
+        '500':
+          description: 'InternalServerError: Internal Server Error response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: Internal Server Error
+                status: 500
+      security:
+      - jwt_header_Authorization:
+        - sto_internal_use_only
+  /sto/api/v2/fp-triage/verdicts/batch:
+    post:
+      tags:
+      - FpTriage
+      summary: BatchUpsertVerdicts FpTriage
+      description: Atomically upsert a batch of per-occurrence FP triage verdicts produced by one agent run. The store-level transaction rolls back the whole batch on any single failure so the aggregated rollup stays consistent.
+      operationId: FpTriage#BatchUpsertVerdicts
+      parameters:
+      - name: accountId
+        in: query
+        description: Harness Account ID
+        allowEmptyValue: true
+        required: true
+        schema:
+          type: string
+          description: Harness Account ID
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        example: abcdef1234567890ghijkl
+      - name: orgId
+        in: query
+        description: Harness Organization ID
+        allowEmptyValue: true
+        required: true
+        schema:
+          type: string
+          description: Harness Organization ID
+          example: example_org
+          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+          maxLength: 128
+        example: example_org
+      - name: projectId
+        in: query
+        description: Harness Project ID
+        allowEmptyValue: true
+        required: true
+        schema:
+          type: string
+          description: Harness Project ID
+          example: example_project
+          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+          maxLength: 128
+        example: example_project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchUpsertVerdictsRequestBody'
+            example:
+              verdicts:
+              - confidence: 0.87
+                issueId: abcdef1234567890ghijkl
+                modelName: anthropic.claude-3-5-sonnet-20241022
+                occurrenceInternalId: 67890
+                promptVersion: v1.3.0
+                reasoning: The argument to path.join is __dirname, a constant, not user input.
+                targetId: xyz987zyx654wvu321tsr9
+                verdict: FALSE_POSITIVE
+                workflowExecutionId: wf-exec-2026-05-21-payment-service-247
+                workflowType: FP_TRIAGE
+              - confidence: 0.87
+                issueId: abcdef1234567890ghijkl
+                modelName: anthropic.claude-3-5-sonnet-20241022
+                occurrenceInternalId: 67890
+                promptVersion: v1.3.0
+                reasoning: The argument to path.join is __dirname, a constant, not user input.
+                targetId: xyz987zyx654wvu321tsr9
+                verdict: FALSE_POSITIVE
+                workflowExecutionId: wf-exec-2026-05-21-payment-service-247
+                workflowType: FP_TRIAGE
+              - confidence: 0.87
+                issueId: abcdef1234567890ghijkl
+                modelName: anthropic.claude-3-5-sonnet-20241022
+                occurrenceInternalId: 67890
+                promptVersion: v1.3.0
+                reasoning: The argument to path.join is __dirname, a constant, not user input.
+                targetId: xyz987zyx654wvu321tsr9
+                verdict: FALSE_POSITIVE
+                workflowExecutionId: wf-exec-2026-05-21-payment-service-247
+                workflowType: FP_TRIAGE
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchUpsertVerdictsResponseBody'
+              example:
+                written: 42
+        '400':
+          description: 'BadRequest: Bad Request response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: 'Bad Request: accountId parameter is required'
+                status: 400
+        '401':
+          description: 'Unauthorized: Unauthorized response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: Unauthorized
+                status: 401
+        '403':
+          description: 'Forbidden: Forbidden response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: Forbidden
+                status: 403
+        '429':
+          description: 'TooManyRequests: Too Many Requests response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: Too Many Requests
+                status: 429
+        '500':
+          description: 'InternalServerError: Internal Server Error response.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                message: Internal Server Error
+                status: 500
+      security:
+      - jwt_header_Authorization:
+        - sto_internal_use_only
+components:
+  schemas:
+    FpOccurrenceRef:
+      type: object
+      properties:
+        issueDetails:
+          type: string
+          description: Opaque JSON object from issue.details — pass-through to the LLM prompt builder
+          example: Est consequatur.
+          format: binary
+        issueId:
+          type: string
+          description: STO issue ID
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        issueInternalId:
+          type: integer
+          description: STO internal numeric issue ID — stable within an account, used by the agent for joins
+          example: 12345
+          format: int64
+        issueTitle:
+          type: string
+          description: Human-readable issue title
+          example: SQL Injection vulnerability
+        issueType:
+          type: string
+          description: Scanner-family issue type (SAST, SCA, SECRET, etc.)
+          example: SAST
+        occurrenceDetails:
+          type: string
+          description: Opaque JSON object from occurrence.unique_details — pass-through to the LLM prompt builder
+          example: Omnis tempora et non ut.
+          format: binary
+        occurrenceInternalId:
+          type: integer
+          description: STO internal numeric occurrence ID
+          example: 67890
+          format: int64
+        productName:
+          type: string
+          description: Scanner product name (e.g. semgrep, snyk, trivy)
+          example: semgrep
+        severityCode:
+          type: string
+          description: Per-occurrence severity bucket (Critical/High/Medium/Low/Info)
+          example: High
+        targetId:
+          type: string
+          description: STO target ID. May be null if the occurrence was emitted before target association.
+          example: xyz987zyx654wvu321tsr9
+        targetName:
+          type: string
+          description: Human-readable target name
+          example: payment-service
+      description: In-scope (issue, occurrence) tuple for the FP Triage agent's pre-plugin
+      example:
+        issueDetails: Recusandae veniam qui velit et.
+        issueId: abcdef1234567890ghijkl
+        issueInternalId: 12345
+        issueTitle: SQL Injection vulnerability
+        issueType: SAST
+        occurrenceDetails: Temporibus ad illum.
+        occurrenceInternalId: 67890
+        productName: semgrep
+        severityCode: High
+        targetId: xyz987zyx654wvu321tsr9
+        targetName: payment-service
+      required:
+      - issueId
+      - issueInternalId
+      - occurrenceInternalId
+      - issueTitle
+      - severityCode
+    BatchUpsertVerdictsResponseBody:
+      type: object
+      properties:
+        written:
+          type: integer
+          description: Number of verdict rows written (inserted or updated).
+          example: 42
+          format: int64
+      example:
+        written: 42
+      required:
+      - written
+    FpVerdictPayload:
+      type: object
+      properties:
+        confidence:
+          type: number
+          description: Model-reported confidence in the verdict, in [0, 1]
+          example: 0.87
+          format: double
+          minimum: 0
+          maximum: 1
+        issueId:
+          type: string
+          description: STO issue ID the verdict applies to
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        modelName:
+          type: string
+          description: Identifier of the model that produced this verdict (incl. version)
+          example: anthropic.claude-3-5-sonnet-20241022
+          maxLength: 256
+        occurrenceInternalId:
+          type: integer
+          description: STO internal occurrence ID the verdict applies to
+          example: 67890
+          format: int64
+        promptVersion:
+          type: string
+          description: Version of the prompt template used
+          example: v1.3.0
+          maxLength: 64
+        reasoning:
+          type: string
+          description: LLM-emitted natural-language justification for the verdict
+          example: The argument to path.join is __dirname, a constant, not user input.
+        targetId:
+          type: string
+          description: STO target ID. Optional — verdicts predating target association may omit this.
+          example: xyz987zyx654wvu321tsr9
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        verdict:
+          type: string
+          description: Per-occurrence verdict label emitted by the LLM
+          example: FALSE_POSITIVE
+          enum:
+          - FALSE_POSITIVE
+          - TRUE_POSITIVE
+        workflowExecutionId:
+          type: string
+          description: Opaque ssca-manager workflow execution ID that produced this verdict — audit trail only
+          example: wf-exec-2026-05-21-payment-service-247
+          maxLength: 64
+        workflowType:
+          type: string
+          description: Discriminator for the agent family inside the shared triage_verdict table. Defaults to FP_TRIAGE; reserved for future agents (auto-fix, exploitability, etc.).
+          default: FP_TRIAGE
+          example: FP_TRIAGE
+          maxLength: 64
+      description: One verdict produced by the FP Triage agent for one occurrence
+      example:
+        confidence: 0.87
+        issueId: abcdef1234567890ghijkl
+        modelName: anthropic.claude-3-5-sonnet-20241022
+        occurrenceInternalId: 67890
+        promptVersion: v1.3.0
+        reasoning: The argument to path.join is __dirname, a constant, not user input.
+        targetId: xyz987zyx654wvu321tsr9
+        verdict: FALSE_POSITIVE
+        workflowExecutionId: wf-exec-2026-05-21-payment-service-247
+        workflowType: FP_TRIAGE
+      required:
+      - issueId
+      - occurrenceInternalId
+      - verdict
+      - confidence
+      - modelName
+      - promptVersion
+    NotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          default: 404
+          example: 404
+          format: int64
+      example:
+        message: Not Found
+        status: 404
+      required:
+      - message
+    ListOccurrencesInScopeResponseBody:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FpOccurrenceRef'
+          example:
+          - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+            issueId: abcdef1234567890ghijkl
+            issueInternalId: 12345
+            issueTitle: SQL Injection vulnerability
+            issueType: SAST
+            occurrenceDetails: Sed ea est et fuga et.
+            occurrenceInternalId: 67890
+            productName: semgrep
+            severityCode: High
+            targetId: xyz987zyx654wvu321tsr9
+            targetName: payment-service
+          - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+            issueId: abcdef1234567890ghijkl
+            issueInternalId: 12345
+            issueTitle: SQL Injection vulnerability
+            issueType: SAST
+            occurrenceDetails: Sed ea est et fuga et.
+            occurrenceInternalId: 67890
+            productName: semgrep
+            severityCode: High
+            targetId: xyz987zyx654wvu321tsr9
+            targetName: payment-service
+      example:
+        results:
+        - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+          issueId: abcdef1234567890ghijkl
+          issueInternalId: 12345
+          issueTitle: SQL Injection vulnerability
+          issueType: SAST
+          occurrenceDetails: Sed ea est et fuga et.
+          occurrenceInternalId: 67890
+          productName: semgrep
+          severityCode: High
+          targetId: xyz987zyx654wvu321tsr9
+          targetName: payment-service
+        - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+          issueId: abcdef1234567890ghijkl
+          issueInternalId: 12345
+          issueTitle: SQL Injection vulnerability
+          issueType: SAST
+          occurrenceDetails: Sed ea est et fuga et.
+          occurrenceInternalId: 67890
+          productName: semgrep
+          severityCode: High
+          targetId: xyz987zyx654wvu321tsr9
+          targetName: payment-service
+        - issueDetails: Modi nesciunt natus cumque reiciendis sequi dolores.
+          issueId: abcdef1234567890ghijkl
+          issueInternalId: 12345
+          issueTitle: SQL Injection vulnerability
+          issueType: SAST
+          occurrenceDetails: Sed ea est et fuga et.
+          occurrenceInternalId: 67890
+          productName: semgrep
+          severityCode: High
+          targetId: xyz987zyx654wvu321tsr9
+          targetName: payment-service
+      required:
+      - results
+    BatchUpsertVerdictsRequestBody:
+      type: object
+      properties:
+        verdicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FpVerdictPayload'
+          description: Verdicts to upsert. ON CONFLICT (account_id, workflow_type, issue_id, occurrence_internal_id) DO UPDATE — re-runs overwrite previous output.
+          example:
+          - confidence: 0.87
+            issueId: abcdef1234567890ghijkl
+            modelName: anthropic.claude-3-5-sonnet-20241022
+            occurrenceInternalId: 67890
+            promptVersion: v1.3.0
+            reasoning: The argument to path.join is __dirname, a constant, not user input.
+            targetId: xyz987zyx654wvu321tsr9
+            verdict: FALSE_POSITIVE
+            workflowExecutionId: wf-exec-2026-05-21-payment-service-247
+            workflowType: FP_TRIAGE
+          minItems: 1
+          maxItems: 10000
+      example:
+        verdicts:
+        - confidence: 0.87
+          issueId: abcdef1234567890ghijkl
+          modelName: anthropic.claude-3-5-sonnet-20241022
+          occurrenceInternalId: 67890
+          promptVersion: v1.3.0
+          reasoning: The argument to path.join is __dirname, a constant, not user input.
+          targetId: xyz987zyx654wvu321tsr9
+          verdict: FALSE_POSITIVE
+          workflowExecutionId: wf-exec-2026-05-21-payment-service-247
+          workflowType: FP_TRIAGE
+      required:
+      - verdicts
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks

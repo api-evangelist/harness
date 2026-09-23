@@ -1,0 +1,114 @@
+generated: '2026-09-12'
+method: searched
+source: >-
+  https://github.com/harness/cli (README, fetched 2026-09-12),
+  https://github.com/harness/cli/releases/tag/v3.7.1,
+  https://github.com/harness/harness-cli (v1 line),
+  https://github.com/harness/homebrew-tap
+provider: Harness
+providerId: harness
+name: Harness CLI
+binary: harness
+version: v3.7.1
+released: '2026-09-08'
+repository: https://github.com/harness/cli
+license: Apache-2.0
+language: go
+platforms: [macOS, Linux, Windows]
+architectures: [amd64, arm64]
+description: >-
+  Harness CLI 3.0 is a spec-driven, self-describing CLI over the whole Harness platform.
+  Commands are declared in YAML specs and wired at startup, so the command surface tracks
+  the API rather than being hand-written per resource. Harness explicitly positions it as
+  "built for Humans and Agents" — it detects and reports which coding agent is driving it
+  (Claude Code, Cursor, Gemini CLI, Codex, Cline and others).
+grammar:
+  pattern: harness <verb> <noun>
+  verbs: [list, get, create, update, delete, execute, pull]
+  note: >-
+    One grammar across pipelines, code, artifacts, GitOps, load testing, IaC, feature
+    flags, governance and platform. Verb/noun support is declared per noun in a matrix.
+  update_semantics:
+    - {code: S, meaning: set-fields — create/update with --set key=value}
+    - {code: GTP, meaning: get-then-put — --set / --del semantics for updates}
+    - {code: 'Y', meaning: YAML body — outputs or accepts a YAML file with -f}
+    - {code: L, meaning: supports --level for project / org / account scope}
+install:
+  - method: script
+    platform: macOS, Linux
+    command: curl -fsSL https://raw.githubusercontent.com/harness/cli/main/install.sh | sh
+  - method: script
+    platform: Windows
+    command: irm https://raw.githubusercontent.com/harness/cli/main/install.ps1 | iex
+  - method: homebrew
+    platform: macOS
+    command: brew install --cask harness/tap/harness-cli
+    tap: https://github.com/harness/homebrew-tap
+    note: Installs the core binary only; CLI modules and plugins are managed by the CLI itself.
+  - method: github-releases
+    url: https://github.com/harness/cli/releases
+    note: >-
+      Set HARNESS_INSTALL_BASE_URL to an internal mirror to install in air-gapped
+      environments.
+authentication:
+  methods:
+  - method: api-key
+    env: HARNESS_API_KEY
+    note: Zero-config env-var auth for CI and headless use.
+  - method: sso
+    command: harness auth login --sso
+    flow: browser-based OAuth2 with PKCE
+    note: No PAT/SAT required. auth sso_status and auth sso_refresh manage token expiry.
+  profiles: >-
+    Named multi-account/multi-profile support; auth setscope sets a default org and project
+    per profile.
+discovery:
+  self_describing: true
+  commands:
+    - {command: list module, purpose: show all available modules}
+    - {command: get module <name>, purpose: domain model, nouns and guides for a module}
+    - {command: list noun --matrix, purpose: every registered noun with its verb support matrix}
+    - {command: get noun <noun>, purpose: fields and commands for one noun}
+  note: >-
+    This is the CLI's most agent-relevant property — the command surface is queryable at
+    runtime, so an agent does not need a hard-coded command list.
+command_groups:
+  - name: Core & Discovery
+    examples: [auth login, auth status, auth setscope, auth profiles, install cli, install module, install plugin, list module, get module, list noun, get noun, version]
+  - name: Platform / Access Control
+    nouns: [account, organization, project, user, user_group, service_account, role, role_assignment, resource_group, permission, setting, connector, delegate, delegate_token, agent, secret, entity_usage]
+  - name: Pipelines / CI-CD
+    nouns: [pipeline, 'pipeline:dynamic', 'pipeline:input_set', 'pipeline:summary', pipeline_v1, execution, execution_log]
+  - name: CD (Deployment)
+  - name: Code (Repositories & Pull Requests)
+    note: >-
+      Clone repos with pull repository; review PRs with list 'pr:review_pending' and
+      execute 'pr:review'; read AI review insight with get 'pr:insight'.
+  - name: Artifact Registry
+    note: Shipped as the `har` plugin, installed from the same bundle.
+  - name: Infrastructure as Code Management
+  - name: GitOps
+    note: Argo CD agents, applications, clusters and ApplicationSets.
+  - name: Resilience Testing
+    note: JMeter / Locust / k6 load tests with --follow streaming.
+  - name: Governance (OPA policies)
+  - name: Audit Trail
+  - name: Knowledge Graph & HQL
+output_formats: [table, json, jsonl, yaml, csv, tsv, markdown]
+features:
+  - Live SSE-based log tailing for pipeline executions (--follow, get execution_log --ui).
+  - Interactive TUI mode (--ui) for paginated browsing and resource picking.
+  - Paging on every list command (--limit, --offset, --all, --count).
+  - API-backed tab completion returning live id<tab>Name suggestions.
+  - Plugin system — install a plugin by name, GitHub ref, tarball URL or local path.
+predecessor:
+  name: harness-cli (v1 line)
+  repository: https://github.com/harness/harness-cli
+  version: v1.3.44
+  released: '2026-09-07'
+  note: >-
+    The older YAML-input CLI is still receiving releases alongside CLI 3.x; both lines are
+    maintained at the time of this pass.
+not_this_package: >-
+  The npm package named `harness-cli` is an unrelated AI agent orchestration tool, not
+  Harness.io software.

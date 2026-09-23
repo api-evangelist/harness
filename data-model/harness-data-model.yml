@@ -1,0 +1,182 @@
+generated: '2026-09-12'
+method: derived
+source: >-
+  openapi/_original/harness-apis-openapi.yaml — 6,358 component schemas and 2,883
+  operations, with id-reference field frequencies counted across the whole document.
+  Enriched from the Common Parameters section of info.description and from the resource
+  registry documented at https://github.com/harness/mcp-server.
+provider: Harness
+providerId: harness
+description: >-
+  The Harness entity graph. Everything hangs off a strict three-level ownership spine —
+  account owns organization owns project — and almost every other entity belongs to one of
+  those three scopes. Understanding the spine is the difference between a working call and
+  a 404, because a wrong scope triplet reads as "not found" rather than "wrong scope".
+identity:
+  key: identifier
+  format: caller-chosen, URL-friendly, unique within its scope
+  note: >-
+    Harness identifiers are NOT opaque server-generated ids. The caller picks them, they
+    are stable, and they are how every cross-reference is expressed. There is no id-prefix
+    convention (no `pipe_`/`org_` style prefixes) — the type is implied by the field name,
+    not the value.
+  secondary_keys:
+    - {name: planExecutionId, note: Opaque id of one pipeline execution plan; the handle for interrupts, retries and log reads.}
+    - {name: uuid / id, note: Goa-generated services (IaCM, Artifact Registry, Chaos) use opaque ids instead of identifiers.}
+  timestamps: created / updated, int64 Unix epoch MILLISECONDS
+scope_spine:
+  - level: account
+    field: accountIdentifier (query) or Harness-Account (header) or account_id (path)
+    occurrences: 1280
+  - level: organization
+    field: orgIdentifier (query) or org (path)
+    occurrences: 708
+    belongs_to: account
+  - level: project
+    field: projectIdentifier (query) or project (path)
+    occurrences: 883
+    belongs_to: organization
+entities:
+  - name: Account
+    scope: root
+    relationships:
+      - {type: has_many, target: Organization, via: orgIdentifier}
+      - {type: has_many, target: Connector, via: accountIdentifier, note: connectors, secrets and templates exist at any of the three scopes}
+      - {type: has_many, target: Delegate, via: accountIdentifier}
+      - {type: has_one, target: License, via: accountIdentifier}
+  - name: Organization
+    belongs_to: Account
+    operations: [getOrganizationList, getOrganization, postOrganization, putOrganization, deleteOrganization]
+    relationships:
+      - {type: has_many, target: Project, via: orgIdentifier}
+  - name: Project
+    belongs_to: Organization
+    operations: [getProjectList, getProject, postProject, putProject, deleteProject]
+    relationships:
+      - {type: has_many, target: Pipeline, via: projectIdentifier}
+      - {type: has_many, target: Service, via: projectIdentifier}
+      - {type: has_many, target: Environment, via: projectIdentifier}
+      - {type: has_many, target: Connector, via: projectIdentifier}
+      - {type: has_many, target: Secret, via: projectIdentifier}
+  - name: Pipeline
+    belongs_to: Project
+    body_format: YAML (schema published at json-schema/harness-v1-pipeline-schema.json)
+    operations: [getPipelineList, getPipeline, postPipelineV2, updatePipelineV2, deletePipeline]
+    relationships:
+      - {type: has_many, target: PipelineExecution, via: pipelineIdentifier}
+      - {type: has_many, target: InputSet, via: pipelineIdentifier}
+      - {type: has_many, target: Trigger, via: pipelineIdentifier}
+      - {type: has_many, target: Stage, via: 'pipeline_stage_id (embedded in YAML, not a separate resource)'}
+  - name: PipelineExecution
+    belongs_to: Pipeline
+    key: planExecutionId
+    operations: [postPipelineExecuteWithInputSetYaml, getListOfExecutions, getExecutionDetailV2, putHandleInterrupt, retryPipelineV2]
+    relationships:
+      - {type: has_many, target: StageExecution, via: nodeExecutionId}
+      - {type: has_many, target: ExecutionLog, via: planExecutionId}
+      - {type: belongs_to, target: Trigger, via: 'triggeredBy (when trigger-initiated)'}
+  - name: InputSet
+    belongs_to: Pipeline
+    note: Runtime input values for a pipeline. OverlayInputSet composes several input sets.
+  - name: Trigger
+    belongs_to: Pipeline
+    body_format: YAML (schema at json-schema/harness-v0-trigger-schema.json)
+    relationships:
+      - {type: has_many, target: TriggerEvent, via: triggerIdentifier}
+  - name: Service
+    belongs_to: Project
+    operations: [getServiceList, getServiceV2, createServiceV2, updateServiceV2, deleteServiceV2]
+    relationships:
+      - {type: has_many, target: ServiceOverride, via: serviceIdentifier}
+      - {type: has_many, target: ServiceInstance, via: serviceIdentifier}
+  - name: Environment
+    belongs_to: Project
+    operations: [getEnvironmentList, getEnvironmentV2, createEnvironmentV2, updateEnvironmentV2, deleteEnvironmentV2]
+    relationships:
+      - {type: has_many, target: Infrastructure, via: infraIdentifier}
+      - {type: belongs_to, target: EnvironmentGroup, via: envGroupIdentifier}
+  - name: Infrastructure
+    belongs_to: Environment
+    via_field: infraIdentifier
+    relationships:
+      - {type: belongs_to, target: Connector, via: connectorRef}
+  - name: Connector
+    scope: account | organization | project
+    operations: [getConnectorList, getConnector, createConnector, updateConnector, deleteConnector]
+    note: The join between Harness and every external system — Git, cloud, registry, secret manager.
+    relationships:
+      - {type: belongs_to, target: Secret, via: 'credential secretRef'}
+  - name: Secret
+    scope: account | organization | project
+    operations: [listSecretsV2, getSecretV2, postSecret, putSecret, deleteSecretV2]
+    relationships:
+      - {type: belongs_to, target: Connector, via: 'secretManagerIdentifier (the connector that stores it)'}
+  - name: Template
+    scope: account | organization | project
+    body_format: YAML (schema at json-schema/harness-v1-template-schema.json)
+    note: Versioned, reusable pipeline/stage/step fragments; referenced from pipeline YAML by templateRef.
+  - name: Delegate
+    belongs_to: Account
+    relationships:
+      - {type: has_many, target: DelegateToken, via: accountIdentifier}
+    note: The worker that executes tasks inside the customer's network. Carries its own EOS/EOL lifecycle.
+  - name: FeatureFlag
+    belongs_to: Project
+    operations: [GetAllFeatures, GetFeatureFlag, CreateFeatureFlag, PatchFeature, DeleteFeatureFlag, RestoreFeatureFlag]
+    relationships:
+      - {type: has_many, target: Target, via: targetId}
+      - {type: has_many, target: TargetGroup, via: 'segment identifier'}
+      - {type: belongs_to, target: FFEnvironment, via: environmentIdentifier}
+  - name: Repository
+    module: Harness Code
+    belongs_to: Project
+    key: repo_identifier
+    relationships:
+      - {type: has_many, target: PullRequest, via: pullreq_number}
+      - {type: has_many, target: Branch, via: branch}
+  - name: Workspace
+    module: IaCM
+    belongs_to: Project
+    key: workspace / workspace_id
+    relationships:
+      - {type: has_many, target: StateVersion, via: data_id}
+      - {type: has_many, target: Activity, via: activity_id}
+      - {type: belongs_to, target: VariableSet, via: 'variable set reference'}
+      - {type: belongs_to, target: Module, via: 'module registry reference'}
+  - name: ChaosExperiment
+    module: Resilience Testing
+    belongs_to: Project
+    relationships:
+      - {type: belongs_to, target: ChaosInfrastructure, via: infrastructure identifier}
+      - {type: has_many, target: Probe, via: probe identifier}
+  - name: Perspective
+    module: CCM
+    scope: account
+    relationships:
+      - {type: has_many, target: Budget, via: perspectiveId}
+      - {type: has_many, target: Anomaly, via: perspectiveId}
+  - name: Artifact
+    module: Artifact Registry
+    key: artifact_id
+    relationships:
+      - {type: belongs_to, target: Registry, via: registryId}
+      - {type: has_many, target: Version, via: 'version id'}
+      - {type: has_many, target: SBOM, via: 'artifact reference'}
+      - {type: has_many, target: Attestation, via: 'provenance id'}
+cross_cutting_fields:
+  - {name: correlationId, occurrences: 405, note: Echoed in error envelopes across almost every service; the tracing handle.}
+  - {name: tags, type: 'map[string]string', note: Free-form labels on almost every entity.}
+  - {name: description, note: Present on every named entity.}
+generation_split:
+  note: >-
+    Field naming is NOT consistent across the platform and this is the main trap in the
+    graph. Legacy NextGen services use camelCase (accountIdentifier, projectIdentifier,
+    pipelineIdentifier); the v1 Generation and the Goa-generated services use snake_case
+    (account_id, project_id, pipeline_id, repo_identifier, workspace_id). The same logical
+    reference appears under at least four spellings across the 6,358 schemas.
+  evidence:
+    - {field: accountIdentifier, schemas: 106}
+    - {field: accountId, schemas: 108}
+    - {field: account_id, schemas: 39}
+    - {field: account_identifier, schemas: 13}
+render: null

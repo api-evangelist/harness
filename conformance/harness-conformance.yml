@@ -1,0 +1,191 @@
+generated: '2026-09-12'
+method: searched
+source: >-
+  openapi/_original/harness-apis-openapi.yaml (fetched from
+  https://apidocs.harness.io/_bundle/index.yaml), probed OAuth/OIDC discovery documents
+  under well-known/, https://github.com/harness/harness-schema, https://trust.harness.io/,
+  and the Harness docs index at https://developer.harness.io/llms.txt
+provider: Harness
+providerId: harness
+description: >-
+  Cross-cutting and domain-standard conformance for Harness. Every entry cites the exact
+  artifact location that carries the evidence. Entries marked conforms:false are recorded
+  as honest negatives — an absent standard is data, not a penalty.
+conformance:
+  - id: oauth2
+    conforms: true
+    scope: hosted MCP server and platform sign-in (not the REST API)
+    evidence: >-
+      well-known/harness-id-harnessidp-openid-configuration.json — issuer
+      https://id.harness.io/idp/realms/HarnessIDP, authorization_code + refresh_token +
+      client_credentials grants, S256 PKCE.
+  - id: oidc
+    conforms: true
+    scope: https://id.harness.io/idp/realms/HarnessIDP
+    evidence: >-
+      Full OpenID Connect discovery served at
+      /idp/realms/HarnessIDP/.well-known/openid-configuration (HTTP 200, 6.6KB), with
+      openid/profile/email/offline_access scopes and RS256 id_token signing.
+  - id: rfc8414
+    name: OAuth 2.0 Authorization Server Metadata
+    conforms: true
+    evidence: >-
+      https://id.harness.io/idp/realms/HarnessIDP/.well-known/oauth-authorization-server
+      returns 200 with the same metadata document.
+  - id: rfc9728
+    name: OAuth 2.0 Protected Resource Metadata
+    conforms: true
+    evidence: >-
+      well-known/harness-mcp-oauth-protected-resource.json and
+      harness-mcp-oauth-protected-resource-mcp.json — mcp.harness.io advertises resource,
+      authorization_servers and bearer_methods_supported at both the host root and the
+      /mcp resource path.
+  - id: mcp
+    name: Model Context Protocol
+    conforms: true
+    evidence: >-
+      Official server at https://github.com/harness/mcp-server, remote endpoint
+      https://mcp.harness.io/mcp, npm harness-mcp-v2 3.2.27. Declares MCP outputSchema per
+      tool and uses MCP elicitation for write confirmation. See mcp/harness-mcp.yml.
+  - id: agent-skills
+    name: Agent Skills
+    conforms: true
+    evidence: >-
+      44 provider-authored SKILL.md skills published at
+      https://github.com/harness/harness-skills, vendored under skills/harness-skills/.
+  - id: pagination
+    conforms: true
+    evidence: >-
+      Documented page-number pagination (limit default 30, max 100; page) with
+      X-Total-Elements / X-Page-Number / X-Page-Size response headers, specified in
+      info.description of the published OpenAPI.
+  - id: idempotency
+    conforms: false
+    coverage: partial
+    evidence: >-
+      Exactly 1 of 1,589 mutating operations accepts an Idempotency-Key header
+      (uploadAttestation). 23 operations accept If-Match for optimistic concurrency, which
+      is lost-update protection rather than replay protection. See
+      conventions/harness-conventions.yml.
+  - id: rfc9457
+    name: Problem Details for HTTP APIs
+    conforms: false
+    evidence: >-
+      Zero application/problem+json response bodies in 2,883 operations. Harness ships
+      three proprietary error envelopes (ErrorResponse, Failure/ResponseMessage, and
+      application/vnd.goa.error). See errors/harness-error-codes.yml.
+  - id: rfc8594
+    name: Sunset HTTP Header
+    conforms: false
+    evidence: >-
+      No Sunset or Deprecation response header is declared on any operation. Retirement is
+      announced in prose release notes and as deprecated:true in the spec only.
+  - id: rfc9116
+    name: security.txt
+    conforms: false
+    evidence: >-
+      404 on /.well-known/security.txt across harness.io, www.harness.io,
+      developer.harness.io, apidocs.harness.io and mcp.harness.io (403 on id.harness.io).
+      See well-known/harness-well-known.yml.
+  - id: openapi
+    conforms: true
+    version: 3.0.3
+    evidence: >-
+      Harness publishes a single bundled OpenAPI 3.0.3 document covering the whole
+      platform — 2,147 paths, 2,883 operations, 6,358 component schemas, 342 declared tags,
+      1,185 example sites — downloadable at https://apidocs.harness.io/_bundle/index.yaml.
+  - id: json-schema
+    conforms: true
+    version: draft-07
+    evidence: >-
+      Harness publishes JSON Schema draft-07 documents for its pipeline, template, trigger
+      and input-set YAML at https://github.com/harness/harness-schema (v0 and v1
+      generations), saved under json-schema/.
+  - id: scim
+    conforms: true
+    scope: user and group provisioning
+    evidence: >-
+      Harness documents SCIM provisioning with Okta, Microsoft Entra ID and OneLogin, and
+      a Setting API to enable SCIM authentication through JWT
+      (https://developer.harness.io/harness-platform/use-harness-platform/platform-access-control/provision-users-with-okta-scim).
+      NOTE: no urn:ietf:params:scim schema URN and no /scim path appear in the published
+      OpenAPI bundle — the SCIM surface is documented but not described in the contract.
+    strength: documented-not-contracted
+domain_standards:
+  market: software delivery / DevOps / supply-chain security
+  description: >-
+    The standards that matter in this market are the CD Foundation and OpenSSF supply-chain
+    specifications. Harness declares three of them inside its own machine-readable
+    artifacts, which is the distinction the rubric draws: a consumer who already speaks
+    SLSA, in-toto or CDEvents integrates without a bespoke connector.
+  standards:
+    - id: slsa
+      name: SLSA (Supply-chain Levels for Software Artifacts)
+      conforms: true
+      evidence: >-
+        openapi/_original/harness-apis-openapi.yaml — operationId saveSlsaVerification on
+        POST /v2/.../provenance/{provenance}, request bodies SLSAVerificationRequestBody
+        and SLSAVerificationRequestBodyV2, schemas SLSADetails / SlsaModelPipeline, and the
+        tags Slsa and slsaV2.
+    - id: in-toto
+      name: in-toto Attestation Framework (DSSE)
+      conforms: true
+      evidence: >-
+        openapi/_original/harness-apis-openapi.yaml — the DSSEEnvelope schema declares
+        payloadType with example "application/vnd.in-toto+json" and describes payload as a
+        base64-encoded in-toto Statement, with a signatures[] array. This is the DSSE
+        envelope specified by in-toto, carried natively in the contract.
+    - id: sbom
+      name: SBOM (SPDX / CycloneDX)
+      conforms: true
+      evidence: >-
+        openapi/_original/harness-apis-openapi.yaml — SbomProcess and SbomMetadata schemas
+        carry a required `format` field with the documented example "spdx-json", alongside
+        22 SBOM-related schemas and the SBOM generation and enforcement operations of the
+        Software Supply Chain Assurance module.
+    - id: cdevents
+      name: CDEvents (CD Foundation)
+      conforms: true
+      evidence: >-
+        https://github.com/harness/harness-schema/tree/main/cdevents — Harness publishes
+        CDEvents conformance samples and emission templates for build_started,
+        pipelinerun_started, pipelinerun_finished_success and
+        pipelinerun_finished_failure. The conformance sample carries context.type
+        "dev.cdevents.pipelinerun.finished.0.3.0-draft" against CDEvents spec version
+        0.5.0-draft, with an app.harness.io source URI.
+    - id: opa
+      name: Open Policy Agent / Rego
+      conforms: true
+      evidence: >-
+        Harness Policy as Code evaluates OPA Rego policies against pipeline and IaCM
+        resources; policy_evaluation is returned on IaCM workspace writes
+        (openapi/_original/harness-apis-openapi.yaml, GovernanceMetadata error metadata
+        discriminator).
+    - id: backstage
+      name: Backstage software catalog
+      conforms: true
+      evidence: >-
+        The Harness Internal Developer Portal is Backstage-based; Harness maintains
+        https://github.com/harness/backstage-plugins and a fork of
+        https://github.com/harness/backstage.
+    - id: opentelemetry
+      name: OpenTelemetry
+      conforms: partial
+      evidence: >-
+        Harness publishes OTel SDK work at https://github.com/harness/otel-python-sdk and
+        https://github.com/harness/otel-rust-sdk, but no OTLP surface is declared in the
+        published API contract.
+compliance:
+  certifications:
+    - SOC 2
+    - ISO 27001
+    - ISO 27017
+    - ISO 27018
+    - CSA STAR
+    - GDPR
+  source: https://trust.harness.io/
+  see_also: security/harness-trust-center.yml
+  note: >-
+    Certification artifacts and per-release security advisories are available through the
+    Trust Center on request rather than published openly. trust.harness.io answers our
+    crawler with HTTP 403 (bot challenge) while serving the page to a browser.
