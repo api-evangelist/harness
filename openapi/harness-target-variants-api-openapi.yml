@@ -30,7 +30,7 @@ paths:
       tags:
       - Target Variants
       description: List a collection of Scan Target Variants
-      operationId: Target Variants#ListTargetVariants
+      operationId: TargetVariants#ListTargetVariants
       parameters:
       - name: accountId
         in: query
@@ -185,11 +185,13 @@ paths:
         - sto_testtarget_view
       summary: Target Variants#List target variants
       x-summary-source: derived
+      x-operation-id-source: normalized
+      x-operation-id-original: Target Variants#ListTargetVariants
     post:
       tags:
       - Target Variants
       description: Create a new Scan Target Variant
-      operationId: Target Variants#CreateTargetVariant
+      operationId: TargetVariants#CreateTargetVariant
       parameters:
       - name: accountId
         in: query
@@ -294,10 +296,12 @@ paths:
         - sto_testtarget_edit
       summary: Target Variants#Create target variant
       x-summary-source: derived
+      x-operation-id-source: normalized
+      x-operation-id-original: Target Variants#CreateTargetVariant
   /sto/api/v2/targets/{targetId}/variants/{id}:
     delete:
       description: Delete an existing Scan Target Variant
-      operationId: Target Variants#DeleteTargetVariant
+      operationId: TargetVariants#DeleteTargetVariant
       parameters:
       - allowEmptyValue: true
         description: Harness Account ID
@@ -398,11 +402,13 @@ paths:
       x-internal: true
       summary: Target Variants#Delete target variant
       x-summary-source: derived
+      x-operation-id-source: normalized
+      x-operation-id-original: Target Variants#DeleteTargetVariant
     get:
       tags:
       - Target Variants
       description: Find Scan Target Variant by ID
-      operationId: Target Variants#FindTargetVariantById
+      operationId: TargetVariants#FindTargetVariantById
       parameters:
       - name: accountId
         in: query
@@ -522,11 +528,13 @@ paths:
         - sto_testtarget_view
       summary: Target Variants#Find target variant by id
       x-summary-source: derived
+      x-operation-id-source: normalized
+      x-operation-id-original: Target Variants#FindTargetVariantById
     put:
       tags:
       - Target Variants
       description: Update an existing Scan Target Variant
-      operationId: Target Variants#UpdateTargetVariant
+      operationId: TargetVariants#UpdateTargetVariant
       parameters:
       - name: accountId
         in: query
@@ -656,8 +664,48 @@ paths:
         - sto_testtarget_edit
       summary: Target Variants#Update target variant
       x-summary-source: derived
+      x-operation-id-source: normalized
+      x-operation-id-original: Target Variants#UpdateTargetVariant
 components:
   schemas:
+    StoPagination:
+      type: object
+      properties:
+        link:
+          type: string
+          description: Link-based paging
+          example: ''
+        page:
+          type: integer
+          description: Page number (starting from 0)
+          example: 4
+          format: int64
+        pageSize:
+          type: integer
+          description: Requested page size
+          example: 20
+          format: int64
+        totalItems:
+          type: integer
+          description: Total results available
+          example: 230
+          format: int64
+        totalPages:
+          type: integer
+          description: Total pages available
+          example: 12
+          format: int64
+      example:
+        link: ''
+        page: 4
+        pageSize: 20
+        totalItems: 230
+        totalPages: 12
+      required:
+      - page
+      - pageSize
+      - totalPages
+      - totalItems
     IDResult:
       type: object
       properties:
@@ -670,6 +718,122 @@ components:
         id: abcdef1234567890ghijkl
       required:
       - id
+    UpdateTargetVariantRequestBody:
+      type: object
+      properties:
+        hash:
+          type: string
+          description: Git Commit or Container Image hash
+          example: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+          maxLength: 64
+        parameters:
+          type: object
+          description: Parameters for this Variant, as a JSON-encoded string
+          example:
+            branch: main
+          additionalProperties:
+            type: string
+            example: Eum est molestiae delectus sunt asperiores ullam.
+      example:
+        hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+        parameters:
+          branch: main
+      required:
+      - parameters
+      - created
+      - lastModified
+    NotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          default: 404
+          example: 404
+          format: int64
+      example:
+        message: Not Found
+        status: 404
+      required:
+      - message
+    TargetVariant:
+      type: object
+      properties:
+        created:
+          type: integer
+          description: Unix timestamp at which the resource was created
+          example: 1651578240
+          format: int64
+        hash:
+          type: string
+          description: Git Commit or Container Image hash
+          example: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+          maxLength: 64
+        id:
+          type: string
+          description: Resource identifier
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        lastModified:
+          type: integer
+          description: Unix timestamp at which the resource was most recently modified
+          example: 1651578240
+          format: int64
+        parameters:
+          type: object
+          description: Parameters for this Variant, as a JSON-encoded string
+          example:
+            branch: main
+          additionalProperties:
+            type: string
+            example: Rerum qui aliquid laboriosam atque eligendi.
+        targetId:
+          type: string
+          description: Associated Target ID
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+      description: Information about a Scan Target Variant
+      example:
+        created: 1651578240
+        hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+        id: abcdef1234567890ghijkl
+        lastModified: 1651578240
+        parameters:
+          branch: main
+        targetId: abcdef1234567890ghijkl
+      required:
+      - targetId
+      - parameters
+      - id
+      - created
+      - lastModified
+    CreateTargetVariantRequestBody:
+      type: object
+      properties:
+        hash:
+          type: string
+          description: Git Commit or Container Image hash
+          example: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+          maxLength: 64
+        parameters:
+          type: object
+          description: Parameters for this Variant, as a JSON-encoded string
+          example:
+            branch: main
+          additionalProperties:
+            type: string
+            example: Assumenda velit.
+      example:
+        hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+        parameters:
+          branch: main
+      required:
+      - parameters
+      - id
+      - created
+      - lastModified
     RepositoriesListRepositoryVariantsResponseBody:
       type: object
       properties:
@@ -733,160 +897,6 @@ components:
       required:
       - results
       - pagination
-    StoPagination:
-      type: object
-      properties:
-        link:
-          type: string
-          description: Link-based paging
-          example: ''
-        page:
-          type: integer
-          description: Page number (starting from 0)
-          example: 4
-          format: int64
-        pageSize:
-          type: integer
-          description: Requested page size
-          example: 20
-          format: int64
-        totalItems:
-          type: integer
-          description: Total results available
-          example: 230
-          format: int64
-        totalPages:
-          type: integer
-          description: Total pages available
-          example: 12
-          format: int64
-      example:
-        link: ''
-        page: 4
-        pageSize: 20
-        totalItems: 230
-        totalPages: 12
-      required:
-      - page
-      - pageSize
-      - totalPages
-      - totalItems
-    TargetVariant:
-      type: object
-      properties:
-        created:
-          type: integer
-          description: Unix timestamp at which the resource was created
-          example: 1651578240
-          format: int64
-        hash:
-          type: string
-          description: Git Commit or Container Image hash
-          example: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-          maxLength: 64
-        id:
-          type: string
-          description: Resource identifier
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-        lastModified:
-          type: integer
-          description: Unix timestamp at which the resource was most recently modified
-          example: 1651578240
-          format: int64
-        parameters:
-          type: object
-          description: Parameters for this Variant, as a JSON-encoded string
-          example:
-            branch: main
-          additionalProperties:
-            type: string
-            example: Rerum qui aliquid laboriosam atque eligendi.
-        targetId:
-          type: string
-          description: Associated Target ID
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-      description: Information about a Scan Target Variant
-      example:
-        created: 1651578240
-        hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-        id: abcdef1234567890ghijkl
-        lastModified: 1651578240
-        parameters:
-          branch: main
-        targetId: abcdef1234567890ghijkl
-      required:
-      - targetId
-      - parameters
-      - id
-      - created
-      - lastModified
-    NotFound:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Not Found
-        status:
-          type: integer
-          default: 404
-          example: 404
-          format: int64
-      example:
-        message: Not Found
-        status: 404
-      required:
-      - message
-    CreateTargetVariantRequestBody:
-      type: object
-      properties:
-        hash:
-          type: string
-          description: Git Commit or Container Image hash
-          example: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-          maxLength: 64
-        parameters:
-          type: object
-          description: Parameters for this Variant, as a JSON-encoded string
-          example:
-            branch: main
-          additionalProperties:
-            type: string
-            example: Assumenda velit.
-      example:
-        hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-        parameters:
-          branch: main
-      required:
-      - parameters
-      - id
-      - created
-      - lastModified
-    UpdateTargetVariantRequestBody:
-      type: object
-      properties:
-        hash:
-          type: string
-          description: Git Commit or Container Image hash
-          example: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-          maxLength: 64
-        parameters:
-          type: object
-          description: Parameters for this Variant, as a JSON-encoded string
-          example:
-            branch: main
-          additionalProperties:
-            type: string
-            example: Eum est molestiae delectus sunt asperiores ullam.
-      example:
-        hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-        parameters:
-          branch: main
-      required:
-      - parameters
-      - created
-      - lastModified
   securitySchemes:
     x-api-key:
       name: x-api-key

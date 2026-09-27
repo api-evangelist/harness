@@ -115,19 +115,28 @@ paths:
       tags:
       - Orgs
 components:
-  requestBodies:
-    DBSchemaFilterRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DBSchemaFilterIn'
-    DBInstanceListRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DBInstanceListInput'
-      description: Request for listing instances where schema input is not a required property.
   parameters:
+    DbOpsSort:
+      description: Parameter on the basis of which sorting is done.
+      in: query
+      name: sort
+      schema:
+        default: created
+        enum:
+        - name
+        - updated
+        - created
+        type: string
+    DbOpsOrder:
+      description: Order on the basis of which sorting is done.
+      in: query
+      name: order
+      schema:
+        default: DESC
+        enum:
+        - ASC
+        - DESC
+        type: string
     DbOpsPageIndex:
       description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
       in: query
@@ -151,53 +160,19 @@ components:
       name: search_term
       schema:
         type: string
-    DbOpsOrder:
-      description: Order on the basis of which sorting is done.
-      in: query
-      name: order
-      schema:
-        default: DESC
-        enum:
-        - ASC
-        - DESC
-        type: string
-    DbOpsSort:
-      description: Parameter on the basis of which sorting is done.
-      in: query
-      name: sort
-      schema:
-        default: created
-        enum:
-        - name
-        - updated
-        - created
-        type: string
+  requestBodies:
+    DBSchemaFilterRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DBSchemaFilterIn'
+    DBInstanceListRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DBInstanceListInput'
+      description: Request for listing instances where schema input is not a required property.
   schemas:
-    DBInstanceListInput:
-      description: Input for filtering instances in list API
-      properties:
-        instanceFQNs:
-          description: list of '-' separated values of schema identifier and instance identifiers
-          items:
-            type: string
-            x-stoplight:
-              id: 00pgdyu11awof
-          type: array
-          x-stoplight:
-            id: uvfrk9mlk33vq
-        schemaIdentifiers:
-          description: list of schema identifiers to filter instances
-          items:
-            type: string
-            x-stoplight:
-              id: 31wkmpwoswrbq
-          type: array
-          x-stoplight:
-            id: 8t3kd4dz91anx
-      title: DBInstanceListInput
-      type: object
-      x-stoplight:
-        id: fx5xiutdaefop
     DbOpsError:
       description: Error Response
       properties:
@@ -210,48 +185,6 @@ components:
       type: object
       x-stoplight:
         id: 61cwtgnps2mpt
-    ChangeLogScript:
-      additionalProperties: false
-      description: if schemaType is Script location of the changelog file after using a custom script to download
-      properties:
-        command:
-          description: command script used to download the changelog file
-          example: curl -X -o changeLog.yaml https://www.filestore.com/changeLog.yaml
-          minLength: 1
-          type: string
-          x-stoplight:
-            id: rdani02niu442
-        image:
-          description: The fully-qualified name (FQN) of the image
-          example: plugins/image:latest
-          minLength: 1
-          type: string
-          x-stoplight:
-            id: ojq7cfe1up903
-        location:
-          description: location of the changelog file
-          example: folder/changelog.yaml
-          type: string
-          x-stoplight:
-            id: 8qehjmy01r5iw
-        shell:
-          description: shell type
-          example: Sh, Bash, <+pipeline.variables.shell>
-          type: string
-        toml:
-          description: config file for Flyway migration type
-          type: string
-          x-stoplight:
-            id: nphvi8wa0cmuw
-      required:
-      - image
-      - command
-      - shell
-      - location
-      title: changeLog script
-      type: object
-      x-stoplight:
-        id: j6ug0asalsuve
     Changelog:
       additionalProperties: false
       description: 'if schemaType is Repository location of the changelog file containing schema changes in a git repository.
@@ -295,31 +228,6 @@ components:
       type: object
       x-stoplight:
         id: rytv7gaa34yns
-    DBSchemaType:
-      description: db schema type
-      enum:
-      - Repository
-      - Script
-      title: DBSchemaType
-      type: string
-      x-stoplight:
-        id: 8x2xf0r3syqjg
-    DBSchemaFilterIn:
-      description: List schema body input
-      properties:
-        identifiers:
-          description: list of schema identifiers
-          items:
-            type: string
-            x-stoplight:
-              id: nfsp4sjueo3t2
-          type: array
-          x-stoplight:
-            id: va094q90m251a
-      title: DBSchemaFilterIn
-      type: object
-      x-stoplight:
-        id: sj7v1o7j1aoz2
     DBSchemaOut:
       description: Database Schema Response
       properties:
@@ -407,6 +315,15 @@ components:
       type: string
       x-stoplight:
         id: jxued8v34v6x0
+    DBSchemaType:
+      description: db schema type
+      enum:
+      - Repository
+      - Script
+      title: DBSchemaType
+      type: string
+      x-stoplight:
+        id: 8x2xf0r3syqjg
     DBInstanceOut:
       description: Database Instance Response
       properties:
@@ -484,20 +401,97 @@ components:
       type: object
       x-stoplight:
         id: qcmn5nllz3a1z
+    ChangeLogScript:
+      additionalProperties: false
+      description: if schemaType is Script location of the changelog file after using a custom script to download
+      properties:
+        command:
+          description: command script used to download the changelog file
+          example: curl -X -o changeLog.yaml https://www.filestore.com/changeLog.yaml
+          minLength: 1
+          type: string
+          x-stoplight:
+            id: rdani02niu442
+        image:
+          description: The fully-qualified name (FQN) of the image
+          example: plugins/image:latest
+          minLength: 1
+          type: string
+          x-stoplight:
+            id: ojq7cfe1up903
+        location:
+          description: location of the changelog file
+          example: folder/changelog.yaml
+          type: string
+          x-stoplight:
+            id: 8qehjmy01r5iw
+        shell:
+          description: shell type
+          example: Sh, Bash, <+pipeline.variables.shell>
+          type: string
+        toml:
+          description: config file for Flyway migration type
+          type: string
+          x-stoplight:
+            id: nphvi8wa0cmuw
+      required:
+      - image
+      - command
+      - shell
+      - location
+      title: changeLog script
+      type: object
+      x-stoplight:
+        id: j6ug0asalsuve
+    DBInstanceListInput:
+      description: Input for filtering instances in list API
+      properties:
+        instanceFQNs:
+          description: list of '-' separated values of schema identifier and instance identifiers
+          items:
+            type: string
+            x-stoplight:
+              id: 00pgdyu11awof
+          type: array
+          x-stoplight:
+            id: uvfrk9mlk33vq
+        schemaIdentifiers:
+          description: list of schema identifiers to filter instances
+          items:
+            type: string
+            x-stoplight:
+              id: 31wkmpwoswrbq
+          type: array
+          x-stoplight:
+            id: 8t3kd4dz91anx
+      title: DBInstanceListInput
+      type: object
+      x-stoplight:
+        id: fx5xiutdaefop
+    DBSchemaFilterIn:
+      description: List schema body input
+      properties:
+        identifiers:
+          description: list of schema identifiers
+          items:
+            type: string
+            x-stoplight:
+              id: nfsp4sjueo3t2
+          type: array
+          x-stoplight:
+            id: va094q90m251a
+      title: DBSchemaFilterIn
+      type: object
+      x-stoplight:
+        id: sj7v1o7j1aoz2
   responses:
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
-    DBSchemaListResponse:
+    DBInstanceListResponse:
       content:
         application/json:
           schema:
             description: Response body for List Schema
             items:
-              $ref: '#/components/schemas/DBSchemaOut'
+              $ref: '#/components/schemas/DBInstanceOut'
             type: array
       description: Response body for List Database Schema
       headers:
@@ -513,13 +507,19 @@ components:
           description: Total number of elements returned in Paginated response.
           schema:
             type: integer
-    DBInstanceListResponse:
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
+    DBSchemaListResponse:
       content:
         application/json:
           schema:
             description: Response body for List Schema
             items:
-              $ref: '#/components/schemas/DBInstanceOut'
+              $ref: '#/components/schemas/DBSchemaOut'
             type: array
       description: Response body for List Database Schema
       headers:

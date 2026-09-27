@@ -169,36 +169,18 @@ components:
           schema:
             $ref: '#/components/schemas/CfError'
       description: The specified resource already exists
-    BadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Bad request
-    Unauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Unauthenticated
-    GitSyncError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: An error with git syncing
     Unauthorized:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CfError'
       description: Unauthorized
-    InternalServerError:
+    NotFound:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CfError'
-      description: Internal server error
+      description: The specified resource was not found
     AttributeEditResponse:
       content:
         application/json:
@@ -211,13 +193,124 @@ components:
           schema:
             $ref: '#/components/schemas/Attributes'
       description: OK
-    NotFound:
+    InternalServerError:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CfError'
-      description: The specified resource was not found
+      description: Internal server error
+    GitSyncError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: An error with git syncing
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Bad request
+    Unauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Unauthenticated
+  parameters:
+    attributeCounts:
+      description: Returns attribute
+      in: query
+      name: attributeCounts
+      schema:
+        type: boolean
+    pageNumber:
+      description: PageNumber
+      in: query
+      name: pageNumber
+      schema:
+        type: integer
+    accountQueryParam:
+      description: Account Identifier
+      examples:
+        default:
+          value: default
+      in: query
+      name: accountIdentifier
+      required: true
+      schema:
+        type: string
+    projectQueryParam:
+      description: The Project identifier
+      in: query
+      name: projectIdentifier
+      required: true
+      schema:
+        type: string
+    sortOrder:
+      description: SortOrder
+      in: query
+      name: sortOrder
+      schema:
+        enum:
+        - ASCENDING
+        - DESCENDING
+        type: string
+    key:
+      description: Unique key for the attribute in the API.
+      in: path
+      name: key
+      required: true
+      schema:
+        type: string
+    pageSize:
+      description: PageSize
+      in: query
+      name: pageSize
+      schema:
+        type: integer
+    environmentQueryParam:
+      allowEmptyValue: true
+      description: Environment Identifier
+      in: query
+      name: environmentIdentifier
+      required: true
+      schema:
+        type: string
+    customAttributeQueryParam:
+      description: Returns only custom attributes
+      in: query
+      name: customAttributes
+      schema:
+        type: boolean
+    orgQueryParam:
+      description: Organization Identifier
+      examples:
+        default:
+          value: default_org
+      in: query
+      name: orgIdentifier
+      required: true
+      schema:
+        type: string
   schemas:
+    PatchInstruction:
+      description: A list of Patch Instructions
+      items:
+        properties:
+          kind:
+            description: The name of the modification you would like to perform on a resource.
+            example: enableFeatureFlag
+            type: string
+          parameters:
+            example:
+              ruleId: TestRule
+              variationID: TestVariation
+            type: object
+        required:
+        - kind
+        - parameters
+      type: array
     GitSyncPatchOperation:
       properties:
         comment:
@@ -233,6 +326,65 @@ components:
           $ref: '#/components/schemas/PatchInstruction'
       required:
       - instructions
+      type: object
+    AttributeResponseMetadata:
+      properties:
+        details:
+          description: Additional metadata about the request
+          properties:
+            governanceMetadata:
+              description: Summary of governance checks including any warnings
+              type: object
+          type: object
+      type: object
+    CfGitDetails:
+      description: The commit message to use as part of a gitsync operation
+      properties:
+        commitMsg:
+          description: A description of the change or action
+          example: Turning on flag test-flag for production
+          type: string
+      required:
+      - commitMsg
+      type: object
+    Attribute:
+      description: An Attribute, object property to evaluate targets on.
+      properties:
+        key:
+          description: The attribute key
+          example: age
+          type: string
+      required:
+      - key
+      type: object
+    CfError:
+      properties:
+        code:
+          description: The http error code
+          example: 404
+          type: string
+        details:
+          description: Additional details about the error
+          type: object
+        message:
+          description: The reason the request failed
+          example: Error retrieving projects, organization 'default_org' does not exist
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    Attributes:
+      allOf:
+      - $ref: '#/components/schemas/Pagination'
+      - properties:
+          attributes:
+            items:
+              $ref: '#/components/schemas/Attribute'
+            type: array
+      description: A list of Attributes
+      required:
+      - environment
       type: object
     Pagination:
       properties:
@@ -262,159 +414,13 @@ components:
       - pageSize
       - pageIndex
       type: object
-    Attributes:
-      allOf:
-      - $ref: '#/components/schemas/Pagination'
-      - properties:
-          attributes:
-            items:
-              $ref: '#/components/schemas/Attribute'
-            type: array
-      description: A list of Attributes
-      required:
-      - environment
-      type: object
-    PatchInstruction:
-      description: A list of Patch Instructions
-      items:
-        properties:
-          kind:
-            description: The name of the modification you would like to perform on a resource.
-            example: enableFeatureFlag
-            type: string
-          parameters:
-            example:
-              ruleId: TestRule
-              variationID: TestVariation
-            type: object
-        required:
-        - kind
-        - parameters
-      type: array
-    Attribute:
-      description: An Attribute, object property to evaluate targets on.
-      properties:
-        key:
-          description: The attribute key
-          example: age
-          type: string
-      required:
-      - key
-      type: object
-    CfError:
-      properties:
-        code:
-          description: The http error code
-          example: 404
-          type: string
-        details:
-          description: Additional details about the error
-          type: object
-        message:
-          description: The reason the request failed
-          example: Error retrieving projects, organization 'default_org' does not exist
-          type: string
-      required:
-      - code
-      - message
-      type: object
-    AttributeResponseMetadata:
-      properties:
-        details:
-          description: Additional metadata about the request
-          properties:
-            governanceMetadata:
-              description: Summary of governance checks including any warnings
-              type: object
-          type: object
-      type: object
-    CfGitDetails:
-      description: The commit message to use as part of a gitsync operation
-      properties:
-        commitMsg:
-          description: A description of the change or action
-          example: Turning on flag test-flag for production
-          type: string
-      required:
-      - commitMsg
-      type: object
-  parameters:
-    accountQueryParam:
-      description: Account Identifier
-      examples:
-        default:
-          value: default
-      in: query
-      name: accountIdentifier
-      required: true
-      schema:
-        type: string
-    pageSize:
-      description: PageSize
-      in: query
-      name: pageSize
-      schema:
-        type: integer
-    sortOrder:
-      description: SortOrder
-      in: query
-      name: sortOrder
-      schema:
-        enum:
-        - ASCENDING
-        - DESCENDING
-        type: string
-    environmentQueryParam:
-      allowEmptyValue: true
-      description: Environment Identifier
-      in: query
-      name: environmentIdentifier
-      required: true
-      schema:
-        type: string
-    customAttributeQueryParam:
-      description: Returns only custom attributes
-      in: query
-      name: customAttributes
-      schema:
-        type: boolean
-    orgQueryParam:
-      description: Organization Identifier
-      examples:
-        default:
-          value: default_org
-      in: query
-      name: orgIdentifier
-      required: true
-      schema:
-        type: string
-    key:
-      description: Unique key for the attribute in the API.
-      in: path
-      name: key
-      required: true
-      schema:
-        type: string
-    projectQueryParam:
-      description: The Project identifier
-      in: query
-      name: projectIdentifier
-      required: true
-      schema:
-        type: string
-    attributeCounts:
-      description: Returns attribute
-      in: query
-      name: attributeCounts
-      schema:
-        type: boolean
-    pageNumber:
-      description: PageNumber
-      in: query
-      name: pageNumber
-      schema:
-        type: integer
   requestBodies:
+    AttributeRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Attribute'
+      required: true
     AttributePatchRequest:
       content:
         application/json:
@@ -425,12 +431,6 @@ components:
                 key: Updated attributeKey
           schema:
             $ref: '#/components/schemas/GitSyncPatchOperation'
-    AttributeRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Attribute'
-      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

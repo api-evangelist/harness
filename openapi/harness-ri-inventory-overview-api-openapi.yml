@@ -77,29 +77,6 @@ paths:
           description: Invalid request parameters
 components:
   schemas:
-    ActionsBreakdown:
-      type: object
-      properties:
-        pending_approval:
-          $ref: '#/components/schemas/StatusCount'
-    InstanceTypeDistribution:
-      type: object
-      properties:
-        standard:
-          $ref: '#/components/schemas/TypeCount'
-        convertible:
-          $ref: '#/components/schemas/TypeCount'
-    RIInventoryOverview:
-      type: object
-      properties:
-        total:
-          $ref: '#/components/schemas/TotalCount'
-        distribution:
-          $ref: '#/components/schemas/RIDistribution'
-        status:
-          $ref: '#/components/schemas/StatusBreakdown'
-        actions:
-          $ref: '#/components/schemas/ActionsBreakdown'
     RIInventoryOverviewResponse:
       type: object
       properties:
@@ -116,15 +93,25 @@ components:
           description: Error details, if any
         response:
           $ref: '#/components/schemas/RIInventoryOverview'
-    StatusCount:
+    TypeCount:
       type: object
       properties:
         count:
           type: integer
-          description: Count of items in this status
-        label:
-          type: string
-          description: Display label for the status
+          description: Number of instances of this type
+        percentage:
+          type: number
+          format: float
+          description: Percentage of total instances
+    StatusBreakdown:
+      type: object
+      properties:
+        expired:
+          $ref: '#/components/schemas/StatusCount'
+        expiring_soon:
+          $ref: '#/components/schemas/StatusCount'
+        active:
+          $ref: '#/components/schemas/StatusCount'
     InventoryRIAPIFilter:
       type: object
       properties:
@@ -208,6 +195,31 @@ components:
           - Amazon Elastic Compute Cloud - Compute
           default: Amazon Elastic Compute Cloud - Compute
           description: Service to fetch the inventory for.
+    RIInventoryOverview:
+      type: object
+      properties:
+        total:
+          $ref: '#/components/schemas/TotalCount'
+        distribution:
+          $ref: '#/components/schemas/RIDistribution'
+        status:
+          $ref: '#/components/schemas/StatusBreakdown'
+        actions:
+          $ref: '#/components/schemas/ActionsBreakdown'
+    RIDistribution:
+      type: object
+      properties:
+        reserved:
+          $ref: '#/components/schemas/InstanceTypeDistribution'
+        managed:
+          $ref: '#/components/schemas/InstanceTypeDistribution'
+    InstanceTypeDistribution:
+      type: object
+      properties:
+        standard:
+          $ref: '#/components/schemas/TypeCount'
+        convertible:
+          $ref: '#/components/schemas/TypeCount'
     TotalCount:
       type: object
       properties:
@@ -217,32 +229,20 @@ components:
         managed:
           type: integer
           description: Total number of managed RIs
-    StatusBreakdown:
+    ActionsBreakdown:
       type: object
       properties:
-        expired:
+        pending_approval:
           $ref: '#/components/schemas/StatusCount'
-        expiring_soon:
-          $ref: '#/components/schemas/StatusCount'
-        active:
-          $ref: '#/components/schemas/StatusCount'
-    RIDistribution:
-      type: object
-      properties:
-        reserved:
-          $ref: '#/components/schemas/InstanceTypeDistribution'
-        managed:
-          $ref: '#/components/schemas/InstanceTypeDistribution'
-    TypeCount:
+    StatusCount:
       type: object
       properties:
         count:
           type: integer
-          description: Number of instances of this type
-        percentage:
-          type: number
-          format: float
-          description: Percentage of total instances
+          description: Count of items in this status
+        label:
+          type: string
+          description: Display label for the status
   securitySchemes:
     x-api-key:
       name: x-api-key

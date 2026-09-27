@@ -1044,18 +1044,102 @@ paths:
       - Clusters
 components:
   schemas:
-    ClusterBasicDTO:
+    clustersAWSAuthConfig:
       type: object
       properties:
-        identifier:
+        clusterName:
           type: string
-          description: identifier of the cluster
+          title: ClusterName contains AWS cluster name
+        roleARN:
+          type: string
+          description: RoleARN contains optional role ARN. If set then AWS IAM Authenticator assume a role to perform cluster operations instead of the default AWS credential provider chain.
+      title: AWSAuthConfig is an AWS IAM authentication configuration
+    ClusterQueryClusterSortByOptions:
+      type: string
+      enum:
+      - SORT_BY_NOT_SET
+      - NAME
+      - GITOPS_AGENT
+      - URL
+      - VERSION
+      - CONNECTIVITY_STATUS
+      default: SORT_BY_NOT_SET
+    clustersClusterList:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/v1ListMeta'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/clustersCluster'
+      description: ClusterList is a collection of Clusters.
+    clustersClusterConfig:
+      type: object
+      properties:
+        username:
+          type: string
+          title: Server requires Basic authentication
+        password:
+          type: string
+        bearerToken:
+          type: string
+          description: 'Server requires Bearer authentication. This client will not attempt to use
+
+            refresh tokens for an OAuth2 flow.
+
+            TODO: demonstrate an OAuth2 compatible client.'
+        tlsClientConfig:
+          $ref: '#/components/schemas/clustersTLSClientConfig'
+        awsAuthConfig:
+          $ref: '#/components/schemas/clustersAWSAuthConfig'
+        execProviderConfig:
+          $ref: '#/components/schemas/clustersExecProviderConfig'
+        clusterConnectionType:
+          type: string
+          title: Identifies the authentication method used to connect to the cluster
+        roleARN:
+          type: string
+          description: RoleARN contains optional role ARN. If set then AWS IAM Authenticator assume a role to perform cluster operations instead of the default AWS credential provider chain.
+        awsClusterName:
+          type: string
+          description: AWS Cluster name. If set then AWS CLI EKS token command will be used to access cluster.
+        disableCompression:
+          type: boolean
+          description: DisableCompression bypasses automatic GZip compression requests to the server.
+        proxyUrl:
+          type: string
+          title: ProxyURL is the URL to the proxy to be used for all requests send to the server
+      description: 'ClusterConfig is the configuration attributes. This structure is subset of the go-client
+
+        rest.Config with annotations added for marshalling.'
+    ClusterResponse:
+      required:
+      - envRef
+      type: object
+      properties:
+        clusterRef:
+          type: string
+          description: identifier of the gitops cluster
+        orgIdentifier:
+          type: string
+          description: organization identifier of the cluster
+        projectIdentifier:
+          type: string
+          description: project identifier of the cluster
         agentIdentifier:
           type: string
           description: agent identifier of the cluster
-        name:
+        accountIdentifier:
           type: string
-          description: name of the cluster
+          description: account identifier of the cluster
+        envRef:
+          type: string
+          description: environment identifier of the cluster
+        linkedAt:
+          type: integer
+          description: time at which the cluster was linked
+          format: int64
         scope:
           type: string
           description: scope at which the cluster exists in harness gitops, project vs org vs account
@@ -1063,8 +1147,17 @@ components:
           - ACCOUNT
           - ORGANIZATION
           - PROJECT
-      description: List of cluster identifiers and names
-    ResponseDTOBoolean:
+        name:
+          type: string
+          description: name of the gitops cluster
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+            description: name of the gitops cluster
+          description: name of the gitops cluster
+      description: This is the ClusterRequest entity defined in Harness
+    ResponseDTOClusterBatchResponse:
       type: object
       properties:
         status:
@@ -1074,11 +1167,46 @@ components:
           - FAILURE
           - ERROR
         data:
-          type: boolean
+          $ref: '#/components/schemas/ClusterBatchResponse'
         metaData:
           type: object
         correlationId:
           type: string
+    ClusterUnlinkRequest:
+      required:
+      - envRef
+      type: object
+      properties:
+        orgIdentifier:
+          type: string
+          description: Organization identifier of the environment
+        projectIdentifier:
+          type: string
+          description: Project identifier of the environment
+        envRef:
+          type: string
+          description: Environment identifier for the cluster
+        clusters:
+          maxItems: 1000
+          minItems: 0
+          type: array
+          description: List of cluster identifiers and names
+          items:
+            $ref: '#/components/schemas/ClusterBasicDTO'
+        unlinkAllClusters:
+          type: boolean
+          description: 'Unlink all clusters from the environment. Warning: Setting this to true will unlink ALL clusters linked to provided environment'
+      description: Batch Request to unlink clusters to the environment in a batch
+    protobufFieldMask:
+      type: object
+      properties:
+        paths:
+          type: array
+          items:
+            type: string
+          description: The set of field mask paths.
+      description: "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nNote that libraries which implement FieldMask resolution have various\ndifferent behaviors in the face of empty masks or the special \"*\" mask.\nWhen implementing a service you should confirm these cases have the\nappropriate behavior in the underlying FieldMask library that you desire,\nand you may need to special case those cases in your application code if\nthe underlying field mask library behavior differs from your intended\nservice semantics.\n\nUpdate methods implementing https://google.aip.dev/134\n- MUST support the special value * meaning \"full replace\"\n- MUST treat an omitted field mask as \"replace fields which are present\".\n\nOther methods implementing https://google.aip.dev/157\n- SHOULD support the special value \"*\" to mean \"get all\".\n- MUST treat an omitted field mask to mean \"get all\", unless otherwise\ndocumented.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"sub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable."
+      title: '`FieldMask` represents a set of symbolic field paths, for example:'
     Failure:
       type: object
       properties:
@@ -1498,95 +1626,44 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    ClusterBatchResponse:
+    gatewayruntimeError:
       type: object
       properties:
-        linked:
+        error:
+          type: string
+        code:
           type: integer
-          description: number of clusters linked
-          format: int64
-        unlinked:
-          type: integer
-          description: number of clusters unlinked
-          format: int64
-        success:
+          format: int32
+        message:
+          type: string
+        details:
           type: array
-          description: List of successfully processed clusters
           items:
-            $ref: '#/components/schemas/ClusterOperationResult'
-        failed:
-          type: array
-          description: List of failed cluster operations with reasons
-          items:
-            $ref: '#/components/schemas/ClusterOperationResult'
-      description: This is the Cluster Batch Response defined in Harness
-    clustersTLSClientConfig:
+            $ref: '#/components/schemas/protobufAny'
+    clustersClusterUpdateRequest:
       type: object
       properties:
-        insecure:
-          type: boolean
-          description: Insecure specifies that the server should be accessed without verifying the TLS certificate. For testing only.
-        serverName:
-          type: string
-          description: 'ServerName is passed to the server for SNI and is used in the client to check server
-
-            certificates against. If ServerName is empty, the hostname used to contact the
-
-            server is used.'
-        certData:
-          type: string
-          format: byte
-          title: 'CertData holds PEM-encoded bytes (typically read from a client certificate file).
-
-            CertData takes precedence over CertFile'
-        keyData:
-          type: string
-          format: byte
-          title: 'KeyData holds PEM-encoded bytes (typically read from a client certificate key file).
-
-            KeyData takes precedence over KeyFile'
-        caData:
-          type: string
-          format: byte
-          title: 'CAData holds PEM-encoded bytes (typically read from a root certificates bundle).
-
-            CAData takes precedence over CAFile'
-      title: TLSClientConfig contains settings to enable transport layer security
-    servicev1Cluster:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        agentIdentifier:
-          type: string
-          description: Agent identifier for entity.
-        identifier:
-          type: string
         cluster:
           $ref: '#/components/schemas/clustersCluster'
-        createdAt:
-          type: string
-          format: date-time
-        lastModifiedAt:
-          type: string
-          format: date-time
-        stale:
-          type: boolean
+        updatedFields:
+          type: array
+          items:
+            type: string
+        updateMask:
+          $ref: '#/components/schemas/protobufFieldMask'
         tags:
           type: object
           additionalProperties:
             type: string
+        id:
+          $ref: '#/components/schemas/clustersClusterID'
         secretExpressions:
           type: object
           additionalProperties:
             type: string
+          description: 'Maps credential field names to Harness secret expressions.
+
+            Used to reference secrets instead of inline plain-text values.'
     ClusterOperationResult:
       type: object
       properties:
@@ -1606,87 +1683,6 @@ components:
           type: string
           description: Error code (only present for failed operations)
       description: Result of a cluster link/unlink operation with success or failure details
-    clustersClusterConfig:
-      type: object
-      properties:
-        username:
-          type: string
-          title: Server requires Basic authentication
-        password:
-          type: string
-        bearerToken:
-          type: string
-          description: 'Server requires Bearer authentication. This client will not attempt to use
-
-            refresh tokens for an OAuth2 flow.
-
-            TODO: demonstrate an OAuth2 compatible client.'
-        tlsClientConfig:
-          $ref: '#/components/schemas/clustersTLSClientConfig'
-        awsAuthConfig:
-          $ref: '#/components/schemas/clustersAWSAuthConfig'
-        execProviderConfig:
-          $ref: '#/components/schemas/clustersExecProviderConfig'
-        clusterConnectionType:
-          type: string
-          title: Identifies the authentication method used to connect to the cluster
-        roleARN:
-          type: string
-          description: RoleARN contains optional role ARN. If set then AWS IAM Authenticator assume a role to perform cluster operations instead of the default AWS credential provider chain.
-        awsClusterName:
-          type: string
-          description: AWS Cluster name. If set then AWS CLI EKS token command will be used to access cluster.
-        disableCompression:
-          type: boolean
-          description: DisableCompression bypasses automatic GZip compression requests to the server.
-        proxyUrl:
-          type: string
-          title: ProxyURL is the URL to the proxy to be used for all requests send to the server
-      description: 'ClusterConfig is the configuration attributes. This structure is subset of the go-client
-
-        rest.Config with annotations added for marshalling.'
-    clustersClusterInfo:
-      type: object
-      properties:
-        connectionState:
-          $ref: '#/components/schemas/commonsConnectionState'
-        serverVersion:
-          type: string
-          title: ServerVersion contains information about the Kubernetes version of the cluster
-        cacheInfo:
-          $ref: '#/components/schemas/clustersClusterCacheInfo'
-        applicationsCount:
-          type: string
-          format: int64
-          title: ApplicationsCount is the number of applications managed by Argo CD on the cluster
-        apiVersions:
-          type: array
-          items:
-            type: string
-          title: APIVersions contains list of API versions supported by the cluster
-      title: ClusterInfo contains information about the cluster
-    gpgkeysGnuPGPublicKey:
-      type: object
-      properties:
-        keyID:
-          type: string
-          title: KeyID specifies the key ID, in hexadecimal string format
-        fingerprint:
-          type: string
-          title: Fingerprint is the fingerprint of the key
-        owner:
-          type: string
-          title: Owner holds the owner identification, e.g. a name and e-mail address
-        trust:
-          type: string
-          title: Trust holds the level of trust assigned to this key
-        subType:
-          type: string
-          title: SubType holds the key's subtype (e.g. rsa4096)
-        keyData:
-          type: string
-          title: KeyData holds the raw key data, in base64 encoded format
-      title: GnuPGPublicKey is a representation of a GnuPG public key
     v1SortOrderOptions:
       type: string
       enum:
@@ -1694,156 +1690,62 @@ components:
       - ASC
       - DESC
       default: SORT_ORDER_NOT_SET
-    ClusterRequest:
-      required:
-      - envRef
+    clustersExecProviderConfig:
       type: object
       properties:
-        identifier:
+        command:
           type: string
-          description: identifier of the cluster
-        orgIdentifier:
-          type: string
-          description: organization identifier of the cluster
-        agentIdentifier:
-          type: string
-          description: agent identifier of the cluster
-        projectIdentifier:
-          type: string
-          description: project identifier of the cluster
-        envRef:
-          type: string
-          description: environment identifier of the cluster
-        scope:
-          type: string
-          description: scope at which the cluster exists in harness gitops, project vs org vs account
-          enum:
-          - ACCOUNT
-          - ORGANIZATION
-          - PROJECT
-      description: This is the ClusterRequest entity defined in Harness
-    v1ListMeta:
-      type: object
-      properties:
-        selfLink:
-          type: string
-          title: 'Deprecated: selfLink is a legacy read-only field that is no longer populated by the system.
-
-            +optional'
-        resourceVersion:
-          type: string
-          title: 'String that identifies the server''s internal version of this object that
-
-            can be used by clients to determine when objects have changed.
-
-            Value must be treated as opaque by clients and passed unmodified back to the server.
-
-            Populated by the system.
-
-            Read-only.
-
-            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
-
-            +optional'
-        continue:
-          type: string
-          description: 'continue may be set if the user set a limit on the number of items returned, and indicates that
-
-            the server has more data available. The value is opaque and may be used to issue another request
-
-            to the endpoint that served this list to retrieve the next set of available objects. Continuing a
-
-            consistent list may not be possible if the server configuration has changed or more than a few
-
-            minutes have passed. The resourceVersion field returned when using this continue value will be
-
-            identical to the value in the first response, unless you have received this token from an error
-
-            message.'
-        remainingItemCount:
-          type: string
-          format: int64
-          title: 'remainingItemCount is the number of subsequent items in the list which are not included in this
-
-            list response. If the list request contained label or field selectors, then the number of
-
-            remaining items is unknown and the field will be left unset and omitted during serialization.
-
-            If the list is complete (either because it is not chunking or because this is the last chunk),
-
-            then there are no more remaining items and this field will be left unset and omitted during
-
-            serialization.
-
-            Servers older than v1.15 do not set this field.
-
-            The intended use of the remainingItemCount is *estimating* the size of a collection. Clients
-
-            should not rely on the remainingItemCount to be set or to be exact.
-
-            +optional'
-      description: 'ListMeta describes metadata that synthetic resources must have, including lists and
-
-        various status objects. A resource may have only one of {ObjectMeta, ListMeta}.'
-    ResponseDTOPageResponseClusterResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseClusterResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ClusterResponse:
-      required:
-      - envRef
-      type: object
-      properties:
-        clusterRef:
-          type: string
-          description: identifier of the gitops cluster
-        orgIdentifier:
-          type: string
-          description: organization identifier of the cluster
-        projectIdentifier:
-          type: string
-          description: project identifier of the cluster
-        agentIdentifier:
-          type: string
-          description: agent identifier of the cluster
-        accountIdentifier:
-          type: string
-          description: account identifier of the cluster
-        envRef:
-          type: string
-          description: environment identifier of the cluster
-        linkedAt:
-          type: integer
-          description: time at which the cluster was linked
-          format: int64
-        scope:
-          type: string
-          description: scope at which the cluster exists in harness gitops, project vs org vs account
-          enum:
-          - ACCOUNT
-          - ORGANIZATION
-          - PROJECT
-        name:
-          type: string
-          description: name of the gitops cluster
-        tags:
+          title: Command to execute
+        args:
+          type: array
+          items:
+            type: string
+          title: Arguments to pass to the command when executing it
+        env:
           type: object
           additionalProperties:
             type: string
-            description: name of the gitops cluster
-          description: name of the gitops cluster
-      description: This is the ClusterRequest entity defined in Harness
+          title: Env defines additional environment variables to expose to the process
+        apiVersion:
+          type: string
+          title: Preferred input version of the ExecInfo
+        installHint:
+          type: string
+          title: This text is shown to the user when the executable doesn't seem to be present
+      title: 'ExecProviderConfig is config used to call an external command to perform cluster authentication
+
+        See: https://godoc.org/k8s.io/client-go/tools/clientcmd/api#ExecConfig'
+    ClusterLinkRequest:
+      required:
+      - envRef
+      type: object
+      properties:
+        orgIdentifier:
+          type: string
+          description: Organization identifier of the environment
+        projectIdentifier:
+          type: string
+          description: Project identifier of the environment
+        envRef:
+          type: string
+          description: Environment identifier for the cluster
+        clusters:
+          maxItems: 1000
+          minItems: 0
+          type: array
+          description: List of cluster identifiers and names
+          items:
+            $ref: '#/components/schemas/ClusterBasicDTO'
+        linkAllClusters:
+          type: boolean
+          description: Link all clusters to the environment. When true, links all clusters matching the searchTerm.
+        searchTerm:
+          type: string
+          description: Search term to filter clusters when linkAllClusters is true. Only used with linkAllClusters=true.
+        skipClusterValidation:
+          type: boolean
+          description: Skip cluster existence validation in GitOps service. When true, allows linking clusters without verifying they exist in GitOps. Useful for pre-provisioning scenarios or when clusters are being created asynchronously.
+      description: Batch Request to link clusters to the environment in a batch
     clustersClusterCacheInfo:
       type: object
       properties:
@@ -1862,48 +1764,41 @@ components:
           format: date-time
           title: lastCacheSyncTimeTs is the google timestamp variation of lastCacheSyncTime
       title: ClusterCacheInfo contains information about the cluster cache
-    ValidationError:
+    clustersClusterResponse:
+      type: object
+    v1Time:
       type: object
       properties:
-        fieldId:
+        seconds:
           type: string
-        error:
-          type: string
-    servicev1ClusterQuery:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        agentIdentifier:
-          type: string
-          description: Agent identifier for entity.
-        identifier:
-          type: string
-        searchTerm:
-          type: string
-        pageSize:
+          format: int64
+          description: 'Represents seconds of UTC time since Unix epoch
+
+            1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+
+            9999-12-31T23:59:59Z inclusive.'
+        nanos:
           type: integer
           format: int32
-        pageIndex:
-          type: integer
-          format: int32
-        filter:
-          type: object
-          description: 'Filters for Clusters. Eg. "identifier": { "$in": ["id1", "id2"]'
-        sortBy:
-          $ref: '#/components/schemas/ClusterQueryClusterSortByOptions'
-        sortOrder:
-          $ref: '#/components/schemas/v1SortOrderOptions'
-        includeChildScopes:
-          type: boolean
-          description: 'When true and agentIdentifier is set, retrieves clusters across hierarchical scopes based on agent prefix: account.* agents see account/org/project clusters, org.* agents see org/project clusters, unprefixed agents see only project clusters.'
+          description: 'Non-negative fractions of a second at nanosecond resolution. Negative
+
+            second values with fractions must still have non-negative nanos values
+
+            that count forward in time. Must be from 0 to 999,999,999
+
+            inclusive. This field may be limited in precision depending on context.'
+      description: 'Time is a wrapper around time.Time which supports correct
+
+        marshaling to YAML and JSON.  Wrappers are provided for many
+
+        of the factory methods that the time package offers.
+
+
+        +protobuf.options.marshal=false
+
+        +protobuf.as=Timestamp
+
+        +protobuf.options.(gogoproto.goproto_stringer)=false'
     ResponseMessage:
       type: object
       properties:
@@ -2494,30 +2389,41 @@ components:
           type: object
           additionalProperties:
             type: string
-    clustersClusterUpdateRequest:
+    servicev1Cluster:
       type: object
       properties:
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        agentIdentifier:
+          type: string
+          description: Agent identifier for entity.
+        identifier:
+          type: string
         cluster:
           $ref: '#/components/schemas/clustersCluster'
-        updatedFields:
-          type: array
-          items:
-            type: string
-        updateMask:
-          $ref: '#/components/schemas/protobufFieldMask'
+        createdAt:
+          type: string
+          format: date-time
+        lastModifiedAt:
+          type: string
+          format: date-time
+        stale:
+          type: boolean
         tags:
           type: object
           additionalProperties:
             type: string
-        id:
-          $ref: '#/components/schemas/clustersClusterID'
         secretExpressions:
           type: object
           additionalProperties:
             type: string
-          description: 'Maps credential field names to Harness secret expressions.
-
-            Used to reference secrets instead of inline plain-text values.'
     v1Clusterlist:
       type: object
       properties:
@@ -2542,68 +2448,45 @@ components:
           format: int32
         empty:
           type: boolean
-    clustersClusterResponse:
-      type: object
-    clustersCluster:
+    clustersClusterType:
+      type: string
+      enum:
+      - CUSTOMER_PROVIDED
+      - HARNESS_HOSTED
+      default: CUSTOMER_PROVIDED
+    clustersTLSClientConfig:
       type: object
       properties:
-        server:
-          type: string
-          title: Server is the API server URL of the Kubernetes cluster
-        name:
-          type: string
-          title: Name of the cluster. If omitted, will use the server address
-        config:
-          $ref: '#/components/schemas/clustersClusterConfig'
-        connectionState:
-          $ref: '#/components/schemas/commonsConnectionState'
-        serverVersion:
-          type: string
-          title: 'DEPRECATED: use Info.ServerVersion field instead.
-
-            The server version'
-        namespaces:
-          type: array
-          items:
-            type: string
-          description: Holds list of namespaces which are accessible in that cluster. Cluster level resources will be ignored if namespace list is not empty.
-        refreshRequestedAt:
-          $ref: '#/components/schemas/v1Time'
-        info:
-          $ref: '#/components/schemas/clustersClusterInfo'
-        shard_deprecated:
-          type: string
-          format: int64
-          description: 'DEPRECATED: use Shard field instead.
-
-            Shard contains optional shard number. Calculated on the fly by the application controller if not specified.'
-        clusterResources:
+        insecure:
           type: boolean
-          description: Indicates if cluster level resources should be managed. This setting is used only if cluster is connected in a namespaced mode.
-        project:
+          description: Insecure specifies that the server should be accessed without verifying the TLS certificate. For testing only.
+        serverName:
           type: string
-          title: Reference between project and cluster that allow you automatically to be added as item inside Destinations project entity
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-          title: Labels for cluster secret metadata
-        annotations:
-          type: object
-          additionalProperties:
-            type: string
-          title: Annotations for cluster secret metadata
-        type:
-          $ref: '#/components/schemas/clustersClusterType'
-        refreshRequestedAtTs:
+          description: 'ServerName is passed to the server for SNI and is used in the client to check server
+
+            certificates against. If ServerName is empty, the hostname used to contact the
+
+            server is used.'
+        certData:
           type: string
-          format: date-time
-          title: refreshRequestedAtTs is the google timestamp variation of refreshRequestedAt
-        shard:
+          format: byte
+          title: 'CertData holds PEM-encoded bytes (typically read from a client certificate file).
+
+            CertData takes precedence over CertFile'
+        keyData:
           type: string
-          format: int64
-      title: Cluster is the definition of a cluster resource
-    ResponseDTOClusterBatchResponse:
+          format: byte
+          title: 'KeyData holds PEM-encoded bytes (typically read from a client certificate key file).
+
+            KeyData takes precedence over KeyFile'
+        caData:
+          type: string
+          format: byte
+          title: 'CAData holds PEM-encoded bytes (typically read from a root certificates bundle).
+
+            CAData takes precedence over CAFile'
+      title: TLSClientConfig contains settings to enable transport layer security
+    ResponseDTOClusterResponse:
       type: object
       properties:
         status:
@@ -2613,36 +2496,47 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/ClusterBatchResponse'
+          $ref: '#/components/schemas/ClusterResponse'
         metaData:
           type: object
         correlationId:
           type: string
-    PageResponseClusterResponse:
+    ClusterBatchResponse:
       type: object
       properties:
-        totalPages:
+        linked:
           type: integer
+          description: number of clusters linked
           format: int64
-        totalItems:
+        unlinked:
           type: integer
+          description: number of clusters unlinked
           format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
+        success:
           type: array
+          description: List of successfully processed clusters
           items:
-            $ref: '#/components/schemas/ClusterResponse'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
+            $ref: '#/components/schemas/ClusterOperationResult'
+        failed:
+          type: array
+          description: List of failed cluster operations with reasons
+          items:
+            $ref: '#/components/schemas/ClusterOperationResult'
+      description: This is the Cluster Batch Response defined in Harness
+    ResponseDTOPageResponseClusterResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseClusterResponse'
+        metaData:
+          type: object
+        correlationId:
           type: string
     Error1:
       type: object
@@ -3067,6 +2961,95 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
+    PageResponseClusterResponse:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClusterResponse'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    clustersClusterInfo:
+      type: object
+      properties:
+        connectionState:
+          $ref: '#/components/schemas/commonsConnectionState'
+        serverVersion:
+          type: string
+          title: ServerVersion contains information about the Kubernetes version of the cluster
+        cacheInfo:
+          $ref: '#/components/schemas/clustersClusterCacheInfo'
+        applicationsCount:
+          type: string
+          format: int64
+          title: ApplicationsCount is the number of applications managed by Argo CD on the cluster
+        apiVersions:
+          type: array
+          items:
+            type: string
+          title: APIVersions contains list of API versions supported by the cluster
+      title: ClusterInfo contains information about the cluster
+    ClusterBasicDTO:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: identifier of the cluster
+        agentIdentifier:
+          type: string
+          description: agent identifier of the cluster
+        name:
+          type: string
+          description: name of the cluster
+        scope:
+          type: string
+          description: scope at which the cluster exists in harness gitops, project vs org vs account
+          enum:
+          - ACCOUNT
+          - ORGANIZATION
+          - PROJECT
+      description: List of cluster identifiers and names
+    ResponseDTOBoolean:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: boolean
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     commonsConnectionState:
       type: object
       properties:
@@ -3083,234 +3066,28 @@ components:
           format: date-time
           title: attemptedAtTs is the google timestamp variation of attemptedAt
       title: ConnectionState contains information about remote resource connection state, currently used for clusters and repositories
-    ResponseDTOClusterResponse:
+    gpgkeysGnuPGPublicKey:
       type: object
       properties:
-        status:
+        keyID:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/ClusterResponse'
-        metaData:
-          type: object
-        correlationId:
+          title: KeyID specifies the key ID, in hexadecimal string format
+        fingerprint:
           type: string
-    clustersClusterType:
-      type: string
-      enum:
-      - CUSTOMER_PROVIDED
-      - HARNESS_HOSTED
-      default: CUSTOMER_PROVIDED
-    ClusterUnlinkRequest:
-      required:
-      - envRef
-      type: object
-      properties:
-        orgIdentifier:
+          title: Fingerprint is the fingerprint of the key
+        owner:
           type: string
-          description: Organization identifier of the environment
-        projectIdentifier:
+          title: Owner holds the owner identification, e.g. a name and e-mail address
+        trust:
           type: string
-          description: Project identifier of the environment
-        envRef:
+          title: Trust holds the level of trust assigned to this key
+        subType:
           type: string
-          description: Environment identifier for the cluster
-        clusters:
-          maxItems: 1000
-          minItems: 0
-          type: array
-          description: List of cluster identifiers and names
-          items:
-            $ref: '#/components/schemas/ClusterBasicDTO'
-        unlinkAllClusters:
-          type: boolean
-          description: 'Unlink all clusters from the environment. Warning: Setting this to true will unlink ALL clusters linked to provided environment'
-      description: Batch Request to unlink clusters to the environment in a batch
-    protobufAny:
-      type: object
-      properties:
-        type_url:
+          title: SubType holds the key's subtype (e.g. rsa4096)
+        keyData:
           type: string
-          description: "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
-        value:
-          type: string
-          format: byte
-          description: Must be a valid serialized protocol buffer of the above specified type.
-      description: "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
-    clustersExecProviderConfig:
-      type: object
-      properties:
-        command:
-          type: string
-          title: Command to execute
-        args:
-          type: array
-          items:
-            type: string
-          title: Arguments to pass to the command when executing it
-        env:
-          type: object
-          additionalProperties:
-            type: string
-          title: Env defines additional environment variables to expose to the process
-        apiVersion:
-          type: string
-          title: Preferred input version of the ExecInfo
-        installHint:
-          type: string
-          title: This text is shown to the user when the executable doesn't seem to be present
-      title: 'ExecProviderConfig is config used to call an external command to perform cluster authentication
-
-        See: https://godoc.org/k8s.io/client-go/tools/clientcmd/api#ExecConfig'
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    clustersAWSAuthConfig:
-      type: object
-      properties:
-        clusterName:
-          type: string
-          title: ClusterName contains AWS cluster name
-        roleARN:
-          type: string
-          description: RoleARN contains optional role ARN. If set then AWS IAM Authenticator assume a role to perform cluster operations instead of the default AWS credential provider chain.
-      title: AWSAuthConfig is an AWS IAM authentication configuration
-    gpgkeysGnuPGPublicKeyList:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/v1ListMeta'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/gpgkeysGnuPGPublicKey'
-      title: GnuPGPublicKeyList is a collection of GnuPGPublicKey objects
-    clustersClusterID:
-      type: object
-      properties:
-        type:
-          type: string
-          title: type is the type of the specified cluster identifier ( "server" - default, "name" )
-        value:
-          type: string
-          title: value holds the cluster server URL or cluster name
-      title: ClusterID holds a cluster server URL or cluster name
-    gatewayruntimeError:
-      type: object
-      properties:
-        error:
-          type: string
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-        details:
-          type: array
-          items:
-            $ref: '#/components/schemas/protobufAny'
-    ClusterLinkRequest:
-      required:
-      - envRef
-      type: object
-      properties:
-        orgIdentifier:
-          type: string
-          description: Organization identifier of the environment
-        projectIdentifier:
-          type: string
-          description: Project identifier of the environment
-        envRef:
-          type: string
-          description: Environment identifier for the cluster
-        clusters:
-          maxItems: 1000
-          minItems: 0
-          type: array
-          description: List of cluster identifiers and names
-          items:
-            $ref: '#/components/schemas/ClusterBasicDTO'
-        linkAllClusters:
-          type: boolean
-          description: Link all clusters to the environment. When true, links all clusters matching the searchTerm.
-        searchTerm:
-          type: string
-          description: Search term to filter clusters when linkAllClusters is true. Only used with linkAllClusters=true.
-        skipClusterValidation:
-          type: boolean
-          description: Skip cluster existence validation in GitOps service. When true, allows linking clusters without verifying they exist in GitOps. Useful for pre-provisioning scenarios or when clusters are being created asynchronously.
-      description: Batch Request to link clusters to the environment in a batch
-    v1Time:
-      type: object
-      properties:
-        seconds:
-          type: string
-          format: int64
-          description: 'Represents seconds of UTC time since Unix epoch
-
-            1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
-
-            9999-12-31T23:59:59Z inclusive.'
-        nanos:
-          type: integer
-          format: int32
-          description: 'Non-negative fractions of a second at nanosecond resolution. Negative
-
-            second values with fractions must still have non-negative nanos values
-
-            that count forward in time. Must be from 0 to 999,999,999
-
-            inclusive. This field may be limited in precision depending on context.'
-      description: 'Time is a wrapper around time.Time which supports correct
-
-        marshaling to YAML and JSON.  Wrappers are provided for many
-
-        of the factory methods that the time package offers.
-
-
-        +protobuf.options.marshal=false
-
-        +protobuf.as=Timestamp
-
-        +protobuf.options.(gogoproto.goproto_stringer)=false'
-    ClusterQueryClusterSortByOptions:
-      type: string
-      enum:
-      - SORT_BY_NOT_SET
-      - NAME
-      - GITOPS_AGENT
-      - URL
-      - VERSION
-      - CONNECTIVITY_STATUS
-      default: SORT_BY_NOT_SET
-    protobufFieldMask:
-      type: object
-      properties:
-        paths:
-          type: array
-          items:
-            type: string
-          description: The set of field mask paths.
-      description: "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nNote that libraries which implement FieldMask resolution have various\ndifferent behaviors in the face of empty masks or the special \"*\" mask.\nWhen implementing a service you should confirm these cases have the\nappropriate behavior in the underlying FieldMask library that you desire,\nand you may need to special case those cases in your application code if\nthe underlying field mask library behavior differs from your intended\nservice semantics.\n\nUpdate methods implementing https://google.aip.dev/134\n- MUST support the special value * meaning \"full replace\"\n- MUST treat an omitted field mask as \"replace fields which are present\".\n\nOther methods implementing https://google.aip.dev/157\n- SHOULD support the special value \"*\" to mean \"get all\".\n- MUST treat an omitted field mask to mean \"get all\", unless otherwise\ndocumented.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"sub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable."
-      title: '`FieldMask` represents a set of symbolic field paths, for example:'
-    clustersClusterList:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/v1ListMeta'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/clustersCluster'
-      description: ClusterList is a collection of Clusters.
+          title: KeyData holds the raw key data, in base64 encoded format
+      title: GnuPGPublicKey is a representation of a GnuPG public key
     clustersClusterCreateRequest:
       type: object
       properties:
@@ -3329,6 +3106,229 @@ components:
           description: 'Maps credential field names to Harness secret expressions.
 
             Used to reference secrets instead of inline plain-text values.'
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    protobufAny:
+      type: object
+      properties:
+        type_url:
+          type: string
+          description: "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        value:
+          type: string
+          format: byte
+          description: Must be a valid serialized protocol buffer of the above specified type.
+      description: "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    gpgkeysGnuPGPublicKeyList:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/v1ListMeta'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/gpgkeysGnuPGPublicKey'
+      title: GnuPGPublicKeyList is a collection of GnuPGPublicKey objects
+    ClusterRequest:
+      required:
+      - envRef
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: identifier of the cluster
+        orgIdentifier:
+          type: string
+          description: organization identifier of the cluster
+        agentIdentifier:
+          type: string
+          description: agent identifier of the cluster
+        projectIdentifier:
+          type: string
+          description: project identifier of the cluster
+        envRef:
+          type: string
+          description: environment identifier of the cluster
+        scope:
+          type: string
+          description: scope at which the cluster exists in harness gitops, project vs org vs account
+          enum:
+          - ACCOUNT
+          - ORGANIZATION
+          - PROJECT
+      description: This is the ClusterRequest entity defined in Harness
+    clustersClusterID:
+      type: object
+      properties:
+        type:
+          type: string
+          title: type is the type of the specified cluster identifier ( "server" - default, "name" )
+        value:
+          type: string
+          title: value holds the cluster server URL or cluster name
+      title: ClusterID holds a cluster server URL or cluster name
+    v1ListMeta:
+      type: object
+      properties:
+        selfLink:
+          type: string
+          title: 'Deprecated: selfLink is a legacy read-only field that is no longer populated by the system.
+
+            +optional'
+        resourceVersion:
+          type: string
+          title: 'String that identifies the server''s internal version of this object that
+
+            can be used by clients to determine when objects have changed.
+
+            Value must be treated as opaque by clients and passed unmodified back to the server.
+
+            Populated by the system.
+
+            Read-only.
+
+            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
+
+            +optional'
+        continue:
+          type: string
+          description: 'continue may be set if the user set a limit on the number of items returned, and indicates that
+
+            the server has more data available. The value is opaque and may be used to issue another request
+
+            to the endpoint that served this list to retrieve the next set of available objects. Continuing a
+
+            consistent list may not be possible if the server configuration has changed or more than a few
+
+            minutes have passed. The resourceVersion field returned when using this continue value will be
+
+            identical to the value in the first response, unless you have received this token from an error
+
+            message.'
+        remainingItemCount:
+          type: string
+          format: int64
+          title: 'remainingItemCount is the number of subsequent items in the list which are not included in this
+
+            list response. If the list request contained label or field selectors, then the number of
+
+            remaining items is unknown and the field will be left unset and omitted during serialization.
+
+            If the list is complete (either because it is not chunking or because this is the last chunk),
+
+            then there are no more remaining items and this field will be left unset and omitted during
+
+            serialization.
+
+            Servers older than v1.15 do not set this field.
+
+            The intended use of the remainingItemCount is *estimating* the size of a collection. Clients
+
+            should not rely on the remainingItemCount to be set or to be exact.
+
+            +optional'
+      description: 'ListMeta describes metadata that synthetic resources must have, including lists and
+
+        various status objects. A resource may have only one of {ObjectMeta, ListMeta}.'
+    clustersCluster:
+      type: object
+      properties:
+        server:
+          type: string
+          title: Server is the API server URL of the Kubernetes cluster
+        name:
+          type: string
+          title: Name of the cluster. If omitted, will use the server address
+        config:
+          $ref: '#/components/schemas/clustersClusterConfig'
+        connectionState:
+          $ref: '#/components/schemas/commonsConnectionState'
+        serverVersion:
+          type: string
+          title: 'DEPRECATED: use Info.ServerVersion field instead.
+
+            The server version'
+        namespaces:
+          type: array
+          items:
+            type: string
+          description: Holds list of namespaces which are accessible in that cluster. Cluster level resources will be ignored if namespace list is not empty.
+        refreshRequestedAt:
+          $ref: '#/components/schemas/v1Time'
+        info:
+          $ref: '#/components/schemas/clustersClusterInfo'
+        shard_deprecated:
+          type: string
+          format: int64
+          description: 'DEPRECATED: use Shard field instead.
+
+            Shard contains optional shard number. Calculated on the fly by the application controller if not specified.'
+        clusterResources:
+          type: boolean
+          description: Indicates if cluster level resources should be managed. This setting is used only if cluster is connected in a namespaced mode.
+        project:
+          type: string
+          title: Reference between project and cluster that allow you automatically to be added as item inside Destinations project entity
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          title: Labels for cluster secret metadata
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+          title: Annotations for cluster secret metadata
+        type:
+          $ref: '#/components/schemas/clustersClusterType'
+        refreshRequestedAtTs:
+          type: string
+          format: date-time
+          title: refreshRequestedAtTs is the google timestamp variation of refreshRequestedAt
+        shard:
+          type: string
+          format: int64
+      title: Cluster is the definition of a cluster resource
+    servicev1ClusterQuery:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        agentIdentifier:
+          type: string
+          description: Agent identifier for entity.
+        identifier:
+          type: string
+        searchTerm:
+          type: string
+        pageSize:
+          type: integer
+          format: int32
+        pageIndex:
+          type: integer
+          format: int32
+        filter:
+          type: object
+          description: 'Filters for Clusters. Eg. "identifier": { "$in": ["id1", "id2"]'
+        sortBy:
+          $ref: '#/components/schemas/ClusterQueryClusterSortByOptions'
+        sortOrder:
+          $ref: '#/components/schemas/v1SortOrderOptions'
+        includeChildScopes:
+          type: boolean
+          description: 'When true and agentIdentifier is set, retrieves clusters across hierarchical scopes based on agent prefix: account.* agents see account/org/project clusters, org.* agents see org/project clusters, unprefixed agents see only project clusters.'
   securitySchemes:
     x-api-key:
       name: x-api-key

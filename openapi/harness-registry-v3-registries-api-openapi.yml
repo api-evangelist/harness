@@ -229,189 +229,9 @@ paths:
       - Registry V3 - Registries
       x-internal: false
 components:
-  requestBodies:
-    MetadataRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/MetadataInputV3'
-      description: Request body containing metadata key-value pairs to add or update
-    RegistriesStatsRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistriesStatsRequestInputV3'
-      description: Request body containing list of registry UUIDs to fetch stats for
-      required: true
-  parameters:
-    RegistryScopeV3:
-      description: "**Scope of registries to list**\n* **none** – current space only (default)   * **ancestors** – current space **plus** all parent spaces   * **descendants** – current space **plus** all child spaces  \nIf omitted, `none` is assumed.\n"
-      in: query
-      name: scope
-      schema:
-        enum:
-        - ancestors
-        - descendants
-        - none
-        type: string
-    DeleteFilterParamV3:
-      in: query
-      name: deleted
-      schema:
-        default: exclude
-        enum:
-        - exclude
-        - include
-        - only
-        type: string
-    RegistryTypeParamV3:
-      description: Registry Type
-      in: query
-      name: type
-      schema:
-        enum:
-        - VIRTUAL
-        - UPSTREAM
-        type: string
-    PackageTypeListParamV3:
-      description: Registry Package Type
-      in: query
-      name: package_types
-      schema:
-        items:
-          type: string
-        type: array
-    IdPathParamV3:
-      in: path
-      name: id
-      required: true
-      schema:
-        type: string
-    ForceParamV3:
-      in: query
-      name: force
-      schema:
-        default: false
-        type: boolean
-    MetadataFilterListParamV3:
-      description: Filter by metadata using key:value format
-      in: query
-      name: metadata
-      schema:
-        items:
-          type: string
-        type: array
-    SortV3:
-      description: 'The sort for the results.
-
-        Accepted pattern: `sort_field:sort_order` where sort_field is the field name
-
-        and sort_order is either `asc` or `desc`.
-
-
-        Examples: `name:asc`, `modifiedAt:desc`
-
-        '
-      in: query
-      name: sort
-      schema:
-        type: string
-    AccountIdentifierV3:
-      description: 'Unique identifier for the Harness account.
-
-        '
-      in: query
-      name: account_identifier
-      required: true
-      schema:
-        type: string
-    SearchTermV3:
-      description: 'Search term for filtering results.
-
-
-        Example: `search_term=prod` might match keys like "production", "prod-env", etc.
-
-        '
-      in: query
-      name: search_term
-      schema:
-        type: string
-    ProjectIdentifierV3:
-      description: 'Unique identifier for the project within the organization.
-
-
-        Example: `my_project` or `frontend_services`
-
-        '
-      in: query
-      name: project_identifier
-      schema:
-        type: string
-    IncludeMetaParamV3:
-      description: 'When `true`, include the `meta` object (e.g. active/deleted counts)
-
-        in the response.
-
-        '
-      in: query
-      name: include_meta
-      schema:
-        default: false
-        type: boolean
-    PageNumberV3:
-      description: 'The page number for pagination (0-indexed).
-
-
-        Used to navigate through large result sets. Combined with `size` parameter
-
-        to control which subset of results to return.
-
-
-        Example: `page=0` returns the first page, `page=1` returns the second page
-
-        '
-      in: query
-      name: page
-      schema:
-        default: 0
-        format: int64
-        type: integer
-    PageSizeV3:
-      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        maximum: 100
-        minimum: 1
-        type: integer
-    OrgIdentifierV3:
-      description: 'Unique identifier for the organization within the account.
-
-
-        Example: `default` or `engineering_org`
-
-        '
-      in: query
-      name: org_identifier
-      schema:
-        type: string
   responses:
     RebuildRegistryIndexAcceptedV3:
       description: Registry index rebuild request accepted for processing
-    RegistriesStatsResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistriesStatsResponseBodyV3'
-      description: Response containing statistics for the requested registries
-    ListRegistryResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListRegistriesResponseBodyV3'
-      description: response for list registry
     MetadataResponseV3:
       content:
         application/json:
@@ -426,95 +246,19 @@ components:
             - data
             type: object
       description: Response containing all metadata entries for the requested entity
+    ListRegistryResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListRegistriesResponseBodyV3'
+      description: response for list registry
+    RegistriesStatsResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistriesStatsResponseBodyV3'
+      description: Response containing statistics for the requested registries
   schemas:
-    MetadataV3:
-      description: Metadata entry
-      properties:
-        id:
-          description: Unique identifier for this metadata entry
-          format: uuid
-          type: string
-        key:
-          description: The metadata key name
-          example: environment
-          type: string
-        type:
-          $ref: '#/components/schemas/MetadataTypeV3'
-        value:
-          description: The metadata value
-          example: production
-          type: string
-      required:
-      - id
-      - key
-      - value
-      - type
-      type: object
-    UserInfoV3:
-      description: Structured user information for a principal
-      properties:
-        display_name:
-          description: Human-readable display name
-          type: string
-        email:
-          description: Email address
-          type: string
-        type:
-          description: Principal type (user, service, service_account)
-          type: string
-        uid:
-          description: Principal unique identifier (username)
-          type: string
-      type: object
-    PageInfoV3:
-      description: 'Pagination metadata.
-
-        - `page` selects which page of results to return (0 = first page).
-
-        - `size` controls how many items are returned per page.
-
-        - `hasMore` is true if more results exist after this page.
-
-        '
-      properties:
-        hasMore:
-          description: True if more results exist after this page.
-          example: true
-          type: boolean
-        page:
-          description: The current page (0-indexed)
-          example: 0
-          format: int64
-          type: integer
-        size:
-          description: Number of items per page
-          example: 20
-          format: int64
-          type: integer
-      required:
-      - page
-      - size
-      - hasMore
-      type: object
-    MetadataItemInputV3:
-      description: Metadata key-value pair for create/update operations
-      properties:
-        key:
-          description: The metadata key name (case-sensitive)
-          example: environment
-          maxLength: 128
-          minLength: 1
-          type: string
-        value:
-          description: The metadata value
-          example: production
-          maxLength: 256
-          minLength: 1
-          type: string
-      required:
-      - key
-      - value
-      type: object
     RegistriesStatsResponseBodyV3:
       description: Response body containing registry statistics
       properties:
@@ -526,30 +270,53 @@ components:
       required:
       - items
       type: object
-    DeletedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was soft-deleted
-      example: 1736360000456
+    RegistryStatsV3:
+      description: Statistics for a single registry
+      properties:
+        artifactsCount:
+          description: Total number of artifacts in the registry
+          format: int64
+          type: integer
+        downloadCount:
+          description: Total download count for the registry
+          format: int64
+          type: integer
+        id:
+          description: Registry UUID
+          format: uuid
+          type: string
+        packageCount:
+          description: Total number of packages in the registry
+          format: int64
+          type: integer
+        size:
+          description: Total size of the registry (human-readable format)
+          type: string
+      required:
+      - id
+      type: object
+    ModifiedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was last modified
+      example: 1736360000123
       format: int64
       type:
       - integer
       - 'null'
-    MetaV3:
-      description: Metadata about the list response
-      properties:
-        activeCount:
-          description: Count of active (non-deleted) entities
-          example: 95
-          format: int64
-          type: integer
-        deletedCount:
-          description: Count of soft-deleted entities
-          example: 5
-          format: int64
-          type: integer
-      required:
-      - activeCount
-      - deletedCount
-      type: object
+    projectIdentifier:
+      type: string
+    ListRegistriesResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          items:
+            items:
+              $ref: '#/components/schemas/RegistryV3'
+            type: array
+          meta:
+            $ref: '#/components/schemas/MetaV3'
+        required:
+        - items
+        type: object
     PackageTypeV3:
       description: 'Package type. Known values include: DOCKER, MAVEN, PYTHON, GENERIC, HELM, HELM_HTTP, NUGET, NPM, RPM, CARGO, COMPOSER, GO, HUGGINGFACE, CONDA, DART, SWIFT, PUPPET, RUBY, RAW, DEBIAN, CONAN, TERRAFORM. This field is extensible; clients must handle unknown values.
 
@@ -587,6 +354,119 @@ components:
           $ref: '#/components/schemas/ApiErrorsV3'
       required:
       - error
+      type: object
+    MetadataTypeV3:
+      description: Indicates if metadata was manually added (MANUAL) or system-generated (AUTO)
+      enum:
+      - MANUAL
+      - AUTO
+      type: string
+    RegistryTypeV3:
+      description: refers to type of registry i.e virtual or upstream
+      enum:
+      - VIRTUAL
+      - UPSTREAM
+      type: string
+    MetaV3:
+      description: Metadata about the list response
+      properties:
+        activeCount:
+          description: Count of active (non-deleted) entities
+          example: 95
+          format: int64
+          type: integer
+        deletedCount:
+          description: Count of soft-deleted entities
+          example: 5
+          format: int64
+          type: integer
+      required:
+      - activeCount
+      - deletedCount
+      type: object
+    orgIdentifier:
+      type: string
+    PageInfoV3:
+      description: 'Pagination metadata.
+
+        - `page` selects which page of results to return (0 = first page).
+
+        - `size` controls how many items are returned per page.
+
+        - `hasMore` is true if more results exist after this page.
+
+        '
+      properties:
+        hasMore:
+          description: True if more results exist after this page.
+          example: true
+          type: boolean
+        page:
+          description: The current page (0-indexed)
+          example: 0
+          format: int64
+          type: integer
+        size:
+          description: Number of items per page
+          example: 20
+          format: int64
+          type: integer
+      required:
+      - page
+      - size
+      - hasMore
+      type: object
+    ApiErrorsV3:
+      properties:
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
+      required:
+      - type
+      title: APIErrors
+      type: object
+    DeletedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was soft-deleted
+      example: 1736360000456
+      format: int64
+      type:
+      - integer
+      - 'null'
+    MetadataItemInputV3:
+      description: Metadata key-value pair for create/update operations
+      properties:
+        key:
+          description: The metadata key name (case-sensitive)
+          example: environment
+          maxLength: 128
+          minLength: 1
+          type: string
+        value:
+          description: The metadata value
+          example: production
+          maxLength: 256
+          minLength: 1
+          type: string
+      required:
+      - key
+      - value
       type: object
     RegistryV3:
       description: Registry Metadata
@@ -628,6 +508,35 @@ components:
       - isPublic
       - url
       type: object
+    RegistriesStatsRequestInputV3:
+      description: Request input for fetching registry statistics
+      properties:
+        registryIds:
+          description: List of registry UUIDs to fetch statistics for
+          items:
+            format: uuid
+            type: string
+          maxItems: 100
+          type: array
+      required:
+      - registryIds
+      type: object
+    UserInfoV3:
+      description: Structured user information for a principal
+      properties:
+        display_name:
+          description: Human-readable display name
+          type: string
+        email:
+          description: Email address
+          type: string
+        type:
+          description: Principal type (user, service, service_account)
+          type: string
+        uid:
+          description: Principal unique identifier (username)
+          type: string
+      type: object
     MetadataInputV3:
       description: 'Request payload containing metadata key-value pairs to add or update.
 
@@ -649,106 +558,197 @@ components:
       required:
       - metadata
       type: object
-    RegistriesStatsRequestInputV3:
-      description: Request input for fetching registry statistics
+    MetadataV3:
+      description: Metadata entry
       properties:
-        registryIds:
-          description: List of registry UUIDs to fetch statistics for
-          items:
-            format: uuid
-            type: string
-          maxItems: 100
-          type: array
-      required:
-      - registryIds
-      type: object
-    MetadataTypeV3:
-      description: Indicates if metadata was manually added (MANUAL) or system-generated (AUTO)
-      enum:
-      - MANUAL
-      - AUTO
-      type: string
-    ListRegistriesResponseBodyV3:
-      allOf:
-      - $ref: '#/components/schemas/PageInfoV3'
-      - properties:
-          items:
-            items:
-              $ref: '#/components/schemas/RegistryV3'
-            type: array
-          meta:
-            $ref: '#/components/schemas/MetaV3'
-        required:
-        - items
-        type: object
-    ModifiedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was last modified
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    RegistryTypeV3:
-      description: refers to type of registry i.e virtual or upstream
-      enum:
-      - VIRTUAL
-      - UPSTREAM
-      type: string
-    projectIdentifier:
-      type: string
-    RegistryStatsV3:
-      description: Statistics for a single registry
-      properties:
-        artifactsCount:
-          description: Total number of artifacts in the registry
-          format: int64
-          type: integer
-        downloadCount:
-          description: Total download count for the registry
-          format: int64
-          type: integer
         id:
-          description: Registry UUID
+          description: Unique identifier for this metadata entry
           format: uuid
           type: string
-        packageCount:
-          description: Total number of packages in the registry
-          format: int64
-          type: integer
-        size:
-          description: Total size of the registry (human-readable format)
+        key:
+          description: The metadata key name
+          example: environment
+          type: string
+        type:
+          $ref: '#/components/schemas/MetadataTypeV3'
+        value:
+          description: The metadata value
+          example: production
           type: string
       required:
       - id
-      type: object
-    orgIdentifier:
-      type: string
-    ApiErrorsV3:
-      properties:
-        code:
-          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
-          maxLength: 5000
-          type: string
-        message:
-          description: A human-readable message providing more details about the error. These messages can be shown to users.
-          maxLength: 40000
-          type: string
-        param:
-          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
-          maxLength: 5000
-          type: string
-        type:
-          description: The type of error returned.
-          enum:
-          - INVALID_REQUEST_ERROR
-          - AUTHENTICATION_ERROR
-          - PERMISSION_ERROR
-          - API_ERROR
-          type: string
-      required:
+      - key
+      - value
       - type
-      title: APIErrors
       type: object
+  parameters:
+    SortV3:
+      description: 'The sort for the results.
+
+        Accepted pattern: `sort_field:sort_order` where sort_field is the field name
+
+        and sort_order is either `asc` or `desc`.
+
+
+        Examples: `name:asc`, `modifiedAt:desc`
+
+        '
+      in: query
+      name: sort
+      schema:
+        type: string
+    RegistryScopeV3:
+      description: "**Scope of registries to list**\n* **none** – current space only (default)   * **ancestors** – current space **plus** all parent spaces   * **descendants** – current space **plus** all child spaces  \nIf omitted, `none` is assumed.\n"
+      in: query
+      name: scope
+      schema:
+        enum:
+        - ancestors
+        - descendants
+        - none
+        type: string
+    OrgIdentifierV3:
+      description: 'Unique identifier for the organization within the account.
+
+
+        Example: `default` or `engineering_org`
+
+        '
+      in: query
+      name: org_identifier
+      schema:
+        type: string
+    ProjectIdentifierV3:
+      description: 'Unique identifier for the project within the organization.
+
+
+        Example: `my_project` or `frontend_services`
+
+        '
+      in: query
+      name: project_identifier
+      schema:
+        type: string
+    AccountIdentifierV3:
+      description: 'Unique identifier for the Harness account.
+
+        '
+      in: query
+      name: account_identifier
+      required: true
+      schema:
+        type: string
+    SearchTermV3:
+      description: 'Search term for filtering results.
+
+
+        Example: `search_term=prod` might match keys like "production", "prod-env", etc.
+
+        '
+      in: query
+      name: search_term
+      schema:
+        type: string
+    PackageTypeListParamV3:
+      description: Registry Package Type
+      in: query
+      name: package_types
+      schema:
+        items:
+          type: string
+        type: array
+    IncludeMetaParamV3:
+      description: 'When `true`, include the `meta` object (e.g. active/deleted counts)
+
+        in the response.
+
+        '
+      in: query
+      name: include_meta
+      schema:
+        default: false
+        type: boolean
+    MetadataFilterListParamV3:
+      description: Filter by metadata using key:value format
+      in: query
+      name: metadata
+      schema:
+        items:
+          type: string
+        type: array
+    IdPathParamV3:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    RegistryTypeParamV3:
+      description: Registry Type
+      in: query
+      name: type
+      schema:
+        enum:
+        - VIRTUAL
+        - UPSTREAM
+        type: string
+    DeleteFilterParamV3:
+      in: query
+      name: deleted
+      schema:
+        default: exclude
+        enum:
+        - exclude
+        - include
+        - only
+        type: string
+    ForceParamV3:
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    PageSizeV3:
+      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        maximum: 100
+        minimum: 1
+        type: integer
+    PageNumberV3:
+      description: 'The page number for pagination (0-indexed).
+
+
+        Used to navigate through large result sets. Combined with `size` parameter
+
+        to control which subset of results to return.
+
+
+        Example: `page=0` returns the first page, `page=1` returns the second page
+
+        '
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
+  requestBodies:
+    MetadataRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MetadataInputV3'
+      description: Request body containing metadata key-value pairs to add or update
+    RegistriesStatsRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistriesStatsRequestInputV3'
+      description: Request body containing list of registry UUIDs to fetch stats for
+      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -124,37 +124,6 @@ components:
       - number
       - boolean
       type: string
-    ListFiltersResponseBodyV3:
-      description: 'Response body for a list filters query. Contains a single merged
-
-        list of filter definitions — static filters (from configuration)
-
-        followed by dynamic metadata filters (one per user-defined
-
-        metadata key, identified by `metadata.<key>`). The list is
-
-        capped server-side (currently at 100 dynamic entries) and is not
-
-        paginated; `search_term` narrows both static and dynamic
-
-        entries.
-
-        '
-      properties:
-        filters:
-          description: 'Combined filter definitions available for the requested
-
-            `resource_type`, in a stable order: static filters first
-
-            (in configured order), followed by dynamic metadata filters.
-
-            '
-          items:
-            $ref: '#/components/schemas/FilterDefinitionV3'
-          type: array
-      required:
-      - filters
-      type: object
     FilterDefinitionV3:
       description: Definition of a filter that can be applied when listing a resource.
       properties:
@@ -197,50 +166,36 @@ components:
       - singleSelect
       - multiSelect
       type: string
-    FilterConditionV3:
-      description: Supported comparison condition for a filter.
-      enum:
-      - EQ
-      - NE
-      - GT
-      - LT
-      - CONTAINS
-      - STARTS_WITH
-      - ENDS_WITH
-      - IN
-      - NOT_IN
-      type: string
-    ErrorV3:
-      description: An error response
-      properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
-      required:
-      - error
-      type: object
-    FilterResourceTypeV3:
-      description: 'Resource type whose filter definitions are requested by
+    ListFiltersResponseBodyV3:
+      description: 'Response body for a list filters query. Contains a single merged
 
-        `GET /filters?resource_type=...`.
+        list of filter definitions — static filters (from configuration)
+
+        followed by dynamic metadata filters (one per user-defined
+
+        metadata key, identified by `metadata.<key>`). The list is
+
+        capped server-side (currently at 100 dynamic entries) and is not
+
+        paginated; `search_term` narrows both static and dynamic
+
+        entries.
 
         '
-      enum:
-      - REGISTRY
-      - PACKAGE
-      - VERSION
-      type: string
-    FilterOptionV3:
-      description: One selectable value for a filter with `supportsOptions=true`.
       properties:
-        label:
-          description: Human-readable label for the value.
-          type: string
-        value:
-          description: Value to send back when applying the filter.
-          type: string
+        filters:
+          description: 'Combined filter definitions available for the requested
+
+            `resource_type`, in a stable order: static filters first
+
+            (in configured order), followed by dynamic metadata filters.
+
+            '
+          items:
+            $ref: '#/components/schemas/FilterDefinitionV3'
+          type: array
       required:
-      - value
-      - label
+      - filters
       type: object
     ApiErrorsV3:
       properties:
@@ -268,6 +223,51 @@ components:
       - type
       title: APIErrors
       type: object
+    FilterResourceTypeV3:
+      description: 'Resource type whose filter definitions are requested by
+
+        `GET /filters?resource_type=...`.
+
+        '
+      enum:
+      - REGISTRY
+      - PACKAGE
+      - VERSION
+      type: string
+    FilterConditionV3:
+      description: Supported comparison condition for a filter.
+      enum:
+      - EQ
+      - NE
+      - GT
+      - LT
+      - CONTAINS
+      - STARTS_WITH
+      - ENDS_WITH
+      - IN
+      - NOT_IN
+      type: string
+    FilterOptionV3:
+      description: One selectable value for a filter with `supportsOptions=true`.
+      properties:
+        label:
+          description: Human-readable label for the value.
+          type: string
+        value:
+          description: Value to send back when applying the filter.
+          type: string
+      required:
+      - value
+      - label
+      type: object
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
   parameters:
     FilterResourceTypeParamV3:
       description: 'Resource type whose filter definitions should be returned.
@@ -278,21 +278,6 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/FilterResourceTypeV3'
-    FilterIdParamV3:
-      description: 'Identifier of the filter whose selectable options should be
-
-        returned. Matches `FilterDefinitionV3.id` from
-
-        `GET /filters`, including namespaced ids for dynamic filters
-
-        (e.g. `metadata.env`).
-
-        '
-      in: query
-      name: filter_id
-      required: true
-      schema:
-        type: string
     OptionValuesParamV3:
       description: 'Optional list of option values. When provided, returns only the
 
@@ -306,14 +291,15 @@ components:
           type: string
         type: array
       style: form
-    FilterIdOptionalParamV3:
-      description: 'Optional filter identifier. When provided, returns only the
+    ProjectIdentifierV3:
+      description: 'Unique identifier for the project within the organization.
 
-        filter definition matching this id.
+
+        Example: `my_project` or `frontend_services`
 
         '
       in: query
-      name: filter_id
+      name: project_identifier
       schema:
         type: string
     AccountIdentifierV3:
@@ -342,15 +328,19 @@ components:
       name: package_type
       schema:
         type: string
-    ProjectIdentifierV3:
-      description: 'Unique identifier for the project within the organization.
+    FilterIdParamV3:
+      description: 'Identifier of the filter whose selectable options should be
 
+        returned. Matches `FilterDefinitionV3.id` from
 
-        Example: `my_project` or `frontend_services`
+        `GET /filters`, including namespaced ids for dynamic filters
+
+        (e.g. `metadata.env`).
 
         '
       in: query
-      name: project_identifier
+      name: filter_id
+      required: true
       schema:
         type: string
     OrgIdentifierV3:
@@ -362,6 +352,16 @@ components:
         '
       in: query
       name: org_identifier
+      schema:
+        type: string
+    FilterIdOptionalParamV3:
+      description: 'Optional filter identifier. When provided, returns only the
+
+        filter definition matching this id.
+
+        '
+      in: query
+      name: filter_id
       schema:
         type: string
   responses:

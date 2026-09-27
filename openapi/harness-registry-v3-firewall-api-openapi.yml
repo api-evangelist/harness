@@ -362,111 +362,6 @@ paths:
       x-internal: false
 components:
   schemas:
-    UserInfoV3:
-      description: Structured user information for a principal
-      properties:
-        display_name:
-          description: Human-readable display name
-          type: string
-        email:
-          description: Email address
-          type: string
-        type:
-          description: Principal type (user, service, service_account)
-          type: string
-        uid:
-          description: Principal unique identifier (username)
-          type: string
-      type: object
-    BuildInfoMetadataV3:
-      description: List of dependency graph nodes for the build.
-      items:
-        $ref: '#/components/schemas/BuildInfoNodeV3'
-      type: array
-    ScanMetaV3:
-      description: Metadata about the list artifact scans
-      properties:
-        blockedCount:
-          description: Count of active blocked artifacts
-          example: 95
-          format: int64
-          type: integer
-        totalCount:
-          description: Count of total artifact violations
-          example: 5
-          format: int64
-          type: integer
-        warnCount:
-          description: Count of active Warn artifacts
-          example: 5
-          format: int64
-          type: integer
-      type: object
-    PageInfoV3:
-      description: 'Pagination metadata.
-
-        - `page` selects which page of results to return (0 = first page).
-
-        - `size` controls how many items are returned per page.
-
-        - `hasMore` is true if more results exist after this page.
-
-        '
-      properties:
-        hasMore:
-          description: True if more results exist after this page.
-          example: true
-          type: boolean
-        page:
-          description: The current page (0-indexed)
-          example: 0
-          format: int64
-          type: integer
-        size:
-          description: Number of items per page
-          example: 20
-          format: int64
-          type: integer
-      required:
-      - page
-      - size
-      - hasMore
-      type: object
-    FirewallExceptionMetaV3:
-      description: Metadata counts for firewall exceptions
-      properties:
-        approvedCount:
-          description: Number of exceptions with APPROVED status (non-expired)
-          example: 25
-          format: int64
-          type: integer
-        expiredCount:
-          description: Number of approved exceptions that have expired
-          example: 10
-          format: int64
-          type: integer
-        pendingCount:
-          description: Number of exceptions with PENDING status
-          example: 10
-          format: int64
-          type: integer
-        rejectedCount:
-          description: Number of exceptions with REJECTED status
-          example: 5
-          format: int64
-          type: integer
-        totalCount:
-          description: Total number of exceptions
-          example: 50
-          format: int64
-          type: integer
-      required:
-      - totalCount
-      - pendingCount
-      - approvedCount
-      - rejectedCount
-      - expiredCount
-      type: object
     MaliciousPackagePolicyFailureDetailConfigV3:
       description: Malicious package failure detail payload.
       properties:
@@ -483,132 +378,6 @@ components:
       - blockedPackage
       - reason
       - message
-      type: object
-    ArtifactScanV3:
-      properties:
-        RegistryOrgId:
-          description: Organization identifier
-          type: string
-        RegistryProjectId:
-          description: Project identifier
-          type: string
-        buildDetails:
-          $ref: '#/components/schemas/BuildDetailsV3'
-        exemptionStatus:
-          $ref: '#/components/schemas/ExemptionStatusV3'
-        id:
-          type: string
-        lastEvaluatedAt:
-          type: string
-        lastEvaluatedBy:
-          type: string
-        packageName:
-          description: Package name
-          type: string
-        packageType:
-          $ref: '#/components/schemas/PackageTypeV3'
-        parentRegistryId:
-          description: Parent virtual registry UUID
-          type: string
-        parentRegistryName:
-          description: Parent virtual registry name
-          type: string
-        parentRegistryOrgId:
-          description: Parent registry organization identifier
-          type: string
-        parentRegistryProjectId:
-          description: Parent registry project identifier
-          type: string
-        policySets:
-          $ref: '#/components/schemas/PolicySetsV3'
-        purl:
-          description: Package URL (PURL) identifying the package version
-          type: string
-        registryId:
-          description: Registry name
-          type: string
-        registryName:
-          description: Registry name
-          type: string
-        rootPackages:
-          description: Unique set of root packages (name@version) impacted by this scan
-          items:
-            description: Root package with name and version (e.g. name@version)
-            type: string
-          type: array
-          uniqueItems: true
-        scanStatus:
-          description: Scan status
-          enum:
-          - BLOCKED
-          - WARN
-          type: string
-        securityViolationCategories:
-          description: Security violation categories
-          items:
-            $ref: '#/components/schemas/PolicyFailureDetailCategoryV3'
-          type: array
-        totalAffectedPipelines:
-          description: Total number of affected pipelines
-          type: integer
-        version:
-          description: Version
-          type: string
-        versionId:
-          description: Version
-          type: string
-      required:
-      - id
-      - packageType
-      - packageName
-      - purl
-      - version
-      - registryName
-      - registryId
-      - parentRegistryId
-      - parentRegistryName
-      - policySets
-      - scanStatus
-      - securityViolationCategories
-      - buildDetails
-      - rootPackages
-      - totalAffectedPipelines
-      type: object
-    RootPackageV3:
-      description: Root package of the build
-      properties:
-        name:
-          description: Name of the root package
-          type: string
-        version:
-          description: Version of the root package
-          type: string
-      required:
-      - name
-      - version
-      type: object
-    FirewallExceptionStatusV3:
-      description: Status of the firewall exception
-      enum:
-      - PENDING
-      - APPROVED
-      - REJECTED
-      - EXPIRED
-      type: string
-    LicensePolicyFailureDetailConfigV3:
-      description: License-specific failure detail payload.
-      properties:
-        allowedLicenses:
-          description: Allowed license list.
-          items:
-            type: string
-          type: array
-        blockedLicense:
-          description: Blocked license.
-          type: string
-      required:
-      - allowedLicenses
-      - blockedLicense
       type: object
     FirewallExceptionResponseV3:
       description: Firewall exception details
@@ -706,6 +475,370 @@ components:
       - updatedAt
       - updatedBy
       type: object
+    PolicyFailureDetailV3:
+      description: Policy failure detail entry.
+      discriminator:
+        mapping:
+          License: '#/components/schemas/LicensePolicyFailureDetailConfigV3'
+          MaliciousPackage: '#/components/schemas/MaliciousPackagePolicyFailureDetailConfigV3'
+          OssRiskLevel: '#/components/schemas/OssRiskLevelPolicyFailureDetailConfigV3'
+          PackageAge: '#/components/schemas/PackageAgeViolationPolicyFailureDetailConfigV3'
+          Security: '#/components/schemas/SecurityPolicyFailureDetailConfigV3'
+        propertyName: category
+      oneOf:
+      - $ref: '#/components/schemas/SecurityPolicyFailureDetailConfigV3'
+      - $ref: '#/components/schemas/LicensePolicyFailureDetailConfigV3'
+      - $ref: '#/components/schemas/MaliciousPackagePolicyFailureDetailConfigV3'
+      - $ref: '#/components/schemas/PackageAgeViolationPolicyFailureDetailConfigV3'
+      - $ref: '#/components/schemas/OssRiskLevelPolicyFailureDetailConfigV3'
+      properties:
+        category:
+          $ref: '#/components/schemas/PolicyFailureDetailCategoryV3'
+        policyName:
+          description: Policy name.
+          type: string
+        policyRef:
+          description: Policy Ref.
+          type: string
+      required:
+      - category
+      - policyName
+      - policyRef
+      type: object
+    BulkScanEvaluationRequestV3:
+      description: Request to initiate bulk scan evaluation
+      properties:
+        artifacts:
+          description: List of artifacts to evaluate
+          items:
+            $ref: '#/components/schemas/ArtifactScanInputV3'
+          maxItems: 10000
+          minItems: 1
+          type: array
+        registryId:
+          description: Registry identifier
+          format: uuid
+          type: string
+      required:
+      - registryId
+      - artifacts
+      type: object
+    BuildDetailsV3:
+      description: 'List of build detail entries containing pipeline and package info.
+
+        '
+      items:
+        $ref: '#/components/schemas/BuildDetailEntryV3'
+      type: array
+    FixVersionDetailsV3:
+      description: Fix version Details
+      properties:
+        currentVersion:
+          description: The current version
+          example: 1.2.0
+          type: string
+        fixVersion:
+          description: The fix version
+          example: 1.2.2
+          type: string
+        fixVersionAvailable:
+          description: Fix version available or not
+          type: boolean
+      required:
+      - fixVersionAvailable
+      - currentVersion
+      type: object
+    ArtifactScanEvaluateRequestInputV3:
+      description: 'Input for re-evaluate artifact scan.
+
+        Exactly one of scanId or versionId must be provided.
+
+        '
+      properties:
+        scanId:
+          description: Scan identifier
+          type: string
+        versionId:
+          description: Artifact version identifier
+          type: string
+      type: object
+    PageInfoV3:
+      description: 'Pagination metadata.
+
+        - `page` selects which page of results to return (0 = first page).
+
+        - `size` controls how many items are returned per page.
+
+        - `hasMore` is true if more results exist after this page.
+
+        '
+      properties:
+        hasMore:
+          description: True if more results exist after this page.
+          example: true
+          type: boolean
+        page:
+          description: The current page (0-indexed)
+          example: 0
+          format: int64
+          type: integer
+        size:
+          description: Number of items per page
+          example: 20
+          format: int64
+          type: integer
+      required:
+      - page
+      - size
+      - hasMore
+      type: object
+    PackageAgeViolationPolicyFailureDetailConfigV3:
+      description: Package age violation failure detail payload.
+      properties:
+        packageAgeThreshold:
+          description: Package age threshold.
+          type: string
+        publishedOn:
+          description: Package publish date.
+          type: string
+      required:
+      - publishedOn
+      - packageAgeThreshold
+      type: object
+    BuildInfoMetadataV3:
+      description: List of dependency graph nodes for the build.
+      items:
+        $ref: '#/components/schemas/BuildInfoNodeV3'
+      type: array
+    UserInfoV3:
+      description: Structured user information for a principal
+      properties:
+        display_name:
+          description: Human-readable display name
+          type: string
+        email:
+          description: Email address
+          type: string
+        type:
+          description: Principal type (user, service, service_account)
+          type: string
+        uid:
+          description: Principal unique identifier (username)
+          type: string
+      type: object
+    BulkScanResultItemV3:
+      description: Individual scan result item
+      properties:
+        packageName:
+          description: Name of the package
+          type: string
+        scanId:
+          description: Scan identifier
+          format: uuid
+          type: string
+        scanStatus:
+          $ref: '#/components/schemas/ScanStatusV3'
+        version:
+          description: Version of the package
+          type: string
+      type: object
+    PackageTypeV3:
+      description: 'Package type. Known values include: DOCKER, MAVEN, PYTHON, GENERIC, HELM, HELM_HTTP, NUGET, NPM, RPM, CARGO, COMPOSER, GO, HUGGINGFACE, CONDA, DART, SWIFT, PUPPET, RUBY, RAW, DEBIAN, CONAN, TERRAFORM. This field is extensible; clients must handle unknown values.
+
+        '
+      example: DOCKER
+      type: string
+      x-extensible-enum:
+      - DOCKER
+      - MAVEN
+      - PYTHON
+      - GENERIC
+      - HELM
+      - HELM_HTTP
+      - NUGET
+      - NPM
+      - RPM
+      - CARGO
+      - COMPOSER
+      - GO
+      - HUGGINGFACE
+      - CONDA
+      - DART
+      - SWIFT
+      - PUPPET
+      - RUBY
+      - RAW
+      - DEBIAN
+      - CONAN
+      - TERRAFORM
+      - CRAN
+    ScanMetaV3:
+      description: Metadata about the list artifact scans
+      properties:
+        blockedCount:
+          description: Count of active blocked artifacts
+          example: 95
+          format: int64
+          type: integer
+        totalCount:
+          description: Count of total artifact violations
+          example: 5
+          format: int64
+          type: integer
+        warnCount:
+          description: Count of active Warn artifacts
+          example: 5
+          format: int64
+          type: integer
+      type: object
+    FirewallExceptionMetaV3:
+      description: Metadata counts for firewall exceptions
+      properties:
+        approvedCount:
+          description: Number of exceptions with APPROVED status (non-expired)
+          example: 25
+          format: int64
+          type: integer
+        expiredCount:
+          description: Number of approved exceptions that have expired
+          example: 10
+          format: int64
+          type: integer
+        pendingCount:
+          description: Number of exceptions with PENDING status
+          example: 10
+          format: int64
+          type: integer
+        rejectedCount:
+          description: Number of exceptions with REJECTED status
+          example: 5
+          format: int64
+          type: integer
+        totalCount:
+          description: Total number of exceptions
+          example: 50
+          format: int64
+          type: integer
+      required:
+      - totalCount
+      - pendingCount
+      - approvedCount
+      - rejectedCount
+      - expiredCount
+      type: object
+    FirewallExceptionStatusV3:
+      description: Status of the firewall exception
+      enum:
+      - PENDING
+      - APPROVED
+      - REJECTED
+      - EXPIRED
+      type: string
+    PipelineBuildInfoDetailV3:
+      description: Pipeline build info detail entry.
+      properties:
+        lastExecutionTime:
+          description: Unix timestamp (milliseconds) when the pipeline execution was last executed.
+          format: int64
+          type: integer
+        orgIdentifier:
+          description: Organization identifier.
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageTypeV3'
+        pipelineExecutionIdentifier:
+          description: Pipeline execution identifier.
+          type: string
+        pipelineIdentifier:
+          description: Pipeline identifier.
+          type: string
+        projectIdentifier:
+          description: Project identifier.
+          type: string
+        rootPackageName:
+          description: Name of the root package.
+          type: string
+        rootPackageVersion:
+          description: Version of the root package.
+          type: string
+        securityViolationCategories:
+          description: Policy failure categories.
+          items:
+            $ref: '#/components/schemas/PolicyFailureDetailCategoryV3'
+          type: array
+        stageIdentifier:
+          description: Stage identifier.
+          type: string
+        stepIdentifier:
+          description: Step identifier.
+          type: string
+        violations:
+          description: Map of package key to scan ID.
+          items:
+            $ref: '#/components/schemas/PipelineBuildInfoViolationV3'
+          type: array
+      required:
+      - pipelineIdentifier
+      - orgIdentifier
+      - projectIdentifier
+      - stageIdentifier
+      - stepIdentifier
+      - violations
+      - rootPackageName
+      - rootPackageVersion
+      - packageType
+      - securityViolationCategories
+      type: object
+    OssRiskLevelPolicyFailureDetailConfigV3:
+      description: OSS risk level-specific failure detail payload.
+      properties:
+        ossRiskLevel:
+          description: oss risk level
+          type: string
+        ossRiskScore:
+          description: oss risk level
+          format: double
+          type: number
+      required:
+      - ossRiskLevel
+      type: object
+    ApiErrorsV3:
+      properties:
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
+      required:
+      - type
+      title: APIErrors
+      type: object
+    SecurityPolicyFailureDetailConfigV3:
+      description: Security-specific failure detail payload.
+      properties:
+        vulnerabilities:
+          description: List of security violations.
+          items:
+            $ref: '#/components/schemas/SecurityPolicyFailureVulnerabilityV3'
+          type: array
+      required:
+      - vulnerabilities
+      type: object
     PipelineBuildInfoViolationV3:
       description: A violation entry mapping a package key to a scan ID.
       properties:
@@ -771,54 +904,70 @@ components:
           description: Unique evaluation ID for tracking the bulk scan evaluation
           type: string
       type: object
-    ErrorV3:
-      description: An error response
+    PolicyFailureDetailCategoryV3:
+      description: Policy failure detail category.
+      enum:
+      - Security
+      - License
+      - MaliciousPackage
+      - PackageAge
+      - OssRiskLevel
+      - Unknown
+      type: string
+    BuildInfoNodeV3:
+      description: Node in the build
       properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
+        nodeKey:
+          description: package@version
+          type: string
+        parentNodeKey:
+          description: Parent node
+          type: string
       required:
-      - error
+      - nodeKey
       type: object
-    BulkScanEvaluationStatusDataV3:
-      description: Response data for bulk scan evaluation status
+    BuildDetailEntryV3:
+      description: Build detail entry for a single scan.
       properties:
-        error:
-          description: Error message (only present when status is failure)
+        lastExecutionTime:
+          description: Epoch time (seconds) of the latest execution.
+          format: int64
+          type: integer
+        latestExecutionId:
+          description: Latest execution identifier.
+          type: string
+        pipelineId:
+          description: Pipeline identifier.
+          type: string
+        rootPackage:
+          description: Root package identifier in name@version format.
+          type: string
+        stageId:
+          description: Stage identifier.
+          type: string
+        stepId:
+          description: Step identifier.
+          type: string
+      required:
+      - pipelineId
+      - package
+      - latestExecutionId
+      - lastExecutionTime
+      - stageId
+      - rootPackage
+      type: object
+    FirewallExceptionApprovalRequestV3:
+      description: Request to approve or reject a firewall exception
+      properties:
+        notes:
+          description: Note from approver explaining the decision
           type:
           - string
           - 'null'
-        evaluationId:
-          description: The evaluation ID
-          type: string
-        scans:
-          description: List of scan results (only present when status is success)
-          items:
-            $ref: '#/components/schemas/BulkScanResultItemV3'
-          type:
-          - array
-          - 'null'
         status:
-          description: Status of the evaluation
-          enum:
-          - PENDING
-          - PROCESSING
-          - SUCCESS
-          - FAILURE
-          type: string
-      type: object
-    ArtifactScanEvaluateRequestInputV3:
-      description: 'Input for re-evaluate artifact scan.
-
-        Exactly one of scanId or versionId must be provided.
-
-        '
-      properties:
-        scanId:
-          description: Scan identifier
-          type: string
-        versionId:
-          description: Artifact version identifier
-          type: string
+          $ref: '#/components/schemas/FirewallExceptionStatusV3'
+      required:
+      - status
       type: object
     FirewallExceptionUpdateRequestV3:
       description: Request to update a firewall exception. Only allowed when status is PENDING.
@@ -843,357 +992,6 @@ components:
             type: string
           type: array
       type: object
-    SecurityPolicyFailureVulnerabilityV3:
-      description: Security violation entry.
-      properties:
-        cveId:
-          description: CVE identifier.
-          type: string
-        cvssScore:
-          description: CVSS score.
-          format: double
-          type: number
-        cvssThreshold:
-          description: CVSS threshold.
-          format: double
-          type: number
-      required:
-      - cveId
-      - cvssScore
-      - cvssThreshold
-      type: object
-    OssRiskLevelPolicyFailureDetailConfigV3:
-      description: OSS risk level-specific failure detail payload.
-      properties:
-        ossRiskLevel:
-          description: oss risk level
-          type: string
-        ossRiskScore:
-          description: oss risk level
-          format: double
-          type: number
-      required:
-      - ossRiskLevel
-      type: object
-    ApiErrorsV3:
-      properties:
-        code:
-          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
-          maxLength: 5000
-          type: string
-        message:
-          description: A human-readable message providing more details about the error. These messages can be shown to users.
-          maxLength: 40000
-          type: string
-        param:
-          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
-          maxLength: 5000
-          type: string
-        type:
-          description: The type of error returned.
-          enum:
-          - INVALID_REQUEST_ERROR
-          - AUTHENTICATION_ERROR
-          - PERMISSION_ERROR
-          - API_ERROR
-          type: string
-      required:
-      - type
-      title: APIErrors
-      type: object
-    BulkScanEvaluateSyncRequestV3:
-      description: 'Request body for synchronous bulk artifact scan evaluation. Maximum 50 artifacts per request. No data is written to the database.
-
-        '
-      properties:
-        artifacts:
-          description: List of artifacts to evaluate (max 50)
-          items:
-            $ref: '#/components/schemas/ArtifactScanInputV3'
-          maxItems: 50
-          minItems: 1
-          type: array
-        registryId:
-          description: Registry identifier
-          format: uuid
-          type: string
-        skipCache:
-          description: When true, skip the cached scan result and force a fresh OPA evaluation
-          type: boolean
-      required:
-      - registryId
-      - artifacts
-      type: object
-    PolicySetsV3:
-      description: List of opa policy sets.
-      items:
-        properties:
-          policySetName:
-            description: Policy Set name
-            type: string
-          policySetRef:
-            description: 'Unique reference for the opa policy set. Example: `my-policy` or `account.my-policy`'
-            type: string
-        required:
-        - policySetRef
-        - policySetName
-        type: object
-      type: array
-    PipelineBuildInfoDetailV3:
-      description: Pipeline build info detail entry.
-      properties:
-        lastExecutionTime:
-          description: Unix timestamp (milliseconds) when the pipeline execution was last executed.
-          format: int64
-          type: integer
-        orgIdentifier:
-          description: Organization identifier.
-          type: string
-        packageType:
-          $ref: '#/components/schemas/PackageTypeV3'
-        pipelineExecutionIdentifier:
-          description: Pipeline execution identifier.
-          type: string
-        pipelineIdentifier:
-          description: Pipeline identifier.
-          type: string
-        projectIdentifier:
-          description: Project identifier.
-          type: string
-        rootPackageName:
-          description: Name of the root package.
-          type: string
-        rootPackageVersion:
-          description: Version of the root package.
-          type: string
-        securityViolationCategories:
-          description: Policy failure categories.
-          items:
-            $ref: '#/components/schemas/PolicyFailureDetailCategoryV3'
-          type: array
-        stageIdentifier:
-          description: Stage identifier.
-          type: string
-        stepIdentifier:
-          description: Step identifier.
-          type: string
-        violations:
-          description: Map of package key to scan ID.
-          items:
-            $ref: '#/components/schemas/PipelineBuildInfoViolationV3'
-          type: array
-      required:
-      - pipelineIdentifier
-      - orgIdentifier
-      - projectIdentifier
-      - stageIdentifier
-      - stepIdentifier
-      - violations
-      - rootPackageName
-      - rootPackageVersion
-      - packageType
-      - securityViolationCategories
-      type: object
-    PolicyFailureDetailCategoryV3:
-      description: Policy failure detail category.
-      enum:
-      - Security
-      - License
-      - MaliciousPackage
-      - PackageAge
-      - OssRiskLevel
-      - Unknown
-      type: string
-    SecurityPolicyFailureDetailConfigV3:
-      description: Security-specific failure detail payload.
-      properties:
-        vulnerabilities:
-          description: List of security violations.
-          items:
-            $ref: '#/components/schemas/SecurityPolicyFailureVulnerabilityV3'
-          type: array
-      required:
-      - vulnerabilities
-      type: object
-    ListFirewallExceptionsResponseBodyV3:
-      allOf:
-      - $ref: '#/components/schemas/PageInfoV3'
-      - properties:
-          items:
-            items:
-              $ref: '#/components/schemas/FirewallExceptionResponseV3'
-            type: array
-          meta:
-            $ref: '#/components/schemas/FirewallExceptionMetaV3'
-        required:
-        - items
-        type: object
-    PackageAgeViolationPolicyFailureDetailConfigV3:
-      description: Package age violation failure detail payload.
-      properties:
-        packageAgeThreshold:
-          description: Package age threshold.
-          type: string
-        publishedOn:
-          description: Package publish date.
-          type: string
-      required:
-      - publishedOn
-      - packageAgeThreshold
-      type: object
-    CreatedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was created
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    PackageTypeV3:
-      description: 'Package type. Known values include: DOCKER, MAVEN, PYTHON, GENERIC, HELM, HELM_HTTP, NUGET, NPM, RPM, CARGO, COMPOSER, GO, HUGGINGFACE, CONDA, DART, SWIFT, PUPPET, RUBY, RAW, DEBIAN, CONAN, TERRAFORM. This field is extensible; clients must handle unknown values.
-
-        '
-      example: DOCKER
-      type: string
-      x-extensible-enum:
-      - DOCKER
-      - MAVEN
-      - PYTHON
-      - GENERIC
-      - HELM
-      - HELM_HTTP
-      - NUGET
-      - NPM
-      - RPM
-      - CARGO
-      - COMPOSER
-      - GO
-      - HUGGINGFACE
-      - CONDA
-      - DART
-      - SWIFT
-      - PUPPET
-      - RUBY
-      - RAW
-      - DEBIAN
-      - CONAN
-      - TERRAFORM
-      - CRAN
-    ListPipelineBuildInfoDetailsResponseBodyV3:
-      allOf:
-      - $ref: '#/components/schemas/PageInfoV3'
-      - properties:
-          meta:
-            $ref: '#/components/schemas/PipelineBuildInfoMetaV3'
-          pipelineData:
-            description: Pipeline build info details
-            items:
-              $ref: '#/components/schemas/PipelineBuildInfoDetailV3'
-            type: array
-        required:
-        - pipelineData
-        - meta
-        type: object
-    BuildInfoNodeV3:
-      description: Node in the build
-      properties:
-        nodeKey:
-          description: package@version
-          type: string
-        parentNodeKey:
-          description: Parent node
-          type: string
-      required:
-      - nodeKey
-      type: object
-    FirewallExceptionCreateRequestV3:
-      description: Request to create a firewall exception
-      properties:
-        businessJustification:
-          description: Business justification for the exception
-          type: string
-        expireAfter:
-          description: Number of days after approval when the exception expires. Null means never expires.
-          format: int32
-          type:
-          - integer
-          - 'null'
-        packageName:
-          description: Name of the package
-          type: string
-        registryId:
-          description: UUID of the registry
-          format: uuid
-          type: string
-        remediationPlan:
-          description: Plan for remediation (optional)
-          type:
-          - string
-          - 'null'
-        versionList:
-          description: List of versions to except. Empty array means all versions.
-          items:
-            type: string
-          type: array
-      required:
-      - registryId
-      - packageName
-      - businessJustification
-      type: object
-    BulkScanResultItemV3:
-      description: Individual scan result item
-      properties:
-        packageName:
-          description: Name of the package
-          type: string
-        scanId:
-          description: Scan identifier
-          format: uuid
-          type: string
-        scanStatus:
-          $ref: '#/components/schemas/ScanStatusV3'
-        version:
-          description: Version of the package
-          type: string
-      type: object
-    ExemptionStatusV3:
-      description: Exemption status for an artifact, showing if an exception exists.
-      properties:
-        createdAt:
-          $ref: '#/components/schemas/CreatedAtMsV3'
-        expirationAt:
-          $ref: '#/components/schemas/CreatedAtMsV3'
-        id:
-          description: Firewall exception ID for navigation to the exception detail.
-          format: uuid
-          type: string
-        status:
-          description: Current status of the exception.
-          enum:
-          - PENDING
-          - APPROVED
-          - REJECTED
-          - EXPIRED
-          type: string
-      required:
-      - id
-      - status
-      - createdAt
-      type: object
-    ScanStatusV3:
-      description: Status of an artifact scan evaluation.
-      enum:
-      - ALLOWED
-      - BLOCKED
-      - WARN
-      - UNKNOWN
-      type: string
-    BuildDetailsV3:
-      description: 'List of build detail entries containing pipeline and package info.
-
-        '
-      items:
-        $ref: '#/components/schemas/BuildDetailEntryV3'
-      type: array
     ArtifactScanEvaluateRequestStatusV3:
       description: Status of the Artifact Scan Evaluate Request
       enum:
@@ -1202,49 +1000,95 @@ components:
       - SUCCESS
       - FAILED
       type: string
-    FixVersionDetailsV3:
-      description: Fix version Details
+    ArtifactScanV3:
       properties:
-        currentVersion:
-          description: The current version
-          example: 1.2.0
+        RegistryOrgId:
+          description: Organization identifier
           type: string
-        fixVersion:
-          description: The fix version
-          example: 1.2.2
+        RegistryProjectId:
+          description: Project identifier
           type: string
-        fixVersionAvailable:
-          description: Fix version available or not
-          type: boolean
-      required:
-      - fixVersionAvailable
-      - currentVersion
-      type: object
-    FirewallExceptionApprovalRequestV3:
-      description: Request to approve or reject a firewall exception
-      properties:
-        notes:
-          description: Note from approver explaining the decision
-          type:
-          - string
-          - 'null'
-        status:
-          $ref: '#/components/schemas/FirewallExceptionStatusV3'
-      required:
-      - status
-      type: object
-    ArtifactScanInputV3:
-      description: Artifact to be scanned
-      properties:
+        buildDetails:
+          $ref: '#/components/schemas/BuildDetailsV3'
+        exemptionStatus:
+          $ref: '#/components/schemas/ExemptionStatusV3'
+        id:
+          type: string
+        lastEvaluatedAt:
+          type: string
+        lastEvaluatedBy:
+          type: string
         packageName:
-          description: Name of the package
+          description: Package name
           type: string
+        packageType:
+          $ref: '#/components/schemas/PackageTypeV3'
+        parentRegistryId:
+          description: Parent virtual registry UUID
+          type: string
+        parentRegistryName:
+          description: Parent virtual registry name
+          type: string
+        parentRegistryOrgId:
+          description: Parent registry organization identifier
+          type: string
+        parentRegistryProjectId:
+          description: Parent registry project identifier
+          type: string
+        policySets:
+          $ref: '#/components/schemas/PolicySetsV3'
+        purl:
+          description: Package URL (PURL) identifying the package version
+          type: string
+        registryId:
+          description: Registry name
+          type: string
+        registryName:
+          description: Registry name
+          type: string
+        rootPackages:
+          description: Unique set of root packages (name@version) impacted by this scan
+          items:
+            description: Root package with name and version (e.g. name@version)
+            type: string
+          type: array
+          uniqueItems: true
+        scanStatus:
+          description: Scan status
+          enum:
+          - BLOCKED
+          - WARN
+          type: string
+        securityViolationCategories:
+          description: Security violation categories
+          items:
+            $ref: '#/components/schemas/PolicyFailureDetailCategoryV3'
+          type: array
+        totalAffectedPipelines:
+          description: Total number of affected pipelines
+          type: integer
         version:
-          description: Version of the package
+          description: Version
+          type: string
+        versionId:
+          description: Version
           type: string
       required:
+      - id
+      - packageType
       - packageName
+      - purl
       - version
+      - registryName
+      - registryId
+      - parentRegistryId
+      - parentRegistryName
+      - policySets
+      - scanStatus
+      - securityViolationCategories
+      - buildDetails
+      - rootPackages
+      - totalAffectedPipelines
       type: object
     ArtifactScanDetailsV3:
       description: Artifact scans details
@@ -1336,114 +1180,37 @@ components:
       - rootPackages
       - purl
       type: object
-    PolicySetFailureDetailV3:
-      description: Policy set failure detail entry.
+    ExemptionStatusV3:
+      description: Exemption status for an artifact, showing if an exception exists.
       properties:
-        policyFailureDetails:
-          items:
-            $ref: '#/components/schemas/PolicyFailureDetailV3'
-          type: array
-        policySetName:
-          description: Policy set name.
-          type: string
-        policySetRef:
-          description: Policy set reference.
-          type: string
-      required:
-      - policySetRef
-      - policySetName
-      - policyFailureDetails
-      type: object
-    PolicyFailureDetailV3:
-      description: Policy failure detail entry.
-      discriminator:
-        mapping:
-          License: '#/components/schemas/LicensePolicyFailureDetailConfigV3'
-          MaliciousPackage: '#/components/schemas/MaliciousPackagePolicyFailureDetailConfigV3'
-          OssRiskLevel: '#/components/schemas/OssRiskLevelPolicyFailureDetailConfigV3'
-          PackageAge: '#/components/schemas/PackageAgeViolationPolicyFailureDetailConfigV3'
-          Security: '#/components/schemas/SecurityPolicyFailureDetailConfigV3'
-        propertyName: category
-      oneOf:
-      - $ref: '#/components/schemas/SecurityPolicyFailureDetailConfigV3'
-      - $ref: '#/components/schemas/LicensePolicyFailureDetailConfigV3'
-      - $ref: '#/components/schemas/MaliciousPackagePolicyFailureDetailConfigV3'
-      - $ref: '#/components/schemas/PackageAgeViolationPolicyFailureDetailConfigV3'
-      - $ref: '#/components/schemas/OssRiskLevelPolicyFailureDetailConfigV3'
-      properties:
-        category:
-          $ref: '#/components/schemas/PolicyFailureDetailCategoryV3'
-        policyName:
-          description: Policy name.
-          type: string
-        policyRef:
-          description: Policy Ref.
-          type: string
-      required:
-      - category
-      - policyName
-      - policyRef
-      type: object
-    BulkScanEvaluationRequestV3:
-      description: Request to initiate bulk scan evaluation
-      properties:
-        artifacts:
-          description: List of artifacts to evaluate
-          items:
-            $ref: '#/components/schemas/ArtifactScanInputV3'
-          maxItems: 10000
-          minItems: 1
-          type: array
-        registryId:
-          description: Registry identifier
+        createdAt:
+          $ref: '#/components/schemas/CreatedAtMsV3'
+        expirationAt:
+          $ref: '#/components/schemas/CreatedAtMsV3'
+        id:
+          description: Firewall exception ID for navigation to the exception detail.
           format: uuid
           type: string
-      required:
-      - registryId
-      - artifacts
-      type: object
-    BuildDetailEntryV3:
-      description: Build detail entry for a single scan.
-      properties:
-        lastExecutionTime:
-          description: Epoch time (seconds) of the latest execution.
-          format: int64
-          type: integer
-        latestExecutionId:
-          description: Latest execution identifier.
-          type: string
-        pipelineId:
-          description: Pipeline identifier.
-          type: string
-        rootPackage:
-          description: Root package identifier in name@version format.
-          type: string
-        stageId:
-          description: Stage identifier.
-          type: string
-        stepId:
-          description: Step identifier.
+        status:
+          description: Current status of the exception.
+          enum:
+          - PENDING
+          - APPROVED
+          - REJECTED
+          - EXPIRED
           type: string
       required:
-      - pipelineId
-      - package
-      - latestExecutionId
-      - lastExecutionTime
-      - stageId
-      - rootPackage
+      - id
+      - status
+      - createdAt
       type: object
-    PipelineBuildInfoMetaV3:
-      description: Aggregated metadata for pipeline build info results.
-      properties:
-        totalBlockedDependencies:
-          description: Total number of blocked dependencies.
-          format: int64
-          type: integer
-        totalBlockedPipelines:
-          description: Total number of blocked pipelines.
-          format: int64
-          type: integer
-      type: object
+    CreatedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was created
+      example: 1736360000123
+      format: int64
+      type:
+      - integer
+      - 'null'
     BuildInfoRequestInputV3:
       description: Request to add build info
       properties:
@@ -1474,13 +1241,260 @@ components:
       - status
       - metadata
       type: object
+    SecurityPolicyFailureVulnerabilityV3:
+      description: Security violation entry.
+      properties:
+        cveId:
+          description: CVE identifier.
+          type: string
+        cvssScore:
+          description: CVSS score.
+          format: double
+          type: number
+        cvssThreshold:
+          description: CVSS threshold.
+          format: double
+          type: number
+      required:
+      - cveId
+      - cvssScore
+      - cvssThreshold
+      type: object
+    ArtifactScanInputV3:
+      description: Artifact to be scanned
+      properties:
+        packageName:
+          description: Name of the package
+          type: string
+        version:
+          description: Version of the package
+          type: string
+      required:
+      - packageName
+      - version
+      type: object
+    ListFirewallExceptionsResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          items:
+            items:
+              $ref: '#/components/schemas/FirewallExceptionResponseV3'
+            type: array
+          meta:
+            $ref: '#/components/schemas/FirewallExceptionMetaV3'
+        required:
+        - items
+        type: object
+    ScanStatusV3:
+      description: Status of an artifact scan evaluation.
+      enum:
+      - ALLOWED
+      - BLOCKED
+      - WARN
+      - UNKNOWN
+      type: string
+    ListPipelineBuildInfoDetailsResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          meta:
+            $ref: '#/components/schemas/PipelineBuildInfoMetaV3'
+          pipelineData:
+            description: Pipeline build info details
+            items:
+              $ref: '#/components/schemas/PipelineBuildInfoDetailV3'
+            type: array
+        required:
+        - pipelineData
+        - meta
+        type: object
+    BulkScanEvaluationStatusDataV3:
+      description: Response data for bulk scan evaluation status
+      properties:
+        error:
+          description: Error message (only present when status is failure)
+          type:
+          - string
+          - 'null'
+        evaluationId:
+          description: The evaluation ID
+          type: string
+        scans:
+          description: List of scan results (only present when status is success)
+          items:
+            $ref: '#/components/schemas/BulkScanResultItemV3'
+          type:
+          - array
+          - 'null'
+        status:
+          description: Status of the evaluation
+          enum:
+          - PENDING
+          - PROCESSING
+          - SUCCESS
+          - FAILURE
+          type: string
+      type: object
+    FirewallExceptionCreateRequestV3:
+      description: Request to create a firewall exception
+      properties:
+        businessJustification:
+          description: Business justification for the exception
+          type: string
+        expireAfter:
+          description: Number of days after approval when the exception expires. Null means never expires.
+          format: int32
+          type:
+          - integer
+          - 'null'
+        packageName:
+          description: Name of the package
+          type: string
+        registryId:
+          description: UUID of the registry
+          format: uuid
+          type: string
+        remediationPlan:
+          description: Plan for remediation (optional)
+          type:
+          - string
+          - 'null'
+        versionList:
+          description: List of versions to except. Empty array means all versions.
+          items:
+            type: string
+          type: array
+      required:
+      - registryId
+      - packageName
+      - businessJustification
+      type: object
+    PolicySetFailureDetailV3:
+      description: Policy set failure detail entry.
+      properties:
+        policyFailureDetails:
+          items:
+            $ref: '#/components/schemas/PolicyFailureDetailV3'
+          type: array
+        policySetName:
+          description: Policy set name.
+          type: string
+        policySetRef:
+          description: Policy set reference.
+          type: string
+      required:
+      - policySetRef
+      - policySetName
+      - policyFailureDetails
+      type: object
+    PipelineBuildInfoMetaV3:
+      description: Aggregated metadata for pipeline build info results.
+      properties:
+        totalBlockedDependencies:
+          description: Total number of blocked dependencies.
+          format: int64
+          type: integer
+        totalBlockedPipelines:
+          description: Total number of blocked pipelines.
+          format: int64
+          type: integer
+      type: object
+    LicensePolicyFailureDetailConfigV3:
+      description: License-specific failure detail payload.
+      properties:
+        allowedLicenses:
+          description: Allowed license list.
+          items:
+            type: string
+          type: array
+        blockedLicense:
+          description: Blocked license.
+          type: string
+      required:
+      - allowedLicenses
+      - blockedLicense
+      type: object
+    BulkScanEvaluateSyncRequestV3:
+      description: 'Request body for synchronous bulk artifact scan evaluation. Maximum 50 artifacts per request. No data is written to the database.
+
+        '
+      properties:
+        artifacts:
+          description: List of artifacts to evaluate (max 50)
+          items:
+            $ref: '#/components/schemas/ArtifactScanInputV3'
+          maxItems: 50
+          minItems: 1
+          type: array
+        registryId:
+          description: Registry identifier
+          format: uuid
+          type: string
+        skipCache:
+          description: When true, skip the cached scan result and force a fresh OPA evaluation
+          type: boolean
+      required:
+      - registryId
+      - artifacts
+      type: object
+    PolicySetsV3:
+      description: List of opa policy sets.
+      items:
+        properties:
+          policySetName:
+            description: Policy Set name
+            type: string
+          policySetRef:
+            description: 'Unique reference for the opa policy set. Example: `my-policy` or `account.my-policy`'
+            type: string
+        required:
+        - policySetRef
+        - policySetName
+        type: object
+      type: array
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
+    RootPackageV3:
+      description: Root package of the build
+      properties:
+        name:
+          description: Name of the root package
+          type: string
+        version:
+          description: Version of the root package
+          type: string
+      required:
+      - name
+      - version
+      type: object
   parameters:
-    PipelineIdFilterParamV3:
-      description: Filter by pipeline identifier
+    SecurityViolationCategoriesOptionalListParamV3:
+      description: Filter by categories
       in: query
-      name: pipeline_id
+      name: categories
       schema:
-        type: string
+        items:
+          type: string
+        type: array
+    ScanStatusParamV3:
+      description: Filter by scan status of the artifact after OPA policy evaluation.
+      in: query
+      name: scan_status
+      schema:
+        $ref: '#/components/schemas/ScanStatusV3'
+    FirewallExceptionStatusFilterParamV3:
+      description: Filter by firewall exception status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/FirewallExceptionStatusV3'
     PackageTypeListParamV3:
       description: Registry Package Type
       in: query
@@ -1489,9 +1503,92 @@ components:
         items:
           type: string
         type: array
-    IdPathParamV3:
+    ExceptionIdFilterParamV3:
+      description: Filter by firewall exception ID
+      in: query
+      name: exception_id
+      schema:
+        type: string
+    AccountIdentifierV3:
+      description: 'Unique identifier for the Harness account.
+
+        '
+      in: query
+      name: account_identifier
+      required: true
+      schema:
+        type: string
+    RegistryIdListOptionalParamV3:
+      description: 'Unique id for the registry.
+
+        Note: This parameter should have one id if package query param is provided
+
+        '
+      example:
+      - 12345678-1234-1234-1234-123456789012
+      - aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+      in: query
+      name: registry_ids
+      schema:
+        items:
+          format: uuid
+          type: string
+        type: array
+    PackageNameFilterParamV3:
+      description: Filter by package name
+      in: query
+      name: package_name
+      schema:
+        type: string
+    RegistryScopeV3:
+      description: "**Scope of registries to list**\n* **none** – current space only (default)   * **ancestors** – current space **plus** all parent spaces   * **descendants** – current space **plus** all child spaces  \nIf omitted, `none` is assumed.\n"
+      in: query
+      name: scope
+      schema:
+        enum:
+        - ancestors
+        - descendants
+        - none
+        type: string
+    ProjectIdentifierV3:
+      description: 'Unique identifier for the project within the organization.
+
+
+        Example: `my_project` or `frontend_services`
+
+        '
+      in: query
+      name: project_identifier
+      schema:
+        type: string
+    ProjectsOptionalListParamV3:
+      description: Filter by projects
+      in: query
+      name: projects
+      schema:
+        items:
+          type: string
+        type: array
+    PolicySetRefParamV3:
+      description: 'Unique reference for the opa policy set. Example: `my-policy` or `account.my-policy`'
+      in: query
+      name: policy_set_ref
+      schema:
+        type: string
+    PageSizeV3:
+      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        maximum: 100
+        minimum: 1
+        type: integer
+    EvaluationIdParamV3:
+      description: Bulk evaluation identifier
       in: path
-      name: id
+      name: evaluation_id
       required: true
       schema:
         type: string
@@ -1510,10 +1607,16 @@ components:
       name: sort
       schema:
         type: string
-    PackageNameFilterParamV3:
-      description: Filter by package name
+    PipelineIdFilterParamV3:
+      description: Filter by pipeline identifier
       in: query
-      name: package_name
+      name: pipeline_id
+      schema:
+        type: string
+    RegistryIdFilterParamV3:
+      description: Filter by registry ID
+      in: query
+      name: registry_id
       schema:
         type: string
     SearchTermV3:
@@ -1527,10 +1630,15 @@ components:
       name: search_term
       schema:
         type: string
-    EvaluationIdParamV3:
-      description: Bulk evaluation identifier
+    ScanIDQueryParamV3:
+      description: Scan Identifier
+      in: query
+      name: scan_id
+      schema:
+        type: string
+    IdPathParamV3:
       in: path
-      name: evaluation_id
+      name: id
       required: true
       schema:
         type: string
@@ -1543,65 +1651,6 @@ components:
         '
       in: query
       name: org_identifier
-      schema:
-        type: string
-    RegistryScopeV3:
-      description: "**Scope of registries to list**\n* **none** – current space only (default)   * **ancestors** – current space **plus** all parent spaces   * **descendants** – current space **plus** all child spaces  \nIf omitted, `none` is assumed.\n"
-      in: query
-      name: scope
-      schema:
-        enum:
-        - ancestors
-        - descendants
-        - none
-        type: string
-    PageSizeV3:
-      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        maximum: 100
-        minimum: 1
-        type: integer
-    ProjectsOptionalListParamV3:
-      description: Filter by projects
-      in: query
-      name: projects
-      schema:
-        items:
-          type: string
-        type: array
-    SecurityViolationCategoriesOptionalListParamV3:
-      description: Filter by categories
-      in: query
-      name: categories
-      schema:
-        items:
-          type: string
-        type: array
-    ScanIDQueryParamV3:
-      description: Scan Identifier
-      in: query
-      name: scan_id
-      schema:
-        type: string
-    ScanStatusParamV3:
-      description: Filter by scan status of the artifact after OPA policy evaluation.
-      in: query
-      name: scan_status
-      schema:
-        $ref: '#/components/schemas/ScanStatusV3'
-    ProjectIdentifierV3:
-      description: 'Unique identifier for the project within the organization.
-
-
-        Example: `my_project` or `frontend_services`
-
-        '
-      in: query
-      name: project_identifier
       schema:
         type: string
     PageNumberV3:
@@ -1628,104 +1677,32 @@ components:
       name: version
       schema:
         type: string
-    RegistryIdFilterParamV3:
-      description: Filter by registry ID
-      in: query
-      name: registry_id
-      schema:
-        type: string
-    FirewallExceptionStatusFilterParamV3:
-      description: Filter by firewall exception status
-      in: query
-      name: status
-      schema:
-        $ref: '#/components/schemas/FirewallExceptionStatusV3'
-    PolicySetRefParamV3:
-      description: 'Unique reference for the opa policy set. Example: `my-policy` or `account.my-policy`'
-      in: query
-      name: policy_set_ref
-      schema:
-        type: string
-    AccountIdentifierV3:
-      description: 'Unique identifier for the Harness account.
-
-        '
-      in: query
-      name: account_identifier
-      required: true
-      schema:
-        type: string
-    ExceptionIdFilterParamV3:
-      description: Filter by firewall exception ID
-      in: query
-      name: exception_id
-      schema:
-        type: string
-    RegistryIdListOptionalParamV3:
-      description: 'Unique id for the registry.
-
-        Note: This parameter should have one id if package query param is provided
-
-        '
-      example:
-      - 12345678-1234-1234-1234-123456789012
-      - aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
-      in: query
-      name: registry_ids
-      schema:
-        items:
-          format: uuid
-          type: string
-        type: array
   responses:
-    ArtifactScanEvaluateRequestAcceptedV3:
+    BulkScanEvaluationStatusResponseV3:
       content:
         application/json:
           schema:
             properties:
               data:
-                properties:
-                  status:
-                    $ref: '#/components/schemas/ArtifactScanEvaluateRequestStatusV3'
-                required:
-                - status
-                type: object
-            required:
-            - data
+                $ref: '#/components/schemas/BulkScanEvaluationStatusDataV3'
             type: object
-      description: Artifact scan evaluate request accepted for processing
-    ListFirewallExceptionResponseV3:
+      description: Bulk scan evaluation status response
+    ListFirewallExceptionVersionsResponseV3:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ListFirewallExceptionsResponseBodyV3'
-      description: Response containing list of firewall exceptions
-    FirewallExceptionUpdatedV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/FirewallExceptionResponseV3'
-      description: Firewall exception updated successfully
-    BulkScanEvaluateSyncResponseV3:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                description: List of scan details, one per evaluated artifact
+            allOf:
+            - $ref: '#/components/schemas/PageInfoV3'
+            - properties:
                 items:
-                  $ref: '#/components/schemas/ArtifactScanDetailsV3'
-                type: array
-            required:
-            - data
-            type: object
-      description: Synchronous bulk scan evaluation response
-    FirewallExceptionApprovedV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/FirewallExceptionResponseV3'
-      description: Firewall exception status updated successfully
+                  description: A list of versions
+                  items:
+                    type: string
+                  type: array
+              required:
+              - items
+              type: object
+      description: Response containing list of versions for firewall exceptions
     BulkScanEvaluationAcceptedV3:
       content:
         application/json:
@@ -1741,6 +1718,27 @@ components:
           schema:
             $ref: '#/components/schemas/ListPipelineBuildInfoDetailsResponseBodyV3'
       description: Response containing pipeline build info details
+    ArtifactScanDetailsResponseV3:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ArtifactScanDetailsV3'
+            type: object
+      description: Response containing details of artifact scan
+    ListFirewallExceptionResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListFirewallExceptionsResponseBodyV3'
+      description: Response containing list of firewall exceptions
+    FirewallExceptionCreatedV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FirewallExceptionResponseV3'
+      description: Firewall exception created successfully
     ListArtifactScanResponseV3:
       content:
         application/json:
@@ -1781,89 +1779,91 @@ components:
             - meta
             type: object
       description: Response containing list of artifact scan
-    ListFirewallExceptionVersionsResponseV3:
+    ArtifactScanEvaluateRequestAcceptedV3:
       content:
         application/json:
           schema:
-            allOf:
-            - $ref: '#/components/schemas/PageInfoV3'
-            - properties:
+            properties:
+              data:
+                properties:
+                  status:
+                    $ref: '#/components/schemas/ArtifactScanEvaluateRequestStatusV3'
+                required:
+                - status
+                type: object
+            required:
+            - data
+            type: object
+      description: Artifact scan evaluate request accepted for processing
+    BulkScanEvaluateSyncResponseV3:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                description: List of scan details, one per evaluated artifact
                 items:
-                  description: A list of versions
-                  items:
-                    type: string
-                  type: array
-              required:
-              - items
-              type: object
-      description: Response containing list of versions for firewall exceptions
-    FirewallExceptionCreatedV3:
+                  $ref: '#/components/schemas/ArtifactScanDetailsV3'
+                type: array
+            required:
+            - data
+            type: object
+      description: Synchronous bulk scan evaluation response
+    FirewallExceptionApprovedV3:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/FirewallExceptionResponseV3'
-      description: Firewall exception created successfully
-    ArtifactScanDetailsResponseV3:
+      description: Firewall exception status updated successfully
+    FirewallExceptionUpdatedV3:
       content:
         application/json:
           schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ArtifactScanDetailsV3'
-            type: object
-      description: Response containing details of artifact scan
-    BulkScanEvaluationStatusResponseV3:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/BulkScanEvaluationStatusDataV3'
-            type: object
-      description: Bulk scan evaluation status response
+            $ref: '#/components/schemas/FirewallExceptionResponseV3'
+      description: Firewall exception updated successfully
   requestBodies:
-    BuildInfoRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BuildInfoRequestInputV3'
-      description: request to add build info
-    FirewallExceptionApprovalRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/FirewallExceptionApprovalRequestV3'
-      description: Request to approve or reject a firewall exception
     FirewallExceptionUpdateRequestV3:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/FirewallExceptionUpdateRequestV3'
       description: Request to update a firewall exception (only when status is PENDING)
-    BulkScanEvaluateSyncRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BulkScanEvaluateSyncRequestV3'
-      description: Request to synchronously evaluate firewall policies for multiple artifacts
-    ArtifactScanEvaluateRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ArtifactScanEvaluateRequestInputV3'
-      description: request to re-evaluate artifact scan
-    BulkScanEvaluationRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BulkScanEvaluationRequestV3'
-      description: Request to initiate bulk scan evaluation
     FirewallExceptionCreateRequestV3:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/FirewallExceptionCreateRequestV3'
       description: Request to create a firewall exception
+    BulkScanEvaluationRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BulkScanEvaluationRequestV3'
+      description: Request to initiate bulk scan evaluation
+    BulkScanEvaluateSyncRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BulkScanEvaluateSyncRequestV3'
+      description: Request to synchronously evaluate firewall policies for multiple artifacts
+    FirewallExceptionApprovalRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FirewallExceptionApprovalRequestV3'
+      description: Request to approve or reject a firewall exception
+    BuildInfoRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BuildInfoRequestInputV3'
+      description: request to add build info
+    ArtifactScanEvaluateRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ArtifactScanEvaluateRequestInputV3'
+      description: request to re-evaluate artifact scan
   securitySchemes:
     x-api-key:
       name: x-api-key

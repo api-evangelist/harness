@@ -4982,6 +4982,550 @@ paths:
                 $ref: '#/components/schemas/IaCMError'
 components:
   schemas:
+    GetModuleLifecycleResponse:
+      type: object
+      properties:
+        deprecated_action:
+          type: string
+          description: Enforcement action for deprecated-tier versions
+          default: fail
+          example: no_action
+          enum:
+          - no_action
+          - warn
+          - fail
+        overrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleLifecycleOverride'
+          description: Manual per-version tier overrides
+          example:
+          - reason: r11
+            tier: warning
+            version: v2.1.0
+          - reason: r11
+            tier: warning
+            version: v2.1.0
+          - reason: r11
+            tier: warning
+            version: v2.1.0
+          maxItems: 1000
+        supported_action:
+          type: string
+          description: Enforcement action for supported-tier versions
+          default: no_action
+          example: fail
+          enum:
+          - no_action
+          - warn
+          - fail
+        supported_count:
+          type: integer
+          description: Number of most-recent non-pre-release versions classified as supported
+          example: 3
+          format: int64
+          minimum: 1
+        warning_action:
+          type: string
+          description: Enforcement action for warning-tier versions
+          default: warn
+          example: fail
+          enum:
+          - no_action
+          - warn
+          - fail
+        warning_count:
+          type: integer
+          description: Number of versions immediately after the supported window classified as warning
+          example: 2
+          format: int64
+          minimum: 0
+      example:
+        deprecated_action: fail
+        overrides:
+        - reason: r11
+          tier: warning
+          version: v2.1.0
+        - reason: r11
+          tier: warning
+          version: v2.1.0
+        - reason: r11
+          tier: warning
+          version: v2.1.0
+        supported_action: no_action
+        supported_count: 3
+        warning_action: fail
+        warning_count: 2
+      required:
+      - supported_count
+      - warning_count
+      - supported_action
+      - warning_action
+      - deprecated_action
+    CreateModuleTagsRequest:
+      type: object
+      properties:
+        error:
+          type: object
+          description: error from the tag operation
+          example:
+            Tempore repellat et quia explicabo quasi.: Magnam debitis harum autem iusto.
+          additionalProperties:
+            type: string
+            example: Et sunt.
+        tags:
+          type: array
+          items:
+            type: string
+            example: Ut fugit expedita error quia dolor error.
+          description: tags defining the module
+          example:
+          - Necessitatibus reiciendis unde.
+          - Aut et vel id quo.
+          - A eligendi sapiente vero.
+      example:
+        error:
+          Ipsam culpa reiciendis ab.: Sed voluptatem unde suscipit.
+          Voluptate iure qui inventore sunt reiciendis illum.: Rem consequatur id.
+        tags:
+        - Esse atque dignissimos non.
+        - Officia sunt.
+        - Omnis inventore sit deleniti doloremque.
+        - Aut illo est ex et sit qui.
+    BatchCheckModuleLifecycleResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleLifecycleBatchCheckResult'
+          description: Lifecycle violations found; items with no rule or supported tier are omitted
+          example:
+          - action: warn
+            minimum_supported_version: Molestiae sunt.
+            name: Ut fugiat molestiae omnis.
+            namespace: Velit modi omnis mollitia nostrum qui.
+            system: Et magnam rerum eum ab inventore dolor.
+            tier: warning
+            version: Consequatur earum fuga veritatis sapiente.
+          - action: warn
+            minimum_supported_version: Molestiae sunt.
+            name: Ut fugiat molestiae omnis.
+            namespace: Velit modi omnis mollitia nostrum qui.
+            system: Et magnam rerum eum ab inventore dolor.
+            tier: warning
+            version: Consequatur earum fuga veritatis sapiente.
+      example:
+        results:
+        - action: warn
+          minimum_supported_version: Molestiae sunt.
+          name: Ut fugiat molestiae omnis.
+          namespace: Velit modi omnis mollitia nostrum qui.
+          system: Et magnam rerum eum ab inventore dolor.
+          tier: warning
+          version: Consequatur earum fuga veritatis sapiente.
+        - action: warn
+          minimum_supported_version: Molestiae sunt.
+          name: Ut fugiat molestiae omnis.
+          namespace: Velit modi omnis mollitia nostrum qui.
+          system: Et magnam rerum eum ab inventore dolor.
+          tier: warning
+          version: Consequatur earum fuga veritatis sapiente.
+        - action: warn
+          minimum_supported_version: Molestiae sunt.
+          name: Ut fugiat molestiae omnis.
+          namespace: Velit modi omnis mollitia nostrum qui.
+          system: Et magnam rerum eum ab inventore dolor.
+          tier: warning
+          version: Consequatur earum fuga veritatis sapiente.
+      required:
+      - results
+    CreateModuleRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Free-form text describing the purpose and usage of the module.
+          example: Provisions a VPC with public and private subnets.
+        git_tag_style:
+          type: string
+          description: Pattern used to match Git tags for module versioning. Use 'module-name-*' to match tags like 'my-vpc-module-v1.0.0'.
+          example: module-name-*
+        name:
+          type: string
+          description: Human-readable name of the module. Must be unique within the same scope and system.
+          example: my-vpc-module
+          minLength: 1
+          maxLength: 128
+        onboarding_pipeline:
+          type: string
+          description: Identifier of the Harness pipeline used for module onboarding and metadata sync.
+          example: Module_Onboarding_Pipeline
+        onboarding_pipeline_org:
+          type: string
+          description: Organization where the onboarding pipeline is defined. Defaults to scope_org if not provided.
+          example: my_org
+        onboarding_pipeline_project:
+          type: string
+          description: Project where the onboarding pipeline is defined. Defaults to scope_project if not provided.
+          example: my_project
+        onboarding_pipeline_sync:
+          type: boolean
+          description: When true, module metadata is automatically synced via the onboarding pipeline when new Git tags are pushed.
+          default: false
+          example: false
+        org:
+          type: string
+          description: Organization identifier where the Git connector is defined. Defaults to scope_org if not provided.
+          example: my_org
+          maxLength: 1024
+        project:
+          type: string
+          description: Project identifier where the Git connector is defined. Defaults to scope_project if not provided.
+          example: my_project
+          maxLength: 1024
+        repository:
+          type: string
+          description: Name of the Git repository that contains the module source code.
+          example: my-terraform-modules
+        repository_branch:
+          type: string
+          description: Repository Branch in which the code should be accessed.
+          example: main
+        repository_commit:
+          type: string
+          description: Repository Commit/Tag in which the code should be accessed.
+          example: abc10ed
+        repository_connector:
+          type: string
+          description: Harness Git connector identifier used to access the Git repository. Must reference a valid Git connector in your account. Leave empty when using Harness Code as the repository source.
+          example: my_github_connector
+        repository_path:
+          type: string
+          description: Repository Path is the path in which the infra code resides.
+          default: ''
+          example: ''
+        storage_type:
+          type: string
+          description: Defines how module versions are stored. 'git_reference' resolves versions from Git tags; 'artifact' stores uploaded archive files.
+          default: git_reference
+          example: git_reference
+          enum:
+          - git_reference
+          - artifact
+        system:
+          type: string
+          description: Provider or system the module targets. Lowercase letters only (e.g. aws, gcp, azure, kubernetes).
+          example: aws
+          pattern: ^[a-z]+$
+          minLength: 1
+          maxLength: 128
+        tags:
+          type: string
+          description: Comma-separated list of tags to categorize the module (e.g. networking,vpc,aws).
+          example: Repellendus quia.
+      example:
+        description: Provisions a VPC with public and private subnets.
+        git_tag_style: module-name-*
+        name: my-vpc-module
+        onboarding_pipeline: Module_Onboarding_Pipeline
+        onboarding_pipeline_org: my_org
+        onboarding_pipeline_project: my_project
+        onboarding_pipeline_sync: false
+        org: my_org
+        project: my_project
+        repository: my-terraform-modules
+        repository_branch: main
+        repository_commit: abc10ed
+        repository_connector: my_github_connector
+        repository_path: ''
+        storage_type: git_reference
+        system: aws
+        tags: Voluptas ad inventore facere quis sit.
+      required:
+      - name
+      - system
+    ModuleResourceCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/ModuleResource'
+      description: ModuleResourceCollection is the result type for an array of ModuleResource (default view)
+      example:
+      - account: abc123DEFghiJKL
+        created: 2016138915894156800
+        description: Provisions a VPC with public and private subnets.
+        domain_prefix: Illo velit quibusdam velit iste repudiandae perferendis.
+        git_tag_style: module-name-*
+        id: aaaaaaaa-bbbb-cccc-eeee-ffffffffffff
+        module_error: Aut incidunt maiores quam.
+        name: my-vpc-module
+        namespace: Aut et dolores.
+        onboarding_pipeline: Module_Onboarding_Pipeline
+        onboarding_pipeline_org: my_org
+        onboarding_pipeline_project: my_project
+        onboarding_pipeline_sync: true
+        org: my_org
+        project: my_project
+        repository: my-terraform-modules
+        repository_branch: main
+        repository_commit: abc10ed
+        repository_connector: my_github_connector
+        repository_path: ''
+        repository_url: Et et doloribus ullam.
+        scope_org: my_org
+        scope_project: my_project
+        storage_type: artifact
+        synced: 8344366690986247000
+        system: aws
+        tags: Esse dolor eligendi reprehenderit.
+        testing_enabled: false
+        testing_metadata:
+          account: 6bi
+          org: 6w5
+          pipelines:
+          - Maxime eius vel in maxime et ad.
+          - Quia ipsum voluptas reprehenderit dolores ea mollitia.
+          - Nostrum dolore est sit ut.
+          - Accusamus beatae fuga consequatur officiis exercitationem.
+          project: 3xt
+          provider_connector: Tempora expedita hic omnis sapiente itaque qui.
+          provisioner_type: Et ipsum necessitatibus eos.
+          provisioner_version: Expedita est maxime ut explicabo.
+          release_pipeline: Quibusdam soluta dicta.
+        updated: 2045512812616660500
+        version_statuses:
+          Id tempore repudiandae.: Qui qui deserunt et aut.
+          Quasi quos neque vitae sunt enim quod.: Aut aut et eligendi explicabo repellendus harum.
+        versions:
+        - Aut illo omnis quibusdam.
+        - Omnis eligendi unde.
+        - Maiores omnis blanditiis explicabo voluptates totam.
+        - A sunt vel.
+      - account: abc123DEFghiJKL
+        created: 2016138915894156800
+        description: Provisions a VPC with public and private subnets.
+        domain_prefix: Illo velit quibusdam velit iste repudiandae perferendis.
+        git_tag_style: module-name-*
+        id: aaaaaaaa-bbbb-cccc-eeee-ffffffffffff
+        module_error: Aut incidunt maiores quam.
+        name: my-vpc-module
+        namespace: Aut et dolores.
+        onboarding_pipeline: Module_Onboarding_Pipeline
+        onboarding_pipeline_org: my_org
+        onboarding_pipeline_project: my_project
+        onboarding_pipeline_sync: true
+        org: my_org
+        project: my_project
+        repository: my-terraform-modules
+        repository_branch: main
+        repository_commit: abc10ed
+        repository_connector: my_github_connector
+        repository_path: ''
+        repository_url: Et et doloribus ullam.
+        scope_org: my_org
+        scope_project: my_project
+        storage_type: artifact
+        synced: 8344366690986247000
+        system: aws
+        tags: Esse dolor eligendi reprehenderit.
+        testing_enabled: false
+        testing_metadata:
+          account: 6bi
+          org: 6w5
+          pipelines:
+          - Maxime eius vel in maxime et ad.
+          - Quia ipsum voluptas reprehenderit dolores ea mollitia.
+          - Nostrum dolore est sit ut.
+          - Accusamus beatae fuga consequatur officiis exercitationem.
+          project: 3xt
+          provider_connector: Tempora expedita hic omnis sapiente itaque qui.
+          provisioner_type: Et ipsum necessitatibus eos.
+          provisioner_version: Expedita est maxime ut explicabo.
+          release_pipeline: Quibusdam soluta dicta.
+        updated: 2045512812616660500
+        version_statuses:
+          Id tempore repudiandae.: Qui qui deserunt et aut.
+          Quasi quos neque vitae sunt enim quod.: Aut aut et eligendi explicabo repellendus harum.
+        versions:
+        - Aut illo omnis quibusdam.
+        - Omnis eligendi unde.
+        - Maiores omnis blanditiis explicabo voluptates totam.
+        - A sunt vel.
+    OutputMetadata:
+      type: object
+      properties:
+        output_description:
+          type: string
+          description: Output description
+          example: Suscipit fugit sed sint.
+        output_name:
+          type: string
+          description: Output name
+          example: Consectetur distinctio rerum hic sunt.
+        output_sensitive:
+          type: boolean
+          description: Output sensitivity
+          example: true
+      example:
+        output_description: Dolores officiis.
+        output_name: Quo accusantium vitae quos ipsum sint voluptas.
+        output_sensitive: false
+    ModuleLifecycleOverride:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Optional reason for this override
+          example: e1a
+          maxLength: 1000
+        tier:
+          type: string
+          description: Lifecycle tier to assign to this version
+          example: deprecated
+          enum:
+          - supported
+          - warning
+          - deprecated
+        version:
+          type: string
+          description: Version string to override
+          example: v2.1.0
+          minLength: 1
+      description: Manual lifecycle tier override for a specific module version
+      example:
+        reason: i0f
+        tier: deprecated
+        version: v2.1.0
+      required:
+      - version
+      - tier
+    CreateModuleExecutionResponse:
+      type: object
+      properties:
+        account:
+          type: string
+          description: account name
+          example: Sed perferendis error explicabo enim.
+        created:
+          type: integer
+          description: Created is the unix timestamp at which the resource was originally created in milliseconds.
+          example: 3712325767704545000
+          format: int64
+        metadata:
+          $ref: '#/components/schemas/ModuleExecutionMetadata'
+        module_onboarding:
+          type: boolean
+          description: Is module onboarding execution
+          default: false
+          example: false
+        moduleId:
+          type: string
+          description: The unique identifier for the associated module
+          example: Praesentium qui sit aliquid voluptatem quia.
+        org:
+          type: string
+          example: Quis sequi.
+        project:
+          type: string
+          example: Accusantium voluptate a dolor.
+        status:
+          type: string
+          description: The overall status of the execution
+          example: Reiciendis soluta incidunt quia nihil et.
+      example:
+        account: Itaque maiores molestias recusandae ut dolorem quia.
+        created: 2052231546877588500
+        metadata:
+          pipeline: Molestias nihil nam reprehenderit.
+          pipeline_execution_id: Ea qui quo magnam cupiditate laudantium nostrum.
+          pipeline_execution_number: Est quo voluptas est.
+          pipeline_name: Quasi rerum aperiam.
+          pipeline_stage_id: Corrupti ducimus sed minus qui illo ut.
+          trigger:
+            Aut voluptatem.: Consequatur est non magni eum est.
+            Cumque quis enim odio quia ut molestiae.: Nihil quisquam rerum est iste et alias.
+            Nam in.: Doloremque sint omnis quis maxime et molestiae.
+        module_onboarding: true
+        moduleId: Voluptas ipsa non necessitatibus qui ipsa.
+        org: Consectetur quis ad impedit sed necessitatibus.
+        project: Quidem voluptatem.
+        status: Nobis dicta sint magnam sapiente.
+      required:
+      - org
+      - project
+      - status
+      - created
+      - account
+      - pipeline_org
+      - pipeline_project
+      - pipelineExecutionId
+      - pipelineStageId
+      - moduleId
+      - pipeline
+    VariableMetadata:
+      type: object
+      properties:
+        variable_default:
+          type: string
+          description: Variable default value
+          example: Nisi impedit hic necessitatibus et est blanditiis.
+        variable_description:
+          type: string
+          description: Variable description
+          example: Quidem expedita mollitia.
+        variable_name:
+          type: string
+          description: Variable name
+          example: Omnis et ipsa.
+        variable_required:
+          type: boolean
+          description: Is variable required
+          example: false
+        variable_sensitive:
+          type: boolean
+          description: Is variable sensitive
+          example: true
+        variable_type:
+          type: string
+          description: Variable type
+          example: Harum atque.
+      example:
+        variable_default: Architecto corporis.
+        variable_description: Sed dolor vero ab non sit.
+        variable_name: Omnis laborum ducimus.
+        variable_required: true
+        variable_sensitive: true
+        variable_type: Voluptatem voluptatem aut.
+    GetModuleLifecycleVersionStatusResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Enforcement action derived from the tier's rule action
+          example: fail
+          enum:
+          - no_action
+          - warn
+          - fail
+        minimum_supported_version:
+          type: string
+          description: The lowest-numbered version currently in the supported tier
+          example: Atque dolorem doloremque et in.
+        tier:
+          type: string
+          description: 'Lifecycle tier: supported, warning, or deprecated'
+          example: deprecated
+          enum:
+          - supported
+          - warning
+          - deprecated
+      example:
+        action: warn
+        minimum_supported_version: Necessitatibus aut iste exercitationem cupiditate.
+        tier: supported
+      required:
+      - tier
+      - action
     HarnessIacmModuleRegistryModuleTestingMetadata:
       type: object
       properties:
@@ -5050,24 +5594,25 @@ components:
       - provisioner_version
       - provider_connector
       - pipelines
-    HarnessIacmModuleRegistryVersionTypes:
+    DependenciesMetadata:
       type: object
       properties:
-        git_version:
+        dependency_name:
           type: string
-          description: git version
-          example: Ipsum nam at ex natus fugit.
-        module_version:
+          description: Dependency name
+          example: Et nam expedita natus quis eius voluptatem.
+        dependency_source:
           type: string
-          description: module version
-          example: Eum provident dicta facere atque.
-      description: Returns the module_version and git_version for a specific module
+          description: Dependency source
+          example: Nihil minima.
+        dependency_version:
+          type: string
+          description: Dependency version
+          example: Impedit sunt dolor sapiente impedit ab suscipit.
       example:
-        git_version: Nihil saepe inventore maiores.
-        module_version: Ipsum veritatis pariatur perspiciatis.
-      required:
-      - module_version
-      - git_version
+        dependency_name: Ex possimus et aut.
+        dependency_source: Dolor omnis odit autem voluptate voluptatem iusto.
+        dependency_version: Quos voluptatem dolorem quia dolor.
     PutModuleLifecycleResponse:
       type: object
       properties:
@@ -5148,6 +5693,968 @@ components:
       - supported_action
       - warning_action
       - deprecated_action
+    ListModuleVersionsResponse:
+      type: object
+      properties:
+        modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/HarnessIacmModuleRegistryVersions'
+          description: list of versions for a given module
+          example:
+          - versions:
+            - git_version: Doloremque et et recusandae.
+              module_version: Et voluptatum iure eum debitis sunt.
+            - git_version: Doloremque et et recusandae.
+              module_version: Et voluptatum iure eum debitis sunt.
+          - versions:
+            - git_version: Doloremque et et recusandae.
+              module_version: Et voluptatum iure eum debitis sunt.
+            - git_version: Doloremque et et recusandae.
+              module_version: Et voluptatum iure eum debitis sunt.
+          - versions:
+            - git_version: Doloremque et et recusandae.
+              module_version: Et voluptatum iure eum debitis sunt.
+            - git_version: Doloremque et et recusandae.
+              module_version: Et voluptatum iure eum debitis sunt.
+          - versions:
+            - git_version: Doloremque et et recusandae.
+              module_version: Et voluptatum iure eum debitis sunt.
+            - git_version: Doloremque et et recusandae.
+              module_version: Et voluptatum iure eum debitis sunt.
+      example:
+        modules:
+        - versions:
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+        - versions:
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+        - versions:
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+        - versions:
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+      required:
+      - modules
+    ModuleTestingMetadata:
+      type: object
+      properties:
+        account:
+          type: string
+          description: Account is the internal customer account ID.
+          example: t
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          description: Org is the organisation identifier.
+          example: c8d
+          minLength: 1
+          maxLength: 128
+        pipelines:
+          type: array
+          items:
+            type: string
+            example: Eos quia.
+          description: pipelines where the testing is enabled
+          example:
+          - Molestiae nihil quia tenetur natus ad.
+          - Rerum harum blanditiis ut.
+        project:
+          type: string
+          description: Project is the project identifier.
+          example: '4'
+          minLength: 1
+          maxLength: 128
+        provider_connector:
+          type: string
+          description: provider connector for testing purposes
+          example: Doloremque expedita voluptatem.
+        provisioner_type:
+          type: string
+          description: provisioner type for testing purposes
+          example: Fugit repudiandae atque deleniti at quibusdam quo.
+        provisioner_version:
+          type: string
+          description: provisioner version for testing purposes
+          example: Quasi eum iusto.
+        release_pipeline:
+          type: string
+          description: release pipeline
+          example: Omnis sed commodi quis.
+      description: ModuleTestingMetadata result type (default view)
+      example:
+        account: xn
+        org: m
+        pipelines:
+        - Nesciunt ad cupiditate sed blanditiis.
+        - Et rerum voluptatem consectetur nulla.
+        - Perferendis dignissimos explicabo quia.
+        project: '8'
+        provider_connector: Doloremque quos repudiandae.
+        provisioner_type: Blanditiis fugit veniam.
+        provisioner_version: Temporibus laudantium vero rerum eaque ex ex.
+        release_pipeline: Voluptates minus consectetur incidunt neque aliquid aut.
+      required:
+      - account
+      - org
+      - project
+      - provisioner_type
+      - provisioner_version
+      - provider_connector
+      - pipelines
+    SendModuleEventRequest:
+      type: object
+      properties:
+        account:
+          type: string
+          description: account name
+          example: Distinctio eveniet minus voluptatibus.
+        eventType:
+          type: string
+          description: The type of event that occurred
+          example: Atque quos iusto tempora.
+        metadata:
+          $ref: '#/components/schemas/ModuleExecutionMetadata'
+        org:
+          type: string
+          description: pipeline org
+          example: Enim amet quidem eaque occaecati labore.
+        project:
+          type: string
+          description: pipeline project
+          example: Iusto sint aperiam debitis similique.
+      example:
+        account: Dolorum facere consequatur voluptates odio.
+        eventType: Sequi amet ipsum aliquid vel officiis quo.
+        metadata:
+          pipeline: Est porro ullam omnis sit.
+          pipeline_execution_id: Nisi eveniet.
+          pipeline_execution_number: Deserunt exercitationem sit consequatur.
+          pipeline_name: Dolores et magni.
+          pipeline_stage_id: Reiciendis unde in temporibus sit laborum.
+          trigger:
+            Nam ex maxime consequatur dolor facere.: Ut quod qui iure rerum.
+            Sed voluptatem non.: Inventore eos officiis.
+        org: Rerum nostrum aspernatur quaerat odit voluptatum est.
+        project: Molestiae quaerat qui rem nulla.
+      required:
+      - eventType
+      - account
+      - org
+      - project
+    CreateModuleExecutionRequest:
+      type: object
+      properties:
+        account:
+          type: string
+          description: account name
+          example: Nemo doloremque debitis.
+        module_onboarding:
+          type: boolean
+          description: Is module onboarding execution
+          default: false
+          example: true
+        pipeline:
+          type: string
+          description: The unique identifier for the associated pipeline
+          example: Ut explicabo fugiat sit non.
+        pipeline_org:
+          type: string
+          description: pipeline org
+          example: Recusandae et saepe error.
+        pipeline_project:
+          type: string
+          description: pipeline project
+          example: Non repellendus animi ratione ea dignissimos enim.
+        pipelineExecutionId:
+          type: string
+          description: The unique identifier for the associated pipeline execution
+          example: Amet beatae rerum amet non.
+        pipelineStageId:
+          type: string
+          description: The unique identifier for the associated pipeline stage
+          example: Culpa provident.
+      example:
+        account: Illum rerum eius fugiat eveniet.
+        module_onboarding: true
+        pipeline: Magni itaque consequatur ad consequatur.
+        pipeline_org: A quas et vitae esse minus itaque.
+        pipeline_project: Aut fugiat eum atque vitae voluptatem temporibus.
+        pipelineExecutionId: Cumque nulla laudantium eos eos et qui.
+        pipelineStageId: Nemo sunt enim.
+      required:
+      - account
+      - pipeline_org
+      - pipeline_project
+      - pipelineExecutionId
+      - pipelineStageId
+      - pipeline
+    ModuleExecutionResourceCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/HarnessIacmModuleexecutionresource'
+      example:
+      - account: Atque quaerat quasi eveniet nostrum.
+        created: 4270900858918391300
+        metadata:
+          pipeline: Quidem est impedit alias aut eaque.
+          pipeline_execution_id: Aliquid perspiciatis.
+          pipeline_execution_number: Error totam quae.
+          pipeline_name: Quos eum sunt eum.
+          pipeline_stage_id: Ab temporibus dolores tempora maxime.
+          trigger:
+            Voluptas cum.: Qui numquam.
+        module_onboarding: true
+        moduleId: Rerum reiciendis quasi voluptate.
+        org: Eum modi atque cum.
+        project: Commodi fuga aut itaque corrupti dignissimos.
+        status: Rerum aut.
+      - account: Atque quaerat quasi eveniet nostrum.
+        created: 4270900858918391300
+        metadata:
+          pipeline: Quidem est impedit alias aut eaque.
+          pipeline_execution_id: Aliquid perspiciatis.
+          pipeline_execution_number: Error totam quae.
+          pipeline_name: Quos eum sunt eum.
+          pipeline_stage_id: Ab temporibus dolores tempora maxime.
+          trigger:
+            Voluptas cum.: Qui numquam.
+        module_onboarding: true
+        moduleId: Rerum reiciendis quasi voluptate.
+        org: Eum modi atque cum.
+        project: Commodi fuga aut itaque corrupti dignissimos.
+        status: Rerum aut.
+      - account: Atque quaerat quasi eveniet nostrum.
+        created: 4270900858918391300
+        metadata:
+          pipeline: Quidem est impedit alias aut eaque.
+          pipeline_execution_id: Aliquid perspiciatis.
+          pipeline_execution_number: Error totam quae.
+          pipeline_name: Quos eum sunt eum.
+          pipeline_stage_id: Ab temporibus dolores tempora maxime.
+          trigger:
+            Voluptas cum.: Qui numquam.
+        module_onboarding: true
+        moduleId: Rerum reiciendis quasi voluptate.
+        org: Eum modi atque cum.
+        project: Commodi fuga aut itaque corrupti dignissimos.
+        status: Rerum aut.
+      - account: Atque quaerat quasi eveniet nostrum.
+        created: 4270900858918391300
+        metadata:
+          pipeline: Quidem est impedit alias aut eaque.
+          pipeline_execution_id: Aliquid perspiciatis.
+          pipeline_execution_number: Error totam quae.
+          pipeline_name: Quos eum sunt eum.
+          pipeline_stage_id: Ab temporibus dolores tempora maxime.
+          trigger:
+            Voluptas cum.: Qui numquam.
+        module_onboarding: true
+        moduleId: Rerum reiciendis quasi voluptate.
+        org: Eum modi atque cum.
+        project: Commodi fuga aut itaque corrupti dignissimos.
+        status: Rerum aut.
+    ModuleExecutionMetadata:
+      type: object
+      properties:
+        pipeline:
+          type: string
+          description: The unique identifier of any associated pipeline
+          example: Occaecati voluptatem vel enim sit quia.
+        pipeline_execution_id:
+          type: string
+          description: The unique identifier for any associated pipeline execution
+          example: Veniam facere ipsa deleniti unde et.
+        pipeline_execution_number:
+          type: string
+          description: The unique number for any associated pipeline execution
+          example: Explicabo similique sit temporibus cumque.
+        pipeline_name:
+          type: string
+          description: The name of any associated pipeline
+          example: Dolor voluptatem unde voluptatem aliquid.
+        pipeline_stage_id:
+          type: string
+          description: The unique identifier for the associated pipeline stage
+          example: Repellat cupiditate earum laboriosam ipsam.
+        trigger:
+          type: object
+          description: Trigger info for any associated pipeline execution
+          example:
+            Facilis minus dolorem neque rem vel illo.: Illum nobis sunt suscipit.
+            Voluptatum ut dolor.: Eum quaerat libero.
+          additionalProperties: true
+      example:
+        pipeline: Aperiam numquam at deserunt alias.
+        pipeline_execution_id: Eos aliquid.
+        pipeline_execution_number: Saepe non eos quaerat veniam qui.
+        pipeline_name: Asperiores laudantium velit amet.
+        pipeline_stage_id: Quia non quia.
+        trigger:
+          Eos quia similique atque expedita nemo.: Enim aliquam vitae accusamus.
+    UpdateTestingRequest:
+      type: object
+      properties:
+        pipeline_id:
+          type: array
+          items:
+            type: string
+            example: Itaque eum eum.
+          description: pipelines to create the webhooks to trigger the executions for testing
+          example:
+          - Velit incidunt.
+          - Autem et dignissimos aperiam.
+          - Odio ipsam sint aspernatur quis.
+          - Nemo sapiente eaque aut aperiam in quibusdam.
+        pipeline_org:
+          type: string
+          description: pipeline org
+          example: Voluptas magni.
+        pipeline_project:
+          type: string
+          description: pipeline project
+          example: Aut et quisquam beatae.
+        provider_connector:
+          type: string
+          description: provider connector
+          default: ''
+          example: Est rem.
+        provisioner_type:
+          type: string
+          description: provisioner type
+          example: Est a.
+        provisioner_version:
+          type: string
+          description: provisioner version
+          example: Nobis voluptatum autem officia ut ab.
+        release_pipeline:
+          type: string
+          description: pipeline to create the webhooks for releases
+          example: Perspiciatis aliquam sed culpa fugiat corrupti.
+      example:
+        pipeline_id:
+        - Et quisquam animi velit laboriosam soluta.
+        - Dolor blanditiis impedit.
+        pipeline_org: Maiores nisi dolor aut et voluptas voluptas.
+        pipeline_project: Omnis et facere repellat enim.
+        provider_connector: Sapiente ea.
+        provisioner_type: Autem repudiandae ratione.
+        provisioner_version: Eum ut suscipit libero minus sit dignissimos.
+        release_pipeline: Exercitationem sit.
+      required:
+      - provisioner_type
+      - provisioner_version
+      - pipeline_org
+      - pipeline_project
+    ListModuleMetadataResponse:
+      type: object
+      properties:
+        account:
+          type: string
+          description: account name
+          example: Saepe provident omnis necessitatibus ut.
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependenciesMetadata'
+          description: Dependencies of the module
+          example:
+          - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
+            dependency_source: Et aut qui id.
+            dependency_version: Modi quo quis.
+          - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
+            dependency_source: Et aut qui id.
+            dependency_version: Modi quo quis.
+          - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
+            dependency_source: Et aut qui id.
+            dependency_version: Modi quo quis.
+          - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
+            dependency_source: Et aut qui id.
+            dependency_version: Modi quo quis.
+        examples_paths:
+          type: array
+          items:
+            type: string
+            example: Voluptas aut reprehenderit voluptas aliquam illo.
+          description: Example directories discovered for this module version
+          example:
+          - Eius dolores sed quia alias.
+          - Voluptas voluptates.
+          - Praesentium soluta.
+        metadata_error:
+          type: string
+          description: error while retrieving the module
+          example: Velit ipsam sapiente sed consequatur.
+        module_version:
+          type: string
+          description: module version
+          example: Maxime corporis est maxime tempore est.
+        name:
+          type: string
+          description: module name
+          example: A quibusdam voluptas inventore consequatur est et.
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutputMetadata'
+          description: Outputs of the module
+          example:
+          - output_description: Sint aliquam id sed.
+            output_name: Illum eligendi nesciunt labore aut magnam saepe.
+            output_sensitive: true
+          - output_description: Sint aliquam id sed.
+            output_name: Illum eligendi nesciunt labore aut magnam saepe.
+            output_sensitive: true
+          - output_description: Sint aliquam id sed.
+            output_name: Illum eligendi nesciunt labore aut magnam saepe.
+            output_sensitive: true
+          - output_description: Sint aliquam id sed.
+            output_name: Illum eligendi nesciunt labore aut magnam saepe.
+            output_sensitive: true
+        providers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderMetadata'
+          description: Providers of the module
+          example:
+          - provider_name: Quisquam culpa.
+            provider_source: Aliquid autem quam consequatur.
+            provider_version: Reiciendis repellat consequatur.
+          - provider_name: Quisquam culpa.
+            provider_source: Aliquid autem quam consequatur.
+            provider_version: Reiciendis repellat consequatur.
+          - provider_name: Quisquam culpa.
+            provider_source: Aliquid autem quam consequatur.
+            provider_version: Reiciendis repellat consequatur.
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceMetadata'
+          description: Resources of the module
+          example:
+          - resource_name: Doloribus omnis eum.
+            resource_type: Id suscipit vel praesentium velit.
+          - resource_name: Doloribus omnis eum.
+            resource_type: Id suscipit vel praesentium velit.
+        scope_org:
+          type: string
+          description: org name
+          example: Qui eveniet.
+        scope_project:
+          type: string
+          description: project name
+          example: Est eum ut.
+        submodule:
+          type: array
+          items:
+            type: string
+            example: Debitis excepturi consequatur ut labore repellat.
+          description: Submodules of the module
+          example:
+          - Ut et.
+          - Voluptates nesciunt sint nostrum tempora iure.
+        system:
+          type: string
+          description: system name
+          example: Repellat necessitatibus in placeat dolorem.
+        variables:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariableMetadata'
+          description: Variables of the module
+          example:
+          - variable_default: Quae totam enim.
+            variable_description: Placeat corporis.
+            variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
+            variable_required: true
+            variable_sensitive: false
+            variable_type: Vitae minus.
+          - variable_default: Quae totam enim.
+            variable_description: Placeat corporis.
+            variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
+            variable_required: true
+            variable_sensitive: false
+            variable_type: Vitae minus.
+      example:
+        account: In accusamus animi.
+        dependencies:
+        - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
+          dependency_source: Et aut qui id.
+          dependency_version: Modi quo quis.
+        - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
+          dependency_source: Et aut qui id.
+          dependency_version: Modi quo quis.
+        - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
+          dependency_source: Et aut qui id.
+          dependency_version: Modi quo quis.
+        - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
+          dependency_source: Et aut qui id.
+          dependency_version: Modi quo quis.
+        examples_paths:
+        - Tempora fugit.
+        - Molestias in velit nesciunt non debitis harum.
+        - Voluptatibus assumenda maiores.
+        metadata_error: A aspernatur asperiores.
+        module_version: Enim voluptatem at fugiat excepturi.
+        name: A dolorem.
+        outputs:
+        - output_description: Sint aliquam id sed.
+          output_name: Illum eligendi nesciunt labore aut magnam saepe.
+          output_sensitive: true
+        - output_description: Sint aliquam id sed.
+          output_name: Illum eligendi nesciunt labore aut magnam saepe.
+          output_sensitive: true
+        - output_description: Sint aliquam id sed.
+          output_name: Illum eligendi nesciunt labore aut magnam saepe.
+          output_sensitive: true
+        - output_description: Sint aliquam id sed.
+          output_name: Illum eligendi nesciunt labore aut magnam saepe.
+          output_sensitive: true
+        providers:
+        - provider_name: Quisquam culpa.
+          provider_source: Aliquid autem quam consequatur.
+          provider_version: Reiciendis repellat consequatur.
+        - provider_name: Quisquam culpa.
+          provider_source: Aliquid autem quam consequatur.
+          provider_version: Reiciendis repellat consequatur.
+        resources:
+        - resource_name: Doloribus omnis eum.
+          resource_type: Id suscipit vel praesentium velit.
+        - resource_name: Doloribus omnis eum.
+          resource_type: Id suscipit vel praesentium velit.
+        - resource_name: Doloribus omnis eum.
+          resource_type: Id suscipit vel praesentium velit.
+        scope_org: Repellendus et est.
+        scope_project: Sint facilis odio aut.
+        submodule:
+        - Nesciunt nulla perferendis.
+        - Excepturi officiis provident ea inventore corporis.
+        - Dolorem sint ut quos.
+        system: Et eius sit consequuntur commodi iste.
+        variables:
+        - variable_default: Quae totam enim.
+          variable_description: Placeat corporis.
+          variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
+          variable_required: true
+          variable_sensitive: false
+          variable_type: Vitae minus.
+        - variable_default: Quae totam enim.
+          variable_description: Placeat corporis.
+          variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
+          variable_required: true
+          variable_sensitive: false
+          variable_type: Vitae minus.
+        - variable_default: Quae totam enim.
+          variable_description: Placeat corporis.
+          variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
+          variable_required: true
+          variable_sensitive: false
+          variable_type: Vitae minus.
+        - variable_default: Quae totam enim.
+          variable_description: Placeat corporis.
+          variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
+          variable_required: true
+          variable_sensitive: false
+          variable_type: Vitae minus.
+      required:
+      - account
+      - name
+      - system
+      - module_version
+      - outputs
+      - providers
+      - resources
+      - variables
+    HarnessIacmModuleexecutionresource:
+      type: object
+      properties:
+        account:
+          type: string
+          description: account name
+          example: Ut ut sunt facilis culpa voluptatem qui.
+        created:
+          type: integer
+          description: Created is the unix timestamp at which the resource was originally created in milliseconds.
+          example: 384738815438029950
+          format: int64
+        metadata:
+          $ref: '#/components/schemas/ModuleExecutionMetadata'
+        module_onboarding:
+          type: boolean
+          description: Is module onboarding execution
+          default: false
+          example: true
+        moduleId:
+          type: string
+          description: The unique identifier for the associated module
+          example: Occaecati officiis rerum neque.
+        org:
+          type: string
+          example: Consequatur accusamus rem aliquam vitae.
+        project:
+          type: string
+          example: Totam aspernatur.
+        status:
+          type: string
+          description: The overall status of the execution
+          example: Amet reiciendis totam temporibus aspernatur deleniti.
+      description: ModuleExecutionResource is the representation for a single module execution.
+      example:
+        account: Est mollitia officiis quo aut quidem.
+        created: 5454402981113289000
+        metadata:
+          pipeline: Quidem est impedit alias aut eaque.
+          pipeline_execution_id: Aliquid perspiciatis.
+          pipeline_execution_number: Error totam quae.
+          pipeline_name: Quos eum sunt eum.
+          pipeline_stage_id: Ab temporibus dolores tempora maxime.
+          trigger:
+            Voluptas cum.: Qui numquam.
+        module_onboarding: false
+        moduleId: Ipsa iusto eaque quisquam qui.
+        org: Aliquam qui ratione quia voluptatem cum.
+        project: Error facilis corrupti totam debitis officiis facere.
+        status: Dolorem molestiae recusandae ipsum est ex.
+      required:
+      - org
+      - project
+      - status
+      - created
+      - account
+      - pipeline_org
+      - pipeline_project
+      - pipelineExecutionId
+      - pipelineStageId
+      - moduleId
+      - pipeline
+    BatchCheckModuleLifecycleRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleLifecycleBatchCheckItem'
+          description: List of modules to check
+          example:
+          - name: o3
+            namespace: k
+            system: t
+            version: 7p0
+          - name: o3
+            namespace: k
+            system: t
+            version: 7p0
+          - name: o3
+            namespace: k
+            system: t
+            version: 7p0
+          maxItems: 1000
+      example:
+        items:
+        - name: o3
+          namespace: k
+          system: t
+          version: 7p0
+        - name: o3
+          namespace: k
+          system: t
+          version: 7p0
+        - name: o3
+          namespace: k
+          system: t
+          version: 7p0
+      required:
+      - items
+    CreateModuleDataRequest:
+      type: object
+      properties:
+        download_url:
+          type: string
+          description: download url of the module
+          example: Qui maiores.
+        error:
+          type: object
+          description: error from the tag operation
+          example:
+            Voluptatem vero quidem non accusamus vero earum.: Omnis laudantium voluptates excepturi tempore et qui.
+          additionalProperties:
+            type: string
+            example: Porro sit cumque sint asperiores necessitatibus.
+        examples_paths:
+          type: array
+          items:
+            type: string
+            example: Occaecati commodi sapiente odio autem iste.
+          description: path of the examples relative to the module
+          example:
+          - Sed velit temporibus mollitia aliquam.
+          - Et quidem.
+          - Explicabo corporis sapiente vero.
+        git_tag:
+          type: string
+          description: git tag of the module
+          example: Fugiat ut quo rerum.
+        metadata:
+          type: string
+          description: metadata to be parsed
+          example: Quaerat laboriosam dolorum omnis quas et non.
+        repo_url:
+          type: string
+          description: url pointing to the repo
+          example: Tenetur quo veritatis placeat quis dicta.
+        submodule_name:
+          type: string
+          description: name of the submodule been processed
+          example: Explicabo alias.
+        submodule_paths:
+          type: array
+          items:
+            type: string
+            example: Earum et rerum.
+          description: path of the submodules relative to the module
+          example:
+          - Praesentium sapiente enim.
+          - Occaecati et minima placeat nihil vitae beatae.
+          - Quisquam vitae earum consequatur aut voluptas.
+          - Nulla nesciunt ut accusantium.
+      example:
+        download_url: Repudiandae eligendi.
+        error:
+          Expedita maiores cupiditate magni eos.: Ut consequatur eos velit molestiae.
+          Incidunt doloremque.: Sint et eum in et aut corporis.
+          Quia quis.: Consequuntur voluptatem aperiam a.
+        examples_paths:
+        - Veniam voluptatem maiores magni.
+        - Cumque vitae.
+        git_tag: Possimus autem nulla omnis vero ut corporis.
+        metadata: Harum quia quo ipsam in.
+        repo_url: Error voluptates quo ipsam deleniti.
+        submodule_name: Consectetur velit sed sequi porro.
+        submodule_paths:
+        - Sit nihil perferendis et quia.
+        - Aliquid sit.
+        - Distinctio nobis.
+        - Minima totam velit dolor.
+      required:
+      - metadata
+      - download_url
+      - git_tag
+    ListModuleExampleTreeResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExampleTreeItem'
+          description: immediate children at the requested path
+          example:
+          - content_type: file
+            name: Possimus iure rerum ipsam consequatur.
+            path: Facere minus aut cupiditate.
+          - content_type: file
+            name: Possimus iure rerum ipsam consequatur.
+            path: Facere minus aut cupiditate.
+      example:
+        items:
+        - content_type: file
+          name: Possimus iure rerum ipsam consequatur.
+          path: Facere minus aut cupiditate.
+        - content_type: file
+          name: Possimus iure rerum ipsam consequatur.
+          path: Facere minus aut cupiditate.
+      required:
+      - items
+    ExampleTreeItem:
+      type: object
+      properties:
+        content_type:
+          type: string
+          description: kind of entry
+          example: directory
+          enum:
+          - file
+          - directory
+        name:
+          type: string
+          description: leaf name of the entry (no path separators)
+          example: Placeat quo omnis ut.
+        path:
+          type: string
+          description: full relative path from the module root, forward-slash separated
+          example: Deleniti expedita in reprehenderit quas.
+      example:
+        content_type: file
+        name: Ut ut animi rerum sint ipsum.
+        path: Debitis ea ut quia facere.
+      required:
+      - name
+      - path
+      - content_type
+    CreateTestingPipelineRequest:
+      type: object
+      properties:
+        pipeline_org:
+          type: string
+          description: pipeline org
+          example: Laboriosam temporibus natus incidunt.
+        pipeline_project:
+          type: string
+          description: pipeline project
+          example: Sit dolores dolor.
+        type:
+          type: string
+          description: type of the pipeline to create
+          default: test
+          example: Ut possimus.
+      example:
+        pipeline_org: Pariatur est ex voluptates.
+        pipeline_project: Expedita quidem laboriosam eos.
+        type: Eveniet et quia debitis voluptates qui.
+      required:
+      - pipeline_org
+      - pipeline_project
+    HarnessIacmModuleRegistryVersionTypes:
+      type: object
+      properties:
+        git_version:
+          type: string
+          description: git version
+          example: Ipsum nam at ex natus fugit.
+        module_version:
+          type: string
+          description: module version
+          example: Eum provident dicta facere atque.
+      description: Returns the module_version and git_version for a specific module
+      example:
+        git_version: Nihil saepe inventore maiores.
+        module_version: Ipsum veritatis pariatur perspiciatis.
+      required:
+      - module_version
+      - git_version
+    ProviderMetadata:
+      type: object
+      properties:
+        provider_name:
+          type: string
+          description: Provider name
+          example: Facere natus enim tempora quia.
+        provider_source:
+          type: string
+          description: Provider source
+          example: Autem iusto aut aperiam provident.
+        provider_version:
+          type: string
+          description: Provider version
+          example: Ut et.
+      example:
+        provider_name: Qui quos qui.
+        provider_source: Nisi occaecati corrupti dolore soluta.
+        provider_version: Est et.
+    EnableTestingRequest:
+      type: object
+      properties:
+        pipeline_id:
+          type: array
+          items:
+            type: string
+            example: Ut perspiciatis repellendus quis enim.
+          description: pipelines to create the webhooks to trigger the executions for testing
+          example:
+          - Eos ducimus deleniti est.
+          - Explicabo vero corporis ea.
+          - Facilis molestiae officia vero est.
+        pipeline_org:
+          type: string
+          description: pipeline org
+          example: Excepturi voluptates ipsum mollitia.
+        pipeline_project:
+          type: string
+          description: pipeline project
+          example: Facilis mollitia voluptatum officia aliquam.
+        provider_connector:
+          type: string
+          description: provider connector
+          default: ''
+          example: Commodi nisi molestias fugit illo.
+        provisioner_type:
+          type: string
+          description: provisioner type
+          example: Perferendis minima laboriosam expedita amet.
+        provisioner_version:
+          type: string
+          description: provisioner version
+          example: Eligendi quis omnis minus.
+        release_pipeline:
+          type: string
+          description: pipeline to create the webhooks for releases
+          example: Quibusdam voluptatem quo aliquid.
+      example:
+        pipeline_id:
+        - Sapiente animi porro.
+        - Et officia.
+        pipeline_org: Consequatur mollitia.
+        pipeline_project: Error quis eius.
+        provider_connector: Aut officia.
+        provisioner_type: Placeat illum consectetur exercitationem quae.
+        provisioner_version: Exercitationem ea maxime.
+        release_pipeline: Voluptatum qui ut quia qui laudantium odio.
+      required:
+      - provisioner_type
+      - provisioner_version
+      - pipeline_org
+      - pipeline_project
+    IaCMError:
+      type: object
+      properties:
+        fault:
+          type: boolean
+          description: Is the error a server-side fault?
+          example: false
+        id:
+          type: string
+          description: ID is a unique identifier for this particular occurrence of the problem.
+          example: 123abc
+        message:
+          type: string
+          description: Message is a human-readable explanation specific to this occurrence of the problem.
+          example: parameter 'p' must be an integer
+        name:
+          type: string
+          description: Name is the name of this class of errors.
+          example: bad_request
+        temporary:
+          type: boolean
+          description: Is the error temporary?
+          example: false
+        timeout:
+          type: boolean
+          description: Is the error a timeout?
+          example: true
+      example:
+        fault: false
+        id: 123abc
+        message: parameter 'p' must be an integer
+        name: bad_request
+        temporary: false
+        timeout: true
+      required:
+      - name
+      - id
+      - message
+      - temporary
+      - timeout
+      - fault
     ListModuleByIDResponse:
       type: object
       properties:
@@ -5373,326 +6880,6 @@ components:
       - created
       - updated
       - synced
-    ListModuleExampleTreeResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExampleTreeItem'
-          description: immediate children at the requested path
-          example:
-          - content_type: file
-            name: Possimus iure rerum ipsam consequatur.
-            path: Facere minus aut cupiditate.
-          - content_type: file
-            name: Possimus iure rerum ipsam consequatur.
-            path: Facere minus aut cupiditate.
-      example:
-        items:
-        - content_type: file
-          name: Possimus iure rerum ipsam consequatur.
-          path: Facere minus aut cupiditate.
-        - content_type: file
-          name: Possimus iure rerum ipsam consequatur.
-          path: Facere minus aut cupiditate.
-      required:
-      - items
-    IaCMError:
-      type: object
-      properties:
-        fault:
-          type: boolean
-          description: Is the error a server-side fault?
-          example: false
-        id:
-          type: string
-          description: ID is a unique identifier for this particular occurrence of the problem.
-          example: 123abc
-        message:
-          type: string
-          description: Message is a human-readable explanation specific to this occurrence of the problem.
-          example: parameter 'p' must be an integer
-        name:
-          type: string
-          description: Name is the name of this class of errors.
-          example: bad_request
-        temporary:
-          type: boolean
-          description: Is the error temporary?
-          example: false
-        timeout:
-          type: boolean
-          description: Is the error a timeout?
-          example: true
-      example:
-        fault: false
-        id: 123abc
-        message: parameter 'p' must be an integer
-        name: bad_request
-        temporary: false
-        timeout: true
-      required:
-      - name
-      - id
-      - message
-      - temporary
-      - timeout
-      - fault
-    GetModuleLifecycleResponse:
-      type: object
-      properties:
-        deprecated_action:
-          type: string
-          description: Enforcement action for deprecated-tier versions
-          default: fail
-          example: no_action
-          enum:
-          - no_action
-          - warn
-          - fail
-        overrides:
-          type: array
-          items:
-            $ref: '#/components/schemas/ModuleLifecycleOverride'
-          description: Manual per-version tier overrides
-          example:
-          - reason: r11
-            tier: warning
-            version: v2.1.0
-          - reason: r11
-            tier: warning
-            version: v2.1.0
-          - reason: r11
-            tier: warning
-            version: v2.1.0
-          maxItems: 1000
-        supported_action:
-          type: string
-          description: Enforcement action for supported-tier versions
-          default: no_action
-          example: fail
-          enum:
-          - no_action
-          - warn
-          - fail
-        supported_count:
-          type: integer
-          description: Number of most-recent non-pre-release versions classified as supported
-          example: 3
-          format: int64
-          minimum: 1
-        warning_action:
-          type: string
-          description: Enforcement action for warning-tier versions
-          default: warn
-          example: fail
-          enum:
-          - no_action
-          - warn
-          - fail
-        warning_count:
-          type: integer
-          description: Number of versions immediately after the supported window classified as warning
-          example: 2
-          format: int64
-          minimum: 0
-      example:
-        deprecated_action: fail
-        overrides:
-        - reason: r11
-          tier: warning
-          version: v2.1.0
-        - reason: r11
-          tier: warning
-          version: v2.1.0
-        - reason: r11
-          tier: warning
-          version: v2.1.0
-        supported_action: no_action
-        supported_count: 3
-        warning_action: fail
-        warning_count: 2
-      required:
-      - supported_count
-      - warning_count
-      - supported_action
-      - warning_action
-      - deprecated_action
-    ModuleLifecycleRule:
-      type: object
-      properties:
-        deprecated_action:
-          type: string
-          description: Enforcement action for deprecated-tier versions
-          default: fail
-          example: fail
-          enum:
-          - no_action
-          - warn
-          - fail
-        overrides:
-          type: array
-          items:
-            $ref: '#/components/schemas/ModuleLifecycleOverride'
-          description: Manual per-version tier overrides
-          example:
-          - reason: q6a
-            tier: deprecated
-            version: v2.1.0
-          - reason: q6a
-            tier: deprecated
-            version: v2.1.0
-          - reason: q6a
-            tier: deprecated
-            version: v2.1.0
-          maxItems: 1000
-        supported_action:
-          type: string
-          description: Enforcement action for supported-tier versions
-          default: no_action
-          example: no_action
-          enum:
-          - no_action
-          - warn
-          - fail
-        supported_count:
-          type: integer
-          description: Number of most-recent non-pre-release versions classified as supported
-          example: 3
-          format: int64
-          minimum: 1
-        warning_action:
-          type: string
-          description: Enforcement action for warning-tier versions
-          default: warn
-          example: warn
-          enum:
-          - no_action
-          - warn
-          - fail
-        warning_count:
-          type: integer
-          description: Number of versions immediately after the supported window classified as warning
-          example: 2
-          format: int64
-          minimum: 0
-      description: Lifecycle rule configuration for a module registry module
-      example:
-        deprecated_action: no_action
-        overrides:
-        - reason: q6a
-          tier: deprecated
-          version: v2.1.0
-        - reason: q6a
-          tier: deprecated
-          version: v2.1.0
-        - reason: q6a
-          tier: deprecated
-          version: v2.1.0
-        supported_action: fail
-        supported_count: 3
-        warning_action: fail
-        warning_count: 2
-      required:
-      - supported_count
-      - warning_count
-      - supported_action
-      - warning_action
-      - deprecated_action
-    SendModuleEventRequest:
-      type: object
-      properties:
-        account:
-          type: string
-          description: account name
-          example: Distinctio eveniet minus voluptatibus.
-        eventType:
-          type: string
-          description: The type of event that occurred
-          example: Atque quos iusto tempora.
-        metadata:
-          $ref: '#/components/schemas/ModuleExecutionMetadata'
-        org:
-          type: string
-          description: pipeline org
-          example: Enim amet quidem eaque occaecati labore.
-        project:
-          type: string
-          description: pipeline project
-          example: Iusto sint aperiam debitis similique.
-      example:
-        account: Dolorum facere consequatur voluptates odio.
-        eventType: Sequi amet ipsum aliquid vel officiis quo.
-        metadata:
-          pipeline: Est porro ullam omnis sit.
-          pipeline_execution_id: Nisi eveniet.
-          pipeline_execution_number: Deserunt exercitationem sit consequatur.
-          pipeline_name: Dolores et magni.
-          pipeline_stage_id: Reiciendis unde in temporibus sit laborum.
-          trigger:
-            Nam ex maxime consequatur dolor facere.: Ut quod qui iure rerum.
-            Sed voluptatem non.: Inventore eos officiis.
-        org: Rerum nostrum aspernatur quaerat odit voluptatum est.
-        project: Molestiae quaerat qui rem nulla.
-      required:
-      - eventType
-      - account
-      - org
-      - project
-    ModuleLifecycleOverride:
-      type: object
-      properties:
-        reason:
-          type: string
-          description: Optional reason for this override
-          example: e1a
-          maxLength: 1000
-        tier:
-          type: string
-          description: Lifecycle tier to assign to this version
-          example: deprecated
-          enum:
-          - supported
-          - warning
-          - deprecated
-        version:
-          type: string
-          description: Version string to override
-          example: v2.1.0
-          minLength: 1
-      description: Manual lifecycle tier override for a specific module version
-      example:
-        reason: i0f
-        tier: deprecated
-        version: v2.1.0
-      required:
-      - version
-      - tier
-    HarnessIacmModuleRegistryVersions:
-      type: object
-      properties:
-        versions:
-          type: array
-          items:
-            $ref: '#/components/schemas/HarnessIacmModuleRegistryVersionTypes'
-          description: list of versions for a given module
-          example:
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-      description: Versions returns the list of versions for a given module
-      example:
-        versions:
-        - git_version: Doloremque et et recusandae.
-          module_version: Et voluptatum iure eum debitis sunt.
-        - git_version: Doloremque et et recusandae.
-          module_version: Et voluptatum iure eum debitis sunt.
-      required:
-      - versions
     ModuleResource:
       type: object
       properties:
@@ -5911,107 +7098,6 @@ components:
       - created
       - updated
       - synced
-    CreateModuleExecutionResponse:
-      type: object
-      properties:
-        account:
-          type: string
-          description: account name
-          example: Sed perferendis error explicabo enim.
-        created:
-          type: integer
-          description: Created is the unix timestamp at which the resource was originally created in milliseconds.
-          example: 3712325767704545000
-          format: int64
-        metadata:
-          $ref: '#/components/schemas/ModuleExecutionMetadata'
-        module_onboarding:
-          type: boolean
-          description: Is module onboarding execution
-          default: false
-          example: false
-        moduleId:
-          type: string
-          description: The unique identifier for the associated module
-          example: Praesentium qui sit aliquid voluptatem quia.
-        org:
-          type: string
-          example: Quis sequi.
-        project:
-          type: string
-          example: Accusantium voluptate a dolor.
-        status:
-          type: string
-          description: The overall status of the execution
-          example: Reiciendis soluta incidunt quia nihil et.
-      example:
-        account: Itaque maiores molestias recusandae ut dolorem quia.
-        created: 2052231546877588500
-        metadata:
-          pipeline: Molestias nihil nam reprehenderit.
-          pipeline_execution_id: Ea qui quo magnam cupiditate laudantium nostrum.
-          pipeline_execution_number: Est quo voluptas est.
-          pipeline_name: Quasi rerum aperiam.
-          pipeline_stage_id: Corrupti ducimus sed minus qui illo ut.
-          trigger:
-            Aut voluptatem.: Consequatur est non magni eum est.
-            Cumque quis enim odio quia ut molestiae.: Nihil quisquam rerum est iste et alias.
-            Nam in.: Doloremque sint omnis quis maxime et molestiae.
-        module_onboarding: true
-        moduleId: Voluptas ipsa non necessitatibus qui ipsa.
-        org: Consectetur quis ad impedit sed necessitatibus.
-        project: Quidem voluptatem.
-        status: Nobis dicta sint magnam sapiente.
-      required:
-      - org
-      - project
-      - status
-      - created
-      - account
-      - pipeline_org
-      - pipeline_project
-      - pipelineExecutionId
-      - pipelineStageId
-      - moduleId
-      - pipeline
-    ModuleExecutionMetadata:
-      type: object
-      properties:
-        pipeline:
-          type: string
-          description: The unique identifier of any associated pipeline
-          example: Occaecati voluptatem vel enim sit quia.
-        pipeline_execution_id:
-          type: string
-          description: The unique identifier for any associated pipeline execution
-          example: Veniam facere ipsa deleniti unde et.
-        pipeline_execution_number:
-          type: string
-          description: The unique number for any associated pipeline execution
-          example: Explicabo similique sit temporibus cumque.
-        pipeline_name:
-          type: string
-          description: The name of any associated pipeline
-          example: Dolor voluptatem unde voluptatem aliquid.
-        pipeline_stage_id:
-          type: string
-          description: The unique identifier for the associated pipeline stage
-          example: Repellat cupiditate earum laboriosam ipsam.
-        trigger:
-          type: object
-          description: Trigger info for any associated pipeline execution
-          example:
-            Facilis minus dolorem neque rem vel illo.: Illum nobis sunt suscipit.
-            Voluptatum ut dolor.: Eum quaerat libero.
-          additionalProperties: true
-      example:
-        pipeline: Aperiam numquam at deserunt alias.
-        pipeline_execution_id: Eos aliquid.
-        pipeline_execution_number: Saepe non eos quaerat veniam qui.
-        pipeline_name: Asperiores laudantium velit amet.
-        pipeline_stage_id: Quia non quia.
-        trigger:
-          Eos quia similique atque expedita nemo.: Enim aliquam vitae accusamus.
     CreateOnboardingPipelineRequest:
       type: object
       properties:
@@ -6033,524 +7119,30 @@ components:
       required:
       - org
       - project
-    ModuleExecutionResourceCollection:
-      type: array
-      items:
-        $ref: '#/components/schemas/HarnessIacmModuleexecutionresource'
-      example:
-      - account: Atque quaerat quasi eveniet nostrum.
-        created: 4270900858918391300
-        metadata:
-          pipeline: Quidem est impedit alias aut eaque.
-          pipeline_execution_id: Aliquid perspiciatis.
-          pipeline_execution_number: Error totam quae.
-          pipeline_name: Quos eum sunt eum.
-          pipeline_stage_id: Ab temporibus dolores tempora maxime.
-          trigger:
-            Voluptas cum.: Qui numquam.
-        module_onboarding: true
-        moduleId: Rerum reiciendis quasi voluptate.
-        org: Eum modi atque cum.
-        project: Commodi fuga aut itaque corrupti dignissimos.
-        status: Rerum aut.
-      - account: Atque quaerat quasi eveniet nostrum.
-        created: 4270900858918391300
-        metadata:
-          pipeline: Quidem est impedit alias aut eaque.
-          pipeline_execution_id: Aliquid perspiciatis.
-          pipeline_execution_number: Error totam quae.
-          pipeline_name: Quos eum sunt eum.
-          pipeline_stage_id: Ab temporibus dolores tempora maxime.
-          trigger:
-            Voluptas cum.: Qui numquam.
-        module_onboarding: true
-        moduleId: Rerum reiciendis quasi voluptate.
-        org: Eum modi atque cum.
-        project: Commodi fuga aut itaque corrupti dignissimos.
-        status: Rerum aut.
-      - account: Atque quaerat quasi eveniet nostrum.
-        created: 4270900858918391300
-        metadata:
-          pipeline: Quidem est impedit alias aut eaque.
-          pipeline_execution_id: Aliquid perspiciatis.
-          pipeline_execution_number: Error totam quae.
-          pipeline_name: Quos eum sunt eum.
-          pipeline_stage_id: Ab temporibus dolores tempora maxime.
-          trigger:
-            Voluptas cum.: Qui numquam.
-        module_onboarding: true
-        moduleId: Rerum reiciendis quasi voluptate.
-        org: Eum modi atque cum.
-        project: Commodi fuga aut itaque corrupti dignissimos.
-        status: Rerum aut.
-      - account: Atque quaerat quasi eveniet nostrum.
-        created: 4270900858918391300
-        metadata:
-          pipeline: Quidem est impedit alias aut eaque.
-          pipeline_execution_id: Aliquid perspiciatis.
-          pipeline_execution_number: Error totam quae.
-          pipeline_name: Quos eum sunt eum.
-          pipeline_stage_id: Ab temporibus dolores tempora maxime.
-          trigger:
-            Voluptas cum.: Qui numquam.
-        module_onboarding: true
-        moduleId: Rerum reiciendis quasi voluptate.
-        org: Eum modi atque cum.
-        project: Commodi fuga aut itaque corrupti dignissimos.
-        status: Rerum aut.
-    DownloadModuleResponse:
+    HarnessIacmModuleRegistryVersions:
       type: object
       properties:
-        location:
-          type: string
-          description: location of the artifact
-          example: Possimus neque officiis natus corporis omnis.
-      example:
-        location: Magnam in explicabo quia est.
-    CreateModuleExecutionRequest:
-      type: object
-      properties:
-        account:
-          type: string
-          description: account name
-          example: Nemo doloremque debitis.
-        module_onboarding:
-          type: boolean
-          description: Is module onboarding execution
-          default: false
-          example: true
-        pipeline:
-          type: string
-          description: The unique identifier for the associated pipeline
-          example: Ut explicabo fugiat sit non.
-        pipeline_org:
-          type: string
-          description: pipeline org
-          example: Recusandae et saepe error.
-        pipeline_project:
-          type: string
-          description: pipeline project
-          example: Non repellendus animi ratione ea dignissimos enim.
-        pipelineExecutionId:
-          type: string
-          description: The unique identifier for the associated pipeline execution
-          example: Amet beatae rerum amet non.
-        pipelineStageId:
-          type: string
-          description: The unique identifier for the associated pipeline stage
-          example: Culpa provident.
-      example:
-        account: Illum rerum eius fugiat eveniet.
-        module_onboarding: true
-        pipeline: Magni itaque consequatur ad consequatur.
-        pipeline_org: A quas et vitae esse minus itaque.
-        pipeline_project: Aut fugiat eum atque vitae voluptatem temporibus.
-        pipelineExecutionId: Cumque nulla laudantium eos eos et qui.
-        pipelineStageId: Nemo sunt enim.
-      required:
-      - account
-      - pipeline_org
-      - pipeline_project
-      - pipelineExecutionId
-      - pipelineStageId
-      - pipeline
-    ModuleTestingMetadata:
-      type: object
-      properties:
-        account:
-          type: string
-          description: Account is the internal customer account ID.
-          example: t
-          minLength: 1
-          maxLength: 128
-        org:
-          type: string
-          description: Org is the organisation identifier.
-          example: c8d
-          minLength: 1
-          maxLength: 128
-        pipelines:
+        versions:
           type: array
           items:
-            type: string
-            example: Eos quia.
-          description: pipelines where the testing is enabled
+            $ref: '#/components/schemas/HarnessIacmModuleRegistryVersionTypes'
+          description: list of versions for a given module
           example:
-          - Molestiae nihil quia tenetur natus ad.
-          - Rerum harum blanditiis ut.
-        project:
-          type: string
-          description: Project is the project identifier.
-          example: '4'
-          minLength: 1
-          maxLength: 128
-        provider_connector:
-          type: string
-          description: provider connector for testing purposes
-          example: Doloremque expedita voluptatem.
-        provisioner_type:
-          type: string
-          description: provisioner type for testing purposes
-          example: Fugit repudiandae atque deleniti at quibusdam quo.
-        provisioner_version:
-          type: string
-          description: provisioner version for testing purposes
-          example: Quasi eum iusto.
-        release_pipeline:
-          type: string
-          description: release pipeline
-          example: Omnis sed commodi quis.
-      description: ModuleTestingMetadata result type (default view)
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+          - git_version: Doloremque et et recusandae.
+            module_version: Et voluptatum iure eum debitis sunt.
+      description: Versions returns the list of versions for a given module
       example:
-        account: xn
-        org: m
-        pipelines:
-        - Nesciunt ad cupiditate sed blanditiis.
-        - Et rerum voluptatem consectetur nulla.
-        - Perferendis dignissimos explicabo quia.
-        project: '8'
-        provider_connector: Doloremque quos repudiandae.
-        provisioner_type: Blanditiis fugit veniam.
-        provisioner_version: Temporibus laudantium vero rerum eaque ex ex.
-        release_pipeline: Voluptates minus consectetur incidunt neque aliquid aut.
+        versions:
+        - git_version: Doloremque et et recusandae.
+          module_version: Et voluptatum iure eum debitis sunt.
+        - git_version: Doloremque et et recusandae.
+          module_version: Et voluptatum iure eum debitis sunt.
       required:
-      - account
-      - org
-      - project
-      - provisioner_type
-      - provisioner_version
-      - provider_connector
-      - pipelines
-    ProviderMetadata:
-      type: object
-      properties:
-        provider_name:
-          type: string
-          description: Provider name
-          example: Facere natus enim tempora quia.
-        provider_source:
-          type: string
-          description: Provider source
-          example: Autem iusto aut aperiam provident.
-        provider_version:
-          type: string
-          description: Provider version
-          example: Ut et.
-      example:
-        provider_name: Qui quos qui.
-        provider_source: Nisi occaecati corrupti dolore soluta.
-        provider_version: Est et.
-    UpdateModuleRequest:
-      type: object
-      properties:
-        description:
-          type: string
-          description: Free-form text describing the purpose and usage of the module.
-          example: Provisions a VPC with public and private subnets.
-        git_tag_style:
-          type: string
-          description: Pattern used to match Git tags for module versioning. Use 'module-name-*' to match tags like 'my-vpc-module-v1.0.0'.
-          example: module-name-*
-        name:
-          type: string
-          description: Human-readable name of the module. Must be unique within the same scope and system.
-          example: my-vpc-module
-          minLength: 1
-          maxLength: 128
-        onboarding_pipeline:
-          type: string
-          description: Identifier of the Harness pipeline used for module onboarding and metadata sync.
-          example: Module_Onboarding_Pipeline
-        onboarding_pipeline_org:
-          type: string
-          description: Organization where the onboarding pipeline is defined. Defaults to scope_org if not provided.
-          example: my_org
-        onboarding_pipeline_project:
-          type: string
-          description: Project where the onboarding pipeline is defined. Defaults to scope_project if not provided.
-          example: my_project
-        onboarding_pipeline_sync:
-          type: boolean
-          description: When true, module metadata is automatically synced via the onboarding pipeline when new Git tags are pushed.
-          default: false
-          example: true
-        org:
-          type: string
-          description: Organization identifier where the Git connector is defined. Defaults to scope_org if not provided.
-          example: my_org
-          maxLength: 1024
-        project:
-          type: string
-          description: Project identifier where the Git connector is defined. Defaults to scope_project if not provided.
-          example: my_project
-          maxLength: 1024
-        repository:
-          type: string
-          description: Name of the Git repository that contains the module source code.
-          example: my-terraform-modules
-        repository_branch:
-          type: string
-          description: Repository Branch in which the code should be accessed.
-          example: main
-        repository_commit:
-          type: string
-          description: Repository Commit/Tag in which the code should be accessed.
-          example: abc10ed
-        repository_connector:
-          type: string
-          description: Harness Git connector identifier used to access the Git repository. Must reference a valid Git connector in your account. Leave empty when using Harness Code as the repository source.
-          example: my_github_connector
-        repository_path:
-          type: string
-          description: Repository Path is the path in which the infra code resides.
-          default: ''
-          example: ''
-        storage_type:
-          type: string
-          description: Defines how module versions are stored. 'git_reference' resolves versions from Git tags; 'artifact' stores uploaded archive files.
-          default: git_reference
-          example: artifact
-          enum:
-          - git_reference
-          - artifact
-        system:
-          type: string
-          description: Provider or system the module targets. Lowercase letters only (e.g. aws, gcp, azure, kubernetes).
-          example: aws
-          pattern: ^[a-z]+$
-          minLength: 1
-          maxLength: 128
-        tags:
-          type: string
-          description: Comma-separated list of tags to categorize the module (e.g. networking,vpc,aws).
-          example: Molestiae totam autem quod est libero.
-      example:
-        description: Provisions a VPC with public and private subnets.
-        git_tag_style: module-name-*
-        name: my-vpc-module
-        onboarding_pipeline: Module_Onboarding_Pipeline
-        onboarding_pipeline_org: my_org
-        onboarding_pipeline_project: my_project
-        onboarding_pipeline_sync: false
-        org: my_org
-        project: my_project
-        repository: my-terraform-modules
-        repository_branch: main
-        repository_commit: abc10ed
-        repository_connector: my_github_connector
-        repository_path: ''
-        storage_type: git_reference
-        system: aws
-        tags: Vero earum est facere officia.
-      required:
-      - name
-      - system
-    EnableTestingRequest:
-      type: object
-      properties:
-        pipeline_id:
-          type: array
-          items:
-            type: string
-            example: Ut perspiciatis repellendus quis enim.
-          description: pipelines to create the webhooks to trigger the executions for testing
-          example:
-          - Eos ducimus deleniti est.
-          - Explicabo vero corporis ea.
-          - Facilis molestiae officia vero est.
-        pipeline_org:
-          type: string
-          description: pipeline org
-          example: Excepturi voluptates ipsum mollitia.
-        pipeline_project:
-          type: string
-          description: pipeline project
-          example: Facilis mollitia voluptatum officia aliquam.
-        provider_connector:
-          type: string
-          description: provider connector
-          default: ''
-          example: Commodi nisi molestias fugit illo.
-        provisioner_type:
-          type: string
-          description: provisioner type
-          example: Perferendis minima laboriosam expedita amet.
-        provisioner_version:
-          type: string
-          description: provisioner version
-          example: Eligendi quis omnis minus.
-        release_pipeline:
-          type: string
-          description: pipeline to create the webhooks for releases
-          example: Quibusdam voluptatem quo aliquid.
-      example:
-        pipeline_id:
-        - Sapiente animi porro.
-        - Et officia.
-        pipeline_org: Consequatur mollitia.
-        pipeline_project: Error quis eius.
-        provider_connector: Aut officia.
-        provisioner_type: Placeat illum consectetur exercitationem quae.
-        provisioner_version: Exercitationem ea maxime.
-        release_pipeline: Voluptatum qui ut quia qui laudantium odio.
-      required:
-      - provisioner_type
-      - provisioner_version
-      - pipeline_org
-      - pipeline_project
-    HarnessIacmModuleexecutionresource:
-      type: object
-      properties:
-        account:
-          type: string
-          description: account name
-          example: Ut ut sunt facilis culpa voluptatem qui.
-        created:
-          type: integer
-          description: Created is the unix timestamp at which the resource was originally created in milliseconds.
-          example: 384738815438029950
-          format: int64
-        metadata:
-          $ref: '#/components/schemas/ModuleExecutionMetadata'
-        module_onboarding:
-          type: boolean
-          description: Is module onboarding execution
-          default: false
-          example: true
-        moduleId:
-          type: string
-          description: The unique identifier for the associated module
-          example: Occaecati officiis rerum neque.
-        org:
-          type: string
-          example: Consequatur accusamus rem aliquam vitae.
-        project:
-          type: string
-          example: Totam aspernatur.
-        status:
-          type: string
-          description: The overall status of the execution
-          example: Amet reiciendis totam temporibus aspernatur deleniti.
-      description: ModuleExecutionResource is the representation for a single module execution.
-      example:
-        account: Est mollitia officiis quo aut quidem.
-        created: 5454402981113289000
-        metadata:
-          pipeline: Quidem est impedit alias aut eaque.
-          pipeline_execution_id: Aliquid perspiciatis.
-          pipeline_execution_number: Error totam quae.
-          pipeline_name: Quos eum sunt eum.
-          pipeline_stage_id: Ab temporibus dolores tempora maxime.
-          trigger:
-            Voluptas cum.: Qui numquam.
-        module_onboarding: false
-        moduleId: Ipsa iusto eaque quisquam qui.
-        org: Aliquam qui ratione quia voluptatem cum.
-        project: Error facilis corrupti totam debitis officiis facere.
-        status: Dolorem molestiae recusandae ipsum est ex.
-      required:
-      - org
-      - project
-      - status
-      - created
-      - account
-      - pipeline_org
-      - pipeline_project
-      - pipelineExecutionId
-      - pipelineStageId
-      - moduleId
-      - pipeline
-    DependenciesMetadata:
-      type: object
-      properties:
-        dependency_name:
-          type: string
-          description: Dependency name
-          example: Et nam expedita natus quis eius voluptatem.
-        dependency_source:
-          type: string
-          description: Dependency source
-          example: Nihil minima.
-        dependency_version:
-          type: string
-          description: Dependency version
-          example: Impedit sunt dolor sapiente impedit ab suscipit.
-      example:
-        dependency_name: Ex possimus et aut.
-        dependency_source: Dolor omnis odit autem voluptate voluptatem iusto.
-        dependency_version: Quos voluptatem dolorem quia dolor.
-    VariableMetadata:
-      type: object
-      properties:
-        variable_default:
-          type: string
-          description: Variable default value
-          example: Nisi impedit hic necessitatibus et est blanditiis.
-        variable_description:
-          type: string
-          description: Variable description
-          example: Quidem expedita mollitia.
-        variable_name:
-          type: string
-          description: Variable name
-          example: Omnis et ipsa.
-        variable_required:
-          type: boolean
-          description: Is variable required
-          example: false
-        variable_sensitive:
-          type: boolean
-          description: Is variable sensitive
-          example: true
-        variable_type:
-          type: string
-          description: Variable type
-          example: Harum atque.
-      example:
-        variable_default: Architecto corporis.
-        variable_description: Sed dolor vero ab non sit.
-        variable_name: Omnis laborum ducimus.
-        variable_required: true
-        variable_sensitive: true
-        variable_type: Voluptatem voluptatem aut.
-    BatchCheckModuleLifecycleRequest:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ModuleLifecycleBatchCheckItem'
-          description: List of modules to check
-          example:
-          - name: o3
-            namespace: k
-            system: t
-            version: 7p0
-          - name: o3
-            namespace: k
-            system: t
-            version: 7p0
-          - name: o3
-            namespace: k
-            system: t
-            version: 7p0
-          maxItems: 1000
-      example:
-        items:
-        - name: o3
-          namespace: k
-          system: t
-          version: 7p0
-        - name: o3
-          namespace: k
-          system: t
-          version: 7p0
-        - name: o3
-          namespace: k
-          system: t
-          version: 7p0
-      required:
-      - items
+      - versions
     ModuleRegistryCreateModuleResponseBody:
       type: object
       properties:
@@ -6671,407 +7263,122 @@ components:
       - id
       - created
       - updated
-    CreateModuleDataRequest:
+    ModuleLifecycleBatchCheckItem:
       type: object
       properties:
-        download_url:
+        name:
           type: string
-          description: download url of the module
-          example: Qui maiores.
-        error:
-          type: object
-          description: error from the tag operation
-          example:
-            Voluptatem vero quidem non accusamus vero earum.: Omnis laudantium voluptates excepturi tempore et qui.
-          additionalProperties:
-            type: string
-            example: Porro sit cumque sint asperiores necessitatibus.
-        examples_paths:
-          type: array
-          items:
-            type: string
-            example: Occaecati commodi sapiente odio autem iste.
-          description: path of the examples relative to the module
-          example:
-          - Sed velit temporibus mollitia aliquam.
-          - Et quidem.
-          - Explicabo corporis sapiente vero.
-        git_tag:
+          description: Module name
+          example: f
+          minLength: 1
+        namespace:
           type: string
-          description: git tag of the module
-          example: Fugiat ut quo rerum.
-        metadata:
+          description: Encoded namespace identifying the module scope
+          example: 0ox
+          minLength: 1
+        system:
           type: string
-          description: metadata to be parsed
-          example: Quaerat laboriosam dolorum omnis quas et non.
-        repo_url:
+          description: Module system (provider)
+          example: fd
+          minLength: 1
+        version:
           type: string
-          description: url pointing to the repo
-          example: Tenetur quo veritatis placeat quis dicta.
-        submodule_name:
-          type: string
-          description: name of the submodule been processed
-          example: Explicabo alias.
-        submodule_paths:
-          type: array
-          items:
-            type: string
-            example: Earum et rerum.
-          description: path of the submodules relative to the module
-          example:
-          - Praesentium sapiente enim.
-          - Occaecati et minima placeat nihil vitae beatae.
-          - Quisquam vitae earum consequatur aut voluptas.
-          - Nulla nesciunt ut accusantium.
+          description: Module version to check
+          example: h
+          minLength: 1
+      description: A single module item to check lifecycle status for
       example:
-        download_url: Repudiandae eligendi.
-        error:
-          Expedita maiores cupiditate magni eos.: Ut consequatur eos velit molestiae.
-          Incidunt doloremque.: Sint et eum in et aut corporis.
-          Quia quis.: Consequuntur voluptatem aperiam a.
-        examples_paths:
-        - Veniam voluptatem maiores magni.
-        - Cumque vitae.
-        git_tag: Possimus autem nulla omnis vero ut corporis.
-        metadata: Harum quia quo ipsam in.
-        repo_url: Error voluptates quo ipsam deleniti.
-        submodule_name: Consectetur velit sed sequi porro.
-        submodule_paths:
-        - Sit nihil perferendis et quia.
-        - Aliquid sit.
-        - Distinctio nobis.
-        - Minima totam velit dolor.
+        name: 58e
+        namespace: d
+        system: m
+        version: '4'
       required:
-      - metadata
-      - download_url
-      - git_tag
-    GetModuleLifecycleVersionStatusResponse:
+      - namespace
+      - name
+      - system
+      - version
+    ModuleLifecycleRule:
       type: object
       properties:
-        action:
+        deprecated_action:
           type: string
-          description: Enforcement action derived from the tier's rule action
+          description: Enforcement action for deprecated-tier versions
+          default: fail
           example: fail
           enum:
           - no_action
           - warn
           - fail
-        minimum_supported_version:
+        overrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleLifecycleOverride'
+          description: Manual per-version tier overrides
+          example:
+          - reason: q6a
+            tier: deprecated
+            version: v2.1.0
+          - reason: q6a
+            tier: deprecated
+            version: v2.1.0
+          - reason: q6a
+            tier: deprecated
+            version: v2.1.0
+          maxItems: 1000
+        supported_action:
           type: string
-          description: The lowest-numbered version currently in the supported tier
-          example: Atque dolorem doloremque et in.
-        tier:
-          type: string
-          description: 'Lifecycle tier: supported, warning, or deprecated'
-          example: deprecated
+          description: Enforcement action for supported-tier versions
+          default: no_action
+          example: no_action
           enum:
-          - supported
-          - warning
-          - deprecated
-      example:
-        action: warn
-        minimum_supported_version: Necessitatibus aut iste exercitationem cupiditate.
-        tier: supported
-      required:
-      - tier
-      - action
-    ResourceMetadata:
-      type: object
-      properties:
-        resource_name:
+          - no_action
+          - warn
+          - fail
+        supported_count:
+          type: integer
+          description: Number of most-recent non-pre-release versions classified as supported
+          example: 3
+          format: int64
+          minimum: 1
+        warning_action:
           type: string
-          description: Resource name
-          example: Dolores deserunt veniam ut libero sunt.
-        resource_type:
-          type: string
-          description: Resource type
-          example: Veniam perspiciatis eos non fugiat illo commodi.
-      example:
-        resource_name: Inventore minima amet soluta corrupti occaecati praesentium.
-        resource_type: Ab quod nesciunt voluptate dolores dolor mollitia.
-    ListModuleVersionsResponse:
-      type: object
-      properties:
-        modules:
-          type: array
-          items:
-            $ref: '#/components/schemas/HarnessIacmModuleRegistryVersions'
-          description: list of versions for a given module
-          example:
-          - versions:
-            - git_version: Doloremque et et recusandae.
-              module_version: Et voluptatum iure eum debitis sunt.
-            - git_version: Doloremque et et recusandae.
-              module_version: Et voluptatum iure eum debitis sunt.
-          - versions:
-            - git_version: Doloremque et et recusandae.
-              module_version: Et voluptatum iure eum debitis sunt.
-            - git_version: Doloremque et et recusandae.
-              module_version: Et voluptatum iure eum debitis sunt.
-          - versions:
-            - git_version: Doloremque et et recusandae.
-              module_version: Et voluptatum iure eum debitis sunt.
-            - git_version: Doloremque et et recusandae.
-              module_version: Et voluptatum iure eum debitis sunt.
-          - versions:
-            - git_version: Doloremque et et recusandae.
-              module_version: Et voluptatum iure eum debitis sunt.
-            - git_version: Doloremque et et recusandae.
-              module_version: Et voluptatum iure eum debitis sunt.
-      example:
-        modules:
-        - versions:
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-        - versions:
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-        - versions:
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-        - versions:
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-          - git_version: Doloremque et et recusandae.
-            module_version: Et voluptatum iure eum debitis sunt.
-      required:
-      - modules
-    CreateModuleTagsRequest:
-      type: object
-      properties:
-        error:
-          type: object
-          description: error from the tag operation
-          example:
-            Tempore repellat et quia explicabo quasi.: Magnam debitis harum autem iusto.
-          additionalProperties:
-            type: string
-            example: Et sunt.
-        tags:
-          type: array
-          items:
-            type: string
-            example: Ut fugit expedita error quia dolor error.
-          description: tags defining the module
-          example:
-          - Necessitatibus reiciendis unde.
-          - Aut et vel id quo.
-          - A eligendi sapiente vero.
-      example:
-        error:
-          Ipsam culpa reiciendis ab.: Sed voluptatem unde suscipit.
-          Voluptate iure qui inventore sunt reiciendis illum.: Rem consequatur id.
-        tags:
-        - Esse atque dignissimos non.
-        - Officia sunt.
-        - Omnis inventore sit deleniti doloremque.
-        - Aut illo est ex et sit qui.
-    OutputMetadata:
-      type: object
-      properties:
-        output_description:
-          type: string
-          description: Output description
-          example: Suscipit fugit sed sint.
-        output_name:
-          type: string
-          description: Output name
-          example: Consectetur distinctio rerum hic sunt.
-        output_sensitive:
-          type: boolean
-          description: Output sensitivity
-          example: true
-      example:
-        output_description: Dolores officiis.
-        output_name: Quo accusantium vitae quos ipsum sint voluptas.
-        output_sensitive: false
-    ModuleResourceCollection:
-      type: array
-      items:
-        $ref: '#/components/schemas/ModuleResource'
-      description: ModuleResourceCollection is the result type for an array of ModuleResource (default view)
-      example:
-      - account: abc123DEFghiJKL
-        created: 2016138915894156800
-        description: Provisions a VPC with public and private subnets.
-        domain_prefix: Illo velit quibusdam velit iste repudiandae perferendis.
-        git_tag_style: module-name-*
-        id: aaaaaaaa-bbbb-cccc-eeee-ffffffffffff
-        module_error: Aut incidunt maiores quam.
-        name: my-vpc-module
-        namespace: Aut et dolores.
-        onboarding_pipeline: Module_Onboarding_Pipeline
-        onboarding_pipeline_org: my_org
-        onboarding_pipeline_project: my_project
-        onboarding_pipeline_sync: true
-        org: my_org
-        project: my_project
-        repository: my-terraform-modules
-        repository_branch: main
-        repository_commit: abc10ed
-        repository_connector: my_github_connector
-        repository_path: ''
-        repository_url: Et et doloribus ullam.
-        scope_org: my_org
-        scope_project: my_project
-        storage_type: artifact
-        synced: 8344366690986247000
-        system: aws
-        tags: Esse dolor eligendi reprehenderit.
-        testing_enabled: false
-        testing_metadata:
-          account: 6bi
-          org: 6w5
-          pipelines:
-          - Maxime eius vel in maxime et ad.
-          - Quia ipsum voluptas reprehenderit dolores ea mollitia.
-          - Nostrum dolore est sit ut.
-          - Accusamus beatae fuga consequatur officiis exercitationem.
-          project: 3xt
-          provider_connector: Tempora expedita hic omnis sapiente itaque qui.
-          provisioner_type: Et ipsum necessitatibus eos.
-          provisioner_version: Expedita est maxime ut explicabo.
-          release_pipeline: Quibusdam soluta dicta.
-        updated: 2045512812616660500
-        version_statuses:
-          Id tempore repudiandae.: Qui qui deserunt et aut.
-          Quasi quos neque vitae sunt enim quod.: Aut aut et eligendi explicabo repellendus harum.
-        versions:
-        - Aut illo omnis quibusdam.
-        - Omnis eligendi unde.
-        - Maiores omnis blanditiis explicabo voluptates totam.
-        - A sunt vel.
-      - account: abc123DEFghiJKL
-        created: 2016138915894156800
-        description: Provisions a VPC with public and private subnets.
-        domain_prefix: Illo velit quibusdam velit iste repudiandae perferendis.
-        git_tag_style: module-name-*
-        id: aaaaaaaa-bbbb-cccc-eeee-ffffffffffff
-        module_error: Aut incidunt maiores quam.
-        name: my-vpc-module
-        namespace: Aut et dolores.
-        onboarding_pipeline: Module_Onboarding_Pipeline
-        onboarding_pipeline_org: my_org
-        onboarding_pipeline_project: my_project
-        onboarding_pipeline_sync: true
-        org: my_org
-        project: my_project
-        repository: my-terraform-modules
-        repository_branch: main
-        repository_commit: abc10ed
-        repository_connector: my_github_connector
-        repository_path: ''
-        repository_url: Et et doloribus ullam.
-        scope_org: my_org
-        scope_project: my_project
-        storage_type: artifact
-        synced: 8344366690986247000
-        system: aws
-        tags: Esse dolor eligendi reprehenderit.
-        testing_enabled: false
-        testing_metadata:
-          account: 6bi
-          org: 6w5
-          pipelines:
-          - Maxime eius vel in maxime et ad.
-          - Quia ipsum voluptas reprehenderit dolores ea mollitia.
-          - Nostrum dolore est sit ut.
-          - Accusamus beatae fuga consequatur officiis exercitationem.
-          project: 3xt
-          provider_connector: Tempora expedita hic omnis sapiente itaque qui.
-          provisioner_type: Et ipsum necessitatibus eos.
-          provisioner_version: Expedita est maxime ut explicabo.
-          release_pipeline: Quibusdam soluta dicta.
-        updated: 2045512812616660500
-        version_statuses:
-          Id tempore repudiandae.: Qui qui deserunt et aut.
-          Quasi quos neque vitae sunt enim quod.: Aut aut et eligendi explicabo repellendus harum.
-        versions:
-        - Aut illo omnis quibusdam.
-        - Omnis eligendi unde.
-        - Maiores omnis blanditiis explicabo voluptates totam.
-        - A sunt vel.
-    ExampleTreeItem:
-      type: object
-      properties:
-        content_type:
-          type: string
-          description: kind of entry
-          example: directory
+          description: Enforcement action for warning-tier versions
+          default: warn
+          example: warn
           enum:
-          - file
-          - directory
-        name:
-          type: string
-          description: leaf name of the entry (no path separators)
-          example: Placeat quo omnis ut.
-        path:
-          type: string
-          description: full relative path from the module root, forward-slash separated
-          example: Deleniti expedita in reprehenderit quas.
+          - no_action
+          - warn
+          - fail
+        warning_count:
+          type: integer
+          description: Number of versions immediately after the supported window classified as warning
+          example: 2
+          format: int64
+          minimum: 0
+      description: Lifecycle rule configuration for a module registry module
       example:
-        content_type: file
-        name: Ut ut animi rerum sint ipsum.
-        path: Debitis ea ut quia facere.
+        deprecated_action: no_action
+        overrides:
+        - reason: q6a
+          tier: deprecated
+          version: v2.1.0
+        - reason: q6a
+          tier: deprecated
+          version: v2.1.0
+        - reason: q6a
+          tier: deprecated
+          version: v2.1.0
+        supported_action: fail
+        supported_count: 3
+        warning_action: fail
+        warning_count: 2
       required:
-      - name
-      - path
-      - content_type
-    BatchCheckModuleLifecycleResponse:
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/ModuleLifecycleBatchCheckResult'
-          description: Lifecycle violations found; items with no rule or supported tier are omitted
-          example:
-          - action: warn
-            minimum_supported_version: Molestiae sunt.
-            name: Ut fugiat molestiae omnis.
-            namespace: Velit modi omnis mollitia nostrum qui.
-            system: Et magnam rerum eum ab inventore dolor.
-            tier: warning
-            version: Consequatur earum fuga veritatis sapiente.
-          - action: warn
-            minimum_supported_version: Molestiae sunt.
-            name: Ut fugiat molestiae omnis.
-            namespace: Velit modi omnis mollitia nostrum qui.
-            system: Et magnam rerum eum ab inventore dolor.
-            tier: warning
-            version: Consequatur earum fuga veritatis sapiente.
-      example:
-        results:
-        - action: warn
-          minimum_supported_version: Molestiae sunt.
-          name: Ut fugiat molestiae omnis.
-          namespace: Velit modi omnis mollitia nostrum qui.
-          system: Et magnam rerum eum ab inventore dolor.
-          tier: warning
-          version: Consequatur earum fuga veritatis sapiente.
-        - action: warn
-          minimum_supported_version: Molestiae sunt.
-          name: Ut fugiat molestiae omnis.
-          namespace: Velit modi omnis mollitia nostrum qui.
-          system: Et magnam rerum eum ab inventore dolor.
-          tier: warning
-          version: Consequatur earum fuga veritatis sapiente.
-        - action: warn
-          minimum_supported_version: Molestiae sunt.
-          name: Ut fugiat molestiae omnis.
-          namespace: Velit modi omnis mollitia nostrum qui.
-          system: Et magnam rerum eum ab inventore dolor.
-          tier: warning
-          version: Consequatur earum fuga veritatis sapiente.
-      required:
-      - results
-    CreateModuleRequest:
+      - supported_count
+      - warning_count
+      - supported_action
+      - warning_action
+      - deprecated_action
+    UpdateModuleRequest:
       type: object
       properties:
         description:
@@ -7104,7 +7411,7 @@ components:
           type: boolean
           description: When true, module metadata is automatically synced via the onboarding pipeline when new Git tags are pushed.
           default: false
-          example: false
+          example: true
         org:
           type: string
           description: Organization identifier where the Git connector is defined. Defaults to scope_org if not provided.
@@ -7140,7 +7447,7 @@ components:
           type: string
           description: Defines how module versions are stored. 'git_reference' resolves versions from Git tags; 'artifact' stores uploaded archive files.
           default: git_reference
-          example: git_reference
+          example: artifact
           enum:
           - git_reference
           - artifact
@@ -7154,7 +7461,7 @@ components:
         tags:
           type: string
           description: Comma-separated list of tags to categorize the module (e.g. networking,vpc,aws).
-          example: Repellendus quia.
+          example: Molestiae totam autem quod est libero.
       example:
         description: Provisions a VPC with public and private subnets.
         git_tag_style: module-name-*
@@ -7172,121 +7479,19 @@ components:
         repository_path: ''
         storage_type: git_reference
         system: aws
-        tags: Voluptas ad inventore facere quis sit.
+        tags: Vero earum est facere officia.
       required:
       - name
       - system
-    UpdateTestingRequest:
+    DownloadModuleResponse:
       type: object
       properties:
-        pipeline_id:
-          type: array
-          items:
-            type: string
-            example: Itaque eum eum.
-          description: pipelines to create the webhooks to trigger the executions for testing
-          example:
-          - Velit incidunt.
-          - Autem et dignissimos aperiam.
-          - Odio ipsam sint aspernatur quis.
-          - Nemo sapiente eaque aut aperiam in quibusdam.
-        pipeline_org:
+        location:
           type: string
-          description: pipeline org
-          example: Voluptas magni.
-        pipeline_project:
-          type: string
-          description: pipeline project
-          example: Aut et quisquam beatae.
-        provider_connector:
-          type: string
-          description: provider connector
-          default: ''
-          example: Est rem.
-        provisioner_type:
-          type: string
-          description: provisioner type
-          example: Est a.
-        provisioner_version:
-          type: string
-          description: provisioner version
-          example: Nobis voluptatum autem officia ut ab.
-        release_pipeline:
-          type: string
-          description: pipeline to create the webhooks for releases
-          example: Perspiciatis aliquam sed culpa fugiat corrupti.
+          description: location of the artifact
+          example: Possimus neque officiis natus corporis omnis.
       example:
-        pipeline_id:
-        - Et quisquam animi velit laboriosam soluta.
-        - Dolor blanditiis impedit.
-        pipeline_org: Maiores nisi dolor aut et voluptas voluptas.
-        pipeline_project: Omnis et facere repellat enim.
-        provider_connector: Sapiente ea.
-        provisioner_type: Autem repudiandae ratione.
-        provisioner_version: Eum ut suscipit libero minus sit dignissimos.
-        release_pipeline: Exercitationem sit.
-      required:
-      - provisioner_type
-      - provisioner_version
-      - pipeline_org
-      - pipeline_project
-    CreateTestingPipelineRequest:
-      type: object
-      properties:
-        pipeline_org:
-          type: string
-          description: pipeline org
-          example: Laboriosam temporibus natus incidunt.
-        pipeline_project:
-          type: string
-          description: pipeline project
-          example: Sit dolores dolor.
-        type:
-          type: string
-          description: type of the pipeline to create
-          default: test
-          example: Ut possimus.
-      example:
-        pipeline_org: Pariatur est ex voluptates.
-        pipeline_project: Expedita quidem laboriosam eos.
-        type: Eveniet et quia debitis voluptates qui.
-      required:
-      - pipeline_org
-      - pipeline_project
-    ModuleLifecycleBatchCheckItem:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Module name
-          example: f
-          minLength: 1
-        namespace:
-          type: string
-          description: Encoded namespace identifying the module scope
-          example: 0ox
-          minLength: 1
-        system:
-          type: string
-          description: Module system (provider)
-          example: fd
-          minLength: 1
-        version:
-          type: string
-          description: Module version to check
-          example: h
-          minLength: 1
-      description: A single module item to check lifecycle status for
-      example:
-        name: 58e
-        namespace: d
-        system: m
-        version: '4'
-      required:
-      - namespace
-      - name
-      - system
-      - version
+        location: Magnam in explicabo quia est.
     ModuleLifecycleBatchCheckResult:
       type: object
       properties:
@@ -7341,225 +7546,20 @@ components:
       - version
       - tier
       - action
-    ListModuleMetadataResponse:
+    ResourceMetadata:
       type: object
       properties:
-        account:
+        resource_name:
           type: string
-          description: account name
-          example: Saepe provident omnis necessitatibus ut.
-        dependencies:
-          type: array
-          items:
-            $ref: '#/components/schemas/DependenciesMetadata'
-          description: Dependencies of the module
-          example:
-          - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
-            dependency_source: Et aut qui id.
-            dependency_version: Modi quo quis.
-          - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
-            dependency_source: Et aut qui id.
-            dependency_version: Modi quo quis.
-          - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
-            dependency_source: Et aut qui id.
-            dependency_version: Modi quo quis.
-          - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
-            dependency_source: Et aut qui id.
-            dependency_version: Modi quo quis.
-        examples_paths:
-          type: array
-          items:
-            type: string
-            example: Voluptas aut reprehenderit voluptas aliquam illo.
-          description: Example directories discovered for this module version
-          example:
-          - Eius dolores sed quia alias.
-          - Voluptas voluptates.
-          - Praesentium soluta.
-        metadata_error:
+          description: Resource name
+          example: Dolores deserunt veniam ut libero sunt.
+        resource_type:
           type: string
-          description: error while retrieving the module
-          example: Velit ipsam sapiente sed consequatur.
-        module_version:
-          type: string
-          description: module version
-          example: Maxime corporis est maxime tempore est.
-        name:
-          type: string
-          description: module name
-          example: A quibusdam voluptas inventore consequatur est et.
-        outputs:
-          type: array
-          items:
-            $ref: '#/components/schemas/OutputMetadata'
-          description: Outputs of the module
-          example:
-          - output_description: Sint aliquam id sed.
-            output_name: Illum eligendi nesciunt labore aut magnam saepe.
-            output_sensitive: true
-          - output_description: Sint aliquam id sed.
-            output_name: Illum eligendi nesciunt labore aut magnam saepe.
-            output_sensitive: true
-          - output_description: Sint aliquam id sed.
-            output_name: Illum eligendi nesciunt labore aut magnam saepe.
-            output_sensitive: true
-          - output_description: Sint aliquam id sed.
-            output_name: Illum eligendi nesciunt labore aut magnam saepe.
-            output_sensitive: true
-        providers:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProviderMetadata'
-          description: Providers of the module
-          example:
-          - provider_name: Quisquam culpa.
-            provider_source: Aliquid autem quam consequatur.
-            provider_version: Reiciendis repellat consequatur.
-          - provider_name: Quisquam culpa.
-            provider_source: Aliquid autem quam consequatur.
-            provider_version: Reiciendis repellat consequatur.
-          - provider_name: Quisquam culpa.
-            provider_source: Aliquid autem quam consequatur.
-            provider_version: Reiciendis repellat consequatur.
-        resources:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResourceMetadata'
-          description: Resources of the module
-          example:
-          - resource_name: Doloribus omnis eum.
-            resource_type: Id suscipit vel praesentium velit.
-          - resource_name: Doloribus omnis eum.
-            resource_type: Id suscipit vel praesentium velit.
-        scope_org:
-          type: string
-          description: org name
-          example: Qui eveniet.
-        scope_project:
-          type: string
-          description: project name
-          example: Est eum ut.
-        submodule:
-          type: array
-          items:
-            type: string
-            example: Debitis excepturi consequatur ut labore repellat.
-          description: Submodules of the module
-          example:
-          - Ut et.
-          - Voluptates nesciunt sint nostrum tempora iure.
-        system:
-          type: string
-          description: system name
-          example: Repellat necessitatibus in placeat dolorem.
-        variables:
-          type: array
-          items:
-            $ref: '#/components/schemas/VariableMetadata'
-          description: Variables of the module
-          example:
-          - variable_default: Quae totam enim.
-            variable_description: Placeat corporis.
-            variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
-            variable_required: true
-            variable_sensitive: false
-            variable_type: Vitae minus.
-          - variable_default: Quae totam enim.
-            variable_description: Placeat corporis.
-            variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
-            variable_required: true
-            variable_sensitive: false
-            variable_type: Vitae minus.
+          description: Resource type
+          example: Veniam perspiciatis eos non fugiat illo commodi.
       example:
-        account: In accusamus animi.
-        dependencies:
-        - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
-          dependency_source: Et aut qui id.
-          dependency_version: Modi quo quis.
-        - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
-          dependency_source: Et aut qui id.
-          dependency_version: Modi quo quis.
-        - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
-          dependency_source: Et aut qui id.
-          dependency_version: Modi quo quis.
-        - dependency_name: Deleniti hic sapiente dolor commodi nesciunt.
-          dependency_source: Et aut qui id.
-          dependency_version: Modi quo quis.
-        examples_paths:
-        - Tempora fugit.
-        - Molestias in velit nesciunt non debitis harum.
-        - Voluptatibus assumenda maiores.
-        metadata_error: A aspernatur asperiores.
-        module_version: Enim voluptatem at fugiat excepturi.
-        name: A dolorem.
-        outputs:
-        - output_description: Sint aliquam id sed.
-          output_name: Illum eligendi nesciunt labore aut magnam saepe.
-          output_sensitive: true
-        - output_description: Sint aliquam id sed.
-          output_name: Illum eligendi nesciunt labore aut magnam saepe.
-          output_sensitive: true
-        - output_description: Sint aliquam id sed.
-          output_name: Illum eligendi nesciunt labore aut magnam saepe.
-          output_sensitive: true
-        - output_description: Sint aliquam id sed.
-          output_name: Illum eligendi nesciunt labore aut magnam saepe.
-          output_sensitive: true
-        providers:
-        - provider_name: Quisquam culpa.
-          provider_source: Aliquid autem quam consequatur.
-          provider_version: Reiciendis repellat consequatur.
-        - provider_name: Quisquam culpa.
-          provider_source: Aliquid autem quam consequatur.
-          provider_version: Reiciendis repellat consequatur.
-        resources:
-        - resource_name: Doloribus omnis eum.
-          resource_type: Id suscipit vel praesentium velit.
-        - resource_name: Doloribus omnis eum.
-          resource_type: Id suscipit vel praesentium velit.
-        - resource_name: Doloribus omnis eum.
-          resource_type: Id suscipit vel praesentium velit.
-        scope_org: Repellendus et est.
-        scope_project: Sint facilis odio aut.
-        submodule:
-        - Nesciunt nulla perferendis.
-        - Excepturi officiis provident ea inventore corporis.
-        - Dolorem sint ut quos.
-        system: Et eius sit consequuntur commodi iste.
-        variables:
-        - variable_default: Quae totam enim.
-          variable_description: Placeat corporis.
-          variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
-          variable_required: true
-          variable_sensitive: false
-          variable_type: Vitae minus.
-        - variable_default: Quae totam enim.
-          variable_description: Placeat corporis.
-          variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
-          variable_required: true
-          variable_sensitive: false
-          variable_type: Vitae minus.
-        - variable_default: Quae totam enim.
-          variable_description: Placeat corporis.
-          variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
-          variable_required: true
-          variable_sensitive: false
-          variable_type: Vitae minus.
-        - variable_default: Quae totam enim.
-          variable_description: Placeat corporis.
-          variable_name: Repellat voluptatum rerum pariatur nisi consequuntur.
-          variable_required: true
-          variable_sensitive: false
-          variable_type: Vitae minus.
-      required:
-      - account
-      - name
-      - system
-      - module_version
-      - outputs
-      - providers
-      - resources
-      - variables
+        resource_name: Inventore minima amet soluta corrupti occaecati praesentium.
+        resource_type: Ab quod nesciunt voluptate dolores dolor mollitia.
   securitySchemes:
     x-api-key:
       name: x-api-key

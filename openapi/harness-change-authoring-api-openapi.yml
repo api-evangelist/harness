@@ -109,39 +109,84 @@ paths:
       - Change Authoring
       x-internal: true
 components:
-  responses:
-    ErrorResponse:
+  requestBodies:
+    ChangeAuthoringEventRequest:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
-    ExecuteLlmAuthoringPipelineResponse:
+            $ref: '#/components/schemas/ChangeAuthoringEventIn'
+      description: Request body for creating a change authoring execution event
+      required: true
+    ExecuteLlmAuthoringPipelineRequest:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineResponseBody'
-      description: Pipeline execution triggered and event persisted.
-    ChangeAuthoringEventResponse:
-      description: Change authoring execution event created successfully
-    ChangeSetExistenceResponse:
+            $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineRequestBody'
+      description: Request body for v1-execute-llm-authoring-pipeline
+      required: true
+    ChangeSetExistenceRequest:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ChangeSetExistenceOut'
-      description: Response body for changeset existence check
+            $ref: '#/components/schemas/ChangeSetExistenceIn'
+      description: Request body for checking changeset existence for a schema
+      required: true
   schemas:
-    ChangeSetExistenceOut:
+    ChangeSetIdInput:
       properties:
-        existence:
-          additionalProperties:
-            type: boolean
-          description: Map of changeset id to whether it already exists for the schema
-          type: object
+        id:
+          description: Liquibase changeset id (identifier only; fileName and author are ignored)
+          minLength: 1
+          type: string
       required:
-      - existence
-      title: ChangeSetExistenceOut
+      - id
+      title: ChangeSetIdInput
       type: object
+    ChangeSetExistenceIn:
+      properties:
+        changeSets:
+          items:
+            $ref: '#/components/schemas/ChangeSetIdInput'
+          maxItems: 100
+          minItems: 1
+          type: array
+      required:
+      - changeSets
+      title: ChangeSetExistenceIn
+      type: object
+    ExecuteLlmAuthoringPipelineResponseBody:
+      properties:
+        executionId:
+          description: Pipeline execution id returned by pipeline-service.
+          type: string
+        openInHarness:
+          description: Deep link to the live execution in the Harness UI.
+          type: string
+        pipelineIdentifier:
+          description: 'Identifier of the pipeline that was actually executed (the value of
+
+            the `pipelineIdentifier` request field, or the default identifier
+
+            when `useDefaultPipeline=true`).
+
+            '
+          type: string
+      required:
+      - executionId
+      - pipelineIdentifier
+      type: object
+    DbOpsError:
+      description: Error Response
+      properties:
+        message:
+          description: error message detail
+          type: string
+      required:
+      - message
+      title: Error Response
+      type: object
+      x-stoplight:
+        id: 61cwtgnps2mpt
     ChangeAuthoringEventIn:
       description: Request body for creating a change authoring execution event
       properties:
@@ -172,27 +217,16 @@ components:
       - pipelineExecutionId
       title: Change Authoring Event Request
       type: object
-    ChangeSetIdInput:
+    ChangeSetExistenceOut:
       properties:
-        id:
-          description: Liquibase changeset id (identifier only; fileName and author are ignored)
-          minLength: 1
-          type: string
+        existence:
+          additionalProperties:
+            type: boolean
+          description: Map of changeset id to whether it already exists for the schema
+          type: object
       required:
-      - id
-      title: ChangeSetIdInput
-      type: object
-    ChangeSetExistenceIn:
-      properties:
-        changeSets:
-          items:
-            $ref: '#/components/schemas/ChangeSetIdInput'
-          maxItems: 100
-          minItems: 1
-          type: array
-      required:
-      - changeSets
-      title: ChangeSetExistenceIn
+      - existence
+      title: ChangeSetExistenceOut
       type: object
     ExecuteLlmAuthoringPipelineRequestBody:
       properties:
@@ -251,54 +285,28 @@ components:
       - instanceId
       - changeset
       type: object
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
-    ExecuteLlmAuthoringPipelineResponseBody:
-      properties:
-        executionId:
-          description: Pipeline execution id returned by pipeline-service.
-          type: string
-        openInHarness:
-          description: Deep link to the live execution in the Harness UI.
-          type: string
-        pipelineIdentifier:
-          description: 'Identifier of the pipeline that was actually executed (the value of
-
-            the `pipelineIdentifier` request field, or the default identifier
-
-            when `useDefaultPipeline=true`).
-
-            '
-          type: string
-      required:
-      - executionId
-      - pipelineIdentifier
-      type: object
+  responses:
+    ExecuteLlmAuthoringPipelineResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineResponseBody'
+      description: Pipeline execution triggered and event persisted.
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
+    ChangeAuthoringEventResponse:
+      description: Change authoring execution event created successfully
+    ChangeSetExistenceResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChangeSetExistenceOut'
+      description: Response body for changeset existence check
   parameters:
-    DBSchemaParam:
-      description: Identifier of the database schema
-      in: path
-      name: dbschema
-      required: true
-      schema:
-        maxLength: 128
-        type: string
-    DbOpsAccountHeader:
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-      in: header
-      name: Harness-Account
-      schema:
-        type: string
     OrgParam:
       description: Organization identifier
       in: path
@@ -313,28 +321,20 @@ components:
       required: true
       schema:
         type: string
-  requestBodies:
-    ExecuteLlmAuthoringPipelineRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineRequestBody'
-      description: Request body for v1-execute-llm-authoring-pipeline
+    DbOpsAccountHeader:
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+      in: header
+      name: Harness-Account
+      schema:
+        type: string
+    DBSchemaParam:
+      description: Identifier of the database schema
+      in: path
+      name: dbschema
       required: true
-    ChangeSetExistenceRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ChangeSetExistenceIn'
-      description: Request body for checking changeset existence for a schema
-      required: true
-    ChangeAuthoringEventRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ChangeAuthoringEventIn'
-      description: Request body for creating a change authoring execution event
-      required: true
+      schema:
+        maxLength: 128
+        type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

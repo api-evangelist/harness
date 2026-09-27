@@ -758,37 +758,167 @@ paths:
       tags:
       - Spaces
 components:
+  parameters:
+    RegistryIdentifierParam:
+      description: Registry Identifier
+      in: query
+      name: reg_identifier
+      schema:
+        items:
+          type: string
+        type: array
+    sortField:
+      description: sortField
+      in: query
+      name: sort_field
+      schema:
+        type: string
+    searchTerm:
+      description: search Term.
+      in: query
+      name: search_term
+      schema:
+        type: string
+    RegistryTypeParam:
+      description: Registry Type
+      in: query
+      name: type
+      schema:
+        enum:
+        - VIRTUAL
+        - UPSTREAM
+        type: string
+    RegistrypageSize:
+      description: Number of items per page
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        type: integer
+    RegistrysortOrder:
+      description: sortOrder
+      in: query
+      name: sort_order
+      schema:
+        type: string
+    recursiveParam:
+      description: 'Whether to list registries recursively.
+
+
+        **Deprecated.** Use the new `scope` parameter.
+
+
+        * `recursive=true`  → `scope=ancestors`
+
+        * `recursive=false` → `scope=none`
+
+        '
+      in: query
+      name: recursive
+      schema:
+        default: false
+        type: boolean
+    packageTypeParam:
+      description: Registry Package Type
+      in: query
+      name: package_type
+      schema:
+        items:
+          type: string
+        type: array
+    RegistrypageNumber:
+      description: Current page number
+      in: query
+      name: page
+      schema:
+        default: 1
+        format: int64
+        type: integer
+    deployedArtifact:
+      description: Deployed Artifact Filter.
+      in: query
+      name: deployed_artifact
+      schema:
+        type: boolean
+    latestVersion:
+      description: Latest Version Filter.
+      in: query
+      name: latest_version
+      schema:
+        type: boolean
+    scopeParam:
+      description: "**Scope of registries to list**\n* **none** – current space only (default)   * **ancestors** – current space **plus** all parent spaces   * **descendants** – current space **plus** all child spaces  \nIf omitted, `none` is assumed.\n"
+      in: query
+      name: scope
+      schema:
+        enum:
+        - ancestors
+        - descendants
+        - none
+        type: string
+    fromDateParam:
+      description: Date. Format - MM/DD/YYYY
+      in: query
+      name: from
+      schema:
+        type: string
+    spaceRefPathParam:
+      description: 'Reference to the scope in which the registry exists.
+
+
+        Format depends on the scope:
+
+
+        - **Account-level**: `account_id/+`
+
+        - **Organization-level**: `account_id/org/+`
+
+        - **Project-level**: `account_id/org/project/+`
+
+
+        The `/+` suffix is used internally to route scoped requests.
+
+        It must be included **exactly as shown** in the URL.
+
+        '
+      examples:
+        accountLevel:
+          description: Only account ID, scoped at account level
+          summary: Account-level registry
+          value: acc123/+
+        orgLevel:
+          description: Account and org, scoped at org level
+          summary: Organization-level registry
+          value: acc123/org456/+
+        projectLevel:
+          description: Account, org, and project, scoped at project level
+          summary: Project-level registry
+          value: acc123/org456/proj789/+
+      in: path
+      name: space_ref
+      required: true
+      schema:
+        type: string
+    toDateParam:
+      description: Date. Format - MM/DD/YYYY
+      in: query
+      name: to
+      schema:
+        type: string
   responses:
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
-    RegistryUnauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Authentication failed or missing credentials
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
     RegistryBadRequest:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/RegistryError'
       description: The request was invalid or malformed
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
     ListRegistryResponse:
       content:
         application/json:
@@ -817,6 +947,12 @@ components:
             - data
             type: object
       description: response for list artifact
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
     ArtifactStatsResponse:
       content:
         application/json:
@@ -831,6 +967,18 @@ components:
             - data
             type: object
       description: response to get artifact stats response
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
     StorageDetailsResponse:
       content:
         application/json:
@@ -846,62 +994,38 @@ components:
             type: object
       description: response for storage details
   schemas:
-    ArtifactEntityMetadata:
-      additionalProperties: true
-      description: Artifact Entity Metadata
-      type: object
-    ArtifactStats:
-      description: Harness Artifact Stats
+    ListRegistry:
+      description: A list of Harness Artifact Registries
       properties:
-        downloadCount:
+        itemCount:
+          description: The total number of items
+          example: 1
           format: int64
           type: integer
-        downloadSize:
+        meta:
+          $ref: '#/components/schemas/Meta'
+        pageCount:
+          description: The total number of pages
+          example: 100
           format: int64
           type: integer
-        totalStorageSize:
+        pageIndex:
+          description: The current page
+          example: 0
           format: int64
           type: integer
-        uploadSize:
-          format: int64
+        pageSize:
+          description: The number of items per page
+          example: 1
           type: integer
-      type: object
-    RegistryArtifactType:
-      description: refers to artifact type
-      enum:
-      - model
-      - dataset
-      - module
-      - provider
-      type: string
-    TypesLabelValue:
-      properties:
-        color:
-          $ref: '#/components/schemas/EnumLabelColor'
-        created:
-          type: integer
-        created_by:
-          type: integer
-        id:
-          type: integer
-        label_id:
-          type: integer
-        updated:
-          type: integer
-        updated_by:
-          type: integer
-        value:
-          type: string
-      type: object
-    DeploymentMetadata:
-      properties:
-        nonProdEnvCount:
-          type: integer
-        prodEnvCount:
-          type: integer
+        registries:
+          description: A list of Harness Artifact Registries
+          items:
+            $ref: '#/components/schemas/RegistryMetadata'
+          type: array
       required:
-      - prodEnvCount
-      - nonProdEnvCount
+      - registries
+      - meta
       type: object
     PackageType:
       description: refers to package
@@ -985,131 +1109,25 @@ components:
         type:
           $ref: '#/components/schemas/EnumLabelType'
       type: object
-    RegistryStatus:
-      description: Request processing status indicator
-      enum:
-      - SUCCESS
-      - FAILURE
-      - ERROR
-      type: string
-    RegistryError:
-      description: Standard error response with code, message and optional details
+    TypesLabelValue:
       properties:
-        code:
-          description: The HTTP error code
-          example: '404'
+        color:
+          $ref: '#/components/schemas/EnumLabelColor'
+        created:
+          type: integer
+        created_by:
+          type: integer
+        id:
+          type: integer
+        label_id:
+          type: integer
+        updated:
+          type: integer
+        updated_by:
+          type: integer
+        value:
           type: string
-        details:
-          description: 'Additional context and details about the error.
-
-            May include field-specific validation errors or debugging information.
-
-            '
-          example:
-            field: registry_identifier
-            reason: Registry does not exist in the specified project
-            value: invalid-registry
-          type: object
-        message:
-          description: Human-readable error message explaining what went wrong
-          example: Registry not found
-          type: string
-      required:
-      - code
-      - message
       type: object
-    EnumLabelType:
-      enum:
-      - dynamic
-      - static
-      type: string
-    RegistryType:
-      description: refers to type of registry i.e virtual or upstream
-      discriminator:
-        propertyName: type
-      enum:
-      - VIRTUAL
-      - UPSTREAM
-      type: string
-    ListRegistry:
-      description: A list of Harness Artifact Registries
-      properties:
-        itemCount:
-          description: The total number of items
-          example: 1
-          format: int64
-          type: integer
-        meta:
-          $ref: '#/components/schemas/Meta'
-        pageCount:
-          description: The total number of pages
-          example: 100
-          format: int64
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          format: int64
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
-        registries:
-          description: A list of Harness Artifact Registries
-          items:
-            $ref: '#/components/schemas/RegistryMetadata'
-          type: array
-      required:
-      - registries
-      - meta
-      type: object
-    ListArtifact:
-      description: A list of Artifacts
-      properties:
-        artifacts:
-          description: A list of Artifact
-          items:
-            $ref: '#/components/schemas/ArtifactMetadata'
-          type: array
-        itemCount:
-          description: The total number of items
-          example: 1
-          format: int64
-          type: integer
-        pageCount:
-          description: The total number of pages
-          example: 100
-          format: int64
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          format: int64
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
-      required:
-      - artifacts
-      type: object
-    EnumLabelColor:
-      enum:
-      - blue
-      - brown
-      - cyan
-      - green
-      - indigo
-      - lime
-      - mint
-      - orange
-      - pink
-      - purple
-      - red
-      - violet
-      - yellow
-      type: string
     RegistryTypesLabelWithValues:
       properties:
         label:
@@ -1202,21 +1220,80 @@ components:
       - registryUUID
       - uuid
       type: object
-    UsererrorError:
+    TypesSaveLabelValueInput:
       properties:
-        message:
+        color:
+          $ref: '#/components/schemas/EnumLabelColor'
+        id:
+          type: integer
+        value:
           type: string
-        values:
-          additionalProperties: {}
-          type: object
       type: object
-    StorageDetails:
-      description: storage details
+    EnumLabelType:
+      enum:
+      - dynamic
+      - static
+      type: string
+    RegistryType:
+      description: refers to type of registry i.e virtual or upstream
+      discriminator:
+        propertyName: type
+      enum:
+      - VIRTUAL
+      - UPSTREAM
+      type: string
+    RegistryStatus:
+      description: Request processing status indicator
+      enum:
+      - SUCCESS
+      - FAILURE
+      - ERROR
+      type: string
+    ListArtifact:
+      description: A list of Artifacts
       properties:
-        totalSize:
-          type: string
+        artifacts:
+          description: A list of Artifact
+          items:
+            $ref: '#/components/schemas/ArtifactMetadata'
+          type: array
+        itemCount:
+          description: The total number of items
+          example: 1
+          format: int64
+          type: integer
+        pageCount:
+          description: The total number of pages
+          example: 100
+          format: int64
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          format: int64
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
       required:
-      - totalSize
+      - artifacts
+      type: object
+    ArtifactStats:
+      description: Harness Artifact Stats
+      properties:
+        downloadCount:
+          format: int64
+          type: integer
+        downloadSize:
+          format: int64
+          type: integer
+        totalStorageSize:
+          format: int64
+          type: integer
+        uploadSize:
+          format: int64
+          type: integer
       type: object
     RegistryTypesLabel:
       properties:
@@ -1255,14 +1332,59 @@ components:
           format: int64
           type: integer
       type: object
-    TypesSaveLabelValueInput:
+    ArtifactEntityMetadata:
+      additionalProperties: true
+      description: Artifact Entity Metadata
+      type: object
+    RegistryError:
+      description: Standard error response with code, message and optional details
       properties:
-        color:
-          $ref: '#/components/schemas/EnumLabelColor'
-        id:
-          type: integer
-        value:
+        code:
+          description: The HTTP error code
+          example: '404'
           type: string
+        details:
+          description: 'Additional context and details about the error.
+
+            May include field-specific validation errors or debugging information.
+
+            '
+          example:
+            field: registry_identifier
+            reason: Registry does not exist in the specified project
+            value: invalid-registry
+          type: object
+        message:
+          description: Human-readable error message explaining what went wrong
+          example: Registry not found
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    EnumLabelColor:
+      enum:
+      - blue
+      - brown
+      - cyan
+      - green
+      - indigo
+      - lime
+      - mint
+      - orange
+      - pink
+      - purple
+      - red
+      - violet
+      - yellow
+      type: string
+    StorageDetails:
+      description: storage details
+      properties:
+        totalSize:
+          type: string
+      required:
+      - totalSize
       type: object
     Meta:
       description: Metadata about the list response
@@ -1281,6 +1403,22 @@ components:
       - activeCount
       - deletedCount
       type: object
+    UsererrorError:
+      properties:
+        message:
+          type: string
+        values:
+          additionalProperties: {}
+          type: object
+      type: object
+    RegistryArtifactType:
+      description: refers to artifact type
+      enum:
+      - model
+      - dataset
+      - module
+      - provider
+      type: string
     PerformedBy:
       description: Principal who performed the relevant action
       properties:
@@ -1292,154 +1430,16 @@ components:
       - name
       - email
       type: object
-  parameters:
-    fromDateParam:
-      description: Date. Format - MM/DD/YYYY
-      in: query
-      name: from
-      schema:
-        type: string
-    recursiveParam:
-      description: 'Whether to list registries recursively.
-
-
-        **Deprecated.** Use the new `scope` parameter.
-
-
-        * `recursive=true`  → `scope=ancestors`
-
-        * `recursive=false` → `scope=none`
-
-        '
-      in: query
-      name: recursive
-      schema:
-        default: false
-        type: boolean
-    RegistryTypeParam:
-      description: Registry Type
-      in: query
-      name: type
-      schema:
-        enum:
-        - VIRTUAL
-        - UPSTREAM
-        type: string
-    RegistrysortOrder:
-      description: sortOrder
-      in: query
-      name: sort_order
-      schema:
-        type: string
-    RegistryIdentifierParam:
-      description: Registry Identifier
-      in: query
-      name: reg_identifier
-      schema:
-        items:
-          type: string
-        type: array
-    toDateParam:
-      description: Date. Format - MM/DD/YYYY
-      in: query
-      name: to
-      schema:
-        type: string
-    spaceRefPathParam:
-      description: 'Reference to the scope in which the registry exists.
-
-
-        Format depends on the scope:
-
-
-        - **Account-level**: `account_id/+`
-
-        - **Organization-level**: `account_id/org/+`
-
-        - **Project-level**: `account_id/org/project/+`
-
-
-        The `/+` suffix is used internally to route scoped requests.
-
-        It must be included **exactly as shown** in the URL.
-
-        '
-      examples:
-        accountLevel:
-          description: Only account ID, scoped at account level
-          summary: Account-level registry
-          value: acc123/+
-        orgLevel:
-          description: Account and org, scoped at org level
-          summary: Organization-level registry
-          value: acc123/org456/+
-        projectLevel:
-          description: Account, org, and project, scoped at project level
-          summary: Project-level registry
-          value: acc123/org456/proj789/+
-      in: path
-      name: space_ref
-      required: true
-      schema:
-        type: string
-    searchTerm:
-      description: search Term.
-      in: query
-      name: search_term
-      schema:
-        type: string
-    scopeParam:
-      description: "**Scope of registries to list**\n* **none** – current space only (default)   * **ancestors** – current space **plus** all parent spaces   * **descendants** – current space **plus** all child spaces  \nIf omitted, `none` is assumed.\n"
-      in: query
-      name: scope
-      schema:
-        enum:
-        - ancestors
-        - descendants
-        - none
-        type: string
-    RegistrypageSize:
-      description: Number of items per page
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        type: integer
-    sortField:
-      description: sortField
-      in: query
-      name: sort_field
-      schema:
-        type: string
-    latestVersion:
-      description: Latest Version Filter.
-      in: query
-      name: latest_version
-      schema:
-        type: boolean
-    deployedArtifact:
-      description: Deployed Artifact Filter.
-      in: query
-      name: deployed_artifact
-      schema:
-        type: boolean
-    RegistrypageNumber:
-      description: Current page number
-      in: query
-      name: page
-      schema:
-        default: 1
-        format: int64
-        type: integer
-    packageTypeParam:
-      description: Registry Package Type
-      in: query
-      name: package_type
-      schema:
-        items:
-          type: string
-        type: array
+    DeploymentMetadata:
+      properties:
+        nonProdEnvCount:
+          type: integer
+        prodEnvCount:
+          type: integer
+      required:
+      - prodEnvCount
+      - nonProdEnvCount
+      type: object
   securitySchemes:
     x-api-key:
       name: x-api-key

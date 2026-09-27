@@ -1194,18 +1194,7 @@ components:
           type: string
         totpqrurl:
           type: string
-    UserInfoUpdateDTO:
-      type: object
-      properties:
-        name:
-          type: string
-        email:
-          type: string
-        givenName:
-          type: string
-        familyName:
-          type: string
-    ResponseDTOBoolean:
+    ResponseDTOAddUsersResponse:
       type: object
       properties:
         status:
@@ -1215,10 +1204,79 @@ components:
           - FAILURE
           - ERROR
         data:
-          type: boolean
+          $ref: '#/components/schemas/AddUsersResponse'
         metaData:
           type: object
         correlationId:
+          type: string
+    UserAggregate:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserMetadata'
+        roleAssignmentMetadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleAssignmentMetadata'
+      description: Returns User's metadata and Role Assignments metadata
+    UserMetadata:
+      required:
+      - disabled
+      - email
+      - externallyManaged
+      - locked
+      - uuid
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        uuid:
+          type: string
+        locked:
+          type: boolean
+        disabled:
+          type: boolean
+        externallyManaged:
+          type: boolean
+        twoFactorAuthenticationEnabled:
+          type: boolean
+      description: This is the view of the UserMetadata entity defined in Harness
+    GatewayAccountRequest:
+      type: object
+      properties:
+        uuid:
+          type: string
+        accountName:
+          type: string
+        companyName:
+          type: string
+        defaultExperience:
+          type: string
+          enum:
+          - NG
+          - CG
+        createdFromNG:
+          type: boolean
+        isNextGenEnabled:
+          type: boolean
+          writeOnly: true
+        nextGenEnabled:
+          type: boolean
+      description: Returns Gateway account request details like uuid, account name, company name, default experience, whether or not created from NextGen and whether NextGen is enabled or not.
+    UtmInfo:
+      type: object
+      properties:
+        utmSource:
+          type: string
+        utmContent:
+          type: string
+        utmMedium:
+          type: string
+        utmTerm:
+          type: string
+        utmCampaign:
           type: string
     Failure:
       type: object
@@ -1653,105 +1711,6 @@ components:
             - USER_ALREADY_INVITED
             - USER_INVITE_NOT_REQUIRED
             - FAIL
-    UserInfo:
-      type: object
-      properties:
-        uuid:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        token:
-          type: string
-        defaultAccountId:
-          type: string
-        intent:
-          type: string
-        accounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/GatewayAccountRequest'
-        admin:
-          type: boolean
-        twoFactorAuthenticationEnabled:
-          type: boolean
-        emailVerified:
-          type: boolean
-        locked:
-          type: boolean
-        disabled:
-          type: boolean
-        signupAction:
-          type: string
-        edition:
-          type: string
-        billingFrequency:
-          type: string
-        utmInfo:
-          $ref: '#/components/schemas/UtmInfo'
-        externallyManaged:
-          type: boolean
-        givenName:
-          type: string
-        familyName:
-          type: string
-        externalId:
-          type: string
-        createdAt:
-          type: integer
-          format: int64
-        lastUpdatedAt:
-          type: integer
-          format: int64
-        userPreferences:
-          type: object
-          additionalProperties:
-            type: string
-        isEnrichedInfoCollected:
-          type: boolean
-        lastLogin:
-          type: integer
-          format: int64
-    UserMetadata:
-      required:
-      - disabled
-      - email
-      - externallyManaged
-      - locked
-      - uuid
-      type: object
-      properties:
-        name:
-          type: string
-        email:
-          type: string
-        uuid:
-          type: string
-        locked:
-          type: boolean
-        disabled:
-          type: boolean
-        externallyManaged:
-          type: boolean
-        twoFactorAuthenticationEnabled:
-          type: boolean
-      description: This is the view of the UserMetadata entity defined in Harness
-    RoleBinding:
-      type: object
-      properties:
-        roleIdentifier:
-          type: string
-        roleName:
-          type: string
-        roleScopeLevel:
-          type: string
-        resourceGroupIdentifier:
-          type: string
-        resourceGroupName:
-          type: string
-        managedRole:
-          type: boolean
     PageResponseUserMetadata:
       type: object
       properties:
@@ -1778,103 +1737,21 @@ components:
           type: boolean
         pageToken:
           type: string
-    RestResponseBoolean:
+    RoleBinding:
       type: object
       properties:
-        metaData:
-          type: object
-          additionalProperties:
-            type: object
-        resource:
+        roleIdentifier:
+          type: string
+        roleName:
+          type: string
+        roleScopeLevel:
+          type: string
+        resourceGroupIdentifier:
+          type: string
+        resourceGroupName:
+          type: string
+        managedRole:
           type: boolean
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
-    UserSettingFromInvite:
-      type: object
-      properties:
-        identifier:
-          type: string
-        value:
-          type: string
-    ResponseDTOTwoFactorAuthSettingsInfo:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/TwoFactorAuthSettingsInfo'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ResponseDTOPageResponseUserAggregate:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseUserAggregate'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    PasswordChange:
-      type: object
-      properties:
-        currentPassword:
-          type: string
-          description: This is the current password.
-        newPassword:
-          type: string
-          description: This is the new password.
-      description: This is the view of the PasswordChange entity defined in Harness
-    ResponseDTOUserInfo:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/UserInfo'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    ResponseDTOAddUsersResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/AddUsersResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
     ResponseMessage:
       type: object
       properties:
@@ -2465,36 +2342,103 @@ components:
           type: object
           additionalProperties:
             type: string
-    UserAggregate:
+    ResponseDTOPasswordChangeResponse:
       type: object
       properties:
-        user:
-          $ref: '#/components/schemas/UserMetadata'
-        roleAssignmentMetadata:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoleAssignmentMetadata'
-      description: Returns User's metadata and Role Assignments metadata
-    SortOrder:
-      type: object
-      properties:
-        fieldName:
-          type: string
-        orderType:
+        status:
           type: string
           enum:
-          - ASC
-          - DESC
-    UserAddToUserGroupDTO:
-      required:
-      - userGroupIdsToAdd
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: string
+          enum:
+          - PASSWORD_CHANGED
+          - INCORRECT_CURRENT_PASSWORD
+          - PASSWORD_STRENGTH_VIOLATED
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    PageResponseUserAggregate:
       type: object
       properties:
-        userGroupIdsToAdd:
-          uniqueItems: true
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserAggregate'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    ImpersonateDTO:
+      required:
+      - reasonOfImpersonation
+      type: object
+      properties:
+        reasonOfImpersonation:
+          type: string
+    ResponseDTOPageResponseUserAggregate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseUserAggregate'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    UserSettingFromInvite:
+      type: object
+      properties:
+        identifier:
+          type: string
+        value:
+          type: string
+    AddUsersDTO:
+      required:
+      - emails
+      type: object
+      properties:
+        emails:
+          maxItems: 100
+          minItems: 0
           type: array
           items:
             type: string
+        roleBindings:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleBinding'
+        userGroups:
+          type: array
+          items:
+            type: string
+        userSettings:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSettingFromInvite'
     Error1:
       type: object
       properties:
@@ -2918,6 +2862,117 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
+    ResponseDTOBoolean:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: boolean
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    UserInfo:
+      type: object
+      properties:
+        uuid:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        token:
+          type: string
+        defaultAccountId:
+          type: string
+        intent:
+          type: string
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatewayAccountRequest'
+        admin:
+          type: boolean
+        twoFactorAuthenticationEnabled:
+          type: boolean
+        emailVerified:
+          type: boolean
+        locked:
+          type: boolean
+        disabled:
+          type: boolean
+        signupAction:
+          type: string
+        edition:
+          type: string
+        billingFrequency:
+          type: string
+        utmInfo:
+          $ref: '#/components/schemas/UtmInfo'
+        externallyManaged:
+          type: boolean
+        givenName:
+          type: string
+        familyName:
+          type: string
+        externalId:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        lastUpdatedAt:
+          type: integer
+          format: int64
+        userPreferences:
+          type: object
+          additionalProperties:
+            type: string
+        isEnrichedInfoCollected:
+          type: boolean
+        lastLogin:
+          type: integer
+          format: int64
+    ResponseDTOUserInfo:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/UserInfo'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ACLAggregateFilter:
+      type: object
+      properties:
+        resourceGroupIdentifiers:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        roleIdentifiers:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
     RoleAssignmentMetadata:
       type: object
       properties:
@@ -2938,34 +2993,6 @@ components:
         managedRoleAssignment:
           type: boolean
       description: This has information of Role like name, id, resource group name, etc.
-    ImpersonateDTO:
-      required:
-      - reasonOfImpersonation
-      type: object
-      properties:
-        reasonOfImpersonation:
-          type: string
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    UtmInfo:
-      type: object
-      properties:
-        utmSource:
-          type: string
-        utmContent:
-          type: string
-        utmMedium:
-          type: string
-        utmTerm:
-          type: string
-        utmCampaign:
-          type: string
     UserFilter:
       type: object
       properties:
@@ -2992,74 +3019,54 @@ components:
           - NO_PARENT_SCOPES
           - INCLUDE_PARENT_SCOPES
           - STRICTLY_PARENT_SCOPES
-    PageResponseUserAggregate:
+    SortOrder:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserAggregate'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
+        fieldName:
           type: string
-    ResponseDTOPasswordChangeResponse:
+        orderType:
+          type: string
+          enum:
+          - ASC
+          - DESC
+    UserInfoUpdateDTO:
       type: object
       properties:
-        status:
+        name:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
+        email:
           type: string
-          enum:
-          - PASSWORD_CHANGED
-          - INCORRECT_CURRENT_PASSWORD
-          - PASSWORD_STRENGTH_VIOLATED
-        metaData:
-          type: object
-        correlationId:
+        givenName:
           type: string
-    AddUsersDTO:
+        familyName:
+          type: string
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    PasswordChange:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          description: This is the current password.
+        newPassword:
+          type: string
+          description: This is the new password.
+      description: This is the view of the PasswordChange entity defined in Harness
+    UserAddToUserGroupDTO:
       required:
-      - emails
+      - userGroupIdsToAdd
       type: object
       properties:
-        emails:
-          maxItems: 100
-          minItems: 0
+        userGroupIdsToAdd:
+          uniqueItems: true
           type: array
           items:
             type: string
-        roleBindings:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoleBinding'
-        userGroups:
-          type: array
-          items:
-            type: string
-        userSettings:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserSettingFromInvite'
     ResponseDTOPageResponseUserMetadata:
       type: object
       properties:
@@ -3075,6 +3082,19 @@ components:
           type: object
         correlationId:
           type: string
+    RestResponseBoolean:
+      type: object
+      properties:
+        metaData:
+          type: object
+          additionalProperties:
+            type: object
+        resource:
+          type: boolean
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
     ResponseDTOUserAggregate:
       type: object
       properties:
@@ -3090,41 +3110,21 @@ components:
           type: object
         correlationId:
           type: string
-    ACLAggregateFilter:
+    ResponseDTOTwoFactorAuthSettingsInfo:
       type: object
       properties:
-        resourceGroupIdentifiers:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        roleIdentifiers:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-    GatewayAccountRequest:
-      type: object
-      properties:
-        uuid:
-          type: string
-        accountName:
-          type: string
-        companyName:
-          type: string
-        defaultExperience:
+        status:
           type: string
           enum:
-          - NG
-          - CG
-        createdFromNG:
-          type: boolean
-        isNextGenEnabled:
-          type: boolean
-          writeOnly: true
-        nextGenEnabled:
-          type: boolean
-      description: Returns Gateway account request details like uuid, account name, company name, default experience, whether or not created from NextGen and whether NextGen is enabled or not.
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/TwoFactorAuthSettingsInfo'
+        metaData:
+          type: object
+        correlationId:
+          type: string
     EnumResourceType:
       enum:
       - CONNECTOR

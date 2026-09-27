@@ -326,54 +326,36 @@ paths:
       x-internal: false
 components:
   schemas:
-    ListLifecycleExecutionsResponseBodyV3:
+    LifecycleRuleFilterConfigHuggingFaceV3:
+      description: Filter configuration for HUGGINGFACE package type.
       properties:
-        hasMore:
-          type: boolean
-        items:
+        datasetAllowedPattern:
+          description: Glob patterns for dataset names to include.
           items:
-            $ref: '#/components/schemas/LifecycleExecutionResponseV3'
+            type: string
           type: array
-        page:
-          format: int64
-          type: integer
-        size:
-          format: int64
-          type: integer
-      required:
-      - items
-      - hasMore
-      - page
-      - size
-      type: object
-    UserInfoV3:
-      description: Structured user information for a principal
-      properties:
-        display_name:
-          description: Human-readable display name
-          type: string
-        email:
-          description: Email address
-          type: string
-        type:
-          description: Principal type (user, service, service_account)
-          type: string
-        uid:
-          description: Principal unique identifier (username)
-          type: string
-      type: object
-    LifecycleRuleCriteriaV3:
-      properties:
-        match:
-          $ref: '#/components/schemas/LifecycleRuleCriteriaMatchV3'
-        rules:
+        modelAllowedPattern:
+          description: Glob patterns for model names to include.
           items:
-            $ref: '#/components/schemas/LifecycleRuleCriteriaItemV3'
+            type: string
+          type: array
+        packageType:
+          enum:
+          - HUGGINGFACE
+          type: string
+        versionNameAllowedPattern:
+          description: Glob patterns for version/revision names to include.
+          items:
+            type: string
           type: array
       required:
-      - match
-      - rules
+      - packageType
       type: object
+    LifecycleRuleCriteriaMatchV3:
+      enum:
+      - ANY
+      - ALL
+      type: string
     LifecycleRuleFilterConfigGenericV3:
       description: 'Filter configuration for package types that support only name and version filtering: PYTHON, HELM, NPM, NUGET, RPM, CARGO, COMPOSER, GO, CONDA, DART, SWIFT, PUPPET, RUBY, RAW, GENERIC.
 
@@ -397,6 +379,29 @@ components:
       required:
       - packageType
       type: object
+    LifecycleRuleRequestBodyV3:
+      properties:
+        action:
+          $ref: '#/components/schemas/LifecycleRuleActionV3'
+        applyTo:
+          $ref: '#/components/schemas/LifecycleRuleApplyToV3'
+        criteria:
+          $ref: '#/components/schemas/LifecycleRuleCriteriaV3'
+        description:
+          type: string
+        filterConfig:
+          $ref: '#/components/schemas/LifecycleRuleFilterConfigV3'
+        name:
+          type: string
+        packageType:
+          type: string
+        schedule:
+          $ref: '#/components/schemas/LifecycleRuleScheduleV3'
+      required:
+      - name
+      - action
+      - applyTo
+      type: object
     ListLifecycleRulesResponseBodyV3:
       properties:
         hasMore:
@@ -416,6 +421,116 @@ components:
       - hasMore
       - page
       - size
+      type: object
+    projectIdentifier:
+      type: string
+    LifecycleStatsResponseV3:
+      description: Aggregate lifecycle execution metrics for the requested scope.
+      properties:
+        artifactsCleaned:
+          description: Total artifact versions deleted across all executions.
+          format: int64
+          type: integer
+        executionsLast30Days:
+          description: Number of executions that ran in the last 30 days.
+          format: int64
+          type: integer
+        storageReclaimed:
+          description: Total storage reclaimed (bytes) across all executions.
+          type: string
+      required:
+      - storageReclaimed
+      - artifactsCleaned
+      - executionsLast30Days
+      type: object
+    LifecycleDryRunRequestBodyV3:
+      properties:
+        policyId:
+          type: string
+      required:
+      - policyId
+      type: object
+    LifecycleRuleCriteriaUnitV3:
+      enum:
+      - DAYS
+      - MONTHS
+      - YEARS
+      type: string
+    LifecycleRuleScheduleV3:
+      properties:
+        expression:
+          type: string
+        timezone:
+          type: string
+      required:
+      - expression
+      - timezone
+      type: object
+    LifecycleRuleCriteriaConfigV3:
+      properties:
+        unit:
+          $ref: '#/components/schemas/LifecycleRuleCriteriaUnitV3'
+        value:
+          format: int64
+          type: integer
+      type: object
+    LifecycleRuleCriteriaV3:
+      properties:
+        match:
+          $ref: '#/components/schemas/LifecycleRuleCriteriaMatchV3'
+        rules:
+          items:
+            $ref: '#/components/schemas/LifecycleRuleCriteriaItemV3'
+          type: array
+      required:
+      - match
+      - rules
+      type: object
+    orgIdentifier:
+      type: string
+    LifecycleExecutionItemStatusV3:
+      description: Outcome of a lifecycle execution item.
+      enum:
+      - PROTECTED
+      - WOULD_BE_DELETED
+      - DELETED
+      type: string
+    LifecycleRuleApplyToV3:
+      properties:
+        mode:
+          $ref: '#/components/schemas/LifecycleRuleApplyToModeV3'
+        registries:
+          items:
+            type: string
+          type: array
+      required:
+      - mode
+      type: object
+    ApiErrorsV3:
+      properties:
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
+      required:
+      - type
+      title: APIErrors
       type: object
     LifecycleRuleFilterConfigDockerV3:
       description: Filter configuration for DOCKER package type.
@@ -437,75 +552,105 @@ components:
       required:
       - packageType
       type: object
+    LifecycleRuleCriteriaItemV3:
+      properties:
+        config:
+          $ref: '#/components/schemas/LifecycleRuleCriteriaConfigV3'
+        type:
+          $ref: '#/components/schemas/LifecycleRuleCriteriaTypeV3'
+      required:
+      - type
+      - config
+      type: object
+    LifecycleExecutionItemResponseV3:
+      description: A single artifact version evaluated during a lifecycle execution.
+      properties:
+        lastDownloadedAt:
+          description: Epoch milliseconds of the last download.
+          format: int64
+          type: integer
+        orgIdentifier:
+          $ref: '#/components/schemas/orgIdentifier'
+        packageName:
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageTypeV3'
+        projectIdentifier:
+          $ref: '#/components/schemas/projectIdentifier'
+        reason:
+          description: Reason the item was included or excluded.
+          type: string
+        registryName:
+          type: string
+        size:
+          type: string
+        status:
+          $ref: '#/components/schemas/LifecycleExecutionItemStatusV3'
+        version:
+          type: string
+        versionId:
+          type: string
+      required:
+      - packageName
+      - version
+      - registryName
+      - status
+      type: object
+    LifecycleRulePatchBodyV3:
+      description: Partial update body for a lifecycle rule. Only provided fields are updated.
+      properties:
+        action:
+          $ref: '#/components/schemas/LifecycleRuleActionV3'
+        applyTo:
+          $ref: '#/components/schemas/LifecycleRuleApplyToV3'
+        criteria:
+          $ref: '#/components/schemas/LifecycleRuleCriteriaV3'
+        description:
+          type: string
+        enabled:
+          description: Enable or disable the lifecycle rule.
+          type: boolean
+        filterConfig:
+          $ref: '#/components/schemas/LifecycleRuleFilterConfigV3'
+        name:
+          type: string
+        packageType:
+          type: string
+        schedule:
+          $ref: '#/components/schemas/LifecycleRuleScheduleV3'
+      type: object
     LifecycleRuleApplyToModeV3:
       enum:
       - EXPLICIT
       - ALL_IN_SCOPE
       type: string
-    LifecycleStatsResponseV3:
-      description: Aggregate lifecycle execution metrics for the requested scope.
-      properties:
-        artifactsCleaned:
-          description: Total artifact versions deleted across all executions.
-          format: int64
-          type: integer
-        executionsLast30Days:
-          description: Number of executions that ran in the last 30 days.
-          format: int64
-          type: integer
-        storageReclaimed:
-          description: Total storage reclaimed (bytes) across all executions.
-          type: string
-      required:
-      - storageReclaimed
-      - artifactsCleaned
-      - executionsLast30Days
-      type: object
-    LifecycleRuleFilterConfigMavenV3:
-      description: Filter configuration for MAVEN package type.
-      properties:
-        groupIdAllowedPattern:
-          description: Glob patterns for Maven group IDs to include (e.g. "com.example.*").
-          items:
-            type: string
-          type: array
-        packageNameAllowedPattern:
-          description: Glob patterns for artifact IDs to include.
-          items:
-            type: string
-          type: array
-        packageType:
-          enum:
-          - MAVEN
-          type: string
-        versionNameAllowedPattern:
-          description: Glob patterns for version strings to include (e.g. "*-SNAPSHOT").
-          items:
-            type: string
-          type: array
-      required:
-      - packageType
-      type: object
-    ListLifecycleExecutionItemsResponseV3:
-      properties:
-        hasMore:
-          type: boolean
-        items:
-          items:
-            $ref: '#/components/schemas/LifecycleExecutionItemResponseV3'
-          type: array
-        page:
-          format: int64
-          type: integer
-        size:
-          format: int64
-          type: integer
-      required:
-      - items
-      - hasMore
-      - page
-      - size
-      type: object
+    LifecycleExecutionTriggerTypeV3:
+      enum:
+      - SCHEDULED
+      - DRY_RUN
+      type: string
+    LifecycleExecutionStatusV3:
+      enum:
+      - PENDING
+      - INPROGRESS
+      - SUCCESS
+      - FAILED
+      type: string
+    LifecycleRuleFilterConfigV3:
+      description: 'Filter configuration for a lifecycle rule, discriminated by packageType. Set packageType to select the correct variant: DOCKER, MAVEN, HUGGINGFACE, or any other supported type (generic variant).
+
+        '
+      discriminator:
+        mapping:
+          DOCKER: '#/components/schemas/LifecycleRuleFilterConfigDockerV3'
+          HUGGINGFACE: '#/components/schemas/LifecycleRuleFilterConfigHuggingFaceV3'
+          MAVEN: '#/components/schemas/LifecycleRuleFilterConfigMavenV3'
+        propertyName: packageType
+      oneOf:
+      - $ref: '#/components/schemas/LifecycleRuleFilterConfigDockerV3'
+      - $ref: '#/components/schemas/LifecycleRuleFilterConfigMavenV3'
+      - $ref: '#/components/schemas/LifecycleRuleFilterConfigHuggingFaceV3'
+      - $ref: '#/components/schemas/LifecycleRuleFilterConfigGenericV3'
     LifecycleRuleResponseV3:
       properties:
         action:
@@ -562,116 +707,57 @@ components:
       - enabled
       - hasLocalAssignment
       type: object
-    LifecycleRuleRequestBodyV3:
+    LifecycleRuleCriteriaTypeV3:
+      enum:
+      - KEEP_LAST_N
+      - AGE_BASED
+      - UNUSED_FOR
+      type: string
+    UserInfoV3:
+      description: Structured user information for a principal
       properties:
-        action:
-          $ref: '#/components/schemas/LifecycleRuleActionV3'
-        applyTo:
-          $ref: '#/components/schemas/LifecycleRuleApplyToV3'
-        criteria:
-          $ref: '#/components/schemas/LifecycleRuleCriteriaV3'
-        description:
+        display_name:
+          description: Human-readable display name
           type: string
-        filterConfig:
-          $ref: '#/components/schemas/LifecycleRuleFilterConfigV3'
-        name:
-          type: string
-        packageType:
-          type: string
-        schedule:
-          $ref: '#/components/schemas/LifecycleRuleScheduleV3'
-      required:
-      - name
-      - action
-      - applyTo
-      type: object
-    LifecycleExecutionItemResponseV3:
-      description: A single artifact version evaluated during a lifecycle execution.
-      properties:
-        lastDownloadedAt:
-          description: Epoch milliseconds of the last download.
-          format: int64
-          type: integer
-        orgIdentifier:
-          $ref: '#/components/schemas/orgIdentifier'
-        packageName:
-          type: string
-        packageType:
-          $ref: '#/components/schemas/PackageTypeV3'
-        projectIdentifier:
-          $ref: '#/components/schemas/projectIdentifier'
-        reason:
-          description: Reason the item was included or excluded.
-          type: string
-        registryName:
-          type: string
-        size:
-          type: string
-        status:
-          $ref: '#/components/schemas/LifecycleExecutionItemStatusV3'
-        version:
-          type: string
-        versionId:
-          type: string
-      required:
-      - packageName
-      - version
-      - registryName
-      - status
-      type: object
-    LifecycleRuleCriteriaConfigV3:
-      properties:
-        unit:
-          $ref: '#/components/schemas/LifecycleRuleCriteriaUnitV3'
-        value:
-          format: int64
-          type: integer
-      type: object
-    ApiErrorsV3:
-      properties:
-        code:
-          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
-          maxLength: 5000
-          type: string
-        message:
-          description: A human-readable message providing more details about the error. These messages can be shown to users.
-          maxLength: 40000
-          type: string
-        param:
-          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
-          maxLength: 5000
+        email:
+          description: Email address
           type: string
         type:
-          description: The type of error returned.
+          description: Principal type (user, service, service_account)
+          type: string
+        uid:
+          description: Principal unique identifier (username)
+          type: string
+      type: object
+    LifecycleRuleActionV3:
+      enum:
+      - DELETE
+      - PROTECT
+      type: string
+    LifecycleRuleFilterConfigMavenV3:
+      description: Filter configuration for MAVEN package type.
+      properties:
+        groupIdAllowedPattern:
+          description: Glob patterns for Maven group IDs to include (e.g. "com.example.*").
+          items:
+            type: string
+          type: array
+        packageNameAllowedPattern:
+          description: Glob patterns for artifact IDs to include.
+          items:
+            type: string
+          type: array
+        packageType:
           enum:
-          - INVALID_REQUEST_ERROR
-          - AUTHENTICATION_ERROR
-          - PERMISSION_ERROR
-          - API_ERROR
+          - MAVEN
           type: string
+        versionNameAllowedPattern:
+          description: Glob patterns for version strings to include (e.g. "*-SNAPSHOT").
+          items:
+            type: string
+          type: array
       required:
-      - type
-      title: APIErrors
-      type: object
-    LifecycleRuleCriteriaItemV3:
-      properties:
-        config:
-          $ref: '#/components/schemas/LifecycleRuleCriteriaConfigV3'
-        type:
-          $ref: '#/components/schemas/LifecycleRuleCriteriaTypeV3'
-      required:
-      - type
-      - config
-      type: object
-    LifecycleRuleScheduleV3:
-      properties:
-        expression:
-          type: string
-        timezone:
-          type: string
-      required:
-      - expression
-      - timezone
+      - packageType
       type: object
     LifecycleExecutionResponseV3:
       properties:
@@ -728,6 +814,14 @@ components:
       - storageReclaimed
       - protected
       type: object
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
     PackageTypeV3:
       description: 'Package type. Known values include: DOCKER, MAVEN, PYTHON, GENERIC, HELM, HELM_HTTP, NUGET, NPM, RPM, CARGO, COMPOSER, GO, HUGGINGFACE, CONDA, DART, SWIFT, PUPPET, RUBY, RAW, DEBIAN, CONAN, TERRAFORM. This field is extensible; clients must handle unknown values.
 
@@ -758,165 +852,59 @@ components:
       - CONAN
       - TERRAFORM
       - CRAN
-    LifecycleRuleCriteriaTypeV3:
-      enum:
-      - KEEP_LAST_N
-      - AGE_BASED
-      - UNUSED_FOR
-      type: string
-    LifecycleDryRunRequestBodyV3:
+    ListLifecycleExecutionItemsResponseV3:
       properties:
-        policyId:
-          type: string
-      required:
-      - policyId
-      type: object
-    LifecycleRuleApplyToV3:
-      properties:
-        mode:
-          $ref: '#/components/schemas/LifecycleRuleApplyToModeV3'
-        registries:
-          items:
-            type: string
-          type: array
-      required:
-      - mode
-      type: object
-    ErrorV3:
-      description: An error response
-      properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
-      required:
-      - error
-      type: object
-    LifecycleRulePatchBodyV3:
-      description: Partial update body for a lifecycle rule. Only provided fields are updated.
-      properties:
-        action:
-          $ref: '#/components/schemas/LifecycleRuleActionV3'
-        applyTo:
-          $ref: '#/components/schemas/LifecycleRuleApplyToV3'
-        criteria:
-          $ref: '#/components/schemas/LifecycleRuleCriteriaV3'
-        description:
-          type: string
-        enabled:
-          description: Enable or disable the lifecycle rule.
+        hasMore:
           type: boolean
-        filterConfig:
-          $ref: '#/components/schemas/LifecycleRuleFilterConfigV3'
-        name:
-          type: string
-        packageType:
-          type: string
-        schedule:
-          $ref: '#/components/schemas/LifecycleRuleScheduleV3'
-      type: object
-    LifecycleRuleCriteriaUnitV3:
-      enum:
-      - DAYS
-      - MONTHS
-      - YEARS
-      type: string
-    LifecycleExecutionTriggerTypeV3:
-      enum:
-      - SCHEDULED
-      - DRY_RUN
-      type: string
-    LifecycleRuleFilterConfigV3:
-      description: 'Filter configuration for a lifecycle rule, discriminated by packageType. Set packageType to select the correct variant: DOCKER, MAVEN, HUGGINGFACE, or any other supported type (generic variant).
-
-        '
-      discriminator:
-        mapping:
-          DOCKER: '#/components/schemas/LifecycleRuleFilterConfigDockerV3'
-          HUGGINGFACE: '#/components/schemas/LifecycleRuleFilterConfigHuggingFaceV3'
-          MAVEN: '#/components/schemas/LifecycleRuleFilterConfigMavenV3'
-        propertyName: packageType
-      oneOf:
-      - $ref: '#/components/schemas/LifecycleRuleFilterConfigDockerV3'
-      - $ref: '#/components/schemas/LifecycleRuleFilterConfigMavenV3'
-      - $ref: '#/components/schemas/LifecycleRuleFilterConfigHuggingFaceV3'
-      - $ref: '#/components/schemas/LifecycleRuleFilterConfigGenericV3'
-    projectIdentifier:
-      type: string
-    LifecycleRuleFilterConfigHuggingFaceV3:
-      description: Filter configuration for HUGGINGFACE package type.
-      properties:
-        datasetAllowedPattern:
-          description: Glob patterns for dataset names to include.
+        items:
           items:
-            type: string
+            $ref: '#/components/schemas/LifecycleExecutionItemResponseV3'
           type: array
-        modelAllowedPattern:
-          description: Glob patterns for model names to include.
-          items:
-            type: string
-          type: array
-        packageType:
-          enum:
-          - HUGGINGFACE
-          type: string
-        versionNameAllowedPattern:
-          description: Glob patterns for version/revision names to include.
-          items:
-            type: string
-          type: array
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
       required:
-      - packageType
+      - items
+      - hasMore
+      - page
+      - size
       type: object
-    LifecycleExecutionItemStatusV3:
-      description: Outcome of a lifecycle execution item.
-      enum:
-      - PROTECTED
-      - WOULD_BE_DELETED
-      - DELETED
-      type: string
-    LifecycleRuleActionV3:
-      enum:
-      - DELETE
-      - PROTECT
-      type: string
-    orgIdentifier:
-      type: string
-    LifecycleExecutionStatusV3:
-      enum:
-      - PENDING
-      - INPROGRESS
-      - SUCCESS
-      - FAILED
-      type: string
-    LifecycleRuleCriteriaMatchV3:
-      enum:
-      - ANY
-      - ALL
-      type: string
+    ListLifecycleExecutionsResponseBodyV3:
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          items:
+            $ref: '#/components/schemas/LifecycleExecutionResponseV3'
+          type: array
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+      required:
+      - items
+      - hasMore
+      - page
+      - size
+      type: object
   responses:
-    LifecycleRuleCreatedV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/LifecycleRuleResponseV3'
-      description: Lifecycle rule created successfully
-    LifecycleRuleUpdatedV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/LifecycleRuleResponseV3'
-      description: Lifecycle rule updated successfully
     LifecycleRuleResponseV3:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/LifecycleRuleResponseV3'
       description: Lifecycle rule response
-    ListLifecycleExecutionsResponseV3:
+    LifecycleExecutionResponseV3:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ListLifecycleExecutionsResponseBodyV3'
-      description: Response for list lifecycle executions
+            $ref: '#/components/schemas/LifecycleExecutionResponseV3'
+      description: Lifecycle execution response
     ListLifecycleRulesResponseV3:
       content:
         application/json:
@@ -929,37 +917,51 @@ components:
           schema:
             $ref: '#/components/schemas/LifecycleExecutionResponseV3'
       description: Lifecycle dry-run execution created successfully
-    LifecycleExecutionResponseV3:
+    LifecycleRuleCreatedV3:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/LifecycleExecutionResponseV3'
-      description: Lifecycle execution response
+            $ref: '#/components/schemas/LifecycleRuleResponseV3'
+      description: Lifecycle rule created successfully
+    LifecycleRuleUpdatedV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LifecycleRuleResponseV3'
+      description: Lifecycle rule updated successfully
+    ListLifecycleExecutionsResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListLifecycleExecutionsResponseBodyV3'
+      description: Response for list lifecycle executions
   parameters:
-    LifecycleExecutionItemStatusParamV3:
-      description: Filter items by outcome status.
+    LifecycleExecutionStatusParamV3:
+      description: Filter executions by status.
       in: query
       name: status
       schema:
         enum:
-        - PROTECTED
-        - WOULD_BE_DELETED
-        - DELETED
+        - PENDING
+        - INPROGRESS
+        - SUCCESS
+        - FAILED
         type: string
-    IdPathParamV3:
-      in: path
-      name: id
-      required: true
-      schema:
-        type: string
-    PackageTypeListParamV3:
-      description: Registry Package Type
+    SortV3:
+      description: 'The sort for the results.
+
+        Accepted pattern: `sort_field:sort_order` where sort_field is the field name
+
+        and sort_order is either `asc` or `desc`.
+
+
+        Examples: `name:asc`, `modifiedAt:desc`
+
+        '
       in: query
-      name: package_types
+      name: sort
       schema:
-        items:
-          type: string
-        type: array
+        type: string
     LifecycleScopeParamV3:
       description: '**Scope of lifecycle rules/executions to list**
 
@@ -981,28 +983,26 @@ components:
         - descendants
         - none
         type: string
-    LifecycleActionParamV3:
-      description: Lifecycle action
-      in: query
-      name: action
-      schema:
-        enum:
-        - DELETE
-        - PROTECT
-        type: string
-    SortV3:
-      description: 'The sort for the results.
-
-        Accepted pattern: `sort_field:sort_order` where sort_field is the field name
-
-        and sort_order is either `asc` or `desc`.
+    OrgIdentifierV3:
+      description: 'Unique identifier for the organization within the account.
 
 
-        Examples: `name:asc`, `modifiedAt:desc`
+        Example: `default` or `engineering_org`
 
         '
       in: query
-      name: sort
+      name: org_identifier
+      schema:
+        type: string
+    ProjectIdentifierV3:
+      description: 'Unique identifier for the project within the organization.
+
+
+        Example: `my_project` or `frontend_services`
+
+        '
+      in: query
+      name: project_identifier
       schema:
         type: string
     AccountIdentifierV3:
@@ -1025,28 +1025,65 @@ components:
       name: search_term
       schema:
         type: string
-    LifecycleExecutionStatusParamV3:
-      description: Filter executions by status.
+    PackageTypeListParamV3:
+      description: Registry Package Type
+      in: query
+      name: package_types
+      schema:
+        items:
+          type: string
+        type: array
+    RegistryIdListOptionalParamV3:
+      description: 'Unique id for the registry.
+
+        Note: This parameter should have one id if package query param is provided
+
+        '
+      example:
+      - 12345678-1234-1234-1234-123456789012
+      - aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+      in: query
+      name: registry_ids
+      schema:
+        items:
+          format: uuid
+          type: string
+        type: array
+    LifecycleExecutionItemStatusParamV3:
+      description: Filter items by outcome status.
       in: query
       name: status
       schema:
         enum:
-        - PENDING
-        - INPROGRESS
-        - SUCCESS
-        - FAILED
+        - PROTECTED
+        - WOULD_BE_DELETED
+        - DELETED
         type: string
-    ProjectIdentifierV3:
-      description: 'Unique identifier for the project within the organization.
-
-
-        Example: `my_project` or `frontend_services`
-
-        '
-      in: query
-      name: project_identifier
+    IdPathParamV3:
+      in: path
+      name: id
+      required: true
       schema:
         type: string
+    LifecycleActionParamV3:
+      description: Lifecycle action
+      in: query
+      name: action
+      schema:
+        enum:
+        - DELETE
+        - PROTECT
+        type: string
+    PageSizeV3:
+      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        maximum: 100
+        minimum: 1
+        type: integer
     PageNumberV3:
       description: 'The page number for pagination (0-indexed).
 
@@ -1065,43 +1102,6 @@ components:
         default: 0
         format: int64
         type: integer
-    PageSizeV3:
-      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        maximum: 100
-        minimum: 1
-        type: integer
-    RegistryIdListOptionalParamV3:
-      description: 'Unique id for the registry.
-
-        Note: This parameter should have one id if package query param is provided
-
-        '
-      example:
-      - 12345678-1234-1234-1234-123456789012
-      - aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
-      in: query
-      name: registry_ids
-      schema:
-        items:
-          format: uuid
-          type: string
-        type: array
-    OrgIdentifierV3:
-      description: 'Unique identifier for the organization within the account.
-
-
-        Example: `default` or `engineering_org`
-
-        '
-      in: query
-      name: org_identifier
-      schema:
-        type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

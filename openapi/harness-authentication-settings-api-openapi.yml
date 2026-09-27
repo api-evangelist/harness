@@ -1239,33 +1239,165 @@ components:
           - OKTA
           - ONELOGIN
           - OTHER
-    PasswordStrengthPolicy:
+    LdapUserSettings:
+      required:
+      - baseDN
+      - displayNameAttr
+      - emailAttr
+      - groupMembershipAttr
+      - samAccountNameAttr
+      - searchFilter
+      - uidAttr
       type: object
       properties:
-        enabled:
+        baseDN:
+          type: string
+        searchFilter:
+          type: string
+        uidAttr:
+          type: string
+        samAccountNameAttr:
+          type: string
+        emailAttr:
+          type: string
+        displayNameAttr:
+          type: string
+        groupMembershipAttr:
+          type: string
+      description: This is the user settings list in LDAP setting.
+    LoginTypeResponse:
+      type: object
+      properties:
+        authenticationMechanism:
+          type: string
+          enum:
+          - USER_PASSWORD
+          - SAML
+          - LDAP
+          - OAUTH
+          - OIDC
+        showCaptcha:
           type: boolean
-          description: This value is true if the password strength policy is enabled. Otherwise, it is false.
-        minNumberOfCharacters:
+        defaultExperience:
+          type: string
+          enum:
+          - NG
+          - CG
+        ssorequest:
+          $ref: '#/components/schemas/SSORequest'
+        oauthEnabled:
+          type: boolean
+    OAuthSettings:
+      type: object
+      properties:
+        filter:
+          type: string
+          description: Filter out the available OAuth providers.
+        allowedProviders:
+          uniqueItems: true
+          type: array
+          description: This is the list of OAuth Providers that are supported.
+          items:
+            type: string
+            description: This is the list of OAuth Providers that are supported.
+            enum:
+            - AZURE
+            - BITBUCKET
+            - GITHUB
+            - GITLAB
+            - GOOGLE
+            - GOOGLE_CHAT
+            - LINKEDIN
+        settingsType:
+          type: string
+          enum:
+          - USER_PASSWORD
+          - SAML
+          - LDAP
+          - OAUTH
+          - OIDC
+      description: This contains the information about OAuth settings defined in Harness.
+    RestResponseLDAPSettings:
+      type: object
+      properties:
+        metaData:
+          type: object
+          additionalProperties:
+            type: object
+        resource:
+          $ref: '#/components/schemas/LDAPSettings'
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
+    AuthenticationSettingsResponse:
+      type: object
+      properties:
+        ngAuthSettings:
+          type: array
+          description: List of Auth Settings configured for an Account.
+          items:
+            $ref: '#/components/schemas/NGAuthSettings'
+        whitelistedDomains:
+          uniqueItems: true
+          type: array
+          description: List of the whitelisted domains.
+          items:
+            type: string
+            description: List of the whitelisted domains.
+        authenticationMechanism:
+          type: string
+          description: Indicates if the Authentication Mechanism is SSO or NON-SSO.
+          enum:
+          - USER_PASSWORD
+          - SAML
+          - LDAP
+          - OAUTH
+          - OIDC
+        twoFactorEnabled:
+          type: boolean
+          description: If Two Factor Authentication is enabled, this value is true. Otherwise, it is false.
+        sessionTimeoutInMinutes:
           type: integer
-          description: Minimum number of characters required in a password.
+          description: Any user of this account will be logged out if there is no activity for this number of minutes
           format: int32
-        minNumberOfUppercaseCharacters:
+        publicAccessEnabled:
+          type: boolean
+          description: If public access is enabled, this value is true. Otherwise, it is false.
+        oauthEnabled:
+          type: boolean
+          description: If OAUTH is enabled
+        absoluteSessionTimeoutInMinutes:
           type: integer
-          description: Minimum number of uppercase characters required in a password.
+          description: Any user of this account will be logged out after this number of minutes
           format: int32
-        minNumberOfLowercaseCharacters:
-          type: integer
-          description: Minimum number of lower characters required in a password.
-          format: int32
-        minNumberOfSpecialCharacters:
-          type: integer
-          description: Minimum number of special characters required in a password.
-          format: int32
-        minNumberOfDigits:
-          type: integer
-          description: Minimum number of digits required in a password.
-          format: int32
-      description: This has information about the password strength policy in Harness.
+      description: This contains information on the Authentication Settings defined in Harness.
+    RestResponseSamlSettingsDTO:
+      type: object
+      properties:
+        metaData:
+          type: object
+          additionalProperties:
+            type: object
+        resource:
+          $ref: '#/components/schemas/SamlSettingsDTO'
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
+    RestResponseLoginTypeResponse:
+      type: object
+      properties:
+        metaData:
+          type: object
+          additionalProperties:
+            type: object
+        resource:
+          $ref: '#/components/schemas/LoginTypeResponse'
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
     Failure:
       type: object
       properties:
@@ -1685,138 +1817,30 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    LdapConnectionSettings:
+    LdapGroupSettings:
       required:
-      - host
+      - baseDN
+      - descriptionAttr
+      - nameAttr
+      - referencedUserAttr
+      - searchFilter
+      - userMembershipAttr
       type: object
       properties:
-        host:
+        baseDN:
           type: string
-        port:
-          type: integer
-          format: int32
-        sslEnabled:
-          type: boolean
-        referralsEnabled:
-          type: boolean
-        maxReferralHops:
-          minimum: 1
-          type: integer
-          format: int32
-        bindDN:
+        searchFilter:
           type: string
-        bindPassword:
+        nameAttr:
           type: string
-        encryptedBindPassword:
+        descriptionAttr:
           type: string
-        passwordType:
+        userMembershipAttr:
           type: string
-        bindSecret:
-          type: array
-          items:
-            type: string
-        encryptedBindSecret:
+        referencedUserAttr:
           type: string
-        connectTimeout:
-          type: integer
-          format: int32
-        responseTimeout:
-          type: integer
-          format: int32
-        useRecursiveGroupMembershipSearch:
-          type: boolean
-        delegateSelectors:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        passwordRef:
-          type: string
-        accountId:
-          type: string
-        settingType:
-          type: string
-          enum:
-          - HOST_CONNECTION_ATTRIBUTES
-          - BASTION_HOST_CONNECTION_ATTRIBUTES
-          - SMTP
-          - SFTP
-          - JENKINS
-          - BAMBOO
-          - STRING
-          - SPLUNK
-          - ELK
-          - LOGZ
-          - SUMO
-          - DATA_DOG
-          - APM_VERIFICATION
-          - BUG_SNAG
-          - LOG_VERIFICATION
-          - APP_DYNAMICS
-          - NEW_RELIC
-          - DYNA_TRACE
-          - INSTANA
-          - DATA_DOG_LOG
-          - CLOUD_WATCH
-          - SCALYR
-          - ELB
-          - SLACK
-          - AWS
-          - GCS
-          - GCP
-          - AZURE
-          - PCF
-          - RANCHER
-          - DIRECT
-          - KUBERNETES_CLUSTER
-          - DOCKER
-          - ECR
-          - GCR
-          - ACR
-          - PHYSICAL_DATA_CENTER
-          - KUBERNETES
-          - NEXUS
-          - ARTIFACTORY
-          - SMB
-          - AMAZON_S3
-          - GIT
-          - SSH_SESSION_CONFIG
-          - SERVICE_VARIABLE
-          - CONFIG_FILE
-          - KMS
-          - GCP_KMS
-          - JIRA
-          - SERVICENOW
-          - SECRET_TEXT
-          - SECRET_FILE
-          - YAML_GIT_SYNC
-          - VAULT
-          - VAULT_SSH
-          - AWS_SECRETS_MANAGER
-          - WINRM_CONNECTION_ATTRIBUTES
-          - WINRM_SESSION_CONFIG
-          - PROMETHEUS
-          - INFRASTRUCTURE_MAPPING
-          - HTTP_HELM_REPO
-          - AMAZON_S3_HELM_REPO
-          - GCS_HELM_REPO
-          - SPOT_INST
-          - AZURE_ARTIFACTS_PAT
-          - CUSTOM
-          - CE_AWS
-          - CE_GCP
-          - CE_AZURE
-          - AZURE_VAULT
-          - KUBERNETES_CLUSTER_NG
-          - GIT_NG
-          - SSO_SAML
-          - LDAP
-          - GCP_SECRETS_MANAGER
-          - TRIGGER
-          - OCI_HELM_REPO
-          - SALESFORCE
-      description: This is the LDAP connection setting.
-    RestResponseSSOConfig:
+      description: This is the group settings list in LDAP setting.
+    RestResponsePasswordStrengthPolicy:
       type: object
       properties:
         metaData:
@@ -1824,160 +1848,11 @@ components:
           additionalProperties:
             type: object
         resource:
-          $ref: '#/components/schemas/SSOConfig'
+          $ref: '#/components/schemas/PasswordStrengthPolicy'
         responseMessages:
           type: array
           items:
             $ref: '#/components/schemas/ResponseMessage'
-    RestResponseBoolean:
-      type: object
-      properties:
-        metaData:
-          type: object
-          additionalProperties:
-            type: object
-        resource:
-          type: boolean
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
-    TwoFactorAdminOverrideSettings:
-      type: object
-      properties:
-        adminOverrideTwoFactorEnabled:
-          type: boolean
-          description: This value is true if Admin Override for Two Factor Authentication is enabled. Otherwise, it is false.
-      description: This contains the information about the Two Factor Admin Override in Harness.
-    SessionTimeoutSettings:
-      required:
-      - sessionTimeOutInMinutes
-      type: object
-      properties:
-        sessionTimeOutInMinutes:
-          maximum: 4320
-          minimum: 30
-          type: integer
-          description: Any user of this account will be logged out if there is no activity for this number of minutes
-          format: int32
-        absoluteSessionTimeOutInMinutes:
-          maximum: 4320
-          type: integer
-          description: Any user of this account will be logged out after this number of minutes
-          format: int32
-      description: This contains the information about the session timeout for this account in Harness.
-    SamlSettingsDTO:
-      required:
-      - accountId
-      - displayName
-      - origin
-      - type
-      - url
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - SAML
-          - LDAP
-          - OAUTH
-          - OIDC
-        displayName:
-          type: string
-        url:
-          type: string
-        metaDataFile:
-          type: string
-        accountId:
-          type: string
-        origin:
-          type: string
-        groupMembershipAttr:
-          type: string
-        logoutUrl:
-          type: string
-        entityIdentifier:
-          type: string
-        providerType:
-          type: string
-          writeOnly: true
-          enum:
-          - AZURE
-          - OKTA
-          - ONELOGIN
-          - OTHER
-        clientId:
-          type: string
-        clientSecret:
-          type: array
-          items:
-            type: string
-        friendlySamlName:
-          type: string
-        jitEnabled:
-          type: boolean
-        jitValidationKey:
-          type: string
-        jitValidationValue:
-          type: string
-        uuid:
-          type: string
-        nextIterations:
-          type: array
-          items:
-            type: integer
-            format: int64
-        samlProviderType:
-          type: string
-          enum:
-          - AZURE
-          - OKTA
-          - ONELOGIN
-          - OTHER
-        encryptedClientSecret:
-          type: string
-        configuredFromNG:
-          type: boolean
-        authenticationEnabled:
-          type: boolean
-        authorizationEnabled:
-          type: boolean
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    SSOSettingsDTO:
-      required:
-      - displayName
-      - type
-      - url
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - SAML
-          - LDAP
-          - OAUTH
-          - OIDC
-        displayName:
-          type: string
-        url:
-          type: string
-        uuid:
-          type: string
-        nextIterations:
-          type: array
-          items:
-            type: integer
-            format: int64
-        accountId:
-          type: string
-      discriminator:
-        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -2568,44 +2443,229 @@ components:
           type: object
           additionalProperties:
             type: string
-    LDAPSettings:
-      required:
-      - connectionSettings
-      - displayName
-      - identifier
+    RestResponseSSOConfig:
       type: object
       properties:
-        connectionSettings:
-          $ref: '#/components/schemas/LdapConnectionSettings'
-        identifier:
+        metaData:
+          type: object
+          additionalProperties:
+            type: object
+        resource:
+          $ref: '#/components/schemas/SSOConfig'
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
+    SamlSettingsDTO:
+      required:
+      - accountId
+      - displayName
+      - origin
+      - type
+      - url
+      type: object
+      properties:
+        type:
           type: string
-          description: This is the LDAP setting identifier.
-        userSettingsList:
-          type: array
-          description: This is the user settings list in LDAP setting.
-          items:
-            $ref: '#/components/schemas/LdapUserSettings'
-        groupSettingsList:
-          type: array
-          description: This is the group settings list in LDAP setting.
-          items:
-            $ref: '#/components/schemas/LdapGroupSettings'
+          enum:
+          - SAML
+          - LDAP
+          - OAUTH
+          - OIDC
         displayName:
           type: string
-          description: This is the LDAP setting display name.
-        cronExpression:
+        url:
           type: string
-          description: This is the cron expression in LDAP Settings.
+        metaDataFile:
+          type: string
+        accountId:
+          type: string
+        origin:
+          type: string
+        groupMembershipAttr:
+          type: string
+        logoutUrl:
+          type: string
+        entityIdentifier:
+          type: string
+        providerType:
+          type: string
+          writeOnly: true
+          enum:
+          - AZURE
+          - OKTA
+          - ONELOGIN
+          - OTHER
+        clientId:
+          type: string
+        clientSecret:
+          type: array
+          items:
+            type: string
+        friendlySamlName:
+          type: string
+        jitEnabled:
+          type: boolean
+        jitValidationKey:
+          type: string
+        jitValidationValue:
+          type: string
+        uuid:
+          type: string
         nextIterations:
           type: array
-          description: This is the list of iterations for next LDAP sync job.
           items:
             type: integer
-            description: This is the list of iterations for next LDAP sync job.
             format: int64
-        disabled:
+        samlProviderType:
+          type: string
+          enum:
+          - AZURE
+          - OKTA
+          - ONELOGIN
+          - OTHER
+        encryptedClientSecret:
+          type: string
+        configuredFromNG:
           type: boolean
-          description: This tells if LDAP Settings is disabled or not, LDAP sync won't happen in disabled state.
+        authenticationEnabled:
+          type: boolean
+        authorizationEnabled:
+          type: boolean
+    LdapConnectionSettings:
+      required:
+      - host
+      type: object
+      properties:
+        host:
+          type: string
+        port:
+          type: integer
+          format: int32
+        sslEnabled:
+          type: boolean
+        referralsEnabled:
+          type: boolean
+        maxReferralHops:
+          minimum: 1
+          type: integer
+          format: int32
+        bindDN:
+          type: string
+        bindPassword:
+          type: string
+        encryptedBindPassword:
+          type: string
+        passwordType:
+          type: string
+        bindSecret:
+          type: array
+          items:
+            type: string
+        encryptedBindSecret:
+          type: string
+        connectTimeout:
+          type: integer
+          format: int32
+        responseTimeout:
+          type: integer
+          format: int32
+        useRecursiveGroupMembershipSearch:
+          type: boolean
+        delegateSelectors:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        passwordRef:
+          type: string
+        accountId:
+          type: string
+        settingType:
+          type: string
+          enum:
+          - HOST_CONNECTION_ATTRIBUTES
+          - BASTION_HOST_CONNECTION_ATTRIBUTES
+          - SMTP
+          - SFTP
+          - JENKINS
+          - BAMBOO
+          - STRING
+          - SPLUNK
+          - ELK
+          - LOGZ
+          - SUMO
+          - DATA_DOG
+          - APM_VERIFICATION
+          - BUG_SNAG
+          - LOG_VERIFICATION
+          - APP_DYNAMICS
+          - NEW_RELIC
+          - DYNA_TRACE
+          - INSTANA
+          - DATA_DOG_LOG
+          - CLOUD_WATCH
+          - SCALYR
+          - ELB
+          - SLACK
+          - AWS
+          - GCS
+          - GCP
+          - AZURE
+          - PCF
+          - RANCHER
+          - DIRECT
+          - KUBERNETES_CLUSTER
+          - DOCKER
+          - ECR
+          - GCR
+          - ACR
+          - PHYSICAL_DATA_CENTER
+          - KUBERNETES
+          - NEXUS
+          - ARTIFACTORY
+          - SMB
+          - AMAZON_S3
+          - GIT
+          - SSH_SESSION_CONFIG
+          - SERVICE_VARIABLE
+          - CONFIG_FILE
+          - KMS
+          - GCP_KMS
+          - JIRA
+          - SERVICENOW
+          - SECRET_TEXT
+          - SECRET_FILE
+          - YAML_GIT_SYNC
+          - VAULT
+          - VAULT_SSH
+          - AWS_SECRETS_MANAGER
+          - WINRM_CONNECTION_ATTRIBUTES
+          - WINRM_SESSION_CONFIG
+          - PROMETHEUS
+          - INFRASTRUCTURE_MAPPING
+          - HTTP_HELM_REPO
+          - AMAZON_S3_HELM_REPO
+          - GCS_HELM_REPO
+          - SPOT_INST
+          - AZURE_ARTIFACTS_PAT
+          - CUSTOM
+          - CE_AWS
+          - CE_GCP
+          - CE_AZURE
+          - AZURE_VAULT
+          - KUBERNETES_CLUSTER_NG
+          - GIT_NG
+          - SSO_SAML
+          - LDAP
+          - GCP_SECRETS_MANAGER
+          - TRIGGER
+          - OCI_HELM_REPO
+          - SALESFORCE
+      description: This is the LDAP connection setting.
+    NGAuthSettings:
+      type: object
+      properties:
         settingsType:
           type: string
           enum:
@@ -2614,84 +2674,36 @@ components:
           - LDAP
           - OAUTH
           - OIDC
-      description: This has the details of LDAP Settings supported in NG.
-    LoginTypeResponse:
+      description: This has the details of Authentication Settings supported in NG.
+      discriminator:
+        propertyName: settingsType
+    PasswordStrengthPolicy:
       type: object
       properties:
-        authenticationMechanism:
-          type: string
-          enum:
-          - USER_PASSWORD
-          - SAML
-          - LDAP
-          - OAUTH
-          - OIDC
-        showCaptcha:
+        enabled:
           type: boolean
-        defaultExperience:
-          type: string
-          enum:
-          - NG
-          - CG
-        ssorequest:
-          $ref: '#/components/schemas/SSORequest'
-        oauthEnabled:
-          type: boolean
-    AuthenticationSettingsResponse:
-      type: object
-      properties:
-        ngAuthSettings:
-          type: array
-          description: List of Auth Settings configured for an Account.
-          items:
-            $ref: '#/components/schemas/NGAuthSettings'
-        whitelistedDomains:
-          uniqueItems: true
-          type: array
-          description: List of the whitelisted domains.
-          items:
-            type: string
-            description: List of the whitelisted domains.
-        authenticationMechanism:
-          type: string
-          description: Indicates if the Authentication Mechanism is SSO or NON-SSO.
-          enum:
-          - USER_PASSWORD
-          - SAML
-          - LDAP
-          - OAUTH
-          - OIDC
-        twoFactorEnabled:
-          type: boolean
-          description: If Two Factor Authentication is enabled, this value is true. Otherwise, it is false.
-        sessionTimeoutInMinutes:
+          description: This value is true if the password strength policy is enabled. Otherwise, it is false.
+        minNumberOfCharacters:
           type: integer
-          description: Any user of this account will be logged out if there is no activity for this number of minutes
+          description: Minimum number of characters required in a password.
           format: int32
-        publicAccessEnabled:
-          type: boolean
-          description: If public access is enabled, this value is true. Otherwise, it is false.
-        oauthEnabled:
-          type: boolean
-          description: If OAUTH is enabled
-        absoluteSessionTimeoutInMinutes:
+        minNumberOfUppercaseCharacters:
           type: integer
-          description: Any user of this account will be logged out after this number of minutes
+          description: Minimum number of uppercase characters required in a password.
           format: int32
-      description: This contains information on the Authentication Settings defined in Harness.
-    RestResponseLoginTypeResponse:
-      type: object
-      properties:
-        metaData:
-          type: object
-          additionalProperties:
-            type: object
-        resource:
-          $ref: '#/components/schemas/LoginTypeResponse'
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
+        minNumberOfLowercaseCharacters:
+          type: integer
+          description: Minimum number of lower characters required in a password.
+          format: int32
+        minNumberOfSpecialCharacters:
+          type: integer
+          description: Minimum number of special characters required in a password.
+          format: int32
+        minNumberOfDigits:
+          type: integer
+          description: Minimum number of digits required in a password.
+          format: int32
+      description: This has information about the password strength policy in Harness.
     Error1:
       type: object
       properties:
@@ -3115,68 +3127,6 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    RestResponseAuthenticationSettingsResponse:
-      type: object
-      properties:
-        metaData:
-          type: object
-          additionalProperties:
-            type: object
-        resource:
-          $ref: '#/components/schemas/AuthenticationSettingsResponse'
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
-    LdapGroupSettings:
-      required:
-      - baseDN
-      - descriptionAttr
-      - nameAttr
-      - referencedUserAttr
-      - searchFilter
-      - userMembershipAttr
-      type: object
-      properties:
-        baseDN:
-          type: string
-        searchFilter:
-          type: string
-        nameAttr:
-          type: string
-        descriptionAttr:
-          type: string
-        userMembershipAttr:
-          type: string
-        referencedUserAttr:
-          type: string
-      description: This is the group settings list in LDAP setting.
-    LdapUserSettings:
-      required:
-      - baseDN
-      - displayNameAttr
-      - emailAttr
-      - groupMembershipAttr
-      - samAccountNameAttr
-      - searchFilter
-      - uidAttr
-      type: object
-      properties:
-        baseDN:
-          type: string
-        searchFilter:
-          type: string
-        uidAttr:
-          type: string
-        samAccountNameAttr:
-          type: string
-        emailAttr:
-          type: string
-        displayNameAttr:
-          type: string
-        groupMembershipAttr:
-          type: string
-      description: This is the user settings list in LDAP setting.
     FormDataContentDisposition:
       type: object
       properties:
@@ -3202,6 +3152,127 @@ components:
           format: int64
         name:
           type: string
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    SessionTimeoutSettings:
+      required:
+      - sessionTimeOutInMinutes
+      type: object
+      properties:
+        sessionTimeOutInMinutes:
+          maximum: 4320
+          minimum: 30
+          type: integer
+          description: Any user of this account will be logged out if there is no activity for this number of minutes
+          format: int32
+        absoluteSessionTimeOutInMinutes:
+          maximum: 4320
+          type: integer
+          description: Any user of this account will be logged out after this number of minutes
+          format: int32
+      description: This contains the information about the session timeout for this account in Harness.
+    SSOSettingsDTO:
+      required:
+      - displayName
+      - type
+      - url
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - SAML
+          - LDAP
+          - OAUTH
+          - OIDC
+        displayName:
+          type: string
+        url:
+          type: string
+        uuid:
+          type: string
+        nextIterations:
+          type: array
+          items:
+            type: integer
+            format: int64
+        accountId:
+          type: string
+      discriminator:
+        propertyName: type
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    RestResponseAuthenticationSettingsResponse:
+      type: object
+      properties:
+        metaData:
+          type: object
+          additionalProperties:
+            type: object
+        resource:
+          $ref: '#/components/schemas/AuthenticationSettingsResponse'
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
+    LDAPSettings:
+      required:
+      - connectionSettings
+      - displayName
+      - identifier
+      type: object
+      properties:
+        connectionSettings:
+          $ref: '#/components/schemas/LdapConnectionSettings'
+        identifier:
+          type: string
+          description: This is the LDAP setting identifier.
+        userSettingsList:
+          type: array
+          description: This is the user settings list in LDAP setting.
+          items:
+            $ref: '#/components/schemas/LdapUserSettings'
+        groupSettingsList:
+          type: array
+          description: This is the group settings list in LDAP setting.
+          items:
+            $ref: '#/components/schemas/LdapGroupSettings'
+        displayName:
+          type: string
+          description: This is the LDAP setting display name.
+        cronExpression:
+          type: string
+          description: This is the cron expression in LDAP Settings.
+        nextIterations:
+          type: array
+          description: This is the list of iterations for next LDAP sync job.
+          items:
+            type: integer
+            description: This is the list of iterations for next LDAP sync job.
+            format: int64
+        disabled:
+          type: boolean
+          description: This tells if LDAP Settings is disabled or not, LDAP sync won't happen in disabled state.
+        settingsType:
+          type: string
+          enum:
+          - USER_PASSWORD
+          - SAML
+          - LDAP
+          - OAUTH
+          - OIDC
+      description: This has the details of LDAP Settings supported in NG.
     SSOConfig:
       type: object
       properties:
@@ -3219,58 +3290,14 @@ components:
           - LDAP
           - OAUTH
           - OIDC
-    ErrorMetadata2:
+    TwoFactorAdminOverrideSettings:
       type: object
       properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    RestResponseSamlSettingsDTO:
-      type: object
-      properties:
-        metaData:
-          type: object
-          additionalProperties:
-            type: object
-        resource:
-          $ref: '#/components/schemas/SamlSettingsDTO'
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
-    OAuthSettings:
-      type: object
-      properties:
-        filter:
-          type: string
-          description: Filter out the available OAuth providers.
-        allowedProviders:
-          uniqueItems: true
-          type: array
-          description: This is the list of OAuth Providers that are supported.
-          items:
-            type: string
-            description: This is the list of OAuth Providers that are supported.
-            enum:
-            - AZURE
-            - BITBUCKET
-            - GITHUB
-            - GITLAB
-            - GOOGLE
-            - GOOGLE_CHAT
-            - LINKEDIN
-        settingsType:
-          type: string
-          enum:
-          - USER_PASSWORD
-          - SAML
-          - LDAP
-          - OAUTH
-          - OIDC
-      description: This contains the information about OAuth settings defined in Harness.
-    RestResponseLDAPSettings:
+        adminOverrideTwoFactorEnabled:
+          type: boolean
+          description: This value is true if Admin Override for Two Factor Authentication is enabled. Otherwise, it is false.
+      description: This contains the information about the Two Factor Admin Override in Harness.
+    RestResponseBoolean:
       type: object
       properties:
         metaData:
@@ -3278,34 +3305,7 @@ components:
           additionalProperties:
             type: object
         resource:
-          $ref: '#/components/schemas/LDAPSettings'
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
-    NGAuthSettings:
-      type: object
-      properties:
-        settingsType:
-          type: string
-          enum:
-          - USER_PASSWORD
-          - SAML
-          - LDAP
-          - OAUTH
-          - OIDC
-      description: This has the details of Authentication Settings supported in NG.
-      discriminator:
-        propertyName: settingsType
-    RestResponsePasswordStrengthPolicy:
-      type: object
-      properties:
-        metaData:
-          type: object
-          additionalProperties:
-            type: object
-        resource:
-          $ref: '#/components/schemas/PasswordStrengthPolicy'
+          type: boolean
         responseMessages:
           type: array
           items:

@@ -1363,22 +1363,20 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOUserGroupResponseV2'
 components:
   schemas:
-    ResponseDTOBoolean:
+    LdapLinkGroupRequest:
+      required:
+      - ldapGroupDN
+      - ldapGroupName
       type: object
       properties:
-        status:
+        ldapGroupDN:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: boolean
-        metaData:
-          type: object
-        correlationId:
+        ldapGroupName:
           type: string
-    Scope1:
+    UserGroupResponseV2:
+      required:
+      - identifier
+      - name
       type: object
       properties:
         accountIdentifier:
@@ -1390,6 +1388,91 @@ components:
         projectIdentifier:
           type: string
           description: Project Identifier for the Entity.
+        identifier:
+          type: string
+          description: Identifier of the UserGroup.
+        name:
+          type: string
+          description: Name of the UserGroup.
+        users:
+          type: array
+          description: List of users emails in the UserGroup.
+          items:
+            $ref: '#/components/schemas/UserBasicInfo'
+        notificationConfigs:
+          type: array
+          description: List of notification settings.
+          items:
+            $ref: '#/components/schemas/NotificationSettingConfigDTO1'
+        isSsoLinked:
+          type: boolean
+          writeOnly: true
+        linkedSsoId:
+          type: string
+          description: Identifier of the linked SSO.
+        linkedSsoDisplayName:
+          type: string
+          description: Name of the linked SSO.
+        ssoGroupId:
+          type: string
+          description: Identifier of the userGroup in SSO.
+        ssoGroupName:
+          type: string
+          description: Name of the SSO userGroup.
+        linkedSsoType:
+          type: string
+          description: Type of linked SSO
+        externallyManaged:
+          type: boolean
+          description: Specifies whether or not the userGroup is externally managed.
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+          description: Description of the entity
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+            description: Tags
+          description: Tags
+        harnessManaged:
+          type: boolean
+          description: Specifies whether or not the userGroup is managed by harness.
+        ssoLinked:
+          type: boolean
+      description: User Group details defined in Harness.
+    UserMetadata:
+      required:
+      - disabled
+      - email
+      - externallyManaged
+      - locked
+      - uuid
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        uuid:
+          type: string
+        locked:
+          type: boolean
+        disabled:
+          type: boolean
+        externallyManaged:
+          type: boolean
+        twoFactorAuthenticationEnabled:
+          type: boolean
+      description: This is the view of the UserMetadata entity defined in Harness
+    SamlLinkGroupRequest:
+      required:
+      - samlGroupName
+      type: object
+      properties:
+        samlGroupName:
+          type: string
     Failure:
       type: object
       properties:
@@ -1809,37 +1892,31 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    OidcLinkGroupRequest:
-      required:
-      - oidcGroupName
+    ScopeName:
       type: object
       properties:
-        oidcGroupName:
+        accountIdentifier:
           type: string
-    UserMetadata:
-      required:
-      - disabled
-      - email
-      - externallyManaged
-      - locked
-      - uuid
+        orgName:
+          type: string
+        orgIdentifier:
+          type: string
+        projectName:
+          type: string
+        projectIdentifier:
+          type: string
+    Scope1:
       type: object
       properties:
-        name:
+        accountIdentifier:
           type: string
-        email:
+          description: Account Identifier for the Entity.
+        orgIdentifier:
           type: string
-        uuid:
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
           type: string
-        locked:
-          type: boolean
-        disabled:
-          type: boolean
-        externallyManaged:
-          type: boolean
-        twoFactorAuthenticationEnabled:
-          type: boolean
-      description: This is the view of the UserMetadata entity defined in Harness
+          description: Project Identifier for the Entity.
     PageResponseUserMetadata:
       type: object
       properties:
@@ -1866,55 +1943,6 @@ components:
           type: boolean
         pageToken:
           type: string
-    LdapLinkGroupRequest:
-      required:
-      - ldapGroupDN
-      - ldapGroupName
-      type: object
-      properties:
-        ldapGroupDN:
-          type: string
-        ldapGroupName:
-          type: string
-    PageResponseUserGroup:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserGroup'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
-          type: string
-    RestResponseUserGroup:
-      type: object
-      properties:
-        metaData:
-          type: object
-          additionalProperties:
-            type: object
-        resource:
-          $ref: '#/components/schemas/UserGroup'
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
     NotificationSettingConfigDTO1:
       type: object
       properties:
@@ -1930,60 +1958,90 @@ components:
       description: List of notification settings.
       discriminator:
         propertyName: type
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    UserGroupFilter:
+    UserGroup:
       required:
-      - accountIdentifier
+      - identifier
+      - name
       type: object
       properties:
-        databaseIdFilter:
-          uniqueItems: true
-          type: array
-          description: Filter by the internal database ids of user group
-          items:
-            type: string
-            description: Filter by the internal database ids of user group
-        identifierFilter:
-          uniqueItems: true
-          type: array
-          description: Filter by the user group identifier
-          items:
-            type: string
-            description: Filter by the user group identifier
-        userIdentifierFilter:
-          uniqueItems: true
-          type: array
-          description: Filter by the users present in the user group
-          items:
-            type: string
-            description: Filter by the users present in the user group
         accountIdentifier:
           type: string
-          description: Filter by account using account identifier
+          description: Account Identifier for the Entity.
         orgIdentifier:
           type: string
-          description: Filter by organization using account identifier
+          description: Organization Identifier for the Entity.
         projectIdentifier:
           type: string
-          description: Filter by project using account identifier
-        searchTerm:
+          description: Project Identifier for the Entity.
+        identifier:
           type: string
-          description: Filter by search term matching entities by name/identifier
-        filterType:
+          description: Identifier of the UserGroup.
+        name:
           type: string
-          description: Filter by user group filterType
+          description: Name of the UserGroup.
+        users:
+          type: array
+          description: List of users ids in the UserGroup.
+          items:
+            type: string
+            description: List of users ids in the UserGroup.
+        notificationConfigs:
+          type: array
+          description: List of notification settings.
+          items:
+            $ref: '#/components/schemas/NotificationSettingConfigDTO1'
+        linkedSsoId:
+          type: string
+          description: Identifier of the linked SSO.
+        linkedSsoDisplayName:
+          type: string
+          description: Name of the linked SSO.
+        ssoGroupId:
+          type: string
+          description: Identifier of the userGroup in SSO.
+        ssoGroupName:
+          type: string
+          description: Name of the SSO userGroup.
+        linkedSsoType:
+          type: string
+          description: Type of linked SSO
+        externallyManaged:
+          type: boolean
+          description: Specifies whether or not the userGroup is externally managed.
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+          description: Description of the entity
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+            description: Tags
+          description: Tags
+        harnessManaged:
+          type: boolean
+          description: Specifies whether or not the userGroup is managed by harness.
+        ssoLinked:
+          type: boolean
+      description: User Group details defined in Harness.
+    ResponseDTOListUserGroup:
+      type: object
+      properties:
+        status:
+          type: string
           enum:
-          - INCLUDE_INHERITED_GROUPS
-          - EXCLUDE_INHERITED_GROUPS
-          - INCLUDE_CHILD_SCOPE_GROUPS
-          - INCLUDE_PARENT_SCOPE_GROUPS
-      description: This is the view of the UserGroupFilter entity defined in Harness
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroup'
+        metaData:
+          type: object
+        correlationId:
+          type: string
     ResponseMessage:
       type: object
       properties:
@@ -2574,36 +2632,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOListScopeName:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScopeName'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ScopeName:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-        orgName:
-          type: string
-        orgIdentifier:
-          type: string
-        projectName:
-          type: string
-        projectIdentifier:
-          type: string
     ResponseDTOPageResponseUserGroup:
       type: object
       properties:
@@ -2619,89 +2647,12 @@ components:
           type: object
         correlationId:
           type: string
-    UserGroup:
+    OidcLinkGroupRequest:
       required:
-      - identifier
-      - name
+      - oidcGroupName
       type: object
       properties:
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        identifier:
-          type: string
-          description: Identifier of the UserGroup.
-        name:
-          type: string
-          description: Name of the UserGroup.
-        users:
-          type: array
-          description: List of users ids in the UserGroup.
-          items:
-            type: string
-            description: List of users ids in the UserGroup.
-        notificationConfigs:
-          type: array
-          description: List of notification settings.
-          items:
-            $ref: '#/components/schemas/NotificationSettingConfigDTO1'
-        linkedSsoId:
-          type: string
-          description: Identifier of the linked SSO.
-        linkedSsoDisplayName:
-          type: string
-          description: Name of the linked SSO.
-        ssoGroupId:
-          type: string
-          description: Identifier of the userGroup in SSO.
-        ssoGroupName:
-          type: string
-          description: Name of the SSO userGroup.
-        linkedSsoType:
-          type: string
-          description: Type of linked SSO
-        externallyManaged:
-          type: boolean
-          description: Specifies whether or not the userGroup is externally managed.
-        description:
-          maxLength: 1024
-          minLength: 0
-          type: string
-          description: Description of the entity
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-            description: Tags
-          description: Tags
-        harnessManaged:
-          type: boolean
-          description: Specifies whether or not the userGroup is managed by harness.
-        ssoLinked:
-          type: boolean
-      description: User Group details defined in Harness.
-    ResponseDTOListUserGroup:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserGroup'
-        metaData:
-          type: object
-        correlationId:
+        oidcGroupName:
           type: string
     ResponseDTOUserGroup:
       type: object
@@ -2718,85 +2669,19 @@ components:
           type: object
         correlationId:
           type: string
-    SortOrder:
+    RestResponseUserGroup:
       type: object
       properties:
-        fieldName:
-          type: string
-        orderType:
-          type: string
-          enum:
-          - ASC
-          - DESC
-    UserGroupResponseV2:
-      required:
-      - identifier
-      - name
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        identifier:
-          type: string
-          description: Identifier of the UserGroup.
-        name:
-          type: string
-          description: Name of the UserGroup.
-        users:
-          type: array
-          description: List of users emails in the UserGroup.
-          items:
-            $ref: '#/components/schemas/UserBasicInfo'
-        notificationConfigs:
-          type: array
-          description: List of notification settings.
-          items:
-            $ref: '#/components/schemas/NotificationSettingConfigDTO1'
-        isSsoLinked:
-          type: boolean
-          writeOnly: true
-        linkedSsoId:
-          type: string
-          description: Identifier of the linked SSO.
-        linkedSsoDisplayName:
-          type: string
-          description: Name of the linked SSO.
-        ssoGroupId:
-          type: string
-          description: Identifier of the userGroup in SSO.
-        ssoGroupName:
-          type: string
-          description: Name of the SSO userGroup.
-        linkedSsoType:
-          type: string
-          description: Type of linked SSO
-        externallyManaged:
-          type: boolean
-          description: Specifies whether or not the userGroup is externally managed.
-        description:
-          maxLength: 1024
-          minLength: 0
-          type: string
-          description: Description of the entity
-        tags:
+        metaData:
           type: object
           additionalProperties:
-            type: string
-            description: Tags
-          description: Tags
-        harnessManaged:
-          type: boolean
-          description: Specifies whether or not the userGroup is managed by harness.
-        ssoLinked:
-          type: boolean
-      description: User Group details defined in Harness.
+            type: object
+        resource:
+          $ref: '#/components/schemas/UserGroup'
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
     Error1:
       type: object
       properties:
@@ -3220,7 +3105,7 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    ResponseDTOUserGroupResponseV2:
+    ResponseDTOListScopeName:
       type: object
       properties:
         status:
@@ -3230,46 +3115,14 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/UserGroupResponseV2'
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopeName'
         metaData:
           type: object
         correlationId:
           type: string
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    UserFilter:
-      type: object
-      properties:
-        searchTerm:
-          type: string
-          description: This string will be used to filter the results. Details of all the users having this string in their name or email address will be filtered.
-        identifiers:
-          uniqueItems: true
-          type: array
-          description: Filter by User Identifiers
-          items:
-            type: string
-            description: Filter by User Identifiers
-        emails:
-          uniqueItems: true
-          type: array
-          description: Filter by User Emails
-          items:
-            type: string
-            description: Filter by User Emails
-        parentFilter:
-          type: string
-          enum:
-          - NO_PARENT_SCOPES
-          - INCLUDE_PARENT_SCOPES
-          - STRICTLY_PARENT_SCOPES
-    ResponseDTOPageResponseUserMetadata:
+    ResponseDTOBoolean:
       type: object
       properties:
         status:
@@ -3279,7 +3132,7 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/PageResponseUserMetadata'
+          type: boolean
         metaData:
           type: object
         correlationId:
@@ -3292,13 +3145,6 @@ components:
         email:
           type: string
       description: List of users emails in the UserGroup.
-    SamlLinkGroupRequest:
-      required:
-      - samlGroupName
-      type: object
-      properties:
-        samlGroupName:
-          type: string
     UserGroupRequestV2:
       required:
       - identifier
@@ -3371,6 +3217,160 @@ components:
         ssoLinked:
           type: boolean
       description: User Group details defined in Harness.
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    UserFilter:
+      type: object
+      properties:
+        searchTerm:
+          type: string
+          description: This string will be used to filter the results. Details of all the users having this string in their name or email address will be filtered.
+        identifiers:
+          uniqueItems: true
+          type: array
+          description: Filter by User Identifiers
+          items:
+            type: string
+            description: Filter by User Identifiers
+        emails:
+          uniqueItems: true
+          type: array
+          description: Filter by User Emails
+          items:
+            type: string
+            description: Filter by User Emails
+        parentFilter:
+          type: string
+          enum:
+          - NO_PARENT_SCOPES
+          - INCLUDE_PARENT_SCOPES
+          - STRICTLY_PARENT_SCOPES
+    SortOrder:
+      type: object
+      properties:
+        fieldName:
+          type: string
+        orderType:
+          type: string
+          enum:
+          - ASC
+          - DESC
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    UserGroupFilter:
+      required:
+      - accountIdentifier
+      type: object
+      properties:
+        databaseIdFilter:
+          uniqueItems: true
+          type: array
+          description: Filter by the internal database ids of user group
+          items:
+            type: string
+            description: Filter by the internal database ids of user group
+        identifierFilter:
+          uniqueItems: true
+          type: array
+          description: Filter by the user group identifier
+          items:
+            type: string
+            description: Filter by the user group identifier
+        userIdentifierFilter:
+          uniqueItems: true
+          type: array
+          description: Filter by the users present in the user group
+          items:
+            type: string
+            description: Filter by the users present in the user group
+        accountIdentifier:
+          type: string
+          description: Filter by account using account identifier
+        orgIdentifier:
+          type: string
+          description: Filter by organization using account identifier
+        projectIdentifier:
+          type: string
+          description: Filter by project using account identifier
+        searchTerm:
+          type: string
+          description: Filter by search term matching entities by name/identifier
+        filterType:
+          type: string
+          description: Filter by user group filterType
+          enum:
+          - INCLUDE_INHERITED_GROUPS
+          - EXCLUDE_INHERITED_GROUPS
+          - INCLUDE_CHILD_SCOPE_GROUPS
+          - INCLUDE_PARENT_SCOPE_GROUPS
+      description: This is the view of the UserGroupFilter entity defined in Harness
+    ResponseDTOUserGroupResponseV2:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/UserGroupResponseV2'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTOPageResponseUserMetadata:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseUserMetadata'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    PageResponseUserGroup:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroup'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

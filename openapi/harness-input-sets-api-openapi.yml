@@ -274,108 +274,166 @@ paths:
       - Input Sets
       x-summary-source: derived
 components:
-  parameters:
-    PageIndex:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-    Branch:
-      name: branch_name
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Name of the branch (for Git Experience).
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
-    AccountHeader4:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    PipelineBranch:
-      name: pipeline_branch
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Github branch of the Pipeline to which the Input Sets belong
-    InputSetParam:
-      name: input-set
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Input Set identifier
-    Sort4:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - name
-        - updated
-      description: Parameter on the basis of which sorting is done.
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    SearchTerm:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching the search term.
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
-    PipelineRepoID:
-      name: pipeline_repo_id
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Github Repo identifier of the Pipeline to which the Input Sets belong
-    Limit:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 30
-        maximum: 100
-      description: 'Pagination: Number of items to return.'
-    PipelineInputSetParam:
-      name: pipeline
-      in: query
-      required: true
-      schema:
-        type: string
-      description: Pipeline identifier for the Input Set.
   schemas:
+    InputSetResponseBody:
+      title: Input Set Response Body
+      x-stoplight:
+        id: qv6jrxhxt9r93
+      type: object
+      description: Response body for Input Set
+      properties:
+        input_set_yaml:
+          type: string
+          description: Input Set YAML (returned as a String).
+        identifier:
+          type: string
+          description: Input Set identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Input Set name
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Organization identifier
+        project:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Project identifier
+        pipeline:
+          type: string
+          description: Pipeline identifier
+        description:
+          type: string
+          maxLength: 1024
+          description: Input Set description
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Input Set tags
+        store_type:
+          type: string
+          description: Specifies whether the Entity is to be stored in Git or not (for Git Experience).
+          enum:
+          - INLINE
+          - REMOTE
+        connector_ref:
+          type: string
+          description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
+        git_details:
+          $ref: '#/components/schemas/GitDetails'
+        created:
+          type: integer
+          description: Creation timestamp for Input Set.
+          format: int64
+        updated:
+          type: integer
+          description: Last modification timestamp for Input Set.
+          format: int64
+        error_details:
+          $ref: '#/components/schemas/InputSetErrorDetails'
+      x-examples:
+        example-input-set:
+          input_set_yaml: example_input_set_yaml
+          identifier: example_input_set
+          name: Example Input Set
+          org: example_org
+          project: example_project
+          description: InputSet Description
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          git_details:
+            object_id: example_object
+            branch_name: branch
+            file_path: /folder/file.json
+            repo_name: example_repository
+            commit_id: abcd123
+            file_url: www.repo/folder/file.com
+            repo_url: www.repo.com
+          created: 1234567890
+          updated: 9876543210
+          error_details:
+            valid: false
+            message: Some fields in the Input Set are invalid.
+            outdated: true
+            error_pipeline_yaml: 'serviceConfig: "pipeline.stages.example_deploy_stage.spec.serviceConfig"
+
+              '
+            fqn_errors:
+            - fqn: pipeline.stages.example_deploy_stage.spec.serviceConfig
+              errors:
+              - field_name: serviceConfig
+                message: Field not a runtime input
+                identifier_of_error_source: example_input_set
+            invalid_refs:
+            - example_invalid_input_set
+    GitMoveDetails:
+      title: Move Git Details
+      x-stoplight:
+        id: h9mvvh1pdo378
+      type: object
+      description: Parameters related to moving an entity for Git Experience.
+      x-examples:
+        example-create-git:
+          branch_name: branch
+          file_path: /folder/file.json
+          commit_message: Added Harness Git Experience
+          base_branch: old_branch
+          connector_ref: git_connector
+          repo_name: example_repository
+      properties:
+        branch_name:
+          type: string
+          description: Name of the branch. When moving an inline pipeline or a remote pipeline, this branch is where the remote entity is created or fetched.
+        file_path:
+          type: string
+          description: File path of the entity in the repository.
+        commit_message:
+          type: string
+          description: Merge commit message.
+        base_branch:
+          type: string
+          description: Default branch name. This checks out the branch titled branch_name
+        connector_ref:
+          type: string
+          description: Harness connector id used for entity CRUD operations
+        repo_name:
+          type: string
+          description: Name of the repository.
+    InputSetImportRequestDTO:
+      title: InputSet Import Request DTO
+      x-stoplight:
+        id: 1cwihgz3ewpmc
+      type: object
+      description: Information of InputSet import request DTO
+      properties:
+        input_set_name:
+          type: string
+        input_set_description:
+          type: string
+    InputSetImportRequestBody:
+      title: InputSet Import Request Body
+      x-stoplight:
+        id: g9uxpfdotak6l
+      type: object
+      description: InputSet import request body
+      properties:
+        git_import_info:
+          $ref: '#/components/schemas/GitImportInfo'
+        input_set_import_request:
+          $ref: '#/components/schemas/InputSetImportRequestDTO'
     InputSetGitUpdateDetails:
       title: InputSetGitUpdateDetails
       x-stoplight:
@@ -413,47 +471,42 @@ components:
         parent_entity_repo_name:
           type: string
           description: Repository name for Parent Entity (Pipeline).
-    MergeInputSetRequestBody:
-      title: MergeInputSetRequestBody
+    InputSetMoveConfigRequestBody:
+      title: InputSetMoveConfigRequestBody
       x-stoplight:
-        id: k5st1k03q3tdm
+        id: n08yyys6gjbuy
       type: object
+      description: Request body for moving an input set configuration.
       properties:
-        input_set_references:
-          type: array
-          x-stoplight:
-            id: wcpksws2ddm8o
-          description: List of Input Set References to be merged
-          items:
-            x-stoplight:
-              id: iqji388ebim3m
-            type: string
-        with_merged_pipeline_yaml:
-          type: boolean
-          x-stoplight:
-            id: 59mojf9htbss4
-          description: This is a boolean value that indicates if the response must contain the YAML for the merged Pipeline. The default value is False.
-          default: false
-        stage_identifiers:
-          type: array
-          x-stoplight:
-            id: 1p0gidwvhedap
-          description: List of Stage Ids. Input Sets corresponding to these Ids will be merged.
-          items:
-            x-stoplight:
-              id: h7h4eg79nt7mm
-            type: string
-        last_yaml_to_merge:
+        git_details:
+          $ref: '#/components/schemas/GitMoveDetails'
+        pipeline_identifier:
           type: string
-          x-stoplight:
-            id: 1ml6olvzhv44g
-          description: Runtime Input Yaml needed to be merged into the result of the merged Yaml of the inputSetReferences
-        get_only_file_content:
-          type: boolean
-          x-stoplight:
-            id: wa02yytjz3utc
-          description: To be set true if we want to set user flow in thread context
-          default: false
+        input_set_identifier:
+          type: string
+        move_config_operation_type:
+          $ref: '#/components/schemas/MoveConfigOperationType'
+    InputSetError:
+      title: Input Set Error
+      x-stoplight:
+        id: 49aa5ekivpuej
+      type: object
+      description: Input Set error
+      properties:
+        field_name:
+          type: string
+          description: Field name that has an error.
+        message:
+          type: string
+          description: Error description
+        identifier_of_error_source:
+          type: string
+          description: Identifier of Input Set
+      x-examples:
+        example-error:
+          field_name: serviceConfig
+          message: Field not a runtime input
+          identifier_of_error_source: example_input_set
     InputSetUpdateRequestBody:
       title: Input Set Update Request Body
       x-stoplight:
@@ -564,39 +617,28 @@ components:
       - input_set_yaml
       - identifier
       - name
-    InputSetImportRequestBody:
-      title: InputSet Import Request Body
+    FQNtoError:
+      title: FQN to Error
       x-stoplight:
-        id: g9uxpfdotak6l
+        id: hu06g9aq5bo5e
       type: object
-      description: InputSet import request body
+      description: FQN to error response mapper.
+      x-examples:
+        example-fqn-map:
+          fqn: pipeline.stages.example_deploy_stage.spec.serviceConfig
+          errors:
+          - field_name: serviceConfig
+            message: Field not a runtime input
+            identifier_of_error_source: example_input_set
       properties:
-        git_import_info:
-          $ref: '#/components/schemas/GitImportInfo'
-        input_set_import_request:
-          $ref: '#/components/schemas/InputSetImportRequestDTO'
-    MoveConfigOperationType:
-      type: string
-      enum:
-      - INLINE_TO_REMOTE
-      description: Operation type to move the configuration
-      x-stoplight:
-        id: 4g4asyvl1x30z
-    InputSetMoveConfigRequestBody:
-      title: InputSetMoveConfigRequestBody
-      x-stoplight:
-        id: n08yyys6gjbuy
-      type: object
-      description: Request body for moving an input set configuration.
-      properties:
-        git_details:
-          $ref: '#/components/schemas/GitMoveDetails'
-        pipeline_identifier:
+        fqn:
           type: string
-        input_set_identifier:
-          type: string
-        move_config_operation_type:
-          $ref: '#/components/schemas/MoveConfigOperationType'
+          description: Fully Qualified Name
+        errors:
+          type: array
+          description: Errors in FQN
+          items:
+            $ref: '#/components/schemas/InputSetError'
     GitImportInfo:
       title: Import Git Information
       x-stoplight:
@@ -614,39 +656,105 @@ components:
         is_force_import:
           type: boolean
       description: Parameters related to importing an entity for Git.
-    GitMoveDetails:
-      title: Move Git Details
+    InputSetImportResponseBody:
+      title: InputSet Import Response Body
       x-stoplight:
-        id: h9mvvh1pdo378
+        id: i10mr579d4243
       type: object
-      description: Parameters related to moving an entity for Git Experience.
-      x-examples:
-        example-create-git:
-          branch_name: branch
-          file_path: /folder/file.json
-          commit_message: Added Harness Git Experience
-          base_branch: old_branch
-          connector_ref: git_connector
-          repo_name: example_repository
       properties:
-        branch_name:
+        input_set_identifier:
           type: string
-          description: Name of the branch. When moving an inline pipeline or a remote pipeline, this branch is where the remote entity is created or fetched.
-        file_path:
+      description: Response body for Input Set import.
+    InputSetMoveConfigResponseBody:
+      title: InputSetMoveConfigResponseBody
+      x-stoplight:
+        id: uelqspa0eldno
+      type: object
+      properties:
+        input_set_identifier:
           type: string
-          description: File path of the entity in the repository.
-        commit_message:
+      description: Response body for moving an input set configuration.
+    MergeInputSetRequestBody:
+      title: MergeInputSetRequestBody
+      x-stoplight:
+        id: k5st1k03q3tdm
+      type: object
+      properties:
+        input_set_references:
+          type: array
+          x-stoplight:
+            id: wcpksws2ddm8o
+          description: List of Input Set References to be merged
+          items:
+            x-stoplight:
+              id: iqji388ebim3m
+            type: string
+        with_merged_pipeline_yaml:
+          type: boolean
+          x-stoplight:
+            id: 59mojf9htbss4
+          description: This is a boolean value that indicates if the response must contain the YAML for the merged Pipeline. The default value is False.
+          default: false
+        stage_identifiers:
+          type: array
+          x-stoplight:
+            id: 1p0gidwvhedap
+          description: List of Stage Ids. Input Sets corresponding to these Ids will be merged.
+          items:
+            x-stoplight:
+              id: h7h4eg79nt7mm
+            type: string
+        last_yaml_to_merge:
           type: string
-          description: Merge commit message.
-        base_branch:
+          x-stoplight:
+            id: 1ml6olvzhv44g
+          description: Runtime Input Yaml needed to be merged into the result of the merged Yaml of the inputSetReferences
+        get_only_file_content:
+          type: boolean
+          x-stoplight:
+            id: wa02yytjz3utc
+          description: To be set true if we want to set user flow in thread context
+          default: false
+    InputSetErrorWrapperDTO:
+      title: InputSetErrorWrapperDTO
+      x-stoplight:
+        id: myvczjgywe83u
+      type: object
+      properties:
+        error_pipeline_yaml:
           type: string
-          description: Default branch name. This checks out the branch titled branch_name
+          x-stoplight:
+            id: zlmqxv0u9x8st
+          description: If an Input Set save fails, this field contains the error fields, with the field values replaced with a UUID
+        uuid_to_error_response_map:
+          type: object
+          x-stoplight:
+            id: er8nwjuhq2tsr
+          description: If an Input Set save fails, this field contains the map from FQN to why that FQN threw an error
+        invalid_inputset_references:
+          type: array
+          x-stoplight:
+            id: l73msd4aptj36
+          description: List of Input Sets that are invalid
+          items:
+            x-stoplight:
+              id: 1ci5txn9wsel4
+            type: string
+    GitMetadataUpdateRequestBody:
+      title: GitMetadataUpdateRequestBody
+      x-stoplight:
+        id: 5dgkx1gdp5ht4
+      type: object
+      properties:
         connector_ref:
           type: string
           description: Harness connector id used for entity CRUD operations
         repo_name:
           type: string
           description: Name of the repository.
+        file_path:
+          type: string
+          description: File path of the entity in the repository.
     InputSetErrorDetails:
       title: Input Set Error Details
       x-stoplight:
@@ -691,232 +799,36 @@ components:
               identifier_of_error_source: example_input_set
           invalid_refs:
           - example_invalid_input_set
-    InputSetImportResponseBody:
-      title: InputSet Import Response Body
+    MergeInputSetResponseBody:
+      title: MergeInputSetResponseBody
       x-stoplight:
-        id: i10mr579d4243
+        id: nyl6mxy742g0r
       type: object
       properties:
-        input_set_identifier:
-          type: string
-      description: Response body for Input Set import.
-    GitMetadataUpdateRequestBody:
-      title: GitMetadataUpdateRequestBody
-      x-stoplight:
-        id: 5dgkx1gdp5ht4
-      type: object
-      properties:
-        connector_ref:
-          type: string
-          description: Harness connector id used for entity CRUD operations
-        repo_name:
-          type: string
-          description: Name of the repository.
-        file_path:
-          type: string
-          description: File path of the entity in the repository.
-    GitDetails:
-      title: Git Response Details
-      x-stoplight:
-        id: f37z1efdf6zuu
-      type: object
-      description: Git Experience related details of the Entity.
-      x-examples:
-        example-git:
-          object_id: example_object
-          branch_name: branch
-          file_path: /folder/file.json
-          repo_name: example_repository
-          commit_id: abcd123
-          file_url: www.repo/folder/file.com
-          repo_url: www.repo.com
-      properties:
-        object_id:
-          type: string
-          description: Object identifier / blob id
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        branch_name:
-          type: string
-          description: Name of the branch.
-        file_path:
-          type: string
-          description: File path of the Entity in the repository.
-        repo_name:
-          type: string
-          description: Name of the repository.
-        commit_id:
-          type: string
-          description: Latest commit identifier.
-        file_url:
-          type: string
-          description: File URL of the Entity.
-        repo_url:
-          type: string
-          description: Repository URL of the Entity.
-    InputSetErrorWrapperDTO:
-      title: InputSetErrorWrapperDTO
-      x-stoplight:
-        id: myvczjgywe83u
-      type: object
-      properties:
-        error_pipeline_yaml:
+        inputs_yaml_merged:
           type: string
           x-stoplight:
-            id: zlmqxv0u9x8st
-          description: If an Input Set save fails, this field contains the error fields, with the field values replaced with a UUID
-        uuid_to_error_response_map:
-          type: object
+            id: zema5grm0k2ay
+          description: Merged YAML of all the Input Sets
+        merged_pipeline_yaml:
+          type: string
           x-stoplight:
-            id: er8nwjuhq2tsr
-          description: If an Input Set save fails, this field contains the map from FQN to why that FQN threw an error
-        invalid_inputset_references:
-          type: array
+            id: mhqdz2vtie51i
+          description: Pipeline YAML after merging with the Input Sets
+        is_error_response:
+          type: boolean
           x-stoplight:
-            id: l73msd4aptj36
-          description: List of Input Sets that are invalid
-          items:
-            x-stoplight:
-              id: 1ci5txn9wsel4
-            type: string
-    FQNtoError:
-      title: FQN to Error
+            id: gl7jmu6lfdr97
+          description: This field is true if the merging is not possible
+        inputset_error_wrapper:
+          $ref: '#/components/schemas/InputSetErrorWrapperDTO'
+    MoveConfigOperationType:
+      type: string
+      enum:
+      - INLINE_TO_REMOTE
+      description: Operation type to move the configuration
       x-stoplight:
-        id: hu06g9aq5bo5e
-      type: object
-      description: FQN to error response mapper.
-      x-examples:
-        example-fqn-map:
-          fqn: pipeline.stages.example_deploy_stage.spec.serviceConfig
-          errors:
-          - field_name: serviceConfig
-            message: Field not a runtime input
-            identifier_of_error_source: example_input_set
-      properties:
-        fqn:
-          type: string
-          description: Fully Qualified Name
-        errors:
-          type: array
-          description: Errors in FQN
-          items:
-            $ref: '#/components/schemas/InputSetError'
-    InputSetImportRequestDTO:
-      title: InputSet Import Request DTO
-      x-stoplight:
-        id: 1cwihgz3ewpmc
-      type: object
-      description: Information of InputSet import request DTO
-      properties:
-        input_set_name:
-          type: string
-        input_set_description:
-          type: string
-    InputSetResponseBody:
-      title: Input Set Response Body
-      x-stoplight:
-        id: qv6jrxhxt9r93
-      type: object
-      description: Response body for Input Set
-      properties:
-        input_set_yaml:
-          type: string
-          description: Input Set YAML (returned as a String).
-        identifier:
-          type: string
-          description: Input Set identifier
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        name:
-          type: string
-          description: Input Set name
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          minLength: 1
-          maxLength: 128
-        org:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Organization identifier
-        project:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Project identifier
-        pipeline:
-          type: string
-          description: Pipeline identifier
-        description:
-          type: string
-          maxLength: 1024
-          description: Input Set description
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          maxProperties: 128
-          description: Input Set tags
-        store_type:
-          type: string
-          description: Specifies whether the Entity is to be stored in Git or not (for Git Experience).
-          enum:
-          - INLINE
-          - REMOTE
-        connector_ref:
-          type: string
-          description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
-        git_details:
-          $ref: '#/components/schemas/GitDetails'
-        created:
-          type: integer
-          description: Creation timestamp for Input Set.
-          format: int64
-        updated:
-          type: integer
-          description: Last modification timestamp for Input Set.
-          format: int64
-        error_details:
-          $ref: '#/components/schemas/InputSetErrorDetails'
-      x-examples:
-        example-input-set:
-          input_set_yaml: example_input_set_yaml
-          identifier: example_input_set
-          name: Example Input Set
-          org: example_org
-          project: example_project
-          description: InputSet Description
-          tags:
-            example-tag-1: example-tag-1-value
-            example-tag-2: example-tag-2-value
-          git_details:
-            object_id: example_object
-            branch_name: branch
-            file_path: /folder/file.json
-            repo_name: example_repository
-            commit_id: abcd123
-            file_url: www.repo/folder/file.com
-            repo_url: www.repo.com
-          created: 1234567890
-          updated: 9876543210
-          error_details:
-            valid: false
-            message: Some fields in the Input Set are invalid.
-            outdated: true
-            error_pipeline_yaml: 'serviceConfig: "pipeline.stages.example_deploy_stage.spec.serviceConfig"
-
-              '
-            fqn_errors:
-            - fqn: pipeline.stages.example_deploy_stage.spec.serviceConfig
-              errors:
-              - field_name: serviceConfig
-                message: Field not a runtime input
-                identifier_of_error_source: example_input_set
-            invalid_refs:
-            - example_invalid_input_set
+        id: 4g4asyvl1x30z
     GitMetadataUpdateResponseBody:
       title: GitMetadataUpdateResponseBody
       x-stoplight:
@@ -966,150 +878,166 @@ components:
         repo_name:
           type: string
           description: Name of the repository.
-    InputSetMoveConfigResponseBody:
-      title: InputSetMoveConfigResponseBody
+    GitDetails:
+      title: Git Response Details
       x-stoplight:
-        id: uelqspa0eldno
+        id: f37z1efdf6zuu
       type: object
-      properties:
-        input_set_identifier:
-          type: string
-      description: Response body for moving an input set configuration.
-    MergeInputSetResponseBody:
-      title: MergeInputSetResponseBody
-      x-stoplight:
-        id: nyl6mxy742g0r
-      type: object
-      properties:
-        inputs_yaml_merged:
-          type: string
-          x-stoplight:
-            id: zema5grm0k2ay
-          description: Merged YAML of all the Input Sets
-        merged_pipeline_yaml:
-          type: string
-          x-stoplight:
-            id: mhqdz2vtie51i
-          description: Pipeline YAML after merging with the Input Sets
-        is_error_response:
-          type: boolean
-          x-stoplight:
-            id: gl7jmu6lfdr97
-          description: This field is true if the merging is not possible
-        inputset_error_wrapper:
-          $ref: '#/components/schemas/InputSetErrorWrapperDTO'
-    InputSetError:
-      title: Input Set Error
-      x-stoplight:
-        id: 49aa5ekivpuej
-      type: object
-      description: Input Set error
-      properties:
-        field_name:
-          type: string
-          description: Field name that has an error.
-        message:
-          type: string
-          description: Error description
-        identifier_of_error_source:
-          type: string
-          description: Identifier of Input Set
+      description: Git Experience related details of the Entity.
       x-examples:
-        example-error:
-          field_name: serviceConfig
-          message: Field not a runtime input
-          identifier_of_error_source: example_input_set
-  requestBodies:
-    MergeInputSetRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/MergeInputSetRequestBody'
-    InputSetCreateRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InputSetCreateRequestBody'
-          examples:
-            example-input:
-              value:
-                input_set_yaml: "inputSet:\n    pipeline:\n        identifier: Example_Pipeline\n        stages:\n            - stage:\n                  identifier: Example_Stage\n                  type: Approval\n                  spec:\n                      execution:\n                          steps:\n                              - step:\n                                    identifier: Approval_Step\n                                    type: HarnessApproval\n                                    spec:\n                                        approvers:\n                                            userGroups:\n                                                - account.Admins\n                              - step:\n                                    identifier: Shellscript_Step\n                                    type: ShellScript\n                                    spec:\n                                        source:\\n                                            type: Inline\n                                            spec:\\n                                                script: echo \"ShellScript\"\n            - stage:\n                  identifier: Sample_Deploy_Stage\n                  type: Deployment\n                  spec:\n                      serviceConfig:\n                          serviceRef: Service1\n                      infrastructure:\n                          environmentRef: Env1\n                          infrastructureDefinition:\n                              type: KubernetesDirect\n                              spec:\n                                  connectorRef: account.harnessciplatform\n                                  namespace: sample"
-                identifier: example_input_set
-                name: ExampleInputSet
-                description: Input Set Description
-                tags:
-                  property1: example-tag-1-value
-                  property2: example-tag-2-value
-                git_details:
-                  branch_name: branch
-                  file_path: /folder/file.json
-                  commit_message: Added Harness Git Experience
-                  base_branch: old_branch
-                  connector_ref: git_connector
-                  store_type: REMOTE
-                  repo_name: example_repository
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/InputSetCreateRequestBody'
-          examples:
-            example-input:
-              value: "input_set_yaml: |-\n  inputSet:\n      pipeline:\n          identifier: Example_Pipeline\n          stages:\n              - stage:\n                    identifier: Example_Stage\n                    type: Approval\n                    spec:\n                        execution:\n                            steps:\n                                - step:\n                                      identifier: Approval_Step\n                                      type: HarnessApproval\n                                      spec:\n                                          approvers:\n                                              userGroups:\n                                                  - account.Admins\n                                - step:\n                                      identifier: Shellscript_Step\n                                      type: ShellScript\n                                      spec:\n                                          source:\\n                                            type: Inline\n                                              spec:\\n                                                script: echo \"ShellScript\"\n              - stage:\n                    identifier: Sample_Deploy_Stage\n                    type: Deployment\n                    spec:\n                        serviceConfig:\n                            serviceRef: Service1\n                        infrastructure:\n                            environmentRef: Env1\n                            infrastructureDefinition:\n                                type: KubernetesDirect\n                                spec:\n                                    connectorRef: account.harnessciplatform\n                                    namespace: sample\nidentifier: example_input_set\nname: ExampleInputSet\ndescription: Input Set Description\ntags:\n  property1: example-tag-1-value\n  property2: example-tag-2-value\ngit_details:\n  branch_name: branch\n  file_path: /folder/file.json\n  commit_message: Added Harness Git Experience\n  base_branch: old_branch\n  connector_ref: git_connector\n  store_type: INLINE\n  repo_name: example_repository\n"
-      description: Input Set create request body.
+        example-git:
+          object_id: example_object
+          branch_name: branch
+          file_path: /folder/file.json
+          repo_name: example_repository
+          commit_id: abcd123
+          file_url: www.repo/folder/file.com
+          repo_url: www.repo.com
+      properties:
+        object_id:
+          type: string
+          description: Object identifier / blob id
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        branch_name:
+          type: string
+          description: Name of the branch.
+        file_path:
+          type: string
+          description: File path of the Entity in the repository.
+        repo_name:
+          type: string
+          description: Name of the repository.
+        commit_id:
+          type: string
+          description: Latest commit identifier.
+        file_url:
+          type: string
+          description: File URL of the Entity.
+        repo_url:
+          type: string
+          description: Repository URL of the Entity.
+  parameters:
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
       required: true
-    InputSetImportRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InputSetImportRequestBody'
-      description: Input Set import request body
-    InputSetMoveConfigRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InputSetMoveConfigRequestBody'
-    GitMetadataUpdateRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GitMetadataUpdateRequestBody'
-    InputSetUpdateRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InputSetUpdateRequestBody'
-          examples:
-            example-input:
-              value:
-                input_set_yaml: "inputSet:\n    pipeline:\n        identifier: Example_Pipeline\n        stages:\n            - stage:\n                  identifier: Example_Stage\n                  type: Approval\n                  spec:\n                      execution:\n                          steps:\n                              - step:\n                                    identifier: Approval_Step\n                                    type: HarnessApproval\n                                    spec:\n                                        approvers:\n                                            userGroups:\n                                                - account.Admins\n                              - step:\n                                    identifier: Shellscript_Step\n                                    type: ShellScript\n                                    spec:\n                                        source:\\n                                            type: Inline\n                                            spec:\\n                                                script: echo \"ShellScript\"\n            - stage:\n                  identifier: Sample_Deploy_Stage\n                  type: Deployment\n                  spec:\n                      serviceConfig:\n                          serviceRef: Service1\n                      infrastructure:\n                          environmentRef: Env1\n                          infrastructureDefinition:\n                              type: KubernetesDirect\n                              spec:\n                                  connectorRef: account.harnessciplatform\n                                  namespace: sample"
-                identifier: example_input_set
-                name: ExampleInputSet
-                description: Input Set Description
-                tags:
-                  property1: example-tag-1-value
-                  property2: example-tag-2-value
-                git_details:
-                  branch_name: branch
-                  commit_message: Added Harness Git Experience
-                  last_object_id: abcdXYZ
-                  base_branch: old_branch
-                  last_commit_id: abcdXYZ
-                  parent_entity_connector_ref: git_connector
-                  parent_entity_repo_name: example_repository
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/InputSetUpdateRequestBody'
-          examples:
-            example-input:
-              value: "input_set_yaml: |-\n  inputSet:\n      pipeline:\n          identifier: Example_Pipeline\n          stages:\n              - stage:\n                    identifier: Example_Stage\n                    type: Approval\n                    spec:\n                        execution:\n                            steps:\n                                - step:\n                                      identifier: Approval_Step\n                                      type: HarnessApproval\n                                      spec:\n                                          approvers:\n                                              userGroups:\n                                                  - account.Admins\n                                - step:\n                                      identifier: Shellscript_Step\n                                      type: ShellScript\n                                      spec:\n                                          source:\\n                                            type: Inline\n                                              spec:\\n                                                script: echo \"ShellScript\"\n              - stage:\n                    identifier: Sample_Deploy_Stage\n                    type: Deployment\n                    spec:\n                        serviceConfig:\n                            serviceRef: Service1\n                        infrastructure:\n                            environmentRef: Env1\n                            infrastructureDefinition:\n                                type: KubernetesDirect\n                                spec:\n                                    connectorRef: account.harnessciplatform\n                                    namespace: sample\nidentifier: example_input_set\nname: ExampleInputSet\ndescription: Input Set Description\ntags:\n  property1: example-tag-1-value\n  property2: example-tag-2-value\ngit_details:\n  branch_name: branch\n  commit_message: Added Harness Git Experience\n  last_object_id: abcdXYZ\n  base_branch: old_branch\n  last_commit_id: abcdXYZ\n  parent_entity_connector_ref: git_connector\n  parent_entity_repo_name: example_repository\n"
-      description: Input Set update request body
+      schema:
+        type: string
+    PipelineInputSetParam:
+      name: pipeline
+      in: query
       required: true
+      schema:
+        type: string
+      description: Pipeline identifier for the Input Set.
+    SearchTerm:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching the search term.
+    AccountHeader4:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    InputSetParam:
+      name: input-set
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Input Set identifier
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    PipelineBranch:
+      name: pipeline_branch
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Github branch of the Pipeline to which the Input Sets belong
+    PipelineRepoID:
+      name: pipeline_repo_id
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Github Repo identifier of the Pipeline to which the Input Sets belong
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+        maximum: 100
+      description: 'Pagination: Number of items to return.'
+    PageIndex:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+    Branch:
+      name: branch_name
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Name of the branch (for Git Experience).
+    Sort4:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - name
+        - updated
+      description: Parameter on the basis of which sorting is done.
   responses:
-    GitMetadataUpdateResponseBody:
+    InputSetMoveConfigResponseBody:
+      description: Response body for moving an input set configuration.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InputSetMoveConfigResponseBody'
+    MergeInputSetResponseBody:
       description: Example response
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GitMetadataUpdateResponseBody'
+            $ref: '#/components/schemas/MergeInputSetResponseBody'
+    InputSetImportResponseBody:
+      description: Response body for input set import.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InputSetImportResponseBody'
     InputSetListResponseBody:
       description: Input Set response body
       content:
@@ -1176,6 +1104,12 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
+    GitMetadataUpdateResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GitMetadataUpdateResponseBody'
     InputSetResponseBody:
       description: Input Set response body
       content:
@@ -1225,24 +1159,90 @@ components:
           examples:
             example-input-set:
               value: "input_set_yaml: example_input_set_yaml\nidentifier: example_input_set\nname: Example Input Set\norg: example_org\nproject: example_project\ndescription: InputSet Description\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\ngit_details:\n  object_id: example_object\n  branch_name: branch\n  file_path: /folder/file.json\n  repo_name: example_repository\n  commit_id: abcd123\n  file_url: www.repo/folder/file.com\n  repo_url: www.repo.com\ncreated: 1234567890\nupdated: 9876543210\nerror_details:\n  valid: false\n  message: Some fields in the Input Set are invalid.\n  outdated: true\n  error_pipeline_yaml: |\n    serviceConfig: \"pipeline.stages.example_deploy_stage.spec.serviceConfig\"\n  fqn_errors:\n    - fqn: pipeline.stages.example_deploy_stage.spec.serviceConfig\n      errors:\n        - field_name: serviceConfig\n          message: Field not a runtime input\n          identifier_of_error_source: example_input_set\n  invalid_refs:\n    - example_invalid_input_set\n"
-    InputSetImportResponseBody:
-      description: Response body for input set import.
+  requestBodies:
+    InputSetUpdateRequestBody:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InputSetImportResponseBody'
-    InputSetMoveConfigResponseBody:
-      description: Response body for moving an input set configuration.
+            $ref: '#/components/schemas/InputSetUpdateRequestBody'
+          examples:
+            example-input:
+              value:
+                input_set_yaml: "inputSet:\n    pipeline:\n        identifier: Example_Pipeline\n        stages:\n            - stage:\n                  identifier: Example_Stage\n                  type: Approval\n                  spec:\n                      execution:\n                          steps:\n                              - step:\n                                    identifier: Approval_Step\n                                    type: HarnessApproval\n                                    spec:\n                                        approvers:\n                                            userGroups:\n                                                - account.Admins\n                              - step:\n                                    identifier: Shellscript_Step\n                                    type: ShellScript\n                                    spec:\n                                        source:\\n                                            type: Inline\n                                            spec:\\n                                                script: echo \"ShellScript\"\n            - stage:\n                  identifier: Sample_Deploy_Stage\n                  type: Deployment\n                  spec:\n                      serviceConfig:\n                          serviceRef: Service1\n                      infrastructure:\n                          environmentRef: Env1\n                          infrastructureDefinition:\n                              type: KubernetesDirect\n                              spec:\n                                  connectorRef: account.harnessciplatform\n                                  namespace: sample"
+                identifier: example_input_set
+                name: ExampleInputSet
+                description: Input Set Description
+                tags:
+                  property1: example-tag-1-value
+                  property2: example-tag-2-value
+                git_details:
+                  branch_name: branch
+                  commit_message: Added Harness Git Experience
+                  last_object_id: abcdXYZ
+                  base_branch: old_branch
+                  last_commit_id: abcdXYZ
+                  parent_entity_connector_ref: git_connector
+                  parent_entity_repo_name: example_repository
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/InputSetUpdateRequestBody'
+          examples:
+            example-input:
+              value: "input_set_yaml: |-\n  inputSet:\n      pipeline:\n          identifier: Example_Pipeline\n          stages:\n              - stage:\n                    identifier: Example_Stage\n                    type: Approval\n                    spec:\n                        execution:\n                            steps:\n                                - step:\n                                      identifier: Approval_Step\n                                      type: HarnessApproval\n                                      spec:\n                                          approvers:\n                                              userGroups:\n                                                  - account.Admins\n                                - step:\n                                      identifier: Shellscript_Step\n                                      type: ShellScript\n                                      spec:\n                                          source:\\n                                            type: Inline\n                                              spec:\\n                                                script: echo \"ShellScript\"\n              - stage:\n                    identifier: Sample_Deploy_Stage\n                    type: Deployment\n                    spec:\n                        serviceConfig:\n                            serviceRef: Service1\n                        infrastructure:\n                            environmentRef: Env1\n                            infrastructureDefinition:\n                                type: KubernetesDirect\n                                spec:\n                                    connectorRef: account.harnessciplatform\n                                    namespace: sample\nidentifier: example_input_set\nname: ExampleInputSet\ndescription: Input Set Description\ntags:\n  property1: example-tag-1-value\n  property2: example-tag-2-value\ngit_details:\n  branch_name: branch\n  commit_message: Added Harness Git Experience\n  last_object_id: abcdXYZ\n  base_branch: old_branch\n  last_commit_id: abcdXYZ\n  parent_entity_connector_ref: git_connector\n  parent_entity_repo_name: example_repository\n"
+      description: Input Set update request body
+      required: true
+    GitMetadataUpdateRequestBody:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InputSetMoveConfigResponseBody'
-    MergeInputSetResponseBody:
-      description: Example response
+            $ref: '#/components/schemas/GitMetadataUpdateRequestBody'
+    InputSetCreateRequestBody:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/MergeInputSetResponseBody'
+            $ref: '#/components/schemas/InputSetCreateRequestBody'
+          examples:
+            example-input:
+              value:
+                input_set_yaml: "inputSet:\n    pipeline:\n        identifier: Example_Pipeline\n        stages:\n            - stage:\n                  identifier: Example_Stage\n                  type: Approval\n                  spec:\n                      execution:\n                          steps:\n                              - step:\n                                    identifier: Approval_Step\n                                    type: HarnessApproval\n                                    spec:\n                                        approvers:\n                                            userGroups:\n                                                - account.Admins\n                              - step:\n                                    identifier: Shellscript_Step\n                                    type: ShellScript\n                                    spec:\n                                        source:\\n                                            type: Inline\n                                            spec:\\n                                                script: echo \"ShellScript\"\n            - stage:\n                  identifier: Sample_Deploy_Stage\n                  type: Deployment\n                  spec:\n                      serviceConfig:\n                          serviceRef: Service1\n                      infrastructure:\n                          environmentRef: Env1\n                          infrastructureDefinition:\n                              type: KubernetesDirect\n                              spec:\n                                  connectorRef: account.harnessciplatform\n                                  namespace: sample"
+                identifier: example_input_set
+                name: ExampleInputSet
+                description: Input Set Description
+                tags:
+                  property1: example-tag-1-value
+                  property2: example-tag-2-value
+                git_details:
+                  branch_name: branch
+                  file_path: /folder/file.json
+                  commit_message: Added Harness Git Experience
+                  base_branch: old_branch
+                  connector_ref: git_connector
+                  store_type: REMOTE
+                  repo_name: example_repository
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/InputSetCreateRequestBody'
+          examples:
+            example-input:
+              value: "input_set_yaml: |-\n  inputSet:\n      pipeline:\n          identifier: Example_Pipeline\n          stages:\n              - stage:\n                    identifier: Example_Stage\n                    type: Approval\n                    spec:\n                        execution:\n                            steps:\n                                - step:\n                                      identifier: Approval_Step\n                                      type: HarnessApproval\n                                      spec:\n                                          approvers:\n                                              userGroups:\n                                                  - account.Admins\n                                - step:\n                                      identifier: Shellscript_Step\n                                      type: ShellScript\n                                      spec:\n                                          source:\\n                                            type: Inline\n                                              spec:\\n                                                script: echo \"ShellScript\"\n              - stage:\n                    identifier: Sample_Deploy_Stage\n                    type: Deployment\n                    spec:\n                        serviceConfig:\n                            serviceRef: Service1\n                        infrastructure:\n                            environmentRef: Env1\n                            infrastructureDefinition:\n                                type: KubernetesDirect\n                                spec:\n                                    connectorRef: account.harnessciplatform\n                                    namespace: sample\nidentifier: example_input_set\nname: ExampleInputSet\ndescription: Input Set Description\ntags:\n  property1: example-tag-1-value\n  property2: example-tag-2-value\ngit_details:\n  branch_name: branch\n  file_path: /folder/file.json\n  commit_message: Added Harness Git Experience\n  base_branch: old_branch\n  connector_ref: git_connector\n  store_type: INLINE\n  repo_name: example_repository\n"
+      description: Input Set create request body.
+      required: true
+    MergeInputSetRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MergeInputSetRequestBody'
+    InputSetImportRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InputSetImportRequestBody'
+      description: Input Set import request body
+    InputSetMoveConfigRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InputSetMoveConfigRequestBody'
   securitySchemes:
     x-api-key:
       name: x-api-key

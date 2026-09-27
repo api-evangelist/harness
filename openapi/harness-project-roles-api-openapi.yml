@@ -111,15 +111,6 @@ paths:
       - Project Roles
 components:
   parameters:
-    Limit:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 30
-        maximum: 100
-      description: 'Pagination: Number of items to return.'
     PageIndex:
       name: page
       in: query
@@ -128,13 +119,27 @@ components:
         type: integer
         default: 0
       description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-    AccountHeader:
-      name: Harness-Account
-      in: header
+    SearchTerm:
+      name: search_term
+      in: query
       required: false
       schema:
         type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+      description: This would be used to filter resources having attributes matching the search term.
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
     Order:
       name: order
       in: query
@@ -145,6 +150,29 @@ components:
         - ASC
         - DESC
       description: Order on the basis of which sorting is done.
+    RoleParam:
+      name: role
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Role identifier
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+        maximum: 100
+      description: 'Pagination: Number of items to return.'
     Sort:
       name: sort
       in: query
@@ -157,34 +185,6 @@ components:
         - created
         - updated
       description: Parameter on the basis of which sorting is done.
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
-    SearchTerm:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching the search term.
-    RoleParam:
-      name: role
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Role identifier
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
   requestBodies:
     CreateRoleRequest:
       content:
@@ -211,27 +211,6 @@ components:
       description: Role Request body
       required: true
   schemas:
-    RoleScope:
-      title: Scope
-      x-stoplight:
-        id: w8j3bc9323bxb
-      type: object
-      description: Scope of the Role
-      properties:
-        account:
-          type: string
-          description: Account identifier
-        org:
-          type: string
-          description: Organization identifier
-        project:
-          type: string
-          description: Project identifier
-      x-examples:
-        example-1:
-          account: sample_account
-          org: sample_organization
-          project: sample_project
     CreateRoleRequest:
       title: CreateRoleRequest
       x-stoplight:
@@ -360,39 +339,28 @@ components:
       required:
       - identifier
       - name
+    RoleScope:
+      title: Scope
+      x-stoplight:
+        id: w8j3bc9323bxb
+      type: object
+      description: Scope of the Role
+      properties:
+        account:
+          type: string
+          description: Account identifier
+        org:
+          type: string
+          description: Organization identifier
+        project:
+          type: string
+          description: Project identifier
+      x-examples:
+        example-1:
+          account: sample_account
+          org: sample_organization
+          project: sample_project
   responses:
-    RoleResponse:
-      description: Role Response body
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RolesResponse'
-          examples:
-            role-response:
-              value:
-                identifier: example_role
-                name: Example_Role
-                permissions:
-                - core_resource_view
-                allowed_scope_levels:
-                - account
-                description: This is an Example Role
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                scope:
-                  account: sample_account
-                  org: sample_organization
-                  project: sample_project
-                created: 1234567890
-                updated: 1234567890
-                harness_managed: true
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/RolesResponse'
-          examples:
-            role-response:
-              value: "identifier: example_role\nname: Example_Role\npermissions:\n  - core_resource_view\nallowed_scope_levels:\n  - account\ndescription: This is an Example Role\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nscope:\n  account: sample_account\n  org: sample_organization\n  project: sample_project\ncreated: 1234567890\nupdated: 1234567890\nharness_managed: true\n"
     RolesListResponse:
       description: Roles List Response body
       content:
@@ -442,6 +410,38 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
+    RoleResponse:
+      description: Role Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RolesResponse'
+          examples:
+            role-response:
+              value:
+                identifier: example_role
+                name: Example_Role
+                permissions:
+                - core_resource_view
+                allowed_scope_levels:
+                - account
+                description: This is an Example Role
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                scope:
+                  account: sample_account
+                  org: sample_organization
+                  project: sample_project
+                created: 1234567890
+                updated: 1234567890
+                harness_managed: true
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/RolesResponse'
+          examples:
+            role-response:
+              value: "identifier: example_role\nname: Example_Role\npermissions:\n  - core_resource_view\nallowed_scope_levels:\n  - account\ndescription: This is an Example Role\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nscope:\n  account: sample_account\n  org: sample_organization\n  project: sample_project\ncreated: 1234567890\nupdated: 1234567890\nharness_managed: true\n"
   securitySchemes:
     x-api-key:
       name: x-api-key

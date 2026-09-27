@@ -829,26 +829,45 @@ paths:
         - sto_exemption_view
 components:
   schemas:
-    ExemptionConstraints:
+    StoPagination:
       type: object
       properties:
-        matchedRuleId:
+        link:
           type: string
-          description: ID of the rule that fired. Empty string if no rule matched (request is unconstrained by policy).
-          example: rule11111111111111111a
-        maxDurationDays:
+          description: Link-based paging
+          example: ''
+        page:
           type: integer
-          description: Maximum duration in days that this exemption may run. Null means no cap and indefinite ("All Time") is allowed; a non-null value forbids "All Time".
-          example: 7
+          description: Page number (starting from 0)
+          example: 4
           format: int64
-          minimum: 1
-      description: Constraints that apply to an exemption request for a specific issue, computed by evaluating account-level exemption rules against the issue's attributes.
+        pageSize:
+          type: integer
+          description: Requested page size
+          example: 20
+          format: int64
+        totalItems:
+          type: integer
+          description: Total results available
+          example: 230
+          format: int64
+        totalPages:
+          type: integer
+          description: Total pages available
+          example: 12
+          format: int64
       example:
-        matchedRuleId: rule11111111111111111a
-        maxDurationDays: 7
+        link: ''
+        page: 4
+        pageSize: 20
+        totalItems: 230
+        totalPages: 12
       required:
-      - matchedRuleId
-    UpdateExemptionRuleRequestBody:
+      - page
+      - pageSize
+      - totalPages
+      - totalItems
+    CreateExemptionRuleRequestBody:
       type: object
       properties:
         actions:
@@ -910,6 +929,9 @@ components:
         userId: abcdef1234567890ghijkl
       required:
       - userId
+      - name
+      - conditions
+      - actions
     IDResult:
       type: object
       properties:
@@ -922,44 +944,6 @@ components:
         id: abcdef1234567890ghijkl
       required:
       - id
-    StoPagination:
-      type: object
-      properties:
-        link:
-          type: string
-          description: Link-based paging
-          example: ''
-        page:
-          type: integer
-          description: Page number (starting from 0)
-          example: 4
-          format: int64
-        pageSize:
-          type: integer
-          description: Requested page size
-          example: 20
-          format: int64
-        totalItems:
-          type: integer
-          description: Total results available
-          example: 230
-          format: int64
-        totalPages:
-          type: integer
-          description: Total pages available
-          example: 12
-          format: int64
-      example:
-        link: ''
-        page: 4
-        pageSize: 20
-        totalItems: 230
-        totalPages: 12
-      required:
-      - page
-      - pageSize
-      - totalPages
-      - totalItems
     GetExemptionConstraintsRequestBody:
       type: object
       properties:
@@ -1043,184 +1027,6 @@ components:
       required:
       - orgId
       - projectId
-    NotFound:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Not Found
-        status:
-          type: integer
-          default: 404
-          example: 404
-          format: int64
-      example:
-        message: Not Found
-        status: 404
-      required:
-      - message
-    ExemptionRule:
-      type: object
-      properties:
-        actions:
-          type: object
-          description: 'Actions to apply when the rule matches. Today: duration only. Action handlers are pluggable; see the design doc for the planned set.'
-          example:
-            duration:
-              maxDurationDays: 3
-          additionalProperties: true
-        conditions:
-          type: object
-          description: Matcher conditions. Keys are attribute names that appear in the issue context (severity_code, type, reachability, exploitability, epss, plus anything in issue.details). Missing keys are wildcards. Each value is either an array (OR-list), an object describing a numeric range, or a scalar (equality).
-          example:
-            epss_score:
-              gte: 90
-            reachable: true
-            severity_code:
-            - Critical
-          additionalProperties: true
-        created:
-          type: integer
-          description: Unix timestamp at which the resource was created
-          example: 1651578240
-          format: int64
-        createdBy:
-          type: string
-          description: ID of the user who created the rule.
-          example: user111111111111111111
-          pattern: ^[a-zA-Z0-9_-]{22}$
-        description:
-          type: string
-          description: Free-form rule description.
-          example: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-          maxLength: 1024
-        enabled:
-          type: boolean
-          description: 'Whether the rule is active. Disabled rules are retained and still listed, but are skipped during evaluation. OPTIONAL: defaults to true on create; on update, omit to keep the current state or send false/true to toggle.'
-          example: true
-        id:
-          type: string
-          description: Resource identifier
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-        lastModified:
-          type: integer
-          description: Unix timestamp at which the resource was most recently modified
-          example: 1651578240
-          format: int64
-        lastModifiedBy:
-          type: string
-          description: ID of the user who last modified the rule.
-          example: user111111111111111111
-          pattern: ^[a-zA-Z0-9_-]{22}$
-        name:
-          type: string
-          description: Human-readable rule name. Must be unique within an account.
-          example: 'Critical reachable issues: 3 days max'
-          minLength: 1
-          maxLength: 256
-        priority:
-          type: integer
-          description: '0-based rank within an account. Lower fires first (first-match-wins). OPTIONAL on both create and update: if omitted on CREATE the new rule is appended at the bottom (rank = current rule count); if omitted on UPDATE the rule keeps its current rank. When supplied, send 0 to insert at the top, 1..n to insert at that rank, or any value >= rule count to land at the tail.'
-          example: 0
-          format: int64
-          minimum: 0
-      description: An admin-defined rule that gates Exemption creation and approval. Rules are evaluated against an exemption request; if a rule matches, its actions fire — typically capping the requested duration.
-      example:
-        actions:
-          duration:
-            maxDurationDays: 3
-        conditions:
-          epss_score:
-            gte: 90
-          reachable: true
-          severity_code:
-          - Critical
-        created: 1651578240
-        createdBy: user111111111111111111
-        description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-        enabled: true
-        id: abcdef1234567890ghijkl
-        lastModified: 1651578240
-        lastModifiedBy: user111111111111111111
-        name: 'Critical reachable issues: 3 days max'
-        priority: 0
-      required:
-      - id
-      - name
-      - conditions
-      - actions
-      - priority
-      - enabled
-      - createdBy
-      - lastModifiedBy
-      - created
-      - lastModified
-    CreateExemptionRuleRequestBody:
-      type: object
-      properties:
-        actions:
-          type: object
-          description: 'Actions to apply when the rule matches. Today: duration only. Action handlers are pluggable; see the design doc for the planned set.'
-          example:
-            duration:
-              maxDurationDays: 3
-          additionalProperties: true
-        conditions:
-          type: object
-          description: Matcher conditions. Keys are attribute names that appear in the issue context (severity_code, type, reachability, exploitability, epss, plus anything in issue.details). Missing keys are wildcards. Each value is either an array (OR-list), an object describing a numeric range, or a scalar (equality).
-          example:
-            epss_score:
-              gte: 90
-            reachable: true
-            severity_code:
-            - Critical
-          additionalProperties: true
-        description:
-          type: string
-          description: Free-form rule description.
-          example: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-          maxLength: 1024
-        enabled:
-          type: boolean
-          description: 'Whether the rule is active. Disabled rules are retained and still listed, but are skipped during evaluation. OPTIONAL: defaults to true on create; on update, omit to keep the current state or send false/true to toggle.'
-          example: true
-        name:
-          type: string
-          description: Human-readable rule name. Must be unique within an account.
-          example: 'Critical reachable issues: 3 days max'
-          minLength: 1
-          maxLength: 256
-        priority:
-          type: integer
-          description: '0-based rank within an account. Lower fires first (first-match-wins). OPTIONAL on both create and update: if omitted on CREATE the new rule is appended at the bottom (rank = current rule count); if omitted on UPDATE the rule keeps its current rank. When supplied, send 0 to insert at the top, 1..n to insert at that rank, or any value >= rule count to land at the tail.'
-          example: 0
-          format: int64
-          minimum: 0
-        userId:
-          type: string
-          description: Harness User ID
-          example: abcdef1234567890ghijkl
-      example:
-        actions:
-          duration:
-            maxDurationDays: 3
-        conditions:
-          epss_score:
-            gte: 90
-          reachable: true
-          severity_code:
-          - Critical
-        description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-        enabled: true
-        name: 'Critical reachable issues: 3 days max'
-        priority: 0
-        userId: abcdef1234567890ghijkl
-      required:
-      - userId
-      - name
-      - conditions
-      - actions
     ExemptionRulesListExemptionRulesResponseBody:
       type: object
       properties:
@@ -1350,6 +1156,200 @@ components:
       required:
       - results
       - pagination
+    NotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          default: 404
+          example: 404
+          format: int64
+      example:
+        message: Not Found
+        status: 404
+      required:
+      - message
+    ExemptionRule:
+      type: object
+      properties:
+        actions:
+          type: object
+          description: 'Actions to apply when the rule matches. Today: duration only. Action handlers are pluggable; see the design doc for the planned set.'
+          example:
+            duration:
+              maxDurationDays: 3
+          additionalProperties: true
+        conditions:
+          type: object
+          description: Matcher conditions. Keys are attribute names that appear in the issue context (severity_code, type, reachability, exploitability, epss, plus anything in issue.details). Missing keys are wildcards. Each value is either an array (OR-list), an object describing a numeric range, or a scalar (equality).
+          example:
+            epss_score:
+              gte: 90
+            reachable: true
+            severity_code:
+            - Critical
+          additionalProperties: true
+        created:
+          type: integer
+          description: Unix timestamp at which the resource was created
+          example: 1651578240
+          format: int64
+        createdBy:
+          type: string
+          description: ID of the user who created the rule.
+          example: user111111111111111111
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        description:
+          type: string
+          description: Free-form rule description.
+          example: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+          maxLength: 1024
+        enabled:
+          type: boolean
+          description: 'Whether the rule is active. Disabled rules are retained and still listed, but are skipped during evaluation. OPTIONAL: defaults to true on create; on update, omit to keep the current state or send false/true to toggle.'
+          example: true
+        id:
+          type: string
+          description: Resource identifier
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        lastModified:
+          type: integer
+          description: Unix timestamp at which the resource was most recently modified
+          example: 1651578240
+          format: int64
+        lastModifiedBy:
+          type: string
+          description: ID of the user who last modified the rule.
+          example: user111111111111111111
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        name:
+          type: string
+          description: Human-readable rule name. Must be unique within an account.
+          example: 'Critical reachable issues: 3 days max'
+          minLength: 1
+          maxLength: 256
+        priority:
+          type: integer
+          description: '0-based rank within an account. Lower fires first (first-match-wins). OPTIONAL on both create and update: if omitted on CREATE the new rule is appended at the bottom (rank = current rule count); if omitted on UPDATE the rule keeps its current rank. When supplied, send 0 to insert at the top, 1..n to insert at that rank, or any value >= rule count to land at the tail.'
+          example: 0
+          format: int64
+          minimum: 0
+      description: An admin-defined rule that gates Exemption creation and approval. Rules are evaluated against an exemption request; if a rule matches, its actions fire — typically capping the requested duration.
+      example:
+        actions:
+          duration:
+            maxDurationDays: 3
+        conditions:
+          epss_score:
+            gte: 90
+          reachable: true
+          severity_code:
+          - Critical
+        created: 1651578240
+        createdBy: user111111111111111111
+        description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+        enabled: true
+        id: abcdef1234567890ghijkl
+        lastModified: 1651578240
+        lastModifiedBy: user111111111111111111
+        name: 'Critical reachable issues: 3 days max'
+        priority: 0
+      required:
+      - id
+      - name
+      - conditions
+      - actions
+      - priority
+      - enabled
+      - createdBy
+      - lastModifiedBy
+      - created
+      - lastModified
+    UpdateExemptionRuleRequestBody:
+      type: object
+      properties:
+        actions:
+          type: object
+          description: 'Actions to apply when the rule matches. Today: duration only. Action handlers are pluggable; see the design doc for the planned set.'
+          example:
+            duration:
+              maxDurationDays: 3
+          additionalProperties: true
+        conditions:
+          type: object
+          description: Matcher conditions. Keys are attribute names that appear in the issue context (severity_code, type, reachability, exploitability, epss, plus anything in issue.details). Missing keys are wildcards. Each value is either an array (OR-list), an object describing a numeric range, or a scalar (equality).
+          example:
+            epss_score:
+              gte: 90
+            reachable: true
+            severity_code:
+            - Critical
+          additionalProperties: true
+        description:
+          type: string
+          description: Free-form rule description.
+          example: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+          maxLength: 1024
+        enabled:
+          type: boolean
+          description: 'Whether the rule is active. Disabled rules are retained and still listed, but are skipped during evaluation. OPTIONAL: defaults to true on create; on update, omit to keep the current state or send false/true to toggle.'
+          example: true
+        name:
+          type: string
+          description: Human-readable rule name. Must be unique within an account.
+          example: 'Critical reachable issues: 3 days max'
+          minLength: 1
+          maxLength: 256
+        priority:
+          type: integer
+          description: '0-based rank within an account. Lower fires first (first-match-wins). OPTIONAL on both create and update: if omitted on CREATE the new rule is appended at the bottom (rank = current rule count); if omitted on UPDATE the rule keeps its current rank. When supplied, send 0 to insert at the top, 1..n to insert at that rank, or any value >= rule count to land at the tail.'
+          example: 0
+          format: int64
+          minimum: 0
+        userId:
+          type: string
+          description: Harness User ID
+          example: abcdef1234567890ghijkl
+      example:
+        actions:
+          duration:
+            maxDurationDays: 3
+        conditions:
+          epss_score:
+            gte: 90
+          reachable: true
+          severity_code:
+          - Critical
+        description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+        enabled: true
+        name: 'Critical reachable issues: 3 days max'
+        priority: 0
+        userId: abcdef1234567890ghijkl
+      required:
+      - userId
+    ExemptionConstraints:
+      type: object
+      properties:
+        matchedRuleId:
+          type: string
+          description: ID of the rule that fired. Empty string if no rule matched (request is unconstrained by policy).
+          example: rule11111111111111111a
+        maxDurationDays:
+          type: integer
+          description: Maximum duration in days that this exemption may run. Null means no cap and indefinite ("All Time") is allowed; a non-null value forbids "All Time".
+          example: 7
+          format: int64
+          minimum: 1
+      description: Constraints that apply to an exemption request for a specific issue, computed by evaluating account-level exemption rules against the issue's attributes.
+      example:
+        matchedRuleId: rule11111111111111111a
+        maxDurationDays: 7
+      required:
+      - matchedRuleId
     IssueItem:
       type: object
       properties:

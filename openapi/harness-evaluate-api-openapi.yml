@@ -175,70 +175,56 @@ paths:
       x-summary-source: derived
 components:
   schemas:
-    GitErrorResult:
+    CacheResponse:
       type: object
       properties:
-        explanation:
+        cache_state:
           type: string
-          description: the explanation of the error
-          example: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
-        hint:
-          type: string
-          description: the hint on how to resolve the error
-          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-        message:
-          type: string
-          description: the message is a human-readable explanation specific to this occurrence of the problem
-          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+          description: Cache state (UNKNOWN_STATE, VALID_CACHE, STALE_CACHE)
+          example: STALE_CACHE
+        is_sync_enabled:
+          type: boolean
+          description: Whether sync is enabled for this resource
+          example: true
+        last_updated_at:
+          type: integer
+          description: Timestamp (millis) when cache was last updated
+          example: 1773917288158
+          format: int64
+        ttl_left:
+          type: integer
+          description: Remaining time-to-live in milliseconds
+          example: 258234442
+          format: int64
+      description: Cache metadata from GitX getFile RPC
       example:
-        explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
-        hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-        message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-      required:
-      - message
-      - explanation
-      - hint
-    PolicyManagementError:
+        cache_state: STALE_CACHE
+        is_sync_enabled: true
+        last_updated_at: 1773917288158
+        ttl_left: 258234442
+    EvaluateRequestBody:
       type: object
       properties:
-        fault:
-          type: boolean
-          description: Is the error a server-side fault?
-          example: true
-        id:
+        input:
+          description: Input to evaluate
+          example:
+            message: everyone
+        rego:
           type: string
-          description: ID is a unique identifier for this particular occurrence of the problem.
-          example: 123abc
-        message:
-          type: string
-          description: Message is a human-readable explanation specific to this occurrence of the problem.
-          example: parameter 'p' must be an integer
-        name:
-          type: string
-          description: Name is the name of this class of errors.
-          example: bad_request
-        temporary:
-          type: boolean
-          description: Is the error temporary?
-          example: true
-        timeout:
-          type: boolean
-          description: Is the error a timeout?
-          example: true
+          description: Arbitrary rego to be evaluated
+          example: 'package test
+
+            deny["should say hello world"] {input.message != "world"}'
+          minLength: 1
       example:
-        fault: false
-        id: 123abc
-        message: parameter 'p' must be an integer
-        name: bad_request
-        temporary: true
-        timeout: false
+        input:
+          message: everyone
+        rego: 'package test
+
+          deny["should say hello world"] {input.message != "world"}'
       required:
-      - name
-      - id
-      - message
-      - temporary
-      - timeout
-      - fault
+      - rego
+      - input
     PolicyManagementPolicy:
       type: object
       properties:
@@ -396,6 +382,47 @@ components:
       - account_id
       - org_id
       - project_id
+    PolicyManagementError:
+      type: object
+      properties:
+        fault:
+          type: boolean
+          description: Is the error a server-side fault?
+          example: true
+        id:
+          type: string
+          description: ID is a unique identifier for this particular occurrence of the problem.
+          example: 123abc
+        message:
+          type: string
+          description: Message is a human-readable explanation specific to this occurrence of the problem.
+          example: parameter 'p' must be an integer
+        name:
+          type: string
+          description: Name is the name of this class of errors.
+          example: bad_request
+        temporary:
+          type: boolean
+          description: Is the error temporary?
+          example: true
+        timeout:
+          type: boolean
+          description: Is the error a timeout?
+          example: true
+      example:
+        fault: false
+        id: 123abc
+        message: parameter 'p' must be an integer
+        name: bad_request
+        temporary: true
+        timeout: false
+      required:
+      - name
+      - id
+      - message
+      - temporary
+      - timeout
+      - fault
     EvaluatedPolicy:
       type: object
       properties:
@@ -481,56 +508,29 @@ components:
       - output
       - deny_messages
       - error
-    CacheResponse:
+    GitErrorResult:
       type: object
       properties:
-        cache_state:
+        explanation:
           type: string
-          description: Cache state (UNKNOWN_STATE, VALID_CACHE, STALE_CACHE)
-          example: STALE_CACHE
-        is_sync_enabled:
-          type: boolean
-          description: Whether sync is enabled for this resource
-          example: true
-        last_updated_at:
-          type: integer
-          description: Timestamp (millis) when cache was last updated
-          example: 1773917288158
-          format: int64
-        ttl_left:
-          type: integer
-          description: Remaining time-to-live in milliseconds
-          example: 258234442
-          format: int64
-      description: Cache metadata from GitX getFile RPC
-      example:
-        cache_state: STALE_CACHE
-        is_sync_enabled: true
-        last_updated_at: 1773917288158
-        ttl_left: 258234442
-    EvaluateRequestBody:
-      type: object
-      properties:
-        input:
-          description: Input to evaluate
-          example:
-            message: everyone
-        rego:
+          description: the explanation of the error
+          example: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+        hint:
           type: string
-          description: Arbitrary rego to be evaluated
-          example: 'package test
-
-            deny["should say hello world"] {input.message != "world"}'
-          minLength: 1
+          description: the hint on how to resolve the error
+          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        message:
+          type: string
+          description: the message is a human-readable explanation specific to this occurrence of the problem
+          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
       example:
-        input:
-          message: everyone
-        rego: 'package test
-
-          deny["should say hello world"] {input.message != "world"}'
+        explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+        hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
       required:
-      - rego
-      - input
+      - message
+      - explanation
+      - hint
   securitySchemes:
     x-api-key:
       name: x-api-key

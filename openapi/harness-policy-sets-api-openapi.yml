@@ -6755,47 +6755,6 @@ paths:
       x-summary-source: derived
 components:
   schemas:
-    PolicyManagementError:
-      type: object
-      properties:
-        fault:
-          type: boolean
-          description: Is the error a server-side fault?
-          example: true
-        id:
-          type: string
-          description: ID is a unique identifier for this particular occurrence of the problem.
-          example: 123abc
-        message:
-          type: string
-          description: Message is a human-readable explanation specific to this occurrence of the problem.
-          example: parameter 'p' must be an integer
-        name:
-          type: string
-          description: Name is the name of this class of errors.
-          example: bad_request
-        temporary:
-          type: boolean
-          description: Is the error temporary?
-          example: true
-        timeout:
-          type: boolean
-          description: Is the error a timeout?
-          example: true
-      example:
-        fault: false
-        id: 123abc
-        message: parameter 'p' must be an integer
-        name: bad_request
-        temporary: true
-        timeout: false
-      required:
-      - name
-      - id
-      - message
-      - temporary
-      - timeout
-      - fault
     Linkedpolicyidentifier:
       type: object
       properties:
@@ -6817,6 +6776,66 @@ components:
       required:
       - identifier
       - severity
+    CacheResponse:
+      type: object
+      properties:
+        cache_state:
+          type: string
+          description: Cache state (UNKNOWN_STATE, VALID_CACHE, STALE_CACHE)
+          example: STALE_CACHE
+        is_sync_enabled:
+          type: boolean
+          description: Whether sync is enabled for this resource
+          example: true
+        last_updated_at:
+          type: integer
+          description: Timestamp (millis) when cache was last updated
+          example: 1773917288158
+          format: int64
+        ttl_left:
+          type: integer
+          description: Remaining time-to-live in milliseconds
+          example: 258234442
+          format: int64
+      description: Cache metadata from GitX getFile RPC
+      example:
+        cache_state: STALE_CACHE
+        is_sync_enabled: true
+        last_updated_at: 1773917288158
+        ttl_left: 258234442
+    ContainerResource:
+      type: object
+      properties:
+        limits:
+          $ref: '#/components/schemas/ResourceLimits'
+        requests:
+          $ref: '#/components/schemas/ResourceLimits'
+      description: Container resource requests and limits
+      example:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    ResourceLimits:
+      type: object
+      properties:
+        cpu:
+          type: string
+          description: CPU quantity
+          example: 100m
+        memory:
+          type: string
+          description: Memory quantity
+          example: 128Mi
+      description: CPU and memory quantities for container resources
+      example:
+        cpu: 100m
+        memory: 128Mi
+      required:
+      - cpu
+      - memory
     PolicyManagementPolicySet:
       type: object
       properties:
@@ -7943,35 +7962,47 @@ components:
       - org_id
       - project_id
       - entity_selector
-    ResourceGroupIdentifier:
+    PolicyManagementError:
       type: object
       properties:
-        account_id:
+        fault:
+          type: boolean
+          description: Is the error a server-side fault?
+          example: true
+        id:
           type: string
-          description: resource group account id
-          example: Harum temporibus sed hic.
-        identifier:
+          description: ID is a unique identifier for this particular occurrence of the problem.
+          example: 123abc
+        message:
           type: string
-          description: resource group identifier
-          example: Rerum nulla eaque aut.
-        org_id:
+          description: Message is a human-readable explanation specific to this occurrence of the problem.
+          example: parameter 'p' must be an integer
+        name:
           type: string
-          description: resource group org id
-          example: Aut tenetur distinctio nemo eum commodi tempora.
-        project_id:
-          type: string
-          description: resource group project identifier
-          example: Eos saepe vel enim non.
+          description: Name is the name of this class of errors.
+          example: bad_request
+        temporary:
+          type: boolean
+          description: Is the error temporary?
+          example: true
+        timeout:
+          type: boolean
+          description: Is the error a timeout?
+          example: true
       example:
-        account_id: Qui quia qui et quo et.
-        identifier: Velit alias aut ut.
-        org_id: Veritatis natus cumque aut veniam nulla.
-        project_id: Expedita quia est autem est voluptas.
+        fault: false
+        id: 123abc
+        message: parameter 'p' must be an integer
+        name: bad_request
+        temporary: true
+        timeout: false
       required:
-      - account_id
-      - org_id
-      - project_id
-      - identifier
+      - name
+      - id
+      - message
+      - temporary
+      - timeout
+      - fault
     PolicyManagementResourceGroup:
       type: object
       properties:
@@ -8014,45 +8045,193 @@ components:
       - identifier
       - name
       - created
-    ContainerResource:
+    ResourceGroupIdentifier:
       type: object
       properties:
-        limits:
-          $ref: '#/components/schemas/ResourceLimits'
-        requests:
-          $ref: '#/components/schemas/ResourceLimits'
-      description: Container resource requests and limits
+        account_id:
+          type: string
+          description: resource group account id
+          example: Harum temporibus sed hic.
+        identifier:
+          type: string
+          description: resource group identifier
+          example: Rerum nulla eaque aut.
+        org_id:
+          type: string
+          description: resource group org id
+          example: Aut tenetur distinctio nemo eum commodi tempora.
+        project_id:
+          type: string
+          description: resource group project identifier
+          example: Eos saepe vel enim non.
       example:
-        limits:
-          cpu: 100m
-          memory: 128Mi
-        requests:
-          cpu: 100m
-          memory: 128Mi
-    GitErrorResult:
-      type: object
-      properties:
-        explanation:
-          type: string
-          description: the explanation of the error
-          example: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
-        hint:
-          type: string
-          description: the hint on how to resolve the error
-          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-        message:
-          type: string
-          description: the message is a human-readable explanation specific to this occurrence of the problem
-          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-      example:
-        explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
-        hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-        message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        account_id: Qui quia qui et quo et.
+        identifier: Velit alias aut ut.
+        org_id: Veritatis natus cumque aut veniam nulla.
+        project_id: Expedita quia est autem est voluptas.
       required:
-      - message
-      - explanation
-      - hint
-    UpdateRequestBody2:
+      - account_id
+      - org_id
+      - project_id
+      - identifier
+    PolicyManagementPolicy:
+      type: object
+      properties:
+        account_id:
+          type: string
+          description: Harness account ID associated with this policy
+          default: ''
+          example: eBqAoNchMLKigC_qZ5EdC
+        cache_response:
+          $ref: '#/components/schemas/CacheResponse'
+        created:
+          type: integer
+          description: Time the policy was created
+          example: 1636669297674
+          format: int64
+        git_commit_sha:
+          type: string
+          description: The commit sha of the commit that last effected the file
+          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_connector_ref:
+          type: string
+          description: The harness connector used for authenticating on the git provider
+          example: .
+        git_default_branch:
+          type: string
+          description: The default branch, the service pulls in changes from this branch for policy evaluation
+          example: main
+        git_default_branch_commit_sha:
+          type: string
+          description: The commit sha of the commit that last effected the file in the default branch
+          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_default_branch_file_id:
+          type: string
+          description: The file id of the file in the default branch, may be empty for bitbucket files
+          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_default_branch_file_url:
+          type: string
+          description: The url of the file in the default branch
+          example: ''
+        git_default_branch_update_error:
+          $ref: '#/components/schemas/GitErrorResult'
+        git_default_branch_updated:
+          type: integer
+          description: The last time the service successfully pulled in changes from the default branch
+          example: 1636669297674
+          format: int64
+        git_file_id:
+          type: string
+          description: The file id of the file, may be empty for bitbucket files
+          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_file_url:
+          type: string
+          description: The url of the file on the fit provider
+          example: ''
+        git_path:
+          type: string
+          description: The path to the file in the git repo
+          example: .harness/policy.rego
+        git_repo:
+          type: string
+          description: The git repo the policy resides in
+          example: github.com/org/repo,omitempty
+        identifier:
+          type: string
+          description: identifier of the policy
+          example: policy-1
+          minLength: 1
+        name:
+          type: string
+          description: Name of the policy
+          example: Pipeline Approval
+          minLength: 1
+        org_id:
+          type: string
+          description: Harness organization ID associated with this policy
+          default: ''
+          example: test-org
+        parent_unique_id:
+          type: string
+          description: Parent unique identifier for the policy
+          example: Laborum reprehenderit aliquam voluptatem.
+        polciy_size_in_bytes:
+          type: integer
+          description: Size of the policy in bytes
+          example: 1710811858129014800
+          format: int64
+        policy_package_name:
+          type: string
+          description: Package name of the policy
+          example: Sequi blanditiis.
+        policy_set_count:
+          type: integer
+          description: Count of policy sets associated with this policy
+          example: 3
+          format: int64
+        project_id:
+          type: string
+          description: Harness project ID associated with this policy
+          default: ''
+          example: test-project
+        rego:
+          type: string
+          description: Rego that defines the policy
+          example: ''
+          minLength: 1
+        unique_id:
+          type: string
+          description: Unique identifier for the policy
+          example: Sit consequatur ea modi ullam a placeat.
+        updated:
+          type: integer
+          description: Time the policy was last updated
+          example: 1636669297674
+          format: int64
+      example:
+        account_id: eBqAoNchMLKigC_qZ5EdC
+        cache_response:
+          cache_state: STALE_CACHE
+          is_sync_enabled: true
+          last_updated_at: 1773917288158
+          ttl_left: 258234442
+        created: 1636669297674
+        git_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_connector_ref: .
+        git_default_branch: main
+        git_default_branch_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_default_branch_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_default_branch_file_url: ''
+        git_default_branch_update_error:
+          explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+          hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+          message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        git_default_branch_updated: 1636669297674
+        git_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+        git_file_url: ''
+        git_path: .harness/policy.rego
+        git_repo: github.com/org/repo,omitempty
+        identifier: policy-1
+        name: Pipeline Approval
+        org_id: test-org
+        parent_unique_id: Eius voluptates maxime.
+        polciy_size_in_bytes: 696467044857856100
+        policy_package_name: Dolorem tempore repellat.
+        policy_set_count: 3
+        project_id: test-project
+        rego: ''
+        unique_id: Molestiae numquam consequatur aut temporibus rerum.
+        updated: 1636669297674
+      required:
+      - identifier
+      - name
+      - rego
+      - created
+      - updated
+      - account_id
+      - org_id
+      - project_id
+    CreateRequestBody2:
       type: object
       properties:
         action:
@@ -8068,118 +8247,49 @@ components:
           type: boolean
           description: Only enabled policy sets are evaluated when evaluating by type/action
           example: true
-        entity_selector:
+        identifier:
           type: string
-          description: A string enum value which determines which entities the policy set applies to during evaluation. This feature is not available for all accounts, Contact support if you wish to have it enabled.
-          example: all_entities_in_scope
-          enum:
-          - all_entities_in_scope
-          - all_entities_in_resource_groups
-        infra_params:
-          $ref: '#/components/schemas/InfraParams'
-        infra_type:
-          type: string
-          description: Infrastructure type for executing policies on customer infrastructure. Use empty string or null to clear infrastructure configuration.
-          example: KubernetesDirect
+          description: Identifier for the policy set
+          example: policyset-1
+          minLength: 1
         name:
           type: string
           description: Name of the policy set
           example: Production Policies
-        policies:
-          type: array
-          items:
-            $ref: '#/components/schemas/Linkedpolicyidentifier'
-          description: Policies linked to this policy set
-          example:
-          - identifier: policy-1
-            severity: warning
-          - identifier: policy-1
-            severity: warning
-          - identifier: policy-1
-            severity: warning
-          - identifier: policy-1
-            severity: warning
-        resource_groups:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResourceGroupIdentifier'
-          description: Resource groups that contain the resources that this policy set should be evaluated for. Resource groups are not supported for flag or custom policy sets. This feature is not available for all accounts, Contact support if you wish to have it enabled.
-          example:
-          - account_id: Aperiam porro accusamus consequatur sapiente id sed.
-            identifier: Quia beatae aspernatur doloremque aspernatur.
-            org_id: Magnam non et.
-            project_id: Autem pariatur qui modi est.
-          - account_id: Aperiam porro accusamus consequatur sapiente id sed.
-            identifier: Quia beatae aspernatur doloremque aspernatur.
-            org_id: Magnam non et.
-            project_id: Autem pariatur qui modi est.
-          - account_id: Aperiam porro accusamus consequatur sapiente id sed.
-            identifier: Quia beatae aspernatur doloremque aspernatur.
-            org_id: Magnam non et.
-            project_id: Autem pariatur qui modi est.
+          minLength: 1
         type:
           type: string
           description: Type of input suitable for the policy set
           example: pipeline
+          minLength: 1
+        yaml_version:
+          type: string
+          description: Harness yaml version associated with this policySet
+          default: '0'
+          example: '0'
+          enum:
+          - '0'
+          - '1'
       example:
         action: onrun
         description: Captures critical production policies
         enabled: true
-        entity_selector: all_entities_in_scope
-        infra_params:
-          annotations:
-            Alias quos.: Omnis cupiditate cum.
-            Est omnis odio.: Rerum nesciunt saepe.
-            Magni deserunt ab.: Veritatis quo non rerum neque sapiente rerum.
-          connectorRef: account.k8s_connector
-          harnessImageConnectorRef: account.docker_connector
-          initTimeout: 10m
-          labels:
-            Excepturi quidem earum et cum eos.: Cum et est.
-            Tempora quam consequatur.: Aperiam quaerat veritatis qui nihil culpa.
-            Vel odio quo eius.: Nihil pariatur.
-          namespace: default
-          nodeSelector:
-            Omnis deleniti iusto dolor.: Alias esse.
-            Provident fugit molestiae harum.: Non eos.
-          os: linux
-          poolName: vm-pool-1
-          resources:
-            limits:
-              cpu: 100m
-              memory: 128Mi
-            requests:
-              cpu: 100m
-              memory: 128Mi
-        infra_type: KubernetesDirect
+        identifier: policyset-1
         name: Production Policies
-        policies:
-        - identifier: policy-1
-          severity: warning
-        - identifier: policy-1
-          severity: warning
-        - identifier: policy-1
-          severity: warning
-        - identifier: policy-1
-          severity: warning
-        resource_groups:
-        - account_id: Aperiam porro accusamus consequatur sapiente id sed.
-          identifier: Quia beatae aspernatur doloremque aspernatur.
-          org_id: Magnam non et.
-          project_id: Autem pariatur qui modi est.
-        - account_id: Aperiam porro accusamus consequatur sapiente id sed.
-          identifier: Quia beatae aspernatur doloremque aspernatur.
-          org_id: Magnam non et.
-          project_id: Autem pariatur qui modi est.
-        - account_id: Aperiam porro accusamus consequatur sapiente id sed.
-          identifier: Quia beatae aspernatur doloremque aspernatur.
-          org_id: Magnam non et.
-          project_id: Autem pariatur qui modi est.
-        - account_id: Aperiam porro accusamus consequatur sapiente id sed.
-          identifier: Quia beatae aspernatur doloremque aspernatur.
-          org_id: Magnam non et.
-          project_id: Autem pariatur qui modi est.
         type: pipeline
+        yaml_version: '0'
+      required:
+      - identifier
+      - name
+      - enabled
+      - type
+      - action
+      - created
+      - updated
+      - account_id
+      - org_id
+      - project_id
+      - entity_selector
     LinkedPolicy:
       type: object
       properties:
@@ -8506,163 +8616,6 @@ components:
       - rego
       - created
       - updated
-    PolicyManagementPolicy:
-      type: object
-      properties:
-        account_id:
-          type: string
-          description: Harness account ID associated with this policy
-          default: ''
-          example: eBqAoNchMLKigC_qZ5EdC
-        cache_response:
-          $ref: '#/components/schemas/CacheResponse'
-        created:
-          type: integer
-          description: Time the policy was created
-          example: 1636669297674
-          format: int64
-        git_commit_sha:
-          type: string
-          description: The commit sha of the commit that last effected the file
-          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-        git_connector_ref:
-          type: string
-          description: The harness connector used for authenticating on the git provider
-          example: .
-        git_default_branch:
-          type: string
-          description: The default branch, the service pulls in changes from this branch for policy evaluation
-          example: main
-        git_default_branch_commit_sha:
-          type: string
-          description: The commit sha of the commit that last effected the file in the default branch
-          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-        git_default_branch_file_id:
-          type: string
-          description: The file id of the file in the default branch, may be empty for bitbucket files
-          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-        git_default_branch_file_url:
-          type: string
-          description: The url of the file in the default branch
-          example: ''
-        git_default_branch_update_error:
-          $ref: '#/components/schemas/GitErrorResult'
-        git_default_branch_updated:
-          type: integer
-          description: The last time the service successfully pulled in changes from the default branch
-          example: 1636669297674
-          format: int64
-        git_file_id:
-          type: string
-          description: The file id of the file, may be empty for bitbucket files
-          example: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-        git_file_url:
-          type: string
-          description: The url of the file on the fit provider
-          example: ''
-        git_path:
-          type: string
-          description: The path to the file in the git repo
-          example: .harness/policy.rego
-        git_repo:
-          type: string
-          description: The git repo the policy resides in
-          example: github.com/org/repo,omitempty
-        identifier:
-          type: string
-          description: identifier of the policy
-          example: policy-1
-          minLength: 1
-        name:
-          type: string
-          description: Name of the policy
-          example: Pipeline Approval
-          minLength: 1
-        org_id:
-          type: string
-          description: Harness organization ID associated with this policy
-          default: ''
-          example: test-org
-        parent_unique_id:
-          type: string
-          description: Parent unique identifier for the policy
-          example: Laborum reprehenderit aliquam voluptatem.
-        polciy_size_in_bytes:
-          type: integer
-          description: Size of the policy in bytes
-          example: 1710811858129014800
-          format: int64
-        policy_package_name:
-          type: string
-          description: Package name of the policy
-          example: Sequi blanditiis.
-        policy_set_count:
-          type: integer
-          description: Count of policy sets associated with this policy
-          example: 3
-          format: int64
-        project_id:
-          type: string
-          description: Harness project ID associated with this policy
-          default: ''
-          example: test-project
-        rego:
-          type: string
-          description: Rego that defines the policy
-          example: ''
-          minLength: 1
-        unique_id:
-          type: string
-          description: Unique identifier for the policy
-          example: Sit consequatur ea modi ullam a placeat.
-        updated:
-          type: integer
-          description: Time the policy was last updated
-          example: 1636669297674
-          format: int64
-      example:
-        account_id: eBqAoNchMLKigC_qZ5EdC
-        cache_response:
-          cache_state: STALE_CACHE
-          is_sync_enabled: true
-          last_updated_at: 1773917288158
-          ttl_left: 258234442
-        created: 1636669297674
-        git_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-        git_connector_ref: .
-        git_default_branch: main
-        git_default_branch_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-        git_default_branch_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-        git_default_branch_file_url: ''
-        git_default_branch_update_error:
-          explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
-          hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-          message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-        git_default_branch_updated: 1636669297674
-        git_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-        git_file_url: ''
-        git_path: .harness/policy.rego
-        git_repo: github.com/org/repo,omitempty
-        identifier: policy-1
-        name: Pipeline Approval
-        org_id: test-org
-        parent_unique_id: Eius voluptates maxime.
-        polciy_size_in_bytes: 696467044857856100
-        policy_package_name: Dolorem tempore repellat.
-        policy_set_count: 3
-        project_id: test-project
-        rego: ''
-        unique_id: Molestiae numquam consequatur aut temporibus rerum.
-        updated: 1636669297674
-      required:
-      - identifier
-      - name
-      - rego
-      - created
-      - updated
-      - account_id
-      - org_id
-      - project_id
     InfraParams:
       type: object
       properties:
@@ -8748,52 +8701,7 @@ components:
           requests:
             cpu: 100m
             memory: 128Mi
-    ResourceLimits:
-      type: object
-      properties:
-        cpu:
-          type: string
-          description: CPU quantity
-          example: 100m
-        memory:
-          type: string
-          description: Memory quantity
-          example: 128Mi
-      description: CPU and memory quantities for container resources
-      example:
-        cpu: 100m
-        memory: 128Mi
-      required:
-      - cpu
-      - memory
-    CacheResponse:
-      type: object
-      properties:
-        cache_state:
-          type: string
-          description: Cache state (UNKNOWN_STATE, VALID_CACHE, STALE_CACHE)
-          example: STALE_CACHE
-        is_sync_enabled:
-          type: boolean
-          description: Whether sync is enabled for this resource
-          example: true
-        last_updated_at:
-          type: integer
-          description: Timestamp (millis) when cache was last updated
-          example: 1773917288158
-          format: int64
-        ttl_left:
-          type: integer
-          description: Remaining time-to-live in milliseconds
-          example: 258234442
-          format: int64
-      description: Cache metadata from GitX getFile RPC
-      example:
-        cache_state: STALE_CACHE
-        is_sync_enabled: true
-        last_updated_at: 1773917288158
-        ttl_left: 258234442
-    CreateRequestBody2:
+    UpdateRequestBody2:
       type: object
       properties:
         action:
@@ -8809,49 +8717,141 @@ components:
           type: boolean
           description: Only enabled policy sets are evaluated when evaluating by type/action
           example: true
-        identifier:
+        entity_selector:
           type: string
-          description: Identifier for the policy set
-          example: policyset-1
-          minLength: 1
+          description: A string enum value which determines which entities the policy set applies to during evaluation. This feature is not available for all accounts, Contact support if you wish to have it enabled.
+          example: all_entities_in_scope
+          enum:
+          - all_entities_in_scope
+          - all_entities_in_resource_groups
+        infra_params:
+          $ref: '#/components/schemas/InfraParams'
+        infra_type:
+          type: string
+          description: Infrastructure type for executing policies on customer infrastructure. Use empty string or null to clear infrastructure configuration.
+          example: KubernetesDirect
         name:
           type: string
           description: Name of the policy set
           example: Production Policies
-          minLength: 1
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Linkedpolicyidentifier'
+          description: Policies linked to this policy set
+          example:
+          - identifier: policy-1
+            severity: warning
+          - identifier: policy-1
+            severity: warning
+          - identifier: policy-1
+            severity: warning
+          - identifier: policy-1
+            severity: warning
+        resource_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceGroupIdentifier'
+          description: Resource groups that contain the resources that this policy set should be evaluated for. Resource groups are not supported for flag or custom policy sets. This feature is not available for all accounts, Contact support if you wish to have it enabled.
+          example:
+          - account_id: Aperiam porro accusamus consequatur sapiente id sed.
+            identifier: Quia beatae aspernatur doloremque aspernatur.
+            org_id: Magnam non et.
+            project_id: Autem pariatur qui modi est.
+          - account_id: Aperiam porro accusamus consequatur sapiente id sed.
+            identifier: Quia beatae aspernatur doloremque aspernatur.
+            org_id: Magnam non et.
+            project_id: Autem pariatur qui modi est.
+          - account_id: Aperiam porro accusamus consequatur sapiente id sed.
+            identifier: Quia beatae aspernatur doloremque aspernatur.
+            org_id: Magnam non et.
+            project_id: Autem pariatur qui modi est.
         type:
           type: string
           description: Type of input suitable for the policy set
           example: pipeline
-          minLength: 1
-        yaml_version:
-          type: string
-          description: Harness yaml version associated with this policySet
-          default: '0'
-          example: '0'
-          enum:
-          - '0'
-          - '1'
       example:
         action: onrun
         description: Captures critical production policies
         enabled: true
-        identifier: policyset-1
+        entity_selector: all_entities_in_scope
+        infra_params:
+          annotations:
+            Alias quos.: Omnis cupiditate cum.
+            Est omnis odio.: Rerum nesciunt saepe.
+            Magni deserunt ab.: Veritatis quo non rerum neque sapiente rerum.
+          connectorRef: account.k8s_connector
+          harnessImageConnectorRef: account.docker_connector
+          initTimeout: 10m
+          labels:
+            Excepturi quidem earum et cum eos.: Cum et est.
+            Tempora quam consequatur.: Aperiam quaerat veritatis qui nihil culpa.
+            Vel odio quo eius.: Nihil pariatur.
+          namespace: default
+          nodeSelector:
+            Omnis deleniti iusto dolor.: Alias esse.
+            Provident fugit molestiae harum.: Non eos.
+          os: linux
+          poolName: vm-pool-1
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+        infra_type: KubernetesDirect
         name: Production Policies
+        policies:
+        - identifier: policy-1
+          severity: warning
+        - identifier: policy-1
+          severity: warning
+        - identifier: policy-1
+          severity: warning
+        - identifier: policy-1
+          severity: warning
+        resource_groups:
+        - account_id: Aperiam porro accusamus consequatur sapiente id sed.
+          identifier: Quia beatae aspernatur doloremque aspernatur.
+          org_id: Magnam non et.
+          project_id: Autem pariatur qui modi est.
+        - account_id: Aperiam porro accusamus consequatur sapiente id sed.
+          identifier: Quia beatae aspernatur doloremque aspernatur.
+          org_id: Magnam non et.
+          project_id: Autem pariatur qui modi est.
+        - account_id: Aperiam porro accusamus consequatur sapiente id sed.
+          identifier: Quia beatae aspernatur doloremque aspernatur.
+          org_id: Magnam non et.
+          project_id: Autem pariatur qui modi est.
+        - account_id: Aperiam porro accusamus consequatur sapiente id sed.
+          identifier: Quia beatae aspernatur doloremque aspernatur.
+          org_id: Magnam non et.
+          project_id: Autem pariatur qui modi est.
         type: pipeline
-        yaml_version: '0'
+    GitErrorResult:
+      type: object
+      properties:
+        explanation:
+          type: string
+          description: the explanation of the error
+          example: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+        hint:
+          type: string
+          description: the hint on how to resolve the error
+          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        message:
+          type: string
+          description: the message is a human-readable explanation specific to this occurrence of the problem
+          example: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+      example:
+        explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+        hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+        message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
       required:
-      - identifier
-      - name
-      - enabled
-      - type
-      - action
-      - created
-      - updated
-      - account_id
-      - org_id
-      - project_id
-      - entity_selector
+      - message
+      - explanation
+      - hint
   securitySchemes:
     x-api-key:
       name: x-api-key

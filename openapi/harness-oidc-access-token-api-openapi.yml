@@ -239,65 +239,32 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOOidcWorkloadAccessTokenResponse'
 components:
   schemas:
-    OidcIdTokenCustomAttributesStructure:
-      required:
-      - account_id
+    OidcWorkloadAccessTokenResponse:
       type: object
       properties:
-        account_id:
+        access_token:
           type: string
-        organization_id:
+        issued_token_type:
           type: string
-        project_id:
+        token_type:
           type: string
-        pipeline_id:
-          type: string
-        environment_id:
-          type: string
-        environment_type:
-          type: string
-        connector_id:
-          type: string
-        connector_name:
-          type: string
-        service_id:
-          type: string
-        service_name:
-          type: string
-        triggered_by_name:
-          type: string
-        trigger_by_email:
-          type: string
-        stage_type:
-          type: string
-        step_type:
-          type: string
-        context:
-          type: string
-        artifact_id:
-          type: string
-        artifact_type:
-          type: string
-        artifact_name:
-          type: string
-        artifact_digest:
-          type: string
-        tag:
-          type: string
-        step_execution_id:
-          type: string
-        delegate_selectors:
-          type: string
-      description: This includes all the ID token custom attributes
-    AwsSdkRetryPolicySpec:
+        expires_in:
+          type: integer
+          format: int32
+    AzureOidcCredentialResponseDTO:
       type: object
       properties:
-        backOffStrategyType:
+        token_type:
           type: string
-        backOffStrategy:
-          $ref: '#/components/schemas/AwsSdkBackOffStrategySpec'
-      description: Retry policy for aws sdk calls
-    ResponseDTOOidcWorkloadAccessTokenResponse:
+        expires_in:
+          type: integer
+          format: int64
+        ext_expires_in:
+          type: integer
+          format: int64
+        access_token:
+          type: string
+    ResponseDTOGcpOidcServiceAccountAccessTokenResponse:
       type: object
       properties:
         status:
@@ -307,7 +274,7 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/OidcWorkloadAccessTokenResponse'
+          $ref: '#/components/schemas/GcpOidcServiceAccountAccessTokenResponse'
         metaData:
           type: object
         correlationId:
@@ -731,6 +698,21 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
+    ResponseDTOOidcWorkloadAccessTokenResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/OidcWorkloadAccessTokenResponse'
+        metaData:
+          type: object
+        correlationId:
+          type: string
     GcpOidcAccessTokenRequest:
       required:
       - gcpOidcTokenRequestDTO
@@ -743,35 +725,6 @@ components:
         gcpOidcTokenRequestDTO:
           $ref: '#/components/schemas/GcpOidcTokenRequest'
       description: This contains GCP OIDC Access Token request details
-    AzureOidcCredentialExchangeRequestDTO:
-      required:
-      - azureOidcTokenRequestDTO
-      - clientId
-      - tenantId
-      type: object
-      properties:
-        oidcToken:
-          type: string
-        tenantId:
-          type: string
-        clientId:
-          type: string
-        resource:
-          type: string
-        azureOidcTokenRequestDTO:
-          $ref: '#/components/schemas/AzureOidcTokenRequestDTO'
-        retryPolicy:
-          type: string
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    AwsSdkBackOffStrategySpec:
-      type: object
-      description: This contains AWS Sdk BackOff strategy spec
     ResponseMessage:
       type: object
       properties:
@@ -1362,7 +1315,10 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOAwsOidcCredentialResponseDto:
+    AwsSdkBackOffStrategySpec:
+      type: object
+      description: This contains AWS Sdk BackOff strategy spec
+    ResponseDTOAzureOidcCredentialResponseDTO:
       type: object
       properties:
         status:
@@ -1372,43 +1328,80 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/AwsOidcCredentialResponseDto'
+          $ref: '#/components/schemas/AzureOidcCredentialResponseDTO'
         metaData:
           type: object
         correlationId:
           type: string
-    AzureOidcCredentialResponseDTO:
-      type: object
-      properties:
-        token_type:
-          type: string
-        expires_in:
-          type: integer
-          format: int64
-        ext_expires_in:
-          type: integer
-          format: int64
-        access_token:
-          type: string
-    AwsOidcTokenRequest:
+    GcpOidcTokenRequest:
+      required:
+      - accountId
+      - gcpProjectId
+      - providerId
+      - workloadPoolId
       type: object
       properties:
         accountId:
           type: string
           description: This specifies the Harness Account Id
+        workloadPoolId:
+          type: string
+          description: This specifies the Workload Pool Id
+        providerId:
+          type: string
+          description: This specifies the OIDC ID Provider
+        gcpProjectId:
+          type: string
+          description: This specifies the GCP Project Id
+        serviceAccountEmail:
+          type: string
+          description: This specifies the GCP Service Account Email
         oidcIdTokenCustomAttributesStructure:
           $ref: '#/components/schemas/OidcIdTokenCustomAttributesStructure'
-        region:
+      description: This contains GCP OIDC Token request details
+    GcpOidcServiceAccountAccessTokenResponse:
+      type: object
+      properties:
+        accessToken:
           type: string
-          description: This specifies the Aws region
-        oidcSessionTagKeys:
-          uniqueItems: true
-          type: array
-          description: Set of field names to include as AWS session tags.
-          items:
-            type: string
-            description: Set of field names to include as AWS session tags.
-      description: This contains AWS OIDC Token request details
+        expireTime:
+          type: integer
+          format: int64
+    AwsOidcCredentialsRequest:
+      required:
+      - iamRoleArn
+      type: object
+      properties:
+        oidcIdToken:
+          type: string
+          description: The OIDC ID Token
+        iamRoleArn:
+          type: string
+          description: IAM Role ARN
+        retryPolicy:
+          $ref: '#/components/schemas/AwsSdkRetryPolicySpec'
+        awsOidcTokenRequestDto:
+          $ref: '#/components/schemas/AwsOidcTokenRequest'
+      description: This contains Aws OIDC Credentials request details
+    AzureOidcCredentialExchangeRequestDTO:
+      required:
+      - azureOidcTokenRequestDTO
+      - clientId
+      - tenantId
+      type: object
+      properties:
+        oidcToken:
+          type: string
+        tenantId:
+          type: string
+        clientId:
+          type: string
+        resource:
+          type: string
+        azureOidcTokenRequestDTO:
+          $ref: '#/components/schemas/AzureOidcTokenRequestDTO'
+        retryPolicy:
+          type: string
     Error1:
       type: object
       properties:
@@ -1832,7 +1825,7 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    ResponseDTOGcpOidcServiceAccountAccessTokenResponse:
+    ResponseDTOAwsOidcCredentialResponseDto:
       type: object
       properties:
         status:
@@ -1842,54 +1835,7 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/GcpOidcServiceAccountAccessTokenResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    GcpOidcServiceAccountAccessTokenResponse:
-      type: object
-      properties:
-        accessToken:
-          type: string
-        expireTime:
-          type: integer
-          format: int64
-    AwsOidcCredentialsRequest:
-      required:
-      - iamRoleArn
-      type: object
-      properties:
-        oidcIdToken:
-          type: string
-          description: The OIDC ID Token
-        iamRoleArn:
-          type: string
-          description: IAM Role ARN
-        retryPolicy:
-          $ref: '#/components/schemas/AwsSdkRetryPolicySpec'
-        awsOidcTokenRequestDto:
-          $ref: '#/components/schemas/AwsOidcTokenRequest'
-      description: This contains Aws OIDC Credentials request details
-    ResponseDTOAzureOidcCredentialResponseDTO:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/AzureOidcCredentialResponseDTO'
+          $ref: '#/components/schemas/AwsOidcCredentialResponseDto'
         metaData:
           type: object
         correlationId:
@@ -1913,32 +1859,6 @@ components:
           type: string
         oidcIdTokenCustomAttributesStructure:
           $ref: '#/components/schemas/OidcIdTokenCustomAttributesStructure'
-    GcpOidcTokenRequest:
-      required:
-      - accountId
-      - gcpProjectId
-      - providerId
-      - workloadPoolId
-      type: object
-      properties:
-        accountId:
-          type: string
-          description: This specifies the Harness Account Id
-        workloadPoolId:
-          type: string
-          description: This specifies the Workload Pool Id
-        providerId:
-          type: string
-          description: This specifies the OIDC ID Provider
-        gcpProjectId:
-          type: string
-          description: This specifies the GCP Project Id
-        serviceAccountEmail:
-          type: string
-          description: This specifies the GCP Service Account Email
-        oidcIdTokenCustomAttributesStructure:
-          $ref: '#/components/schemas/OidcIdTokenCustomAttributesStructure'
-      description: This contains GCP OIDC Token request details
     AwsOidcCredentialResponseDto:
       type: object
       properties:
@@ -1948,18 +1868,98 @@ components:
           type: string
         session_token:
           type: string
-    OidcWorkloadAccessTokenResponse:
+    AwsOidcTokenRequest:
       type: object
       properties:
-        access_token:
+        accountId:
           type: string
-        issued_token_type:
+          description: This specifies the Harness Account Id
+        oidcIdTokenCustomAttributesStructure:
+          $ref: '#/components/schemas/OidcIdTokenCustomAttributesStructure'
+        region:
           type: string
-        token_type:
+          description: This specifies the Aws region
+        oidcSessionTagKeys:
+          uniqueItems: true
+          type: array
+          description: Set of field names to include as AWS session tags.
+          items:
+            type: string
+            description: Set of field names to include as AWS session tags.
+      description: This contains AWS OIDC Token request details
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
           type: string
-        expires_in:
-          type: integer
-          format: int32
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    OidcIdTokenCustomAttributesStructure:
+      required:
+      - account_id
+      type: object
+      properties:
+        account_id:
+          type: string
+        organization_id:
+          type: string
+        project_id:
+          type: string
+        pipeline_id:
+          type: string
+        environment_id:
+          type: string
+        environment_type:
+          type: string
+        connector_id:
+          type: string
+        connector_name:
+          type: string
+        service_id:
+          type: string
+        service_name:
+          type: string
+        triggered_by_name:
+          type: string
+        trigger_by_email:
+          type: string
+        stage_type:
+          type: string
+        step_type:
+          type: string
+        context:
+          type: string
+        artifact_id:
+          type: string
+        artifact_type:
+          type: string
+        artifact_name:
+          type: string
+        artifact_digest:
+          type: string
+        tag:
+          type: string
+        step_execution_id:
+          type: string
+        delegate_selectors:
+          type: string
+      description: This includes all the ID token custom attributes
+    AwsSdkRetryPolicySpec:
+      type: object
+      properties:
+        backOffStrategyType:
+          type: string
+        backOffStrategy:
+          $ref: '#/components/schemas/AwsSdkBackOffStrategySpec'
+      description: Retry policy for aws sdk calls
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -175,6 +175,41 @@ paths:
         id: uwxyv5tgwu2w9
 components:
   parameters:
+    DbOpsSort:
+      description: Parameter on the basis of which sorting is done.
+      in: query
+      name: sort
+      schema:
+        default: created
+        enum:
+        - name
+        - updated
+        - created
+        type: string
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    DbOpsOrder:
+      description: Order on the basis of which sorting is done.
+      in: query
+      name: order
+      schema:
+        default: DESC
+        enum:
+        - ASC
+        - DESC
+        type: string
     DbOpsPageIndex:
       description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
       in: query
@@ -183,13 +218,11 @@ components:
         default: 0
         format: int64
         type: integer
-    DBSchemaParam:
-      description: Identifier of the database schema
-      in: path
-      name: dbschema
-      required: true
+    DbOpsAccountHeader:
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+      in: header
+      name: Harness-Account
       schema:
-        maxLength: 128
         type: string
     DbOpsLimit:
       description: 'Pagination: Number of items to return.'
@@ -199,12 +232,13 @@ components:
         default: 10
         maximum: 100
         type: integer
-    OrgParam:
-      description: Organization identifier
+    DBSchemaParam:
+      description: Identifier of the database schema
       in: path
-      name: org
+      name: dbschema
       required: true
       schema:
+        maxLength: 128
         type: string
     DbOpsSearchTerm:
       allowEmptyValue: true
@@ -220,110 +254,7 @@ components:
       required: true
       schema:
         type: string
-    DbOpsOrder:
-      description: Order on the basis of which sorting is done.
-      in: query
-      name: order
-      schema:
-        default: DESC
-        enum:
-        - ASC
-        - DESC
-        type: string
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
-    DbOpsSort:
-      description: Parameter on the basis of which sorting is done.
-      in: query
-      name: sort
-      schema:
-        default: created
-        enum:
-        - name
-        - updated
-        - created
-        type: string
-    DbOpsAccountHeader:
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-      in: header
-      name: Harness-Account
-      schema:
-        type: string
   schemas:
-    DBInstanceIn:
-      description: Database Instance Request
-      properties:
-        branch:
-          description: 'branch where the instance is stored
-
-            '
-          example: main
-          type: string
-        commitSha:
-          description: 'Commit SHA to pin the changelog to a specific revision.
-
-            Mutually exclusive with branch and gitTag. Supports Harness expressions (e.g. <+trigger.commitSha>).
-
-            '
-          example: abc123def456
-          type: string
-        connector:
-          description: DB Connector
-          example: postgres-connector
-          minLength: 1
-          type: string
-        context:
-          description: Liquibase context
-          type: string
-        gitTag:
-          description: 'Git tag to pin the changelog to a specific tagged revision.
-
-            Mutually exclusive with branch and commitSha. Supports Harness expressions (e.g. <+trigger.tag>).
-
-            '
-          example: v1.2.0
-          type: string
-        identifier:
-          description: identifier of the database instance
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          type: string
-          x-oapi-codegen-extra-tags:
-            validate: required,max=128
-        name:
-          description: name of the database instance
-          type: string
-          x-oapi-codegen-extra-tags:
-            validate: required,max=128
-        substituteProperties:
-          additionalProperties:
-            type: string
-            x-stoplight:
-              id: 8g5d3lui6rlrl
-          description: Placeholder replacement in migration scripts.
-          type: object
-          x-stoplight:
-            id: 2rirfvmokq6r8
-        tags:
-          additionalProperties:
-            type: string
-            x-oapi-codegen-extra-tags:
-              validate: max=128
-          description: tags attached to the database instance
-          maxProperties: 128
-          type: object
-          x-go-type-skip-optional-pointer: true
-      required:
-      - identifier
-      - connector
-      title: Database Instance Request
-      type: object
-      x-stoplight:
-        id: 1li73zi9bs5oi
     DbOpsError:
       description: Error Response
       properties:
@@ -336,51 +267,25 @@ components:
       type: object
       x-stoplight:
         id: 61cwtgnps2mpt
-    DefaultAuthoringInstanceOut:
-      description: Minimal instance information for LLM change authoring auto-selection
+    DbOpsNGTag:
+      description: 'ng tag with key and value '
       properties:
-        connector:
-          description: Connector identifier (JDBC connector) linked to this instance
+        key:
           type: string
-        hasSnapshot:
-          description: Whether this instance has a metadata snapshot available for LLM authoring
-          type: boolean
-        identifier:
-          description: Identifier of the selected database instance
-          type: string
-        name:
-          description: Display name of the selected database instance
-          type: string
+          x-stoplight:
+            id: t2goca5st7qs2
+        value:
+          type:
+          - string
+          - 'null'
+          x-stoplight:
+            id: 2mwjdtx5vmiqo
       required:
-      - identifier
-      - name
-      - hasSnapshot
-      - connector
-      title: Default Authoring Instance Response
-      type: object
-    DBInstanceFilterIn:
-      description: DB Instance Filter Request
-      properties:
-        filterType:
-          default: Equals
-          description: 'filter criteria type. Example: Equals, NotEquals'
-          enum:
-          - Equals
-          - NotEquals
-          type: string
-          x-stoplight:
-            id: wh3jb1x9a4mvl
-        instanceTags:
-          description: an array on db instance key value pairs used against the filter
-          items:
-            $ref: '#/components/schemas/DbOpsNGTag'
-          type: array
-          x-stoplight:
-            id: y26ejs0un3e5p
-      title: DBInstanceFilterIn
+      - key
+      title: NGTag
       type: object
       x-stoplight:
-        id: pqeg3xqjy34f4
+        id: k8zieexitrnwq
     DBInstanceOut:
       description: Database Instance Response
       properties:
@@ -458,56 +363,121 @@ components:
       type: object
       x-stoplight:
         id: qcmn5nllz3a1z
-    DbOpsNGTag:
-      description: 'ng tag with key and value '
+    DBInstanceFilterIn:
+      description: DB Instance Filter Request
       properties:
-        key:
+        filterType:
+          default: Equals
+          description: 'filter criteria type. Example: Equals, NotEquals'
+          enum:
+          - Equals
+          - NotEquals
           type: string
           x-stoplight:
-            id: t2goca5st7qs2
-        value:
-          type:
-          - string
-          - 'null'
+            id: wh3jb1x9a4mvl
+        instanceTags:
+          description: an array on db instance key value pairs used against the filter
+          items:
+            $ref: '#/components/schemas/DbOpsNGTag'
+          type: array
           x-stoplight:
-            id: 2mwjdtx5vmiqo
-      required:
-      - key
-      title: NGTag
+            id: y26ejs0un3e5p
+      title: DBInstanceFilterIn
       type: object
       x-stoplight:
-        id: k8zieexitrnwq
-  requestBodies:
-    DBInstanceCreateRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DBInstanceIn'
-      required: true
-    DBInstanceFilterRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DBInstanceFilterIn'
+        id: pqeg3xqjy34f4
+    DBInstanceIn:
+      description: Database Instance Request
+      properties:
+        branch:
+          description: 'branch where the instance is stored
+
+            '
+          example: main
+          type: string
+        commitSha:
+          description: 'Commit SHA to pin the changelog to a specific revision.
+
+            Mutually exclusive with branch and gitTag. Supports Harness expressions (e.g. <+trigger.commitSha>).
+
+            '
+          example: abc123def456
+          type: string
+        connector:
+          description: DB Connector
+          example: postgres-connector
+          minLength: 1
+          type: string
+        context:
+          description: Liquibase context
+          type: string
+        gitTag:
+          description: 'Git tag to pin the changelog to a specific tagged revision.
+
+            Mutually exclusive with branch and commitSha. Supports Harness expressions (e.g. <+trigger.tag>).
+
+            '
+          example: v1.2.0
+          type: string
+        identifier:
+          description: identifier of the database instance
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: required,max=128
+        name:
+          description: name of the database instance
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: required,max=128
+        substituteProperties:
+          additionalProperties:
+            type: string
+            x-stoplight:
+              id: 8g5d3lui6rlrl
+          description: Placeholder replacement in migration scripts.
+          type: object
+          x-stoplight:
+            id: 2rirfvmokq6r8
+        tags:
+          additionalProperties:
+            type: string
+            x-oapi-codegen-extra-tags:
+              validate: max=128
+          description: tags attached to the database instance
+          maxProperties: 128
+          type: object
+          x-go-type-skip-optional-pointer: true
+      required:
+      - identifier
+      - connector
+      title: Database Instance Request
+      type: object
+      x-stoplight:
+        id: 1li73zi9bs5oi
+    DefaultAuthoringInstanceOut:
+      description: Minimal instance information for LLM change authoring auto-selection
+      properties:
+        connector:
+          description: Connector identifier (JDBC connector) linked to this instance
+          type: string
+        hasSnapshot:
+          description: Whether this instance has a metadata snapshot available for LLM authoring
+          type: boolean
+        identifier:
+          description: Identifier of the selected database instance
+          type: string
+        name:
+          description: Display name of the selected database instance
+          type: string
+      required:
+      - identifier
+      - name
+      - hasSnapshot
+      - connector
+      title: Default Authoring Instance Response
+      type: object
   responses:
-    DefaultAuthoringInstanceResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DefaultAuthoringInstanceOut'
-      description: Response body for default authoring instance
-    DBInstanceResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DBInstanceOut'
-      description: Response body for Database Instance
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
     DBInstanceListResponse:
       content:
         application/json:
@@ -530,6 +500,36 @@ components:
           description: Total number of elements returned in Paginated response.
           schema:
             type: integer
+    DefaultAuthoringInstanceResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultAuthoringInstanceOut'
+      description: Response body for default authoring instance
+    DBInstanceResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DBInstanceOut'
+      description: Response body for Database Instance
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
+  requestBodies:
+    DBInstanceCreateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DBInstanceIn'
+      required: true
+    DBInstanceFilterRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DBInstanceFilterIn'
   securitySchemes:
     x-api-key:
       name: x-api-key

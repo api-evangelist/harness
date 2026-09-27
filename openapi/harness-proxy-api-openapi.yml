@@ -148,6 +148,62 @@ paths:
       tags:
       - Proxy
 components:
+  parameters:
+    pageNumber:
+      description: PageNumber
+      in: query
+      name: pageNumber
+      schema:
+        type: integer
+    proxyKeySortByField:
+      description: SortByField
+      in: query
+      name: sortByField
+      schema:
+        enum:
+        - name
+        - createdAt
+        - updatedAt
+        type: string
+    accountQueryParam:
+      description: Account Identifier
+      examples:
+        default:
+          value: default
+      in: query
+      name: accountIdentifier
+      required: true
+      schema:
+        type: string
+    sortOrder:
+      description: SortOrder
+      in: query
+      name: sortOrder
+      schema:
+        enum:
+        - ASCENDING
+        - DESCENDING
+        type: string
+    pageSize:
+      description: PageSize
+      in: query
+      name: pageSize
+      schema:
+        type: integer
+    nameQueryParam:
+      allowEmptyValue: true
+      description: Name of the field
+      in: query
+      name: name
+      schema:
+        type: string
+    identifier:
+      description: Unique identifier for the object in the API.
+      in: path
+      name: identifier
+      required: true
+      schema:
+        type: string
   responses:
     Conflict:
       content:
@@ -155,6 +211,46 @@ components:
           schema:
             $ref: '#/components/schemas/CfError'
       description: The specified resource already exists
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Unauthorized
+    ProxyKeysResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProxyKeys'
+      description: OK
+    ProxyKeysCreateResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              key:
+                example: 0202f58b-d670-44ef-bd1f-323a48c28004
+                type: string
+            type: object
+      description: Created
+    NotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: The specified resource was not found
+    InternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Internal server error
+    GitSyncError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: An error with git syncing
     BadRequest:
       content:
         application/json:
@@ -167,40 +263,6 @@ components:
           schema:
             $ref: '#/components/schemas/CfError'
       description: Unauthenticated
-    ProxyKeysCreateResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              key:
-                example: 0202f58b-d670-44ef-bd1f-323a48c28004
-                type: string
-            type: object
-      description: Created
-    ProxyKeysResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ProxyKeys'
-      description: OK
-    GitSyncError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: An error with git syncing
-    Unauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Unauthorized
-    InternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Internal server error
     ProxyKeyResponse:
       content:
         application/json:
@@ -289,57 +351,7 @@ components:
             - organizations
             type: object
       description: OK
-    NotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: The specified resource was not found
   schemas:
-    ProxyKeyProject:
-      properties:
-        environments:
-          items:
-            type: string
-          type: array
-        scope:
-          enum:
-          - all
-          - prod
-          - non-prod
-          - selected
-          type: string
-      required:
-      - scope
-      type: object
-    Pagination:
-      properties:
-        itemCount:
-          description: The total number of items
-          example: 1
-          type: integer
-        pageCount:
-          description: The total number of pages
-          example: 100
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
-        version:
-          description: The version of this object.  The version will be incremented each time the object is modified
-          example: 5
-          type: integer
-      required:
-      - pageCount
-      - itemCount
-      - pageSize
-      - pageIndex
-      type: object
     ProxyKeyInstruction:
       description: A Proxy Key instruction
       properties:
@@ -387,6 +399,10 @@ components:
               type: string
           type: object
       type: object
+    OrganizationDictionary:
+      additionalProperties:
+        $ref: '#/components/schemas/ProjectDictionary'
+      type: object
     ProjectDictionary:
       properties:
         projects:
@@ -420,6 +436,22 @@ components:
       required:
       - code
       - message
+      type: object
+    ProxyKeyProject:
+      properties:
+        environments:
+          items:
+            type: string
+          type: array
+        scope:
+          enum:
+          - all
+          - prod
+          - non-prod
+          - selected
+          type: string
+      required:
+      - scope
       type: object
     ProxyKey:
       properties:
@@ -455,66 +487,34 @@ components:
       - createdAt
       - updatedAt
       type: object
-    OrganizationDictionary:
-      additionalProperties:
-        $ref: '#/components/schemas/ProjectDictionary'
+    Pagination:
+      properties:
+        itemCount:
+          description: The total number of items
+          example: 1
+          type: integer
+        pageCount:
+          description: The total number of pages
+          example: 100
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+        version:
+          description: The version of this object.  The version will be incremented each time the object is modified
+          example: 5
+          type: integer
+      required:
+      - pageCount
+      - itemCount
+      - pageSize
+      - pageIndex
       type: object
-  parameters:
-    accountQueryParam:
-      description: Account Identifier
-      examples:
-        default:
-          value: default
-      in: query
-      name: accountIdentifier
-      required: true
-      schema:
-        type: string
-    pageSize:
-      description: PageSize
-      in: query
-      name: pageSize
-      schema:
-        type: integer
-    sortOrder:
-      description: SortOrder
-      in: query
-      name: sortOrder
-      schema:
-        enum:
-        - ASCENDING
-        - DESCENDING
-        type: string
-    nameQueryParam:
-      allowEmptyValue: true
-      description: Name of the field
-      in: query
-      name: name
-      schema:
-        type: string
-    proxyKeySortByField:
-      description: SortByField
-      in: query
-      name: sortByField
-      schema:
-        enum:
-        - name
-        - createdAt
-        - updatedAt
-        type: string
-    identifier:
-      description: Unique identifier for the object in the API.
-      in: path
-      name: identifier
-      required: true
-      schema:
-        type: string
-    pageNumber:
-      description: PageNumber
-      in: query
-      name: pageNumber
-      schema:
-        type: integer
   requestBodies:
     ProxyKeysPatchRequest:
       content:

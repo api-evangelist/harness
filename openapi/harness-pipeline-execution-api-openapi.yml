@@ -453,6 +453,49 @@ paths:
     - url: https://app.harness.io/gateway
       description: Harness SaaS Production
 components:
+  parameters:
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    ExecutionIdParam:
+      name: execution-id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Pipeline Execution identifier
+    AccountHeader4:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    PipelineParam:
+      name: pipeline
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Pipeline identifier
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    Branch:
+      name: branch_name
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Name of the branch (for Git Experience).
   responses:
     PipelineExecuteResponseBody:
       description: Example response
@@ -467,65 +510,6 @@ components:
           schema:
             $ref: '#/components/schemas/StageExecutionResponseList'
   schemas:
-    DynamicPipelineExecuteRequestBody:
-      title: DynamicPipelineExecuteRequestBody
-      type: object
-      description: Please provide input Pipeline YAML, which needs to be executed.
-      properties:
-        yaml:
-          type: string
-      x-examples:
-        Example 1:
-          yaml: "pipeline:\n  identifier: Dynamic_pipeline\n  stages:\n    - stage:\n        identifier: stage1\n        type: Custom\n        spec:\n          execution:\n            steps:\n              - step:\n                  identifier: Wait_1\n                  type: Wait\n                  spec:\n                    duration: 10s\n"
-      x-stoplight:
-        id: nyqjsupsodd94
-    PipelineExecuteResponseBody:
-      title: PipelineExecuteResponseBody
-      x-stoplight:
-        id: zxuefpr014jtf
-      type: object
-      properties:
-        execution_details:
-          $ref: '#/components/schemas/ExecutionDetails'
-    RunStageRequestBody:
-      title: RunStageRequestBody
-      x-stoplight:
-        id: h8mxoegrz962h
-      type: object
-      description: Request Parameters needed to run specific Stages of a Pipeline.
-      properties:
-        inputs_yaml:
-          type: string
-          x-stoplight:
-            id: x5gp39vwvsfqa
-          description: Inputs yaml of the Pipeline.
-        stage_identifiers:
-          type: array
-          x-stoplight:
-            id: k07ndws6g4c06
-          description: List of stages to run.
-          items:
-            x-stoplight:
-              id: 15rh571azguqa
-            type: string
-        expression_values:
-          type: object
-          additionalProperties:
-            type: string
-          x-stoplight:
-            id: nu0wje2ij62n4
-          description: If any selected stage to execute has expressions, then this map contains expressions with its corresponding values.
-    RerunPipelineRequest:
-      title: RerunPipelineRequest
-      x-stoplight:
-        id: sybat01ihsx1t
-      type: object
-      properties:
-        inputs_yaml:
-          type: string
-          x-stoplight:
-            id: bt7mcmrltbaed
-          description: Inputs YAML if the pipeline contains runtime inputs. This will be empty by default if pipeline does not contains runtime inputs
     StageExecutionResponseBody:
       title: StageExecutionResponseBody
       x-stoplight:
@@ -562,14 +546,18 @@ components:
             x-stoplight:
               id: 11db0z1kb8mef
             type: string
-    StageExecutionResponseList:
-      title: StageExecutionResponseList
+    DynamicPipelineExecuteRequestBody:
+      title: DynamicPipelineExecuteRequestBody
+      type: object
+      description: Please provide input Pipeline YAML, which needs to be executed.
+      properties:
+        yaml:
+          type: string
+      x-examples:
+        Example 1:
+          yaml: "pipeline:\n  identifier: Dynamic_pipeline\n  stages:\n    - stage:\n        identifier: stage1\n        type: Custom\n        spec:\n          execution:\n            steps:\n              - step:\n                  identifier: Wait_1\n                  type: Wait\n                  spec:\n                    duration: 10s\n"
       x-stoplight:
-        id: jpq696fbwhqrc
-      type: array
-      items:
-        $ref: '#/components/schemas/StageExecutionResponseBody'
-      x-internal: true
+        id: nyqjsupsodd94
     PipelineExecuteRequestBody:
       title: PipelineExecuteRequestBody
       x-stoplight:
@@ -584,6 +572,14 @@ components:
       x-examples:
         Example 1:
           inputs_yaml: "pipeline:\n  identifier: pipelineIdentifier\n  stages:\n    - stage:\n        identifier: stage1\n        type: Custom\n        spec:\n          execution:\n            steps:\n              - step:\n                  identifier: ShellScript_1\n                  type: ShellScript\n                  spec:\n                    source:\n                      type: Inline\n                      spec:\n                        script: echo hello\n                  timeout: 10s"
+    StageExecutionResponseList:
+      title: StageExecutionResponseList
+      x-stoplight:
+        id: jpq696fbwhqrc
+      type: array
+      items:
+        $ref: '#/components/schemas/StageExecutionResponseBody'
+      x-internal: true
     ExecutionDetails:
       title: ExecutionDetails
       x-stoplight:
@@ -598,6 +594,62 @@ components:
           type: string
           x-stoplight:
             id: jqvvn4fj1nrdd
+    RunStageRequestBody:
+      title: RunStageRequestBody
+      x-stoplight:
+        id: h8mxoegrz962h
+      type: object
+      description: Request Parameters needed to run specific Stages of a Pipeline.
+      properties:
+        inputs_yaml:
+          type: string
+          x-stoplight:
+            id: x5gp39vwvsfqa
+          description: Inputs yaml of the Pipeline.
+        stage_identifiers:
+          type: array
+          x-stoplight:
+            id: k07ndws6g4c06
+          description: List of stages to run.
+          items:
+            x-stoplight:
+              id: 15rh571azguqa
+            type: string
+        expression_values:
+          type: object
+          additionalProperties:
+            type: string
+          x-stoplight:
+            id: nu0wje2ij62n4
+          description: If any selected stage to execute has expressions, then this map contains expressions with its corresponding values.
+    PipelineExecuteResponseBody:
+      title: PipelineExecuteResponseBody
+      x-stoplight:
+        id: zxuefpr014jtf
+      type: object
+      properties:
+        execution_details:
+          $ref: '#/components/schemas/ExecutionDetails'
+    RerunPipelineRequest:
+      title: RerunPipelineRequest
+      x-stoplight:
+        id: sybat01ihsx1t
+      type: object
+      properties:
+        inputs_yaml:
+          type: string
+          x-stoplight:
+            id: bt7mcmrltbaed
+          description: Inputs YAML if the pipeline contains runtime inputs. This will be empty by default if pipeline does not contains runtime inputs
+    PipelineExecutionRequest:
+      type: object
+      description: Request to execute a pipeline.
+      properties:
+        inputSetReferences:
+          type: array
+          items:
+            type: string
+          description: Input set references for the execution.
     PipelineExecution:
       type: object
       description: A pipeline execution.
@@ -617,64 +669,18 @@ components:
                 status:
                   type: string
                   example: RUNNING
-    PipelineExecutionRequest:
-      type: object
-      description: Request to execute a pipeline.
-      properties:
-        inputSetReferences:
-          type: array
-          items:
-            type: string
-          description: Input set references for the execution.
-  parameters:
-    Branch:
-      name: branch_name
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Name of the branch (for Git Experience).
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
-    AccountHeader4:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    ExecutionIdParam:
-      name: execution-id
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Pipeline Execution identifier
-    PipelineParam:
-      name: pipeline
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Pipeline identifier
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
   requestBodies:
     RunStageRequestBody:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/RunStageRequestBody'
+    DynamicPipelineExecuteRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DynamicPipelineExecuteRequestBody'
+      description: ''
     PipelineExecuteRequestBody:
       content:
         application/json:
@@ -685,12 +691,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RerunPipelineRequest'
-    DynamicPipelineExecuteRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DynamicPipelineExecuteRequestBody'
-      description: ''
   securitySchemes:
     x-api-key:
       name: x-api-key

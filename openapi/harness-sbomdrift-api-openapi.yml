@@ -150,46 +150,19 @@ paths:
         name: search_term
         description: Search for licenses by name.
 components:
-  parameters:
-    Page2:
-      name: page
-      in: query
-      required: false
+  headers:
+    X-Total-Elements:
       schema:
         type: integer
-        default: 0
-        minimum: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Limit6:
-      name: limit
-      in: query
+      description: Total number of elements returned in Paginated response.
+    X-Page-Size:
       schema:
         type: integer
-        default: 30
-        maximum: 1000
-        minimum: 1
-      description: Number of items to return per page.
-    OrgParam1:
-      name: org
-      in: path
-      required: true
+      description: Maximum page size in Paginated response.
+    X-Page-Number:
       schema:
-        type: string
-      description: Harness organization ID
-    AccountHeader6:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    ProjectParam1:
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness project ID
-      name: project
+        type: integer
+      description: Page number in Paginated response.
   schemas:
     LicenseDriftSummary:
       title: LicenseDriftSummary
@@ -217,6 +190,26 @@ components:
       - added
       - deleted
       description: Provides License Drift Summary
+    ArtifactSbomDriftRequestBody:
+      title: ArtifactSbomDriftRequestBody
+      x-stoplight:
+        id: n0v1tljx2yttx
+      type: object
+      properties:
+        tag:
+          type: string
+          x-stoplight:
+            id: sl8ssim1u8uk5
+          description: Tag on which drift has to be calculated
+        base_tag:
+          type: string
+          x-stoplight:
+            id: i4g6dfh1vcksu
+          description: Base tag to calculate drift from
+      required:
+      - tag
+      - base_tag
+      description: Request body for caclulating drift between 2 versions of artifact
     ComponentSummary:
       type: object
       x-examples:
@@ -262,6 +255,72 @@ components:
             $ref: '#/components/schemas/LayerType'
       x-stoplight:
         id: ml8xhgivh3dyk
+    ComponentDriftSummary:
+      title: ComponentDriftSummary
+      x-stoplight:
+        id: b32uzhtuywe2w
+      type: object
+      description: Component drift summary
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: hxyal6jm7n1op
+          description: Total number of component drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: r0v4mbai7xjnj
+          description: Number of components added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: cloho1oa3yqwg
+          description: Number of components deleted.
+        modified:
+          type: integer
+          x-stoplight:
+            id: eg71m292ud719
+          description: Number of components modified.
+      required:
+      - total
+      - added
+      - deleted
+      - modified
+    ComponentDrift:
+      type: object
+      x-examples:
+        Example 1:
+          status: ADDED / MODIFIED / DELETED
+          old_component:
+            package_name: string
+            package_version: string
+            package_supplier: string
+            package_manager: string
+            purl: string
+            package_license: string
+          new_component:
+            package_name: string
+            package_version: string
+            package_supplier: string
+            package_manager: string
+            purl: string
+            package_license: string
+      title: Component Drift
+      description: Compnent Drift model
+      properties:
+        status:
+          enum:
+          - modified
+          - added
+          - deleted
+          description: Provides status of component whether it got added, deleted or modified
+        old_component:
+          $ref: '#/components/schemas/ComponentSummary'
+        new_component:
+          $ref: '#/components/schemas/ComponentSummary'
+      x-stoplight:
+        id: uy3wrdn73yshg
     ArtifactSbomDriftResponse:
       title: ArtifactSbomDriftResponse
       x-stoplight:
@@ -304,26 +363,14 @@ components:
           $ref: '#/components/schemas/ComponentDriftSummary'
         license_drift_summary:
           $ref: '#/components/schemas/LicenseDriftSummary'
-    ArtifactSbomDriftRequestBody:
-      title: ArtifactSbomDriftRequestBody
+    LayerType:
+      title: LayerType
+      enum:
+      - BASE
+      - APP
+      - DISTRO
       x-stoplight:
-        id: n0v1tljx2yttx
-      type: object
-      properties:
-        tag:
-          type: string
-          x-stoplight:
-            id: sl8ssim1u8uk5
-          description: Tag on which drift has to be calculated
-        base_tag:
-          type: string
-          x-stoplight:
-            id: i4g6dfh1vcksu
-          description: Base tag to calculate drift from
-      required:
-      - tag
-      - base_tag
-      description: Request body for caclulating drift between 2 versions of artifact
+        id: 151c5cf8ekave
     LicenseDrift:
       title: LicenseDrift
       x-stoplight:
@@ -351,96 +398,7 @@ components:
           items:
             $ref: '#/components/schemas/ComponentSummary'
       description: Element of license drift
-    LayerType:
-      title: LayerType
-      enum:
-      - BASE
-      - APP
-      - DISTRO
-      x-stoplight:
-        id: 151c5cf8ekave
-    ComponentDrift:
-      type: object
-      x-examples:
-        Example 1:
-          status: ADDED / MODIFIED / DELETED
-          old_component:
-            package_name: string
-            package_version: string
-            package_supplier: string
-            package_manager: string
-            purl: string
-            package_license: string
-          new_component:
-            package_name: string
-            package_version: string
-            package_supplier: string
-            package_manager: string
-            purl: string
-            package_license: string
-      title: Component Drift
-      description: Compnent Drift model
-      properties:
-        status:
-          enum:
-          - modified
-          - added
-          - deleted
-          description: Provides status of component whether it got added, deleted or modified
-        old_component:
-          $ref: '#/components/schemas/ComponentSummary'
-        new_component:
-          $ref: '#/components/schemas/ComponentSummary'
-      x-stoplight:
-        id: uy3wrdn73yshg
-    ComponentDriftSummary:
-      title: ComponentDriftSummary
-      x-stoplight:
-        id: b32uzhtuywe2w
-      type: object
-      description: Component drift summary
-      properties:
-        total:
-          type: integer
-          x-stoplight:
-            id: hxyal6jm7n1op
-          description: Total number of component drifts.
-        added:
-          type: integer
-          x-stoplight:
-            id: r0v4mbai7xjnj
-          description: Number of components added.
-        deleted:
-          type: integer
-          x-stoplight:
-            id: cloho1oa3yqwg
-          description: Number of components deleted.
-        modified:
-          type: integer
-          x-stoplight:
-            id: eg71m292ud719
-          description: Number of components modified.
-      required:
-      - total
-      - added
-      - deleted
-      - modified
   responses:
-    ComponentDriftResponseBody:
-      description: Component Drift Response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ComponentDrift'
-      headers:
-        X-Total-Elements:
-          $ref: '#/components/headers/X-Total-Elements'
-        X-Page-Number:
-          $ref: '#/components/headers/X-Page-Number'
-        X-Page-Size:
-          $ref: '#/components/headers/X-Page-Size'
     LicenseDriftResponseBody:
       description: List of license drifts.
       content:
@@ -456,25 +414,67 @@ components:
           $ref: '#/components/headers/X-Page-Number'
         X-Page-Size:
           $ref: '#/components/headers/X-Page-Size'
+    ComponentDriftResponseBody:
+      description: Component Drift Response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ComponentDrift'
+      headers:
+        X-Total-Elements:
+          $ref: '#/components/headers/X-Total-Elements'
+        X-Page-Number:
+          $ref: '#/components/headers/X-Page-Number'
+        X-Page-Size:
+          $ref: '#/components/headers/X-Page-Size'
     ArtifactSbomDriftResponseBody:
       description: Response body for calculating drift between 2 artifact versions.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ArtifactSbomDriftResponse'
-  headers:
-    X-Page-Size:
+  parameters:
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
+    Limit6:
+      name: limit
+      in: query
       schema:
         type: integer
-      description: Maximum page size in Paginated response.
-    X-Total-Elements:
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+    Page2:
+      name: page
+      in: query
+      required: false
       schema:
         type: integer
-      description: Total number of elements returned in Paginated response.
-    X-Page-Number:
-      schema:
-        type: integer
-      description: Page number in Paginated response.
+        default: 0
+        minimum: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
   securitySchemes:
     x-api-key:
       name: x-api-key

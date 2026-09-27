@@ -430,7 +430,7 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOPageResponseResourceGroupV2Response'
 components:
   schemas:
-    ResponseDTOBoolean:
+    ResponseDTOResourceGroupV2Response:
       type: object
       properties:
         status:
@@ -440,11 +440,21 @@ components:
           - FAILURE
           - ERROR
         data:
-          type: boolean
+          $ref: '#/components/schemas/ResourceGroupV2Response'
         metaData:
           type: object
         correlationId:
           type: string
+    AuthzResourceFilter:
+      type: object
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceSelectorV2'
+        includeAllResources:
+          type: boolean
+      description: Contains resource filter for a resource group
     Failure:
       type: object
       properties:
@@ -864,32 +874,23 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    AuthzErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    ResourceGroupV2Request:
+    ScopeSelector:
       required:
-      - resourceGroup
+      - filter
       type: object
       properties:
-        resourceGroup:
-          $ref: '#/components/schemas/ResourceGroupV2'
-      description: Contains resource group request
-    AuthzResourceSelectorFilter:
-      required:
-      - resourceType
-      type: object
-      properties:
-        resourceType:
+        filter:
           type: string
-        resourceIdentifier:
+          enum:
+          - EXCLUDING_CHILD_SCOPES
+          - INCLUDING_CHILD_SCOPES
+        accountIdentifier:
           type: string
-      description: Filter based on whether it has a particular resource
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+      description: Contains information of scope to which resource filter is applied
     ResourceSelectorV2:
       required:
       - resourceType
@@ -904,23 +905,6 @@ components:
         attributeFilter:
           $ref: '#/components/schemas/AttributeFilter'
       description: Used to specify resources in resource group
-    AuthzResourceFilter:
-      type: object
-      properties:
-        resources:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResourceSelectorV2'
-        includeAllResources:
-          type: boolean
-      description: Contains resource filter for a resource group
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
     ResponseMessage:
       type: object
       properties:
@@ -1511,32 +1495,82 @@ components:
           type: object
           additionalProperties:
             type: string
-    PageResponseResourceGroupV2Response:
+    AuthzErrorMetadata:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    ResourceGroupV2:
+      required:
+      - accountIdentifier
+      - identifier
+      - name
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        identifier:
+          maxLength: 128
+          minLength: 0
+          type: string
+        name:
+          maxLength: 128
+          minLength: 0
+          type: string
+        color:
+          type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+        allowedScopeLevels:
+          uniqueItems: true
           type: array
           items:
-            $ref: '#/components/schemas/ResourceGroupV2Response'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
+            type: string
+        includedScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopeSelector'
+        resourceFilter:
+          $ref: '#/components/schemas/AuthzResourceFilter'
+      description: Contains information of Resource Group
+    ResponseDTOPageResponseResourceGroupV2Response:
+      type: object
+      properties:
+        status:
           type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseResourceGroupV2Response'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    AuthzResourceSelectorFilter:
+      required:
+      - resourceType
+      type: object
+      properties:
+        resourceType:
+          type: string
+        resourceIdentifier:
+          type: string
+      description: Filter based on whether it has a particular resource
     ResourceGroupFilter:
       required:
       - accountIdentifier
@@ -1580,31 +1614,30 @@ components:
           items:
             $ref: '#/components/schemas/ScopeSelector'
       description: Contains information of filters for Resource Group
-    SortOrder:
+    ResourceGroupV2Request:
+      required:
+      - resourceGroup
       type: object
       properties:
-        fieldName:
-          type: string
-        orderType:
-          type: string
-          enum:
-          - ASC
-          - DESC
-    ResponseDTOResourceGroupV2Response:
+        resourceGroup:
+          $ref: '#/components/schemas/ResourceGroupV2'
+      description: Contains resource group request
+    ResourceGroupV2Response:
+      required:
+      - resourceGroup
       type: object
       properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/ResourceGroupV2Response'
-        metaData:
-          type: object
-        correlationId:
-          type: string
+        resourceGroup:
+          $ref: '#/components/schemas/ResourceGroupV2'
+        createdAt:
+          type: integer
+          format: int64
+        lastModifiedAt:
+          type: integer
+          format: int64
+        harnessManaged:
+          type: boolean
+      description: This has details of the Resource Group along with its metadata.
     AuthzError:
       type: object
       properties:
@@ -2028,65 +2061,64 @@ components:
         metadata:
           $ref: '#/components/schemas/AuthzErrorMetadata'
       description: This is Error entity as defined in Harness
-    ResourceGroupV2Response:
-      required:
-      - resourceGroup
+    ResponseDTOBoolean:
       type: object
       properties:
-        resourceGroup:
-          $ref: '#/components/schemas/ResourceGroupV2'
-        createdAt:
-          type: integer
-          format: int64
-        lastModifiedAt:
-          type: integer
-          format: int64
-        harnessManaged:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
           type: boolean
-      description: This has details of the Resource Group along with its metadata.
-    ResourceGroupV2:
-      required:
-      - accountIdentifier
-      - identifier
-      - name
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    PageResponseResourceGroupV2Response:
       type: object
       properties:
-        accountIdentifier:
-          type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        identifier:
-          maxLength: 128
-          minLength: 0
-          type: string
-        name:
-          maxLength: 128
-          minLength: 0
-          type: string
-        color:
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-        description:
-          maxLength: 1024
-          minLength: 0
-          type: string
-        allowedScopeLevels:
-          uniqueItems: true
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
           type: array
           items:
-            type: string
-        includedScopes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScopeSelector'
-        resourceFilter:
-          $ref: '#/components/schemas/AuthzResourceFilter'
-      description: Contains information of Resource Group
+            $ref: '#/components/schemas/ResourceGroupV2Response'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    SortOrder:
+      type: object
+      properties:
+        fieldName:
+          type: string
+        orderType:
+          type: string
+          enum:
+          - ASC
+          - DESC
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
     AttributeFilter:
       type: object
       properties:
@@ -2097,38 +2129,6 @@ components:
           items:
             type: string
       description: Used to filter resources on their attributes
-    ScopeSelector:
-      required:
-      - filter
-      type: object
-      properties:
-        filter:
-          type: string
-          enum:
-          - EXCLUDING_CHILD_SCOPES
-          - INCLUDING_CHILD_SCOPES
-        accountIdentifier:
-          type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-      description: Contains information of scope to which resource filter is applied
-    ResponseDTOPageResponseResourceGroupV2Response:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseResourceGroupV2Response'
-        metaData:
-          type: object
-        correlationId:
-          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

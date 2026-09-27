@@ -193,6 +193,61 @@ paths:
                 $ref: '#/components/schemas/RestResponseCollectionLdapGroupResponse'
 components:
   schemas:
+    LdapConnectionSettingsDTO1:
+      type: object
+      properties:
+        host:
+          type: string
+        port:
+          type: integer
+          format: int32
+        ssl_enabled:
+          type: boolean
+        referrals_enabled:
+          type: boolean
+        secret_ref_path:
+          type: string
+        max_referral_hops:
+          type: integer
+          format: int32
+        connection_timeout:
+          type: integer
+          format: int32
+        response_timeout:
+          type: integer
+          format: int32
+        use_recursive_group_membership_search:
+          type: boolean
+        bind_d_n:
+          type: string
+        delegate_selectors:
+          type: array
+          items:
+            type: string
+      description: Ldap Connection Settings DTO
+    LdapGroupResponse:
+      required:
+      - dn
+      - name
+      type: object
+      properties:
+        dn:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        totalMembers:
+          type: integer
+          format: int32
+        selectable:
+          type: boolean
+        message:
+          type: string
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/LdapUserResponse'
     NGLdapSettingsWithEncryptedDataDetails:
       required:
       - encryptedDataDetail
@@ -203,6 +258,30 @@ components:
           $ref: '#/components/schemas/LdapSettingsDTO1'
         encryptedDataDetail:
           $ref: '#/components/schemas/EncryptedDataDetail'
+    AdditionalMetadata:
+      type: object
+      properties:
+        values:
+          type: object
+          additionalProperties:
+            type: object
+      description: Additional metadata for the secret
+    LdapGroupSettingsDTO1:
+      type: object
+      properties:
+        base_d_n:
+          type: string
+        search_filter:
+          type: string
+        name_attr:
+          type: string
+        description_attr:
+          type: string
+        user_membership_attr:
+          type: string
+        referenced_user_attr:
+          type: string
+      description: Ldap Group Settings DTO
     Failure:
       type: object
       properties:
@@ -622,7 +701,39 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    LdapResponse:
+    LdapSettingsDTO1:
+      required:
+      - account_identifier
+      - identifier
+      - name
+      type: object
+      properties:
+        account_identifier:
+          type: string
+        identifier:
+          type: string
+        url:
+          type: string
+        disabled:
+          type: boolean
+        name:
+          type: string
+        cron_expression:
+          type: string
+        ldap_connection_settings:
+          $ref: '#/components/schemas/LdapConnectionSettingsDTO1'
+        ldap_user_settings:
+          type: array
+          items:
+            $ref: '#/components/schemas/LdapUserSettingsDTO1'
+        ldap_group_settings:
+          type: array
+          items:
+            $ref: '#/components/schemas/LdapGroupSettingsDTO1'
+        sso_type:
+          type: string
+      description: Ldap Settings DTO
+    ResponseDTONGLdapSettingsWithEncryptedDataDetails:
       type: object
       properties:
         status:
@@ -630,65 +741,31 @@ components:
           enum:
           - SUCCESS
           - FAILURE
-        message:
-          type: string
-    SecretUniqueIdentifier:
-      type: object
-      properties:
-        kmsId:
-          type: string
-    RestResponseLdapResponse:
-      type: object
-      properties:
+          - ERROR
+        data:
+          $ref: '#/components/schemas/NGLdapSettingsWithEncryptedDataDetails'
         metaData:
           type: object
-          additionalProperties:
-            type: object
-        resource:
-          $ref: '#/components/schemas/LdapResponse'
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
-    LdapConnectionSettingsDTO1:
+        correlationId:
+          type: string
+    LdapUserSettingsDTO1:
       type: object
       properties:
-        host:
+        base_d_n:
           type: string
-        port:
-          type: integer
-          format: int32
-        ssl_enabled:
-          type: boolean
-        referrals_enabled:
-          type: boolean
-        secret_ref_path:
+        search_filter:
           type: string
-        max_referral_hops:
-          type: integer
-          format: int32
-        connection_timeout:
-          type: integer
-          format: int32
-        response_timeout:
-          type: integer
-          format: int32
-        use_recursive_group_membership_search:
-          type: boolean
-        bind_d_n:
+        uid_attr:
           type: string
-        delegate_selectors:
-          type: array
-          items:
-            type: string
-      description: Ldap Connection Settings DTO
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
+        sam_account_name_attr:
           type: string
-        error:
+        email_attr:
           type: string
+        display_name_attr:
+          type: string
+        group_membership_attr:
+          type: string
+      description: Ldap User Settings DTO
     ResponseMessage:
       type: object
       properties:
@@ -1279,60 +1356,76 @@ components:
           type: object
           additionalProperties:
             type: string
-    LdapSettingsDTO1:
-      required:
-      - account_identifier
-      - identifier
-      - name
+    LdapResponse:
       type: object
       properties:
-        account_identifier:
+        status:
           type: string
-        identifier:
+          enum:
+          - SUCCESS
+          - FAILURE
+        message:
           type: string
-        url:
+    EncryptedRecordData:
+      type: object
+      properties:
+        uuid:
           type: string
-        disabled:
+        name:
+          type: string
+        path:
+          type: string
+        parameters:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/EncryptedDataParams'
+        encryptionKey:
+          type: string
+        encryptedValue:
+          type: array
+          items:
+            type: string
+        kmsId:
+          type: string
+        encryptionType:
+          type: string
+          enum:
+          - LOCAL
+          - KMS
+          - GCP_KMS
+          - AWS_SECRETS_MANAGER
+          - AZURE_VAULT
+          - VAULT
+          - GCP_SECRETS_MANAGER
+          - CUSTOM
+          - VAULT_SSH
+          - CUSTOM_NG
+        backupEncryptedValue:
+          type: array
+          items:
+            type: string
+        backupEncryptionKey:
+          type: string
+        backupKmsId:
+          type: string
+        backupEncryptionType:
+          type: string
+          enum:
+          - LOCAL
+          - KMS
+          - GCP_KMS
+          - AWS_SECRETS_MANAGER
+          - AZURE_VAULT
+          - VAULT
+          - GCP_SECRETS_MANAGER
+          - CUSTOM
+          - VAULT_SSH
+          - CUSTOM_NG
+        base64Encoded:
           type: boolean
-        name:
-          type: string
-        cron_expression:
-          type: string
-        ldap_connection_settings:
-          $ref: '#/components/schemas/LdapConnectionSettingsDTO1'
-        ldap_user_settings:
-          type: array
-          items:
-            $ref: '#/components/schemas/LdapUserSettingsDTO1'
-        ldap_group_settings:
-          type: array
-          items:
-            $ref: '#/components/schemas/LdapGroupSettingsDTO1'
-        sso_type:
-          type: string
-      description: Ldap Settings DTO
-    EncryptedDataParams:
-      type: object
-      properties:
-        name:
-          type: string
-        value:
-          type: string
-    LdapUserResponse:
-      required:
-      - dn
-      - email
-      - name
-      type: object
-      properties:
-        dn:
-          type: string
-        email:
-          type: string
-        name:
-          type: string
-        userId:
-          type: string
+        additionalMetadata:
+          $ref: '#/components/schemas/AdditionalMetadata'
     Error1:
       type: object
       properties:
@@ -1756,20 +1849,17 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    ResponseDTONGLdapSettingsWithEncryptedDataDetails:
+    SecretUniqueIdentifier:
       type: object
       properties:
-        status:
+        kmsId:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/NGLdapSettingsWithEncryptedDataDetails'
-        metaData:
-          type: object
-        correlationId:
+    EncryptedDataParams:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
           type: string
     ErrorMetadata2:
       type: object
@@ -1779,66 +1869,41 @@ components:
       description: This implements different error meta data objects
       discriminator:
         propertyName: type
-    EncryptedRecordData:
+    RestResponseLdapResponse:
       type: object
       properties:
-        uuid:
+        metaData:
+          type: object
+          additionalProperties:
+            type: object
+        resource:
+          $ref: '#/components/schemas/LdapResponse'
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    LdapUserResponse:
+      required:
+      - dn
+      - email
+      - name
+      type: object
+      properties:
+        dn:
+          type: string
+        email:
           type: string
         name:
           type: string
-        path:
+        userId:
           type: string
-        parameters:
-          uniqueItems: true
-          type: array
-          items:
-            $ref: '#/components/schemas/EncryptedDataParams'
-        encryptionKey:
-          type: string
-        encryptedValue:
-          type: array
-          items:
-            type: string
-        kmsId:
-          type: string
-        encryptionType:
-          type: string
-          enum:
-          - LOCAL
-          - KMS
-          - GCP_KMS
-          - AWS_SECRETS_MANAGER
-          - AZURE_VAULT
-          - VAULT
-          - GCP_SECRETS_MANAGER
-          - CUSTOM
-          - VAULT_SSH
-          - CUSTOM_NG
-        backupEncryptedValue:
-          type: array
-          items:
-            type: string
-        backupEncryptionKey:
-          type: string
-        backupKmsId:
-          type: string
-        backupEncryptionType:
-          type: string
-          enum:
-          - LOCAL
-          - KMS
-          - GCP_KMS
-          - AWS_SECRETS_MANAGER
-          - AZURE_VAULT
-          - VAULT
-          - GCP_SECRETS_MANAGER
-          - CUSTOM
-          - VAULT_SSH
-          - CUSTOM_NG
-        base64Encoded:
-          type: boolean
-        additionalMetadata:
-          $ref: '#/components/schemas/AdditionalMetadata'
     EncryptedDataDetail:
       type: object
       properties:
@@ -1850,6 +1915,21 @@ components:
           type: string
         identifier:
           $ref: '#/components/schemas/SecretUniqueIdentifier'
+    RestResponseCollectionLdapGroupResponse:
+      type: object
+      properties:
+        metaData:
+          type: object
+          additionalProperties:
+            type: object
+        resource:
+          type: array
+          items:
+            $ref: '#/components/schemas/LdapGroupResponse'
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
     EncryptionConfig:
       type: object
       properties:
@@ -1890,86 +1970,6 @@ components:
           type: string
         validationCriteria:
           type: string
-    RestResponseCollectionLdapGroupResponse:
-      type: object
-      properties:
-        metaData:
-          type: object
-          additionalProperties:
-            type: object
-        resource:
-          type: array
-          items:
-            $ref: '#/components/schemas/LdapGroupResponse'
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
-    LdapGroupResponse:
-      required:
-      - dn
-      - name
-      type: object
-      properties:
-        dn:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        totalMembers:
-          type: integer
-          format: int32
-        selectable:
-          type: boolean
-        message:
-          type: string
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/LdapUserResponse'
-    LdapGroupSettingsDTO1:
-      type: object
-      properties:
-        base_d_n:
-          type: string
-        search_filter:
-          type: string
-        name_attr:
-          type: string
-        description_attr:
-          type: string
-        user_membership_attr:
-          type: string
-        referenced_user_attr:
-          type: string
-      description: Ldap Group Settings DTO
-    LdapUserSettingsDTO1:
-      type: object
-      properties:
-        base_d_n:
-          type: string
-        search_filter:
-          type: string
-        uid_attr:
-          type: string
-        sam_account_name_attr:
-          type: string
-        email_attr:
-          type: string
-        display_name_attr:
-          type: string
-        group_membership_attr:
-          type: string
-      description: Ldap User Settings DTO
-    AdditionalMetadata:
-      type: object
-      properties:
-        values:
-          type: object
-          additionalProperties:
-            type: object
-      description: Additional metadata for the secret
   securitySchemes:
     x-api-key:
       name: x-api-key

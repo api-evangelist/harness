@@ -155,11 +155,48 @@ paths:
       x-codegen-request-body-name: body
 components:
   schemas:
-    RoutingRule:
+    Proxy:
       type: object
       properties:
-        path_match:
+        id:
           type: string
+    SaveServiceRequestV2WithoutDisabled:
+      type: object
+      properties:
+        deps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDep'
+        service:
+          $ref: '#/components/schemas/ServiceV2WithoutDisabled'
+        apply_now:
+          type: boolean
+    ServiceResponseWithoutDisabled:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/ServiceWithoutDisabled'
+    PortConfig:
+      type: object
+      properties:
+        protocol:
+          type: string
+        target_protocol:
+          type: string
+        port:
+          type: integer
+        target_port:
+          type: integer
+        server_name:
+          type: string
+        action:
+          type: string
+        redirect_url:
+          type: string
+        routing_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingRule'
     ServiceV2WithoutDisabled:
       required:
       - cloud_account_id
@@ -211,21 +248,84 @@ components:
           $ref: '#/components/schemas/ServiceMetadata'
         status:
           type: string
-    SaveServiceRequestV2:
+    Opts:
       type: object
       properties:
-        deps:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServiceDep'
-        service:
-          $ref: '#/components/schemas/ServiceV2'
-        apply_now:
+        preserve_private_ip:
           type: boolean
-    Proxy:
+        delete_cloud_resources:
+          type: boolean
+        always_use_private_ip:
+          type: boolean
+        access_details:
+          type: object
+          properties: {}
+        hide_progress_page:
+          type: boolean
+        idle_time_for_state_sync:
+          type: boolean
+          description: If true, idle time is used for state sync instead of the default 5 minutes
+    RoutingDataV2:
+      type: object
+      properties:
+        instance:
+          $ref: '#/components/schemas/InstanceBasedRoutingDataV2'
+        lb:
+          type: string
+        k8s:
+          type: object
+          properties:
+            RuleJson:
+              type: string
+            ConnectorID:
+              type: string
+            Namespace:
+              type: string
+        custom_domain_providers:
+          type: object
+          properties: {}
+        container_svc:
+          $ref: '#/components/schemas/ContainerSvc'
+        database:
+          $ref: '#/components/schemas/RDSDatabase'
+        http:
+          $ref: '#/components/schemas/HTTPProxy'
+        tcp:
+          $ref: '#/components/schemas/TCPProxy'
+    TargetGroupMinimal:
       type: object
       properties:
         id:
+          type: string
+        name:
+          type: string
+        port:
+          type: integer
+        protocol:
+          type: string
+        vpc:
+          type: string
+    TCPProxy:
+      required:
+      - proxy
+      type: object
+      properties:
+        proxy:
+          $ref: '#/components/schemas/Proxy'
+        ssh:
+          type: integer
+        rdp:
+          type: integer
+        ports:
+          type: array
+          items:
+            type: integer
+    RDSDatabase:
+      type: object
+      properties:
+        id:
+          type: string
+        region:
           type: string
     ServiceV2:
       required:
@@ -278,39 +378,13 @@ components:
           $ref: '#/components/schemas/ServiceMetadata'
         status:
           type: string
-    ServiceError:
+    InstanceBasedRoutingData:
       type: object
       properties:
-        error:
+        filter_text:
           type: string
-        action:
-          type: string
-    ServiceMetadata:
-      type: object
-      properties:
-        cloud_provider_details:
-          type: object
-          properties:
-            name:
-              type: string
-            type:
-              type: string
-        target_group_details:
-          type: object
-          properties: {}
-        service_errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServiceError'
-        kubernetes_connector_id:
-          type: string
-        autostopping_proxy_config:
-          type: object
-          properties:
-            http:
-              $ref: '#/components/schemas/HTTPProxy'
-            tcp:
-              $ref: '#/components/schemas/HTTPProxy'
+        scale_group:
+          $ref: '#/components/schemas/ASGMinimal'
     RoutingData:
       type: object
       properties:
@@ -338,73 +412,6 @@ components:
           $ref: '#/components/schemas/ContainerSvc'
         database:
           $ref: '#/components/schemas/RDSDatabase'
-    ServiceResponseWithoutDisabled:
-      type: object
-      properties:
-        response:
-          $ref: '#/components/schemas/ServiceWithoutDisabled'
-    HTTPProxy:
-      required:
-      - proxy
-      - ports
-      type: object
-      properties:
-        proxy:
-          $ref: '#/components/schemas/Proxy'
-        ports:
-          type: array
-          items:
-            $ref: '#/components/schemas/PortConfig'
-    ServiceDep:
-      type: object
-    RoutingDataV2:
-      type: object
-      properties:
-        instance:
-          $ref: '#/components/schemas/InstanceBasedRoutingDataV2'
-        lb:
-          type: string
-        k8s:
-          type: object
-          properties:
-            RuleJson:
-              type: string
-            ConnectorID:
-              type: string
-            Namespace:
-              type: string
-        custom_domain_providers:
-          type: object
-          properties: {}
-        container_svc:
-          $ref: '#/components/schemas/ContainerSvc'
-        database:
-          $ref: '#/components/schemas/RDSDatabase'
-        http:
-          $ref: '#/components/schemas/HTTPProxy'
-        tcp:
-          $ref: '#/components/schemas/TCPProxy'
-    PortConfig:
-      type: object
-      properties:
-        protocol:
-          type: string
-        target_protocol:
-          type: string
-        port:
-          type: integer
-        target_port:
-          type: integer
-        server_name:
-          type: string
-        action:
-          type: string
-        redirect_url:
-          type: string
-        routing_rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoutingRule'
     FilterObject:
       type: object
       properties:
@@ -431,132 +438,6 @@ components:
         tags:
           type: object
           properties: {}
-    Opts:
-      type: object
-      properties:
-        preserve_private_ip:
-          type: boolean
-        delete_cloud_resources:
-          type: boolean
-        always_use_private_ip:
-          type: boolean
-        access_details:
-          type: object
-          properties: {}
-        hide_progress_page:
-          type: boolean
-        idle_time_for_state_sync:
-          type: boolean
-          description: If true, idle time is used for state sync instead of the default 5 minutes
-    ASGMinimal:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        desired:
-          type: integer
-        min:
-          type: integer
-        max:
-          type: integer
-        on_demand:
-          type: integer
-        spot:
-          type: integer
-        mixed_instance:
-          type: boolean
-        cloud_account_id:
-          type: string
-        provider_name:
-          type: string
-        target_groups:
-          type: array
-          items:
-            $ref: '#/components/schemas/TargetGroupMinimal'
-        region:
-          type: string
-        availability_zones:
-          type: array
-          items:
-            type: string
-        status:
-          type: string
-        meta:
-          type: object
-          properties: {}
-    ContainerSvc:
-      type: object
-      properties:
-        cluster:
-          type: string
-        service:
-          type: string
-        region:
-          type: string
-        task_count:
-          type: number
-    TCPProxy:
-      required:
-      - proxy
-      type: object
-      properties:
-        proxy:
-          $ref: '#/components/schemas/Proxy'
-        ssh:
-          type: integer
-        rdp:
-          type: integer
-        ports:
-          type: array
-          items:
-            type: integer
-    InstanceBasedRoutingData:
-      type: object
-      properties:
-        filter_text:
-          type: string
-        scale_group:
-          $ref: '#/components/schemas/ASGMinimal'
-    SaveServiceRequestV2WithoutDisabled:
-      type: object
-      properties:
-        deps:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServiceDep'
-        service:
-          $ref: '#/components/schemas/ServiceV2WithoutDisabled'
-        apply_now:
-          type: boolean
-    TargetGroupMinimal:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        port:
-          type: integer
-        protocol:
-          type: string
-        vpc:
-          type: string
-    RDSDatabase:
-      type: object
-      properties:
-        id:
-          type: string
-        region:
-          type: string
-    InstanceBasedRoutingDataV2:
-      type: object
-      properties:
-        filter:
-          $ref: '#/components/schemas/FilterObject'
-        scale_group:
-          $ref: '#/components/schemas/ASGMinimal'
     ServiceWithoutDisabled:
       required:
       - cloud_account_id
@@ -608,6 +489,125 @@ components:
           $ref: '#/components/schemas/ServiceMetadata'
         status:
           type: string
+    RoutingRule:
+      type: object
+      properties:
+        path_match:
+          type: string
+    ASGMinimal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        desired:
+          type: integer
+        min:
+          type: integer
+        max:
+          type: integer
+        on_demand:
+          type: integer
+        spot:
+          type: integer
+        mixed_instance:
+          type: boolean
+        cloud_account_id:
+          type: string
+        provider_name:
+          type: string
+        target_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetGroupMinimal'
+        region:
+          type: string
+        availability_zones:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        meta:
+          type: object
+          properties: {}
+    ServiceError:
+      type: object
+      properties:
+        error:
+          type: string
+        action:
+          type: string
+    ServiceMetadata:
+      type: object
+      properties:
+        cloud_provider_details:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+        target_group_details:
+          type: object
+          properties: {}
+        service_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceError'
+        kubernetes_connector_id:
+          type: string
+        autostopping_proxy_config:
+          type: object
+          properties:
+            http:
+              $ref: '#/components/schemas/HTTPProxy'
+            tcp:
+              $ref: '#/components/schemas/HTTPProxy'
+    HTTPProxy:
+      required:
+      - proxy
+      - ports
+      type: object
+      properties:
+        proxy:
+          $ref: '#/components/schemas/Proxy'
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortConfig'
+    ServiceDep:
+      type: object
+    SaveServiceRequestV2:
+      type: object
+      properties:
+        deps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDep'
+        service:
+          $ref: '#/components/schemas/ServiceV2'
+        apply_now:
+          type: boolean
+    ContainerSvc:
+      type: object
+      properties:
+        cluster:
+          type: string
+        service:
+          type: string
+        region:
+          type: string
+        task_count:
+          type: number
+    InstanceBasedRoutingDataV2:
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/FilterObject'
+        scale_group:
+          $ref: '#/components/schemas/ASGMinimal'
   securitySchemes:
     x-api-key:
       name: x-api-key

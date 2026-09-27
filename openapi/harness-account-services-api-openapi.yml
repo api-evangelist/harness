@@ -153,6 +153,49 @@ paths:
       x-internal: true
 components:
   parameters:
+    ServicePathParam:
+      name: service
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the service the resource is scoped to
+    ServiceIdentifiers:
+      name: service_ids
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+      description: List of Service Identifiers
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
     DeploymentType:
       name: deployment_type
       in: query
@@ -176,13 +219,6 @@ components:
         - GoogleCloudFunctions
         - AwsLambda
         - AWS_SAM
-    SearchTerm1:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching with search term.
     Sort1:
       name: sort
       in: query
@@ -195,33 +231,13 @@ components:
         - created
         - updated
       description: Parameter on the basis of which sorting is done.
-    ServiceIdentifiers:
-      name: service_ids
-      in: query
-      required: false
-      schema:
-        type: array
-        uniqueItems: true
-        items:
-          type: string
-      description: List of Service Identifiers
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    Order:
-      name: order
+    SearchTerm1:
+      name: search_term
       in: query
       required: false
       schema:
         type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
+      description: This would be used to filter resources having attributes matching with search term.
     ForceDelete:
       name: forceDelete
       in: query
@@ -237,23 +253,119 @@ components:
         type: integer
         default: 0
       description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
-    ServicePathParam:
-      name: service
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the service the resource is scoped to
   schemas:
+    Service:
+      type: object
+      x-examples:
+        example-1:
+          account: sample_account
+          identifier: example_service
+          org: sample_organization
+          project: sample_project
+          name: Example_service
+          description: This is a example service
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+      description: This is the Service entity defined in Harness
+      title: Service
+      properties:
+        account:
+          type: string
+          description: Account Identifier
+          minLength: 1
+          maxLength: 128
+        identifier:
+          type: string
+          description: Identifier of the Service Request.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          description: Organization Identifier for the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        project:
+          type: string
+          description: Project Identifier for the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Name of the Service Request.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          description: Description of the entity
+          maxLength: 1024
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Service tags
+          maxProperties: 128
+        yaml:
+          type: string
+          description: Yaml related to service
+        harness_version:
+          type: string
+          description: version of harness yaml
+      required:
+      - identifier
+      - name
+    GitEntityFindInfoDTO:
+      type: object
+      description: Details to find Git Entity including Git Sync Config Id and Branch Name.
+      properties:
+        branch:
+          type: string
+          description: The branch name.
+        yamlGitConfigId:
+          type: string
+          description: Git Sync Config ID.
+        defaultFromOtherRepo:
+          type: boolean
+          description: If true, return all default entities.
+        parentEntityConnectorRef:
+          type: string
+          description: Connector ref of parent entity if remote.
+        parentEntityRepoName:
+          type: string
+          description: Repo name of parent entity if remote.
+        parentEntityAccountIdentifier:
+          type: string
+          description: Account identifier of parent entity.
+        parentEntityOrgIdentifier:
+          type: string
+          description: Organization identifier of parent entity.
+        parentEntityProjectIdentifier:
+          type: string
+          description: Project identifier of parent entity.
+        repoName:
+          type: string
+          description: Repository name.
+    ManifestsResponseDTO:
+      title: ManifestsResponseDTO
+      type: object
+      properties:
+        identifiers:
+          type: array
+          description: List of Manifest Identifiers
+          items:
+            type: string
+      description: ManifestsResponseDTO returns a list of manifest identifiers from a service's eligible primary manifests.
+      x-internal: false
+      x-examples:
+        Example 1:
+          identifiers:
+          - id1
+          - id2
     ServiceResponse:
       type: object
       x-examples:
@@ -329,118 +441,6 @@ components:
       required:
       - identifier
       - name
-    GitEntityFindInfoDTO:
-      type: object
-      description: Details to find Git Entity including Git Sync Config Id and Branch Name.
-      properties:
-        branch:
-          type: string
-          description: The branch name.
-        yamlGitConfigId:
-          type: string
-          description: Git Sync Config ID.
-        defaultFromOtherRepo:
-          type: boolean
-          description: If true, return all default entities.
-        parentEntityConnectorRef:
-          type: string
-          description: Connector ref of parent entity if remote.
-        parentEntityRepoName:
-          type: string
-          description: Repo name of parent entity if remote.
-        parentEntityAccountIdentifier:
-          type: string
-          description: Account identifier of parent entity.
-        parentEntityOrgIdentifier:
-          type: string
-          description: Organization identifier of parent entity.
-        parentEntityProjectIdentifier:
-          type: string
-          description: Project identifier of parent entity.
-        repoName:
-          type: string
-          description: Repository name.
-    ManifestsResponseDTO:
-      title: ManifestsResponseDTO
-      type: object
-      properties:
-        identifiers:
-          type: array
-          description: List of Manifest Identifiers
-          items:
-            type: string
-      description: ManifestsResponseDTO returns a list of manifest identifiers from a service's eligible primary manifests.
-      x-internal: false
-      x-examples:
-        Example 1:
-          identifiers:
-          - id1
-          - id2
-    Service:
-      type: object
-      x-examples:
-        example-1:
-          account: sample_account
-          identifier: example_service
-          org: sample_organization
-          project: sample_project
-          name: Example_service
-          description: This is a example service
-          tags:
-            example-tag-1: example-tag-1-value
-            example-tag-2: example-tag-2-value
-          yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
-      description: This is the Service entity defined in Harness
-      title: Service
-      properties:
-        account:
-          type: string
-          description: Account Identifier
-          minLength: 1
-          maxLength: 128
-        identifier:
-          type: string
-          description: Identifier of the Service Request.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        org:
-          type: string
-          description: Organization Identifier for the Entity.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        project:
-          type: string
-          description: Project Identifier for the Entity.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        name:
-          type: string
-          description: Name of the Service Request.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          minLength: 1
-          maxLength: 128
-        description:
-          type: string
-          description: Description of the entity
-          maxLength: 1024
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          description: Service tags
-          maxProperties: 128
-        yaml:
-          type: string
-          description: Yaml related to service
-        harness_version:
-          type: string
-          description: version of harness yaml
-      required:
-      - identifier
-      - name
     ServiceUpdateRequest:
       type: object
       x-examples:
@@ -486,6 +486,60 @@ components:
       required:
       - identifier
       - name
+  requestBodies:
+    ServiceCreateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceCreateRequest'
+          examples:
+            example-1:
+              value:
+                identifier: example_service
+                name: Example_service
+                description: This is a example service
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ServiceCreateRequest'
+          examples:
+            example-1:
+              value: "identifier: example_service\nname: Example_service\ndescription: This is a example service\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_service\"\n    identifier: \"example_service\"\n    tags: {}\n"
+      description: Create Service request body
+      required: true
+    ServiceUpdateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceUpdateRequest'
+          examples:
+            example-1:
+              value:
+                identifier: example_service
+                name: Example_service
+                description: This is a example service
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ServiceUpdateRequest'
+          examples:
+            example-1:
+              value: "identifier: example_service\nname: Example_service\ndescription: This is a example service\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_service\"\n    identifier: \"example_service\"\n    tags: {}\n"
+      description: Update Service request body
+      required: true
+    GitEntityFindInfoRequestBody:
+      description: Optional Git synchronization details for filtering primary manifests.
+      required: false
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GitEntityFindInfoDTO'
   responses:
     ManifestsResponseDTO:
       description: Response containing a list of eligible manifest identifiers that can be applied as primary manifest.
@@ -576,60 +630,6 @@ components:
           examples:
             example-1:
               value: "service:\n  account: sample_account\n  identifier: example_service\n  org: sample_organization\n  project: sample_project\n  name: Example_service\n  description: This is a example service\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n  yaml: |\n    service:\n      name: \"Example_service\"\n      identifier: \"example_service\"\n      tags: {}\ncreated: 1234567890\nupdated: 1234567890\n"
-  requestBodies:
-    GitEntityFindInfoRequestBody:
-      description: Optional Git synchronization details for filtering primary manifests.
-      required: false
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GitEntityFindInfoDTO'
-    ServiceCreateRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ServiceCreateRequest'
-          examples:
-            example-1:
-              value:
-                identifier: example_service
-                name: Example_service
-                description: This is a example service
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/ServiceCreateRequest'
-          examples:
-            example-1:
-              value: "identifier: example_service\nname: Example_service\ndescription: This is a example service\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_service\"\n    identifier: \"example_service\"\n    tags: {}\n"
-      description: Create Service request body
-      required: true
-    ServiceUpdateRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ServiceUpdateRequest'
-          examples:
-            example-1:
-              value:
-                identifier: example_service
-                name: Example_service
-                description: This is a example service
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                yaml: "service:\n  name: \"Example_service\"\n  identifier: \"example_service\"\n  tags: {}\n"
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/ServiceUpdateRequest'
-          examples:
-            example-1:
-              value: "identifier: example_service\nname: Example_service\ndescription: This is a example service\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_service\"\n    identifier: \"example_service\"\n    tags: {}\n"
-      description: Update Service request body
-      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -78,6 +78,136 @@ paths:
       description: Deletes the requested favorite at account level.
       x-internal: true
 components:
+  parameters:
+    UserIdPathParam:
+      name: user-id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: This would be used to fetch the Favorites of the user.
+    ResourceId:
+      name: resource_id
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to do operations on the favorite entity.
+    ResourceType:
+      name: resource_type
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - CONNECTOR
+        - DELEGATE
+        - PIPELINE
+        - SECRET
+        - PROJECT
+      description: Determines the type of favorite entity requested.
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+  schemas:
+    FavoriteResponse:
+      type: object
+      x-examples:
+        example-1:
+          FavoriteDTO:
+            user_id: example_userId
+            org: sample_organization
+            project: sample_project
+            resource_type: Example_resourceType
+            resource_id: This is a example resource
+          created: 1234567890
+      title: FavoriteResponse
+      properties:
+        Favorite:
+          $ref: '#/components/schemas/FavoriteDTO'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for favorite.
+    FavoriteDTO:
+      type: object
+      x-examples:
+        example-1:
+          org: sample_organization
+          project: sample_project
+          user_id: example_userId
+          module: example_module
+          resource_type: example_resourceType
+          resource_id: example_resourceId
+      description: This is the favorite entity defined in Harness
+      title: FavoriteDTO
+      properties:
+        org:
+          type: string
+          description: Organization Identifier for the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        project:
+          type: string
+          description: Project Identifier for the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        user_id:
+          type: string
+          description: Identifier of the user.
+          minLength: 1
+          maxLength: 128
+        module:
+          $ref: '#/components/schemas/ModuleType'
+        resource_type:
+          $ref: '#/components/schemas/FavoritesResourceType'
+          description: Type of resource
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        resource_id:
+          type: string
+          description: Resource Identifier of the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 256
+    ModuleType:
+      type: string
+      description: Type of Modules
+      enum:
+      - CD
+      - CI
+      - CV
+      - CF
+      - CE
+      - STO
+      - CORE
+      - PMS
+      - TEMPLATESERVICE
+      - GOVERNANCE
+      - CHAOS
+      - CET
+      - IDP
+      - SSCA
+      - SEI
+      - CODE
+      - HAR
+    FavoritesResourceType:
+      type: string
+      enum:
+      - CONNECTOR
+      - DELEGATE
+      - PIPELINE
+      - SECRET
+      - PROJECT
+      - IDPENTITY
+      - IDPFLOWS
   responses:
     FavoriteListResponse:
       description: Favorite list response
@@ -127,136 +257,6 @@ components:
                   resource_type: Example_resourceType
                   resource_id: Example_resourceId
                 created: 1234567890
-  schemas:
-    FavoriteResponse:
-      type: object
-      x-examples:
-        example-1:
-          FavoriteDTO:
-            user_id: example_userId
-            org: sample_organization
-            project: sample_project
-            resource_type: Example_resourceType
-            resource_id: This is a example resource
-          created: 1234567890
-      title: FavoriteResponse
-      properties:
-        Favorite:
-          $ref: '#/components/schemas/FavoriteDTO'
-        created:
-          type: integer
-          format: int64
-          description: Creation timestamp for favorite.
-    ModuleType:
-      type: string
-      description: Type of Modules
-      enum:
-      - CD
-      - CI
-      - CV
-      - CF
-      - CE
-      - STO
-      - CORE
-      - PMS
-      - TEMPLATESERVICE
-      - GOVERNANCE
-      - CHAOS
-      - CET
-      - IDP
-      - SSCA
-      - SEI
-      - CODE
-      - HAR
-    FavoriteDTO:
-      type: object
-      x-examples:
-        example-1:
-          org: sample_organization
-          project: sample_project
-          user_id: example_userId
-          module: example_module
-          resource_type: example_resourceType
-          resource_id: example_resourceId
-      description: This is the favorite entity defined in Harness
-      title: FavoriteDTO
-      properties:
-        org:
-          type: string
-          description: Organization Identifier for the Entity.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        project:
-          type: string
-          description: Project Identifier for the Entity.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        user_id:
-          type: string
-          description: Identifier of the user.
-          minLength: 1
-          maxLength: 128
-        module:
-          $ref: '#/components/schemas/ModuleType'
-        resource_type:
-          $ref: '#/components/schemas/FavoritesResourceType'
-          description: Type of resource
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        resource_id:
-          type: string
-          description: Resource Identifier of the Entity.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 256
-    FavoritesResourceType:
-      type: string
-      enum:
-      - CONNECTOR
-      - DELEGATE
-      - PIPELINE
-      - SECRET
-      - PROJECT
-      - IDPENTITY
-      - IDPFLOWS
-  parameters:
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    ResourceType:
-      name: resource_type
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - CONNECTOR
-        - DELEGATE
-        - PIPELINE
-        - SECRET
-        - PROJECT
-      description: Determines the type of favorite entity requested.
-    ResourceId:
-      name: resource_id
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to do operations on the favorite entity.
-    UserIdPathParam:
-      name: user-id
-      in: path
-      required: true
-      schema:
-        type: string
-      description: This would be used to fetch the Favorites of the user.
   requestBodies:
     FavoriteRequest:
       content:

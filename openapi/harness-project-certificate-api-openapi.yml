@@ -156,41 +156,98 @@ paths:
       tags:
       - Project Certificate
 components:
-  responses:
-    CertificateValidateUniqueIdentifierResponse:
-      description: Example response
+  requestBodies:
+    CreateCertificateRequest:
       content:
         application/json:
           schema:
-            type: boolean
-    CertificateResponse:
-      description: Example response
+            $ref: '#/components/schemas/CertificateDTO'
+          examples:
+            example-certificate-input-text:
+              value:
+                name: example_name
+                identifier: example_identifier
+                org: example_org
+                project: example_project
+                certificateValue: actual_certificate_content
+                tags:
+                  property1: tag1
+                  property2: tag2
+                description: example_description
+                inputSpec:
+                  type: TEXT
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              spec:
+                $ref: '#/components/schemas/CertificateDTO'
+              file:
+                type: string
+                x-stoplight:
+                  id: o0m5hvts15hyp
+                format: binary
+            required:
+            - spec
+            - file
+          examples: {}
+    UpdateCertificateRequest:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CertificateResponseDTO'
-    CertificateListResponse:
-      description: Example response
-      content:
-        application/json:
+            $ref: '#/components/schemas/CertificateDTO'
+        multipart/form-data:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/CertificateResponseDTO'
-      headers:
-        X-Total-Elements:
-          schema:
-            type: integer
-          description: Total number of elements returned in Paginated response.
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Page number in Paginated response.
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum page size in Paginated response.
+            type: object
+            properties:
+              spec:
+                $ref: '#/components/schemas/CertificateDTO'
+              file:
+                type: string
+                x-stoplight:
+                  id: 11s7g7fmuu0xw
+                format: binary
+            required:
+            - spec
   schemas:
+    CertificateInputSpecDTO:
+      title: CertificateInputSpecDTO
+      x-stoplight:
+        id: 0d1izu97xpl66
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          TEXT: '#/components/schemas/TextCertificateInputSpecDTO'
+          FILE: '#/components/schemas/FileCertificateInputSpecDTO'
+      properties:
+        type:
+          $ref: '#/components/schemas/CertificateInputSpecType'
+      required:
+      - type
+      description: ''
+    CertificateDTO:
+      title: CertificateDTO
+      x-stoplight:
+        id: l9q8ph7p1mi4o
+      description: This is the request dto to create a Certificate in Harness
+      allOf:
+      - $ref: '#/components/schemas/CertificateInfoDTO'
+      - type: object
+        properties:
+          input_spec:
+            $ref: '#/components/schemas/CertificateInputSpecDTO'
+        required:
+        - input_spec
+    CertificateInputSpecType:
+      title: CertificateInputSpecType
+      x-stoplight:
+        id: nhxqu9kwgv634
+      type: string
+      enum:
+      - TEXT
+      - FILE
+      description: This defines different ways a certificate can be created
     CertificateDetailsDTO:
       title: CertificateDetailsDTO
       x-stoplight:
@@ -215,37 +272,6 @@ components:
           type: string
           x-stoplight:
             id: rx7w596wytqr3
-    CertificateDTO:
-      title: CertificateDTO
-      x-stoplight:
-        id: l9q8ph7p1mi4o
-      description: This is the request dto to create a Certificate in Harness
-      allOf:
-      - $ref: '#/components/schemas/CertificateInfoDTO'
-      - type: object
-        properties:
-          input_spec:
-            $ref: '#/components/schemas/CertificateInputSpecDTO'
-        required:
-        - input_spec
-    CertificateIssuanceInfo:
-      title: CertificateIssuanceInfo
-      x-stoplight:
-        id: ag74zjmlc3qyp
-      type: object
-      properties:
-        common_name:
-          type: string
-          x-stoplight:
-            id: ei027bhkq7cam
-        organization:
-          type: string
-          x-stoplight:
-            id: anat62b0vdzp7
-        organizational_unit:
-          type: string
-          x-stoplight:
-            id: 1ll9qrdntms7o
     CertificateResponseDTO:
       title: CertificateResponseDTO
       x-stoplight:
@@ -269,6 +295,24 @@ components:
       required:
       - certificate
       - certificate_details
+    CertificateIssuanceInfo:
+      title: CertificateIssuanceInfo
+      x-stoplight:
+        id: ag74zjmlc3qyp
+      type: object
+      properties:
+        common_name:
+          type: string
+          x-stoplight:
+            id: ei027bhkq7cam
+        organization:
+          type: string
+          x-stoplight:
+            id: anat62b0vdzp7
+        organizational_unit:
+          type: string
+          x-stoplight:
+            id: 1ll9qrdntms7o
     CertificateInfoDTO:
       title: CertificateInfoDTO
       x-stoplight:
@@ -328,39 +372,7 @@ components:
       required:
       - name
       - identifier
-    CertificateInputSpecDTO:
-      title: CertificateInputSpecDTO
-      x-stoplight:
-        id: 0d1izu97xpl66
-      type: object
-      discriminator:
-        propertyName: type
-        mapping:
-          TEXT: '#/components/schemas/TextCertificateInputSpecDTO'
-          FILE: '#/components/schemas/FileCertificateInputSpecDTO'
-      properties:
-        type:
-          $ref: '#/components/schemas/CertificateInputSpecType'
-      required:
-      - type
-      description: ''
-    CertificateInputSpecType:
-      title: CertificateInputSpecType
-      x-stoplight:
-        id: nhxqu9kwgv634
-      type: string
-      enum:
-      - TEXT
-      - FILE
-      description: This defines different ways a certificate can be created
   parameters:
-    SearchTerm1:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching with search term.
     ProjectPathParam:
       name: project
       in: path
@@ -368,6 +380,39 @@ components:
       schema:
         type: string
       description: Identifier field of the project the resource is scoped to
+    OrgPathParam:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the organization the resource is scoped to
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
     Sort1:
       name: sort
       in: query
@@ -380,30 +425,13 @@ components:
         - created
         - updated
       description: Parameter on the basis of which sorting is done.
-    OrgPathParam:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the organization the resource is scoped to
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    Order:
-      name: order
+    SearchTerm1:
+      name: search_term
       in: query
       required: false
       schema:
         type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
+      description: This would be used to filter resources having attributes matching with search term.
     ForceDelete:
       name: forceDelete
       in: query
@@ -419,68 +447,40 @@ components:
         type: integer
         default: 0
       description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
-  requestBodies:
-    UpdateCertificateRequest:
+  responses:
+    CertificateResponse:
+      description: Example response
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CertificateDTO'
-        multipart/form-data:
-          schema:
-            type: object
-            properties:
-              spec:
-                $ref: '#/components/schemas/CertificateDTO'
-              file:
-                type: string
-                x-stoplight:
-                  id: 11s7g7fmuu0xw
-                format: binary
-            required:
-            - spec
-    CreateCertificateRequest:
+            $ref: '#/components/schemas/CertificateResponseDTO'
+    CertificateValidateUniqueIdentifierResponse:
+      description: Example response
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CertificateDTO'
-          examples:
-            example-certificate-input-text:
-              value:
-                name: example_name
-                identifier: example_identifier
-                org: example_org
-                project: example_project
-                certificateValue: actual_certificate_content
-                tags:
-                  property1: tag1
-                  property2: tag2
-                description: example_description
-                inputSpec:
-                  type: TEXT
-        multipart/form-data:
+            type: boolean
+    CertificateListResponse:
+      description: Example response
+      content:
+        application/json:
           schema:
-            type: object
-            properties:
-              spec:
-                $ref: '#/components/schemas/CertificateDTO'
-              file:
-                type: string
-                x-stoplight:
-                  id: o0m5hvts15hyp
-                format: binary
-            required:
-            - spec
-            - file
-          examples: {}
+            type: array
+            items:
+              $ref: '#/components/schemas/CertificateResponseDTO'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
   securitySchemes:
     x-api-key:
       name: x-api-key

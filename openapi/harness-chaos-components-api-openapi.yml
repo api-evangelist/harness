@@ -161,6 +161,46 @@ paths:
                 $ref: '#/components/schemas/api.RestError'
 components:
   schemas:
+    chaoscomponents.GetChaosComponentVariableResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaoscomponents.GetChaosComponentVariableData'
+    chaoscomponents.GetChaosComponentVariableData:
+      type: object
+      properties:
+        name:
+          type: string
+        variables:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+    template.ChaosComponentInputsetSpec:
+      type: object
+      properties:
+        tasks:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/template.VariableMinimum'
+    chaoscomponents.RunChaosComponentRequest:
+      type: object
+      properties:
+        duration:
+          type: string
+        identity:
+          type: string
+        infraReference:
+          type: string
+        runtimeInputs:
+          $ref: '#/components/schemas/template.ChaosComponentInputsetSpec'
+        type:
+          $ref: '#/components/schemas/chaoscomponent.ChaosComponentType'
+        userMetaData:
+          $ref: '#/components/schemas/chaoscomponents.UserMetaData'
     chaoscomponents.RunChaosComponentResponseData:
       type: object
       properties:
@@ -176,14 +216,18 @@ components:
           type: array
           items:
             type: string
-    api.RestError:
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    chaoscomponents.RunChaosComponentResponse:
       type: object
       properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
+        data:
+          $ref: '#/components/schemas/chaoscomponents.RunChaosComponentResponseData'
+        status:
           type: string
     template.Variable:
       type: object
@@ -218,6 +262,41 @@ components:
         validator:
           type: string
         value: {}
+    chaoscomponent.ChaosComponentType:
+      type: string
+      enum:
+      - Fault
+      - Probe
+      - Action
+      x-enum-varnames:
+      - Fault
+      - Probe
+      - Action
+    template.InputType:
+      type: string
+      enum:
+      - String
+      - Integer
+      - Boolean
+      - Number
+      - SecretFile
+      - SecretText
+      x-enum-varnames:
+      - StringInput
+      - IntegerInput
+      - BooleanInput
+      - NumberInput
+      - SecretFileInput
+      - SecretTextInput
+    template.VariableMinimum:
+      type: object
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+        value: {}
     chaoscomponents.UserMetaData:
       type: object
       properties:
@@ -227,37 +306,15 @@ components:
           type: string
         userName:
           type: string
-    chaoscomponents.RunChaosComponentRequest:
+    api.RestError:
       type: object
       properties:
-        duration:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
           type: string
-        identity:
+        message:
           type: string
-        infraReference:
-          type: string
-        runtimeInputs:
-          $ref: '#/components/schemas/template.ChaosComponentInputsetSpec'
-        type:
-          $ref: '#/components/schemas/chaoscomponent.ChaosComponentType'
-        userMetaData:
-          $ref: '#/components/schemas/chaoscomponents.UserMetaData'
-    chaoscomponents.GetChaosComponentVariableResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/chaoscomponents.GetChaosComponentVariableData'
-    template.ChaosComponentInputsetSpec:
-      type: object
-      properties:
-        tasks:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/template.VariableMinimum'
     template.InputCategory:
       type: string
       enum:
@@ -278,63 +335,6 @@ components:
       - CategoryProbeProperties
       - CategoryRunProperties
       - CategoryFaultAuthentication
-    template.VariableMinimum:
-      type: object
-      required:
-      - name
-      - value
-      properties:
-        name:
-          type: string
-        value: {}
-    template.InputType:
-      type: string
-      enum:
-      - String
-      - Integer
-      - Boolean
-      - Number
-      - SecretFile
-      - SecretText
-      x-enum-varnames:
-      - StringInput
-      - IntegerInput
-      - BooleanInput
-      - NumberInput
-      - SecretFileInput
-      - SecretTextInput
-    chaoscomponents.RunChaosComponentResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/chaoscomponents.RunChaosComponentResponseData'
-        status:
-          type: string
-    chaoscomponents.GetChaosComponentVariableData:
-      type: object
-      properties:
-        name:
-          type: string
-        variables:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-    chaoscomponent.ChaosComponentType:
-      type: string
-      enum:
-      - Fault
-      - Probe
-      - Action
-      x-enum-varnames:
-      - Fault
-      - Probe
-      - Action
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
   securitySchemes:
     x-api-key:
       name: x-api-key

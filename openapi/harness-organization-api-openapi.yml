@@ -451,21 +451,79 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOBoolean'
 components:
   schemas:
-    ResponseDTOBoolean:
+    CreateOrganizationRequest:
       type: object
       properties:
-        status:
+        org:
+          $ref: '#/components/schemas/Organization'
+      required:
+      - org
+    Organization:
+      description: Organization model
+      type: object
+      properties:
+        identifier:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: boolean
-        metaData:
+          minLength: 1
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          description: Organization identifier
+          maxLength: 128
+        name:
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          description: Organization name
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 1024
+          description: Organization description
+        tags:
           type: object
-        correlationId:
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Organization tags
+      required:
+      - identifier
+      - name
+    UpdateOrganizationRequest:
+      description: Update oganization request
+      type: object
+      properties:
+        org:
+          $ref: '#/components/schemas/Organization'
+      required:
+      - org
+    Organization1:
+      type: object
+      properties:
+        identifier:
           type: string
+          description: Identifier of the Organization
+        name:
+          type: string
+          description: Name of the Organization
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+          description: Description of the Organization.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+            description: Tags for the Organization.
+          description: Tags for the Organization.
+      description: This has details of the Organization as defined in Harness.
+    OrganizationRequest:
+      required:
+      - organization
+      type: object
+      properties:
+        organization:
+          $ref: '#/components/schemas/Organization1'
+      description: This contains details of the Organization.
     Failure:
       type: object
       properties:
@@ -885,64 +943,25 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    OrganizationResponse:
-      title: OrganizationResponse
+    OrganizationResponse1:
+      required:
+      - organization
       type: object
-      description: Organization response Model
-      x-examples:
-        example-1:
-          org:
-            identifier: example_organization
-            name: Example Organization
-            description: This is an Example Organization
-            tags:
-              example-tag-1: example-tag-1-value
-              example-tag-2: example-tag-2-value
-          created: 1234567890
-          updated: 1234567890
-          harness_managed: true
       properties:
-        org:
-          $ref: '#/components/schemas/Organization'
-        created:
+        organization:
+          $ref: '#/components/schemas/Organization1'
+        createdAt:
           type: integer
-          description: Creation timestamp for organization
+          description: This is the time at which Organization was created.
           format: int64
-        updated:
+        lastModifiedAt:
           type: integer
+          description: This is the time at which Organization was last modified.
           format: int64
-          description: Updated timestamp for organization
-        harness_managed:
+        harnessManaged:
           type: boolean
-          description: This indicates if this organization is managed by Harness or not. If true, Harness can manage and modify this organization.
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    Organization1:
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: Identifier of the Organization
-        name:
-          type: string
-          description: Name of the Organization
-        description:
-          maxLength: 1024
-          minLength: 0
-          type: string
-          description: Description of the Organization.
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-            description: Tags for the Organization.
-          description: Tags for the Organization.
-      description: This has details of the Organization as defined in Harness.
+          description: This indicates if this Organization is managed by Harness or not. If True, Harness can manage and modify this Organization.
+      description: This has details of the Organization along with its metadata in Harness.
     ResponseMessage:
       type: object
       properties:
@@ -1533,24 +1552,47 @@ components:
           type: object
           additionalProperties:
             type: string
-    UpdateOrganizationRequest:
-      description: Update oganization request
+    PageResponseOrganizationResponse:
       type: object
       properties:
-        org:
-          $ref: '#/components/schemas/Organization'
-      required:
-      - org
-    SortOrder:
-      type: object
-      properties:
-        fieldName:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationResponse1'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
           type: string
-        orderType:
+    ResponseDTOOrganizationResponse:
+      type: object
+      properties:
+        status:
           type: string
           enum:
-          - ASC
-          - DESC
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/OrganizationResponse1'
+        metaData:
+          type: object
+        correlationId:
+          type: string
     Error1:
       type: object
       properties:
@@ -1974,68 +2016,46 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    CreateOrganizationRequest:
+    ResponseDTOBoolean:
       type: object
       properties:
-        org:
-          $ref: '#/components/schemas/Organization'
-      required:
-      - org
-    PageResponseOrganizationResponse:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrganizationResponse1'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
           type: boolean
-        pageToken:
+        metaData:
+          type: object
+        correlationId:
           type: string
-    Organization:
-      description: Organization model
+    ErrorMetadata2:
       type: object
       properties:
-        identifier:
+        type:
           type: string
-          minLength: 1
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          description: Organization identifier
-          maxLength: 128
-        name:
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    SortOrder:
+      type: object
+      properties:
+        fieldName:
           type: string
-          minLength: 1
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          description: Organization name
-          maxLength: 128
-        description:
+        orderType:
           type: string
-          maxLength: 1024
-          description: Organization description
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          maxProperties: 128
-          description: Organization tags
-      required:
-      - identifier
-      - name
+          enum:
+          - ASC
+          - DESC
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
     ResponseDTOPageResponseOrganizationResponse:
       type: object
       properties:
@@ -2051,64 +2071,63 @@ components:
           type: object
         correlationId:
           type: string
-    OrganizationResponse1:
-      required:
-      - organization
+    OrganizationResponse:
+      title: OrganizationResponse
       type: object
+      description: Organization response Model
+      x-examples:
+        example-1:
+          org:
+            identifier: example_organization
+            name: Example Organization
+            description: This is an Example Organization
+            tags:
+              example-tag-1: example-tag-1-value
+              example-tag-2: example-tag-2-value
+          created: 1234567890
+          updated: 1234567890
+          harness_managed: true
       properties:
-        organization:
-          $ref: '#/components/schemas/Organization1'
-        createdAt:
+        org:
+          $ref: '#/components/schemas/Organization'
+        created:
           type: integer
-          description: This is the time at which Organization was created.
+          description: Creation timestamp for organization
           format: int64
-        lastModifiedAt:
+        updated:
           type: integer
-          description: This is the time at which Organization was last modified.
           format: int64
-        harnessManaged:
+          description: Updated timestamp for organization
+        harness_managed:
           type: boolean
-          description: This indicates if this Organization is managed by Harness or not. If True, Harness can manage and modify this Organization.
-      description: This has details of the Organization along with its metadata in Harness.
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    ResponseDTOOrganizationResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/OrganizationResponse1'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    OrganizationRequest:
-      required:
-      - organization
-      type: object
-      properties:
-        organization:
-          $ref: '#/components/schemas/Organization1'
-      description: This contains details of the Organization.
+          description: This indicates if this organization is managed by Harness or not. If true, Harness can manage and modify this organization.
   parameters:
-    SearchTerm1:
-      name: search_term
+    Order:
+      name: order
       in: query
       required: false
       schema:
         type: string
-      description: This would be used to filter resources having attributes matching with search term.
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
     Sort1:
       name: sort
       in: query
@@ -2121,23 +2140,13 @@ components:
         - created
         - updated
       description: Parameter on the basis of which sorting is done.
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    Order:
-      name: order
+    SearchTerm1:
+      name: search_term
       in: query
       required: false
       schema:
         type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
+      description: This would be used to filter resources having attributes matching with search term.
     OrgsQueryParam:
       name: org
       in: query
@@ -2155,39 +2164,7 @@ components:
         type: integer
         default: 0
       description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
   requestBodies:
-    CreateOrganizationRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CreateOrganizationRequest'
-          examples:
-            example-create-organization-request-json:
-              value:
-                org:
-                  identifier: example_organization
-                  name: Example Organization
-                  description: This is an Example organization
-                  tags:
-                    example-tag-1: example-tag-1-value
-                    example-tag-2: example-tag-2-value
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/CreateOrganizationRequest'
-          examples:
-            example-create-organization-request-yaml:
-              value: "org:\n  identifier: example_organization\n  name: Example Organization\n  description: This is an Example organization\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n"
-      description: Post the necessary fields for the API to create an organization.
-      required: true
     UpdateOrganizationRequest:
       content:
         application/json:
@@ -2211,7 +2188,55 @@ components:
               value: "org:\n  identifier: example_organization\n  name: Example Organization\n  description: This is an example organization\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n"
       description: Put the necessary fields for the API to update a organization.
       required: true
+    CreateOrganizationRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateOrganizationRequest'
+          examples:
+            example-create-organization-request-json:
+              value:
+                org:
+                  identifier: example_organization
+                  name: Example Organization
+                  description: This is an Example organization
+                  tags:
+                    example-tag-1: example-tag-1-value
+                    example-tag-2: example-tag-2-value
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/CreateOrganizationRequest'
+          examples:
+            example-create-organization-request-yaml:
+              value: "org:\n  identifier: example_organization\n  name: Example Organization\n  description: This is an Example organization\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n"
+      description: Post the necessary fields for the API to create an organization.
+      required: true
   responses:
+    OrganizationResponse:
+      description: Organization response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OrganizationResponse'
+          examples:
+            example-organization-response-json:
+              value:
+                org:
+                  identifier: example_organization
+                  name: Example Organization
+                  description: This is an example organization
+                  tags:
+                    example-tag-1: example-tag-1-value
+                    example-tag-2: example-tag-2-value
+                created: 1234567890
+                updated: 1234567890
+                harness_managed: true
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/OrganizationResponse'
+          examples:
+            example-organization-response-yaml:
+              value: "org:\n  identifier: example_organization\n  name: Example Organization\n  description: This is an example organization\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\ncreated: 1234567890\nupdated: 1234567890\nharness_managed: true\n"
     OrganizationListResponse:
       description: Organization list response
       content:
@@ -2254,31 +2279,6 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-    OrganizationResponse:
-      description: Organization response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/OrganizationResponse'
-          examples:
-            example-organization-response-json:
-              value:
-                org:
-                  identifier: example_organization
-                  name: Example Organization
-                  description: This is an example organization
-                  tags:
-                    example-tag-1: example-tag-1-value
-                    example-tag-2: example-tag-2-value
-                created: 1234567890
-                updated: 1234567890
-                harness_managed: true
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/OrganizationResponse'
-          examples:
-            example-organization-response-yaml:
-              value: "org:\n  identifier: example_organization\n  name: Example Organization\n  description: This is an example organization\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\ncreated: 1234567890\nupdated: 1234567890\nharness_managed: true\n"
   securitySchemes:
     x-api-key:
       name: x-api-key

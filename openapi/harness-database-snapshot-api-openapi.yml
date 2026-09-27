@@ -94,90 +94,6 @@ paths:
       - Database Snapshot
       x-internal: false
 components:
-  responses:
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
-    SnapshotObjectNamesResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SnapshotObjectNamesOutput'
-      description: Response body for snapshot object names
-      headers:
-        X-Page-Number:
-          description: Page number in Paginated response.
-          schema:
-            type: integer
-        X-Page-Size:
-          description: Maximum page size in Paginated response.
-          schema:
-            type: integer
-        X-Total-Elements:
-          description: Total number of elements returned in Paginated response.
-          schema:
-            type: integer
-    SnapshotObjectValuesResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SnapshotObjectValuesOutput'
-      description: Response body for snapshot object values
-  parameters:
-    DbOpsPageIndex:
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-      in: query
-      name: page
-      schema:
-        default: 0
-        format: int64
-        type: integer
-    DBInstanceParam:
-      description: database instance unique id
-      in: path
-      name: dbinstance
-      required: true
-      schema:
-        type: string
-    DBSchemaParam:
-      description: Identifier of the database schema
-      in: path
-      name: dbschema
-      required: true
-      schema:
-        maxLength: 128
-        type: string
-    DbOpsLimit:
-      description: 'Pagination: Number of items to return.'
-      in: query
-      name: limit
-      schema:
-        default: 10
-        maximum: 100
-        type: integer
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
-    DbOpsAccountHeader:
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-      in: header
-      name: Harness-Account
-      schema:
-        type: string
   schemas:
     SnapshotObjectValuesOutput:
       description: Response containing list of object values from snapshot metadata
@@ -195,6 +111,41 @@ components:
       type: object
       x-stoplight:
         id: 9a5l2m8n3o4p12
+    SnapshotObjectValue:
+      description: Object value from snapshot metadata
+      properties:
+        objectName:
+          description: Name of the database object
+          type: string
+        objectValue:
+          description: Value of the database object
+          type: string
+      required:
+      - objectName
+      - objectValue
+      title: SnapshotObjectValue
+      type: object
+      x-stoplight:
+        id: 9a5l2m8n3o4p11
+    SnapshotObjectValuesInput:
+      description: Request containing object type and list of object names
+      properties:
+        objectNames:
+          description: List of object names to retrieve values for
+          items:
+            description: Name of a database object
+            type: string
+          type: array
+        objectType:
+          description: Type of database object (e.g., Table, etc)
+          type: string
+      required:
+      - objectType
+      - objectNames
+      title: SnapshotObjectValuesInput
+      type: object
+      x-stoplight:
+        id: 9a5l2m8n3o4p10
     SnapshotObjectNamesOutput:
       description: Response containing list of object names from snapshot metadata
       properties:
@@ -226,41 +177,90 @@ components:
       type: object
       x-stoplight:
         id: 61cwtgnps2mpt
-    SnapshotObjectValuesInput:
-      description: Request containing object type and list of object names
-      properties:
-        objectNames:
-          description: List of object names to retrieve values for
-          items:
-            description: Name of a database object
-            type: string
-          type: array
-        objectType:
-          description: Type of database object (e.g., Table, etc)
-          type: string
-      required:
-      - objectType
-      - objectNames
-      title: SnapshotObjectValuesInput
-      type: object
-      x-stoplight:
-        id: 9a5l2m8n3o4p10
-    SnapshotObjectValue:
-      description: Object value from snapshot metadata
-      properties:
-        objectName:
-          description: Name of the database object
-          type: string
-        objectValue:
-          description: Value of the database object
-          type: string
-      required:
-      - objectName
-      - objectValue
-      title: SnapshotObjectValue
-      type: object
-      x-stoplight:
-        id: 9a5l2m8n3o4p11
+  responses:
+    SnapshotObjectValuesResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SnapshotObjectValuesOutput'
+      description: Response body for snapshot object values
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
+    SnapshotObjectNamesResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SnapshotObjectNamesOutput'
+      description: Response body for snapshot object names
+      headers:
+        X-Page-Number:
+          description: Page number in Paginated response.
+          schema:
+            type: integer
+        X-Page-Size:
+          description: Maximum page size in Paginated response.
+          schema:
+            type: integer
+        X-Total-Elements:
+          description: Total number of elements returned in Paginated response.
+          schema:
+            type: integer
+  parameters:
+    DBInstanceParam:
+      description: database instance unique id
+      in: path
+      name: dbinstance
+      required: true
+      schema:
+        type: string
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    DbOpsAccountHeader:
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+      in: header
+      name: Harness-Account
+      schema:
+        type: string
+    DbOpsLimit:
+      description: 'Pagination: Number of items to return.'
+      in: query
+      name: limit
+      schema:
+        default: 10
+        maximum: 100
+        type: integer
+    DbOpsPageIndex:
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
+    DBSchemaParam:
+      description: Identifier of the database schema
+      in: path
+      name: dbschema
+      required: true
+      schema:
+        maxLength: 128
+        type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

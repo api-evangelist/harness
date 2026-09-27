@@ -618,6 +618,52 @@ paths:
       - x-api-key: []
 components:
   schemas:
+    PageResponseTokenAggregate:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenAggregate'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    PGPKeyIdentity:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+      description: Primary identity associated with the PGP key
+    TokenIssueResponseBody:
+      title: TokenIssueResponseBody
+      x-stoplight:
+        id: bs0ribdnc8esu
+      type: object
+      x-internal: true
+      properties:
+        token:
+          type: string
+          description: Issued cross-service JWT
+      required:
+      - token
     ScopedResourcePermission:
       required:
       - resourceType
@@ -652,7 +698,23 @@ components:
             type: string
             description: Permission identifiers for this resource type, e.g. [core_connector_view, core_connector_edit]. Preferred over the deprecated single `permission` field. Either this (non-empty) or `permission` is required.
       description: Defines a single permission scope restriction for a scoped token. A scoped token's effective permissions are the intersection of the parent principal's permissions and the union of all ScopedResourcePermission items on the token. Either the deprecated `permission` (single) or non-empty `permissions` (list) is required.
-    ResponseDTOBoolean:
+    NotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          default: 404
+          example: 404
+          format: int64
+      example:
+        message: Not Found
+        status: 404
+      required:
+      - message
+    ResponseDTOString:
       type: object
       properties:
         status:
@@ -662,7 +724,7 @@ components:
           - FAILURE
           - ERROR
         data:
-          type: boolean
+          type: string
         metaData:
           type: object
         correlationId:
@@ -1086,91 +1148,20 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    TokenAggregate:
-      required:
-      - createdAt
-      - expiryAt
-      - lastModifiedAt
-      - token
+    ResponseDTOToken:
       type: object
       properties:
-        token:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
           $ref: '#/components/schemas/Token'
-        expiryAt:
-          type: integer
-          description: Expiry time of the Token.
-          format: int64
-        createdAt:
-          type: integer
-          description: This is the time at which Token was created.
-          format: int64
-        lastModifiedAt:
-          type: integer
-          description: This is the time at which Token was last modified.
-          format: int64
-      description: This has token details and metadata.
-    ResponseDTOPageResponseTokenAggregate:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseTokenAggregate'
         metaData:
           type: object
         correlationId:
-          type: string
-    ResponseDTOString:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: string
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    PageResponseTokenAggregate:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/TokenAggregate'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
-          type: string
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
           type: string
     ResponseMessage:
       type: object
@@ -1762,18 +1753,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    TokenIssueResponseBody:
-      title: TokenIssueResponseBody
-      x-stoplight:
-        id: bs0ribdnc8esu
-      type: object
-      x-internal: true
-      properties:
-        token:
-          type: string
-          description: Issued cross-service JWT
-      required:
-      - token
     Token:
       required:
       - identifier
@@ -1908,26 +1887,29 @@ components:
         scopedResourceMetadata:
           $ref: '#/components/schemas/ScopedResourceMetadata'
       description: This has the API Key Token details defined in Harness.
-    SortOrder:
+    TokenAggregate:
+      required:
+      - createdAt
+      - expiryAt
+      - lastModifiedAt
+      - token
       type: object
       properties:
-        fieldName:
-          type: string
-        orderType:
-          type: string
-          enum:
-          - ASC
-          - DESC
-    ScopedResourceMetadata:
-      type: object
-      properties:
-        parentResourceId:
-          type: string
-          description: Parent resource identifier (e.g. pipeline execution ID). Required for ephemeral tokens.
-        createdBy:
-          type: string
-          description: 'Creator of the token: user ID for persistent, service name (e.g. pipeline-service) for ephemeral.'
-      description: Metadata for the resource that a scoped token is associated with. Extensible to support additional metadata fields in the future.
+        token:
+          $ref: '#/components/schemas/Token'
+        expiryAt:
+          type: integer
+          description: Expiry time of the Token.
+          format: int64
+        createdAt:
+          type: integer
+          description: This is the time at which Token was created.
+          format: int64
+        lastModifiedAt:
+          type: integer
+          description: This is the time at which Token was last modified.
+          format: int64
+      description: This has token details and metadata.
     Error1:
       type: object
       properties:
@@ -2351,31 +2333,7 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    NotFound:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Not Found
-        status:
-          type: integer
-          default: 404
-          example: 404
-          format: int64
-      example:
-        message: Not Found
-        status: 404
-      required:
-      - message
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    ResponseDTOToken:
+    ResponseDTOPageResponseTokenAggregate:
       type: object
       properties:
         status:
@@ -2385,19 +2343,34 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/Token'
+          $ref: '#/components/schemas/PageResponseTokenAggregate'
         metaData:
           type: object
         correlationId:
           type: string
-    PGPKeyIdentity:
+    ResponseDTOBoolean:
       type: object
       properties:
-        name:
+        status:
           type: string
-        email:
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: boolean
+        metaData:
+          type: object
+        correlationId:
           type: string
-      description: Primary identity associated with the PGP key
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     TokenResponse:
       type: object
       properties:
@@ -2409,6 +2382,33 @@ components:
         token: example-token-value
       required:
       - token
+    SortOrder:
+      type: object
+      properties:
+        fieldName:
+          type: string
+        orderType:
+          type: string
+          enum:
+          - ASC
+          - DESC
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    ScopedResourceMetadata:
+      type: object
+      properties:
+        parentResourceId:
+          type: string
+          description: Parent resource identifier (e.g. pipeline execution ID). Required for ephemeral tokens.
+        createdBy:
+          type: string
+          description: 'Creator of the token: user ID for persistent, service name (e.g. pipeline-service) for ephemeral.'
+      description: Metadata for the resource that a scoped token is associated with. Extensible to support additional metadata fields in the future.
   responses:
     TokenIssueResponseBody:
       description: Response body for token

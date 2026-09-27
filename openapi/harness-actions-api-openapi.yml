@@ -556,44 +556,152 @@ paths:
                 $ref: '#/components/schemas/api.RestError'
 components:
   schemas:
-    actions.ActionType:
-      type: string
-      enum:
-      - delay
-      - customScript
-      - container
-      x-enum-varnames:
-      - DelayActionType
-      - CustomScriptActionType
-      - ContainerActionType
-    shared.PaginationResponse:
+    action.ENV:
       type: object
       properties:
-        index:
-          type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-    actions.InfrastructureType:
+        name:
+          type: string
+        value:
+          type: string
+    v1.WindowsSecurityContextOptions:
+      type: object
+      properties:
+        gmsaCredentialSpec:
+          description: 'GMSACredentialSpec is where the GMSA admission webhook
+
+            (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
+
+            GMSA credential spec named by the GMSACredentialSpecName field.
+
+            +optional'
+          type: string
+        gmsaCredentialSpecName:
+          description: 'GMSACredentialSpecName is the name of the GMSA credential spec to use.
+
+            +optional'
+          type: string
+        runAsUserName:
+          description: 'The UserName in Windows to run the entrypoint of the container process.
+
+            Defaults to the user specified in image metadata if unspecified.
+
+            May also be set in PodSecurityContext. If set in both SecurityContext and
+
+            PodSecurityContext, the value specified in SecurityContext takes precedence.
+
+            +optional'
+          type: string
+    common.NodeAffinity:
+      type: object
+      properties:
+        preferred:
+          type: array
+          items:
+            $ref: '#/components/schemas/common.PreferredNodeSelector'
+        required:
+          type: array
+          items:
+            $ref: '#/components/schemas/common.RequiredNodeSelector'
+    v1.TolerationOperator:
       type: string
       enum:
-      - Kubernetes
-      - KubernetesV2
-      - Windows
-      - Linux
-      - CloudFoundry
-      - Container
+      - Exists
+      - Equal
       x-enum-varnames:
-      - InfrastructureTypeKubernetes
-      - InfrastructureTypeKubernetesV2
-      - InfrastructureTypeWindows
-      - InfrastructureTypeLinux
-      - InfrastructureTypeCloudFoundry
-      - InfrastructureTypeContainer
-    github_com_harness_hce-saas_graphql_server_graph_model.UserDetails:
+      - TolerationOpExists
+      - TolerationOpEqual
+    v1.Capabilities:
+      type: object
+      properties:
+        add:
+          description: 'Added capabilities
+
+            +optional'
+          type: array
+          items:
+            type: string
+        drop:
+          description: 'Removed capabilities
+
+            +optional'
+          type: array
+          items:
+            type: string
+    v1.TaintEffect:
+      type: string
+      enum:
+      - NoSchedule
+      - PreferNoSchedule
+      - NoExecute
+      x-enum-varnames:
+      - TaintEffectNoSchedule
+      - TaintEffectPreferNoSchedule
+      - TaintEffectNoExecute
+    v1.StorageMedium:
+      type: string
+      enum:
+      - ''
+      - Memory
+      - HugePages
+      - HugePages-
+      x-enum-comments:
+        StorageMediumDefault: use whatever the default is for the node, assume anything we don't explicitly handle is this
+        StorageMediumHugePages: use hugepages
+        StorageMediumHugePagesPrefix: prefix for full medium notation HugePages-<size>
+        StorageMediumMemory: use memory (e.g. tmpfs on linux)
+      x-enum-varnames:
+      - StorageMediumDefault
+      - StorageMediumMemory
+      - StorageMediumHugePages
+      - StorageMediumHugePagesPrefix
+    v1.HostPathVolumeSource:
+      type: object
+      properties:
+        path:
+          description: 'Path of the directory on the host.
+
+            If the path is a symlink, it will follow the link to the real path.
+
+            More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath'
+          type: string
+        type:
+          description: 'Type for HostPath Volume
+
+            Defaults to ""
+
+            More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.HostPathType'
+    v1.PullPolicy:
+      type: string
+      enum:
+      - Always
+      - Never
+      - IfNotPresent
+      x-enum-varnames:
+      - PullAlways
+      - PullNever
+      - PullIfNotPresent
+    v1.ResourceFieldSelector:
+      type: object
+      properties:
+        containerName:
+          description: 'Container name: required for volumes, optional for env vars
+
+            +optional'
+          type: string
+        divisor:
+          description: 'Specifies the output format of the exposed resources, defaults to "1"
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/resource.Quantity'
+        resource:
+          description: 'Required: resource to select'
+          type: string
+    actions.UserDetails:
       type: object
       properties:
         email:
@@ -602,35 +710,41 @@ components:
           type: string
         username:
           type: string
-    common.PreferredNodeSelector:
+    v1.ConfigMapKeySelector:
       type: object
       properties:
         key:
+          description: The key to select.
           type: string
-        operator:
-          description: 'default: In'
+        name:
+          description: 'Name of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+
+            TODO: Add other useful fields. apiVersion, kind, uid?
+
+            +optional'
           type: string
-        values:
-          type: string
-        weight:
-          type: string
-    actions.ListActionTemplateResponse:
+        optional:
+          description: 'Specify whether the ConfigMap or its key must be defined
+
+            +optional'
+          type: boolean
+    actions.ExecutedByExperiment:
       type: object
       properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/actions.ActionResponse'
-        pagination:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    v1.PodFSGroupChangePolicy:
-      type: string
-      enum:
-      - OnRootMismatch
-      - Always
-      x-enum-varnames:
-      - FSGroupChangeOnRootMismatch
-      - FSGroupChangeAlways
+        experimentID:
+          type: string
+        experimentName:
+          type: string
+        experimentRunID:
+          type: string
+        notifyID:
+          type: string
+        updatedAt:
+          type: integer
+        updatedBy:
+          $ref: '#/components/schemas/actions.UserDetails'
     template.Variable:
       type: object
       required:
@@ -664,409 +778,6 @@ components:
         validator:
           type: string
         value: {}
-    common.VolumeType:
-      type: string
-      enum:
-      - HostPath
-      - EmptyDir
-      - Secret
-      - PersistentVolumeClaim
-      - ConfigMap
-      x-enum-varnames:
-      - VolumeTypeHostPath
-      - VolumeTypeEmptyDir
-      - VolumeTypeSecret
-      - VolumeTypePersistentVolumeClaim
-      - VolumeTypeConfigMap
-    actions.ImportActionTemplateRequest:
-      type: object
-      required:
-      - actionRef
-      - identity
-      - importType
-      - name
-      properties:
-        actionRef:
-          type: string
-        description:
-          type: string
-        hubIdentifiers:
-          $ref: '#/components/schemas/actions.Identifiers'
-        hubRef:
-          type: string
-        identity:
-          type: string
-        importType:
-          $ref: '#/components/schemas/mongodb.ImportType'
-        managedBy:
-          $ref: '#/components/schemas/mongodb.ManagedBy'
-        name:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-    resource.Quantity:
-      type: object
-      properties:
-        Format:
-          type: string
-          enum:
-          - DecimalExponent
-          - BinarySI
-          - DecimalSI
-          x-enum-comments:
-            BinarySI: e.g., 12Mi (12 * 2^20)
-            DecimalExponent: e.g., 12e6
-            DecimalSI: e.g., 12M  (12 * 10^6)
-          x-enum-varnames:
-          - DecimalExponent
-          - BinarySI
-          - DecimalSI
-    v1.Capabilities:
-      type: object
-      properties:
-        add:
-          description: 'Added capabilities
-
-            +optional'
-          type: array
-          items:
-            type: string
-        drop:
-          description: 'Removed capabilities
-
-            +optional'
-          type: array
-          items:
-            type: string
-    v1.TaintEffect:
-      type: string
-      enum:
-      - NoSchedule
-      - PreferNoSchedule
-      - NoExecute
-      x-enum-varnames:
-      - TaintEffectNoSchedule
-      - TaintEffectPreferNoSchedule
-      - TaintEffectNoExecute
-    actions.ActionResponse:
-      type: object
-      required:
-      - accountID
-      - name
-      properties:
-        accountID:
-          type: string
-        actionProperties:
-          $ref: '#/components/schemas/action.ActionTemplateProperties'
-        actionReferenceCount:
-          type: integer
-        actionTemplate:
-          type: string
-        actionsRef:
-          type: string
-        createdAt:
-          type: integer
-        createdBy:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
-        description:
-          type: string
-        hasSecrets:
-          type: boolean
-        hubRef:
-          type: string
-        identity:
-          type: string
-        importType:
-          $ref: '#/components/schemas/mongodb.ImportType'
-        infrastructureType:
-          $ref: '#/components/schemas/actions.InfrastructureType'
-        inputs:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        isImported:
-          type: boolean
-        isRemoved:
-          type: boolean
-        managedBy:
-          $ref: '#/components/schemas/mongodb.ManagedBy'
-        name:
-          type: string
-        orgID:
-          type: string
-        projectID:
-          type: string
-        recentExecutions:
-          type: array
-          items:
-            $ref: '#/components/schemas/actions.RecentExecutions'
-        runProperties:
-          $ref: '#/components/schemas/action.ActionTemplateRunProperties'
-        tags:
-          type: array
-          items:
-            type: string
-        type:
-          $ref: '#/components/schemas/actions.ActionType'
-        updatedAt:
-          type: integer
-        updatedBy:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
-        variables:
-          description: CHAOS-11100
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
-    action.ActionTemplateProperties:
-      type: object
-      properties:
-        containerAction:
-          $ref: '#/components/schemas/common.ContainerTemplate'
-        customScriptAction:
-          $ref: '#/components/schemas/action.CustomScriptActionTemplate'
-        delayAction:
-          $ref: '#/components/schemas/action.DelayActionTemplate'
-    v1.StorageMedium:
-      type: string
-      enum:
-      - ''
-      - Memory
-      - HugePages
-      - HugePages-
-      x-enum-comments:
-        StorageMediumDefault: use whatever the default is for the node, assume anything we don't explicitly handle is this
-        StorageMediumHugePages: use hugepages
-        StorageMediumHugePagesPrefix: prefix for full medium notation HugePages-<size>
-        StorageMediumMemory: use memory (e.g. tmpfs on linux)
-      x-enum-varnames:
-      - StorageMediumDefault
-      - StorageMediumMemory
-      - StorageMediumHugePages
-      - StorageMediumHugePagesPrefix
-    actions.ExecutedByExperiment:
-      type: object
-      properties:
-        experimentID:
-          type: string
-        experimentName:
-          type: string
-        experimentRunID:
-          type: string
-        notifyID:
-          type: string
-        updatedAt:
-          type: integer
-        updatedBy:
-          $ref: '#/components/schemas/actions.UserDetails'
-    v1.SeccompProfileType:
-      type: string
-      enum:
-      - Unconfined
-      - RuntimeDefault
-      - Localhost
-      x-enum-varnames:
-      - SeccompProfileTypeUnconfined
-      - SeccompProfileTypeRuntimeDefault
-      - SeccompProfileTypeLocalhost
-    api.RestError:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
-    actions.RecentExecutions:
-      type: object
-      properties:
-        executedByExperiment:
-          $ref: '#/components/schemas/actions.ExecutedByExperiment'
-        status:
-          type: string
-        stepName:
-          type: string
-    common.RequiredNodeSelector:
-      type: object
-      properties:
-        key:
-          type: string
-        operator:
-          description: 'default: In'
-          type: string
-        values:
-          type: string
-    action.ENV:
-      type: object
-      properties:
-        name:
-          type: string
-        value:
-          type: string
-    k8s_io_api_core_v1.EnvVar:
-      type: object
-      properties:
-        name:
-          description: Name of the environment variable. Must be a C_IDENTIFIER.
-          type: string
-        value:
-          description: 'Variable references $(VAR_NAME) are expanded
-
-            using the previous defined environment variables in the container and
-
-            any service environment variables. If a variable cannot be resolved,
-
-            the reference in the input string will be unchanged. The $(VAR_NAME)
-
-            syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-
-            references will never be expanded, regardless of whether the variable
-
-            exists or not.
-
-            Defaults to "".
-
-            +optional'
-          type: string
-        valueFrom:
-          description: 'Source for the environment variable''s value. Cannot be used if value is not empty.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.EnvVarSource'
-    v1.EnvVarSource:
-      type: object
-      properties:
-        configMapKeyRef:
-          description: 'Selects a key of a ConfigMap.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ConfigMapKeySelector'
-        fieldRef:
-          description: 'Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`, `metadata.annotations[''<KEY>'']`,
-
-            spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ObjectFieldSelector'
-        resourceFieldRef:
-          description: 'Selects a resource of the container: only resources limits and requests
-
-            (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ResourceFieldSelector'
-        secretKeyRef:
-          description: 'Selects a key of a secret in the pod''s namespace
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.SecretKeySelector'
-    v1.PullPolicy:
-      type: string
-      enum:
-      - Always
-      - Never
-      - IfNotPresent
-      x-enum-varnames:
-      - PullAlways
-      - PullNever
-      - PullIfNotPresent
-    v1.SeccompProfile:
-      type: object
-      properties:
-        localhostProfile:
-          description: 'localhostProfile indicates a profile defined in a file on the node should be used.
-
-            The profile must be preconfigured on the node to work.
-
-            Must be a descending path, relative to the kubelet''s configured seccomp profile location.
-
-            Must only be set if type is "Localhost".
-
-            +optional'
-          type: string
-        type:
-          description: 'type indicates which kind of seccomp profile will be applied.
-
-            Valid options are:
-
-
-            Localhost - a profile defined in a file on the node should be used.
-
-            RuntimeDefault - the container runtime default profile should be used.
-
-            Unconfined - no profile should be applied.
-
-            +unionDiscriminator'
-          allOf:
-          - $ref: '#/components/schemas/v1.SeccompProfileType'
-    v1.Sysctl:
-      type: object
-      properties:
-        name:
-          description: Name of a property to set
-          type: string
-        value:
-          description: Value of a property to set
-          type: string
-    template.InputCategory:
-      type: string
-      enum:
-      - FaultTarget
-      - FaultTunable
-      - TargetInfra
-      - ExperimentTunable
-      - ActionProperties
-      - ProbeProperties
-      - RunProperties
-      - FaultAuthentication
-      x-enum-varnames:
-      - CategoryFaultTarget
-      - CategoryFaultTunable
-      - CategoryTargetInfra
-      - CategoryExperimentTunable
-      - CategoryActionProperties
-      - CategoryProbeProperties
-      - CategoryRunProperties
-      - CategoryFaultAuthentication
-    v1.HostPathVolumeSource:
-      type: object
-      properties:
-        path:
-          description: 'Path of the directory on the host.
-
-            If the path is a symlink, it will follow the link to the real path.
-
-            More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath'
-          type: string
-        type:
-          description: 'Type for HostPath Volume
-
-            Defaults to ""
-
-            More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.HostPathType'
-    mongodb.ManagedBy:
-      type: string
-      enum:
-      - EXPERIMENT
-      x-enum-varnames:
-      - ManagedByExperiment
     v1.EmptyDirVolumeSource:
       type: object
       properties:
@@ -1098,62 +809,269 @@ components:
             +optional'
           allOf:
           - $ref: '#/components/schemas/resource.Quantity'
-    v1.ProcMountType:
-      type: string
-      enum:
-      - Default
-      - Unmasked
-      x-enum-varnames:
-      - DefaultProcMount
-      - UnmaskedProcMount
-    v1.Toleration:
+    actions.ImportActionTemplateRequest:
+      type: object
+      required:
+      - actionRef
+      - identity
+      - importType
+      - name
+      properties:
+        actionRef:
+          type: string
+        description:
+          type: string
+        hubIdentifiers:
+          $ref: '#/components/schemas/actions.Identifiers'
+        hubRef:
+          type: string
+        identity:
+          type: string
+        importType:
+          $ref: '#/components/schemas/mongodb.ImportType'
+        managedBy:
+          $ref: '#/components/schemas/mongodb.ManagedBy'
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    v1.SELinuxOptions:
       type: object
       properties:
-        effect:
-          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
-
-            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.TaintEffect'
-        key:
-          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
-
-            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+        level:
+          description: 'Level is SELinux level label that applies to the container.
 
             +optional'
           type: string
+        role:
+          description: 'Role is a SELinux role label that applies to the container.
+
+            +optional'
+          type: string
+        type:
+          description: 'Type is a SELinux type label that applies to the container.
+
+            +optional'
+          type: string
+        user:
+          description: 'User is a SELinux user label that applies to the container.
+
+            +optional'
+          type: string
+    common.PreferredNodeSelector:
+      type: object
+      properties:
+        key:
+          type: string
         operator:
-          description: 'Operator represents a key''s relationship to the value.
+          description: 'default: In'
+          type: string
+        values:
+          type: string
+        weight:
+          type: string
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
+          type: string
+    v1.SecurityContext:
+      type: object
+      properties:
+        allowPrivilegeEscalation:
+          description: 'AllowPrivilegeEscalation controls whether a process can gain more
 
-            Valid operators are Exists and Equal. Defaults to Equal.
+            privileges than its parent process. This bool directly controls if
 
-            Exists is equivalent to wildcard for value, so that a pod can
+            the no_new_privs flag will be set on the container process.
 
-            tolerate all taints of a particular category.
+            AllowPrivilegeEscalation is true always when the container is:
+
+            1) run as Privileged
+
+            2) has CAP_SYS_ADMIN
+
+            +optional'
+          type: boolean
+        capabilities:
+          description: 'The capabilities to add/drop when running containers.
+
+            Defaults to the default set of capabilities granted by the container runtime.
 
             +optional'
           allOf:
-          - $ref: '#/components/schemas/v1.TolerationOperator'
-        tolerationSeconds:
-          description: 'TolerationSeconds represents the period of time the toleration (which must be
+          - $ref: '#/components/schemas/v1.Capabilities'
+        privileged:
+          description: 'Run container in privileged mode.
 
-            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+            Processes in privileged containers are essentially equivalent to root on the host.
 
-            it is not set, which means tolerate the taint forever (do not evict). Zero and
+            Defaults to false.
 
-            negative values will be treated as 0 (evict immediately) by the system.
+            +optional'
+          type: boolean
+        procMount:
+          description: 'procMount denotes the type of proc mount to use for the containers.
+
+            The default is DefaultProcMount which uses the container runtime defaults for
+
+            readonly paths and masked paths.
+
+            This requires the ProcMountType feature flag to be enabled.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ProcMountType'
+        readOnlyRootFilesystem:
+          description: 'Whether this container has a read-only root filesystem.
+
+            Default is false.
+
+            +optional'
+          type: boolean
+        runAsGroup:
+          description: 'The GID to run the entrypoint of the container process.
+
+            Uses runtime default if unset.
+
+            May also be set in PodSecurityContext.  If set in both SecurityContext and
+
+            PodSecurityContext, the value specified in SecurityContext takes precedence.
 
             +optional'
           type: integer
-        value:
-          description: 'Value is the taint value the toleration matches to.
+        runAsNonRoot:
+          description: 'Indicates that the container must run as a non-root user.
 
-            If the operator is Exists, the value should be empty, otherwise just a regular string.
+            If true, the Kubelet will validate the image at runtime to ensure that it
+
+            does not run as UID 0 (root) and fail to start the container if it does.
+
+            If unset or false, no such validation will be performed.
+
+            May also be set in PodSecurityContext.  If set in both SecurityContext and
+
+            PodSecurityContext, the value specified in SecurityContext takes precedence.
+
+            +optional'
+          type: boolean
+        runAsUser:
+          description: 'The UID to run the entrypoint of the container process.
+
+            Defaults to user specified in image metadata if unspecified.
+
+            May also be set in PodSecurityContext.  If set in both SecurityContext and
+
+            PodSecurityContext, the value specified in SecurityContext takes precedence.
+
+            +optional'
+          type: integer
+        seLinuxOptions:
+          description: 'The SELinux context to be applied to the container.
+
+            If unspecified, the container runtime will allocate a random SELinux context for each
+
+            container.  May also be set in PodSecurityContext.  If set in both SecurityContext and
+
+            PodSecurityContext, the value specified in SecurityContext takes precedence.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.SELinuxOptions'
+        seccompProfile:
+          description: 'The seccomp options to use by this container. If seccomp options are
+
+            provided at both the pod & container level, the container options
+
+            override the pod options.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.SeccompProfile'
+        windowsOptions:
+          description: 'The Windows specific settings applied to all containers.
+
+            If unspecified, the options from the PodSecurityContext will be used.
+
+            If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.WindowsSecurityContextOptions'
+    template.InputCategory:
+      type: string
+      enum:
+      - FaultTarget
+      - FaultTunable
+      - TargetInfra
+      - ExperimentTunable
+      - ActionProperties
+      - ProbeProperties
+      - RunProperties
+      - FaultAuthentication
+      x-enum-varnames:
+      - CategoryFaultTarget
+      - CategoryFaultTunable
+      - CategoryTargetInfra
+      - CategoryExperimentTunable
+      - CategoryActionProperties
+      - CategoryProbeProperties
+      - CategoryRunProperties
+      - CategoryFaultAuthentication
+    actions.Identifiers:
+      type: object
+      properties:
+        accountID:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+    mongodb.ImportType:
+      type: string
+      enum:
+      - LOCAL
+      - REFERENCE
+      x-enum-varnames:
+      - ImportTypeLocal
+      - ImportTypeReference
+    k8s_io_api_core_v1.EnvVar:
+      type: object
+      properties:
+        name:
+          description: Name of the environment variable. Must be a C_IDENTIFIER.
+          type: string
+        value:
+          description: 'Variable references $(VAR_NAME) are expanded
+
+            using the previous defined environment variables in the container and
+
+            any service environment variables. If a variable cannot be resolved,
+
+            the reference in the input string will be unchanged. The $(VAR_NAME)
+
+            syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
+
+            references will never be expanded, regardless of whether the variable
+
+            exists or not.
+
+            Defaults to "".
 
             +optional'
           type: string
+        valueFrom:
+          description: 'Source for the environment variable''s value. Cannot be used if value is not empty.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.EnvVarSource'
     v1.PodSecurityContext:
       type: object
       properties:
@@ -1283,71 +1201,169 @@ components:
             +optional'
           allOf:
           - $ref: '#/components/schemas/v1.WindowsSecurityContextOptions'
-    common.NodeAffinity:
+    common.ResourceRequirements:
       type: object
       properties:
-        preferred:
+        limits:
+          type: object
+          additionalProperties:
+            type: string
+        requests:
+          type: object
+          additionalProperties:
+            type: string
+    resource.Quantity:
+      type: object
+      properties:
+        Format:
+          type: string
+          enum:
+          - DecimalExponent
+          - BinarySI
+          - DecimalSI
+          x-enum-comments:
+            BinarySI: e.g., 12Mi (12 * 2^20)
+            DecimalExponent: e.g., 12e6
+            DecimalSI: e.g., 12M  (12 * 10^6)
+          x-enum-varnames:
+          - DecimalExponent
+          - BinarySI
+          - DecimalSI
+    actions.ListActionTemplateResponse:
+      type: object
+      properties:
+        data:
           type: array
           items:
-            $ref: '#/components/schemas/common.PreferredNodeSelector'
-        required:
+            $ref: '#/components/schemas/actions.ActionResponse'
+        pagination:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    v1.SeccompProfileType:
+      type: string
+      enum:
+      - Unconfined
+      - RuntimeDefault
+      - Localhost
+      x-enum-varnames:
+      - SeccompProfileTypeUnconfined
+      - SeccompProfileTypeRuntimeDefault
+      - SeccompProfileTypeLocalhost
+    actions.RecentExecutions:
+      type: object
+      properties:
+        executedByExperiment:
+          $ref: '#/components/schemas/actions.ExecutedByExperiment'
+        status:
+          type: string
+        stepName:
+          type: string
+    v1.PodFSGroupChangePolicy:
+      type: string
+      enum:
+      - OnRootMismatch
+      - Always
+      x-enum-varnames:
+      - FSGroupChangeOnRootMismatch
+      - FSGroupChangeAlways
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    github_com_harness_hce-saas_graphql_server_models_shared.Metadata:
+      type: object
+      properties:
+        description:
+          type: string
+        identity:
+          type: string
+        name:
+          type: string
+        tags:
           type: array
           items:
-            $ref: '#/components/schemas/common.RequiredNodeSelector'
-    v1.ConfigMapKeySelector:
+            type: string
+    common.RequiredNodeSelector:
       type: object
       properties:
         key:
-          description: The key to select.
           type: string
+        operator:
+          description: 'default: In'
+          type: string
+        values:
+          type: string
+    common.Volume:
+      type: object
+      properties:
+        configMap:
+          $ref: '#/components/schemas/common.VolumeInputTemplate'
+        emptyDir:
+          $ref: '#/components/schemas/v1.EmptyDirVolumeSource'
+        hostPath:
+          $ref: '#/components/schemas/v1.HostPathVolumeSource'
         name:
-          description: 'Name of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-
-            TODO: Add other useful fields. apiVersion, kind, uid?
-
-            +optional'
           type: string
-        optional:
-          description: 'Specify whether the ConfigMap or its key must be defined
+        persistentVolumeClaim:
+          $ref: '#/components/schemas/v1.PersistentVolumeClaimVolumeSource'
+        secret:
+          $ref: '#/components/schemas/common.VolumeInputTemplate'
+        type:
+          $ref: '#/components/schemas/common.VolumeType'
+    actions.InfrastructureType:
+      type: string
+      enum:
+      - Kubernetes
+      - KubernetesV2
+      - Windows
+      - Linux
+      - CloudFoundry
+      - Container
+      x-enum-varnames:
+      - InfrastructureTypeKubernetes
+      - InfrastructureTypeKubernetesV2
+      - InfrastructureTypeWindows
+      - InfrastructureTypeLinux
+      - InfrastructureTypeCloudFoundry
+      - InfrastructureTypeContainer
+    v1.EnvVarSource:
+      type: object
+      properties:
+        configMapKeyRef:
+          description: 'Selects a key of a ConfigMap.
 
             +optional'
-          type: boolean
+          allOf:
+          - $ref: '#/components/schemas/v1.ConfigMapKeySelector'
+        fieldRef:
+          description: 'Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`, `metadata.annotations[''<KEY>'']`,
+
+            spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ObjectFieldSelector'
+        resourceFieldRef:
+          description: 'Selects a resource of the container: only resources limits and requests
+
+            (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ResourceFieldSelector'
+        secretKeyRef:
+          description: 'Selects a key of a secret in the pod''s namespace
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.SecretKeySelector'
     action.DelayActionTemplate:
       type: object
       properties:
         duration:
           type: string
-    v1.ObjectFieldSelector:
-      type: object
-      properties:
-        apiVersion:
-          description: 'Version of the schema the FieldPath is written in terms of, defaults to "v1".
-
-            +optional'
-          type: string
-        fieldPath:
-          description: Path of the field to select in the specified API version.
-          type: string
-    v1.ResourceFieldSelector:
-      type: object
-      properties:
-        containerName:
-          description: 'Container name: required for volumes, optional for env vars
-
-            +optional'
-          type: string
-        divisor:
-          description: 'Specifies the output format of the exposed resources, defaults to "1"
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/resource.Quantity'
-        resource:
-          description: 'Required: resource to select'
-          type: string
-    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_actions.Action:
+    actions.ActionResponse:
       type: object
       required:
       - accountID
@@ -1359,8 +1375,14 @@ components:
           $ref: '#/components/schemas/action.ActionTemplateProperties'
         actionReferenceCount:
           type: integer
+        actionTemplate:
+          type: string
         actionsRef:
           type: string
+        createdAt:
+          type: integer
+        createdBy:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
         description:
           type: string
         hasSecrets:
@@ -1377,6 +1399,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/template.Variable'
+        isImported:
+          type: boolean
         isRemoved:
           type: boolean
         managedBy:
@@ -1399,227 +1423,28 @@ components:
             type: string
         type:
           $ref: '#/components/schemas/actions.ActionType'
+        updatedAt:
+          type: integer
+        updatedBy:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
         variables:
           description: CHAOS-11100
           type: array
           items:
             $ref: '#/components/schemas/template.Variable'
-    v1.VolumeMount:
+    action.CustomScriptActionTemplate:
       type: object
       properties:
-        mountPath:
-          description: 'Path within the container at which the volume should be mounted.  Must
-
-            not contain '':''.'
-          type: string
-        mountPropagation:
-          description: 'mountPropagation determines how mounts are propagated from the host
-
-            to container and the other way around.
-
-            When not set, MountPropagationNone is used.
-
-            This field is beta in 1.10.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.MountPropagationMode'
-        name:
-          description: This must match the Name of a Volume.
-          type: string
-        readOnly:
-          description: 'Mounted read-only if true, read-write otherwise (false or unspecified).
-
-            Defaults to false.
-
-            +optional'
-          type: boolean
-        subPath:
-          description: 'Path within the volume from which the container''s volume should be mounted.
-
-            Defaults to "" (volume''s root).
-
-            +optional'
-          type: string
-        subPathExpr:
-          description: 'Expanded path within the volume from which the container''s volume should be mounted.
-
-            Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container''s environment.
-
-            Defaults to "" (volume''s root).
-
-            SubPathExpr and SubPath are mutually exclusive.
-
-            +optional'
-          type: string
-    common.Volume:
-      type: object
-      properties:
-        configMap:
-          $ref: '#/components/schemas/common.VolumeInputTemplate'
-        emptyDir:
-          $ref: '#/components/schemas/v1.EmptyDirVolumeSource'
-        hostPath:
-          $ref: '#/components/schemas/v1.HostPathVolumeSource'
-        name:
-          type: string
-        persistentVolumeClaim:
-          $ref: '#/components/schemas/v1.PersistentVolumeClaimVolumeSource'
-        secret:
-          $ref: '#/components/schemas/common.VolumeInputTemplate'
-        type:
-          $ref: '#/components/schemas/common.VolumeType'
-    v1.WindowsSecurityContextOptions:
-      type: object
-      properties:
-        gmsaCredentialSpec:
-          description: 'GMSACredentialSpec is where the GMSA admission webhook
-
-            (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
-
-            GMSA credential spec named by the GMSACredentialSpecName field.
-
-            +optional'
-          type: string
-        gmsaCredentialSpecName:
-          description: 'GMSACredentialSpecName is the name of the GMSA credential spec to use.
-
-            +optional'
-          type: string
-        runAsUserName:
-          description: 'The UserName in Windows to run the entrypoint of the container process.
-
-            Defaults to the user specified in image metadata if unspecified.
-
-            May also be set in PodSecurityContext. If set in both SecurityContext and
-
-            PodSecurityContext, the value specified in SecurityContext takes precedence.
-
-            +optional'
-          type: string
-    action.ActionTemplateRunProperties:
-      type: object
-      properties:
-        initialDelay:
-          type: string
-        interval:
-          type: string
-        maxRetries: {}
-        stopOnFailure:
-          type: boolean
-        timeout:
-          type: string
-        verbosity:
-          type: string
-    v1.PersistentVolumeClaimVolumeSource:
-      type: object
-      properties:
-        claimName:
-          description: 'ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume.
-
-            More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims'
-          type: string
-        readOnly:
-          description: 'Will force the ReadOnly setting in VolumeMounts.
-
-            Default false.
-
-            +optional'
-          type: boolean
-    common.VolumeInputTemplate:
-      type: object
-      properties:
-        defaultMode:
-          type: string
-        items:
-          type: object
-          additionalProperties:
-            type: string
-        name:
-          type: string
-        optional:
-          type: boolean
-    shared.ListMetadataResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_models_shared.Metadata'
-        pagination:
-          $ref: '#/components/schemas/shared.PaginationResponse'
-    v1.SecretKeySelector:
-      type: object
-      properties:
-        key:
-          description: The key of the secret to select from.  Must be a valid secret key.
-          type: string
-        name:
-          description: 'Name of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-
-            TODO: Add other useful fields. apiVersion, kind, uid?
-
-            +optional'
-          type: string
-        optional:
-          description: 'Specify whether the Secret or its key must be defined
-
-            +optional'
-          type: boolean
-    v1.SELinuxOptions:
-      type: object
-      properties:
-        level:
-          description: 'Level is SELinux level label that applies to the container.
-
-            +optional'
-          type: string
-        role:
-          description: 'Role is a SELinux role label that applies to the container.
-
-            +optional'
-          type: string
-        type:
-          description: 'Type is a SELinux type label that applies to the container.
-
-            +optional'
-          type: string
-        user:
-          description: 'User is a SELinux user label that applies to the container.
-
-            +optional'
-          type: string
-    actions.UserDetails:
-      type: object
-      properties:
-        email:
-          type: string
-        userID:
-          type: string
-        username:
-          type: string
-    common.ResourceRequirements:
-      type: object
-      properties:
-        limits:
-          type: object
-          additionalProperties:
-            type: string
-        requests:
-          type: object
-          additionalProperties:
-            type: string
-    types.ListMetadataRequest:
-      type: object
-      properties:
-        identifiers:
+        args:
           type: array
           items:
             type: string
+        command:
+          type: string
+        env:
+          type: array
+          items:
+            $ref: '#/components/schemas/action.ENV'
     common.ContainerTemplate:
       type: object
       properties:
@@ -1683,158 +1508,336 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/common.Volume'
-    v1.SecurityContext:
+    v1.PersistentVolumeClaimVolumeSource:
       type: object
       properties:
-        allowPrivilegeEscalation:
-          description: 'AllowPrivilegeEscalation controls whether a process can gain more
+        claimName:
+          description: 'ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume.
 
-            privileges than its parent process. This bool directly controls if
+            More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims'
+          type: string
+        readOnly:
+          description: 'Will force the ReadOnly setting in VolumeMounts.
 
-            the no_new_privs flag will be set on the container process.
-
-            AllowPrivilegeEscalation is true always when the container is:
-
-            1) run as Privileged
-
-            2) has CAP_SYS_ADMIN
+            Default false.
 
             +optional'
           type: boolean
-        capabilities:
-          description: 'The capabilities to add/drop when running containers.
+    v1.HostPathType:
+      type: string
+      enum:
+      - ''
+      - DirectoryOrCreate
+      - Directory
+      - FileOrCreate
+      - File
+      - Socket
+      - CharDevice
+      - BlockDevice
+      x-enum-varnames:
+      - HostPathUnset
+      - HostPathDirectoryOrCreate
+      - HostPathDirectory
+      - HostPathFileOrCreate
+      - HostPathFile
+      - HostPathSocket
+      - HostPathCharDev
+      - HostPathBlockDev
+    action.ActionTemplateRunProperties:
+      type: object
+      properties:
+        initialDelay:
+          type: string
+        interval:
+          type: string
+        maxRetries: {}
+        stopOnFailure:
+          type: boolean
+        timeout:
+          type: string
+        verbosity:
+          type: string
+    v1.ObjectFieldSelector:
+      type: object
+      properties:
+        apiVersion:
+          description: 'Version of the schema the FieldPath is written in terms of, defaults to "v1".
 
-            Defaults to the default set of capabilities granted by the container runtime.
+            +optional'
+          type: string
+        fieldPath:
+          description: Path of the field to select in the specified API version.
+          type: string
+    v1.SeccompProfile:
+      type: object
+      properties:
+        localhostProfile:
+          description: 'localhostProfile indicates a profile defined in a file on the node should be used.
+
+            The profile must be preconfigured on the node to work.
+
+            Must be a descending path, relative to the kubelet''s configured seccomp profile location.
+
+            Must only be set if type is "Localhost".
+
+            +optional'
+          type: string
+        type:
+          description: 'type indicates which kind of seccomp profile will be applied.
+
+            Valid options are:
+
+
+            Localhost - a profile defined in a file on the node should be used.
+
+            RuntimeDefault - the container runtime default profile should be used.
+
+            Unconfined - no profile should be applied.
+
+            +unionDiscriminator'
+          allOf:
+          - $ref: '#/components/schemas/v1.SeccompProfileType'
+    common.VolumeInputTemplate:
+      type: object
+      properties:
+        defaultMode:
+          type: string
+        items:
+          type: object
+          additionalProperties:
+            type: string
+        name:
+          type: string
+        optional:
+          type: boolean
+    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_actions.Action:
+      type: object
+      required:
+      - accountID
+      - name
+      properties:
+        accountID:
+          type: string
+        actionProperties:
+          $ref: '#/components/schemas/action.ActionTemplateProperties'
+        actionReferenceCount:
+          type: integer
+        actionsRef:
+          type: string
+        description:
+          type: string
+        hasSecrets:
+          type: boolean
+        hubRef:
+          type: string
+        identity:
+          type: string
+        importType:
+          $ref: '#/components/schemas/mongodb.ImportType'
+        infrastructureType:
+          $ref: '#/components/schemas/actions.InfrastructureType'
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        isRemoved:
+          type: boolean
+        managedBy:
+          $ref: '#/components/schemas/mongodb.ManagedBy'
+        name:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        recentExecutions:
+          type: array
+          items:
+            $ref: '#/components/schemas/actions.RecentExecutions'
+        runProperties:
+          $ref: '#/components/schemas/action.ActionTemplateRunProperties'
+        tags:
+          type: array
+          items:
+            type: string
+        type:
+          $ref: '#/components/schemas/actions.ActionType'
+        variables:
+          description: CHAOS-11100
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+    common.VolumeType:
+      type: string
+      enum:
+      - HostPath
+      - EmptyDir
+      - Secret
+      - PersistentVolumeClaim
+      - ConfigMap
+      x-enum-varnames:
+      - VolumeTypeHostPath
+      - VolumeTypeEmptyDir
+      - VolumeTypeSecret
+      - VolumeTypePersistentVolumeClaim
+      - VolumeTypeConfigMap
+    v1.SecretKeySelector:
+      type: object
+      properties:
+        key:
+          description: The key of the secret to select from.  Must be a valid secret key.
+          type: string
+        name:
+          description: 'Name of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+
+            TODO: Add other useful fields. apiVersion, kind, uid?
+
+            +optional'
+          type: string
+        optional:
+          description: 'Specify whether the Secret or its key must be defined
+
+            +optional'
+          type: boolean
+    v1.Toleration:
+      type: object
+      properties:
+        effect:
+          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
+
+            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
 
             +optional'
           allOf:
-          - $ref: '#/components/schemas/v1.Capabilities'
-        privileged:
-          description: 'Run container in privileged mode.
+          - $ref: '#/components/schemas/v1.TaintEffect'
+        key:
+          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
 
-            Processes in privileged containers are essentially equivalent to root on the host.
+            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+
+            +optional'
+          type: string
+        operator:
+          description: 'Operator represents a key''s relationship to the value.
+
+            Valid operators are Exists and Equal. Defaults to Equal.
+
+            Exists is equivalent to wildcard for value, so that a pod can
+
+            tolerate all taints of a particular category.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.TolerationOperator'
+        tolerationSeconds:
+          description: 'TolerationSeconds represents the period of time the toleration (which must be
+
+            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+
+            it is not set, which means tolerate the taint forever (do not evict). Zero and
+
+            negative values will be treated as 0 (evict immediately) by the system.
+
+            +optional'
+          type: integer
+        value:
+          description: 'Value is the taint value the toleration matches to.
+
+            If the operator is Exists, the value should be empty, otherwise just a regular string.
+
+            +optional'
+          type: string
+    v1.ProcMountType:
+      type: string
+      enum:
+      - Default
+      - Unmasked
+      x-enum-varnames:
+      - DefaultProcMount
+      - UnmaskedProcMount
+    v1.VolumeMount:
+      type: object
+      properties:
+        mountPath:
+          description: 'Path within the container at which the volume should be mounted.  Must
+
+            not contain '':''.'
+          type: string
+        mountPropagation:
+          description: 'mountPropagation determines how mounts are propagated from the host
+
+            to container and the other way around.
+
+            When not set, MountPropagationNone is used.
+
+            This field is beta in 1.10.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.MountPropagationMode'
+        name:
+          description: This must match the Name of a Volume.
+          type: string
+        readOnly:
+          description: 'Mounted read-only if true, read-write otherwise (false or unspecified).
 
             Defaults to false.
 
             +optional'
           type: boolean
-        procMount:
-          description: 'procMount denotes the type of proc mount to use for the containers.
+        subPath:
+          description: 'Path within the volume from which the container''s volume should be mounted.
 
-            The default is DefaultProcMount which uses the container runtime defaults for
-
-            readonly paths and masked paths.
-
-            This requires the ProcMountType feature flag to be enabled.
+            Defaults to "" (volume''s root).
 
             +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ProcMountType'
-        readOnlyRootFilesystem:
-          description: 'Whether this container has a read-only root filesystem.
+          type: string
+        subPathExpr:
+          description: 'Expanded path within the volume from which the container''s volume should be mounted.
 
-            Default is false.
+            Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container''s environment.
 
-            +optional'
-          type: boolean
-        runAsGroup:
-          description: 'The GID to run the entrypoint of the container process.
+            Defaults to "" (volume''s root).
 
-            Uses runtime default if unset.
-
-            May also be set in PodSecurityContext.  If set in both SecurityContext and
-
-            PodSecurityContext, the value specified in SecurityContext takes precedence.
+            SubPathExpr and SubPath are mutually exclusive.
 
             +optional'
-          type: integer
-        runAsNonRoot:
-          description: 'Indicates that the container must run as a non-root user.
-
-            If true, the Kubelet will validate the image at runtime to ensure that it
-
-            does not run as UID 0 (root) and fail to start the container if it does.
-
-            If unset or false, no such validation will be performed.
-
-            May also be set in PodSecurityContext.  If set in both SecurityContext and
-
-            PodSecurityContext, the value specified in SecurityContext takes precedence.
-
-            +optional'
-          type: boolean
-        runAsUser:
-          description: 'The UID to run the entrypoint of the container process.
-
-            Defaults to user specified in image metadata if unspecified.
-
-            May also be set in PodSecurityContext.  If set in both SecurityContext and
-
-            PodSecurityContext, the value specified in SecurityContext takes precedence.
-
-            +optional'
-          type: integer
-        seLinuxOptions:
-          description: 'The SELinux context to be applied to the container.
-
-            If unspecified, the container runtime will allocate a random SELinux context for each
-
-            container.  May also be set in PodSecurityContext.  If set in both SecurityContext and
-
-            PodSecurityContext, the value specified in SecurityContext takes precedence.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.SELinuxOptions'
-        seccompProfile:
-          description: 'The seccomp options to use by this container. If seccomp options are
-
-            provided at both the pod & container level, the container options
-
-            override the pod options.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.SeccompProfile'
-        windowsOptions:
-          description: 'The Windows specific settings applied to all containers.
-
-            If unspecified, the options from the PodSecurityContext will be used.
-
-            If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.WindowsSecurityContextOptions'
-    v1.TolerationOperator:
+          type: string
+    mongodb.ManagedBy:
       type: string
       enum:
-      - Exists
-      - Equal
+      - EXPERIMENT
       x-enum-varnames:
-      - TolerationOpExists
-      - TolerationOpEqual
-    github_com_harness_hce-saas_graphql_server_models_shared.Metadata:
+      - ManagedByExperiment
+    action.ActionTemplateProperties:
       type: object
       properties:
-        description:
-          type: string
-        identity:
-          type: string
+        containerAction:
+          $ref: '#/components/schemas/common.ContainerTemplate'
+        customScriptAction:
+          $ref: '#/components/schemas/action.CustomScriptActionTemplate'
+        delayAction:
+          $ref: '#/components/schemas/action.DelayActionTemplate'
+    actions.ActionType:
+      type: string
+      enum:
+      - delay
+      - customScript
+      - container
+      x-enum-varnames:
+      - DelayActionType
+      - CustomScriptActionType
+      - ContainerActionType
+    v1.Sysctl:
+      type: object
+      properties:
         name:
+          description: Name of a property to set
           type: string
-        tags:
-          type: array
-          items:
-            type: string
-    actions.Identifiers:
-      type: object
-      properties:
-        accountID:
-          type: string
-        orgID:
-          type: string
-        projectID:
+        value:
+          description: Value of a property to set
           type: string
     github_com_harness_hce-saas_graphql_server_pkg_actions.Action:
       type: object
@@ -1872,40 +1875,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/template.Variable'
-    action.CustomScriptActionTemplate:
-      type: object
-      properties:
-        args:
-          type: array
-          items:
-            type: string
-        command:
-          type: string
-        env:
-          type: array
-          items:
-            $ref: '#/components/schemas/action.ENV'
-    v1.HostPathType:
-      type: string
-      enum:
-      - ''
-      - DirectoryOrCreate
-      - Directory
-      - FileOrCreate
-      - File
-      - Socket
-      - CharDevice
-      - BlockDevice
-      x-enum-varnames:
-      - HostPathUnset
-      - HostPathDirectoryOrCreate
-      - HostPathDirectory
-      - HostPathFileOrCreate
-      - HostPathFile
-      - HostPathSocket
-      - HostPathCharDev
-      - HostPathBlockDev
-    github_com_harness_hce-saas_graphql_server_api.Pagination:
+    shared.PaginationResponse:
       type: object
       properties:
         index:
@@ -1916,6 +1886,13 @@ components:
           type: integer
         totalPages:
           type: integer
+    types.ListMetadataRequest:
+      type: object
+      properties:
+        identifiers:
+          type: array
+          items:
+            type: string
     template.InputType:
       type: string
       enum:
@@ -1932,14 +1909,26 @@ components:
       - NumberInput
       - SecretFileInput
       - SecretTextInput
-    mongodb.ImportType:
-      type: string
-      enum:
-      - LOCAL
-      - REFERENCE
-      x-enum-varnames:
-      - ImportTypeLocal
-      - ImportTypeReference
+    github_com_harness_hce-saas_graphql_server_graph_model.UserDetails:
+      type: object
+      properties:
+        email:
+          type: string
+        userID:
+          type: string
+        username:
+          type: string
+    shared.ListMetadataResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_models_shared.Metadata'
+        pagination:
+          $ref: '#/components/schemas/shared.PaginationResponse'
     v1.MountPropagationMode:
       type: string
       enum:
@@ -1950,6 +1939,17 @@ components:
       - MountPropagationNone
       - MountPropagationHostToContainer
       - MountPropagationBidirectional
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
+      type: object
+      properties:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
   securitySchemes:
     x-api-key:
       name: x-api-key

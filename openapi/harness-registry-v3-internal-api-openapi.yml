@@ -127,48 +127,6 @@ paths:
       x-internal: true
 components:
   schemas:
-    BackfillTriggerRequestInputV3:
-      description: Request body for triggering an ES search backfill.
-      properties:
-        entityTypes:
-          description: Entity types to backfill into Elasticsearch.
-          items:
-            enum:
-            - REGISTRY
-            - PACKAGE
-            - PACKAGE_VERSION
-            - FILE
-            type: string
-          type: array
-        reindexAll:
-          default: false
-          description: If true, reset progress and re-index all rows from the beginning.
-          type: boolean
-      required:
-      - entityTypes
-      type: object
-    CreatedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was created
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    StartedAtMsV3:
-      description: Unix timestamp in milliseconds when the operation started
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    ErrorV3:
-      description: An error response
-      properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
-      required:
-      - error
-      type: object
     CompletedAtMsV3:
       description: Unix timestamp in milliseconds when the operation completed. Null while still in flight.
       example: 1736360000456
@@ -176,6 +134,35 @@ components:
       type:
       - integer
       - 'null'
+    BackfillEntityStateV3:
+      description: Per-entity backfill progress and ES document count for an account.
+      properties:
+        completedAt:
+          $ref: '#/components/schemas/CompletedAtMsV3'
+        documentsInES:
+          description: Number of documents currently present in Elasticsearch for this entity type.
+          format: int64
+          type: integer
+        lastProcessedID:
+          description: Checkpoint cursor of the last successfully indexed row.
+          type: string
+        startedAt:
+          $ref: '#/components/schemas/StartedAtMsV3'
+        status:
+          description: Current backfill status for this entity type.
+          type: string
+        totalProcessed:
+          description: Total rows processed for this entity type so far.
+          format: int64
+          type: integer
+      required:
+      - status
+      - lastProcessedID
+      - totalProcessed
+      - documentsInES
+      - startedAt
+      - completedAt
+      type: object
     BackfillTaskStatusDataV3:
       description: Status of a single backfill job (CDC outbox row).
       properties:
@@ -206,6 +193,26 @@ components:
       - jobType
       - attempts
       type: object
+    BackfillTriggerRequestInputV3:
+      description: Request body for triggering an ES search backfill.
+      properties:
+        entityTypes:
+          description: Entity types to backfill into Elasticsearch.
+          items:
+            enum:
+            - REGISTRY
+            - PACKAGE
+            - PACKAGE_VERSION
+            - FILE
+            type: string
+          type: array
+        reindexAll:
+          default: false
+          description: If true, reset progress and re-index all rows from the beginning.
+          type: boolean
+      required:
+      - entityTypes
+      type: object
     BackfillTriggerDataV3:
       description: Response payload returned when a backfill is successfully triggered.
       properties:
@@ -215,6 +222,28 @@ components:
       required:
       - jobId
       type: object
+    StartedAtMsV3:
+      description: Unix timestamp in milliseconds when the operation started
+      example: 1736360000123
+      format: int64
+      type:
+      - integer
+      - 'null'
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
+    CreatedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was created
+      example: 1736360000123
+      format: int64
+      type:
+      - integer
+      - 'null'
     BackfillStateDataV3:
       description: Aggregated backfill state for an account across all entity types.
       properties:
@@ -255,35 +284,6 @@ components:
       required:
       - type
       title: APIErrors
-      type: object
-    BackfillEntityStateV3:
-      description: Per-entity backfill progress and ES document count for an account.
-      properties:
-        completedAt:
-          $ref: '#/components/schemas/CompletedAtMsV3'
-        documentsInES:
-          description: Number of documents currently present in Elasticsearch for this entity type.
-          format: int64
-          type: integer
-        lastProcessedID:
-          description: Checkpoint cursor of the last successfully indexed row.
-          type: string
-        startedAt:
-          $ref: '#/components/schemas/StartedAtMsV3'
-        status:
-          description: Current backfill status for this entity type.
-          type: string
-        totalProcessed:
-          description: Total rows processed for this entity type so far.
-          format: int64
-          type: integer
-      required:
-      - status
-      - lastProcessedID
-      - totalProcessed
-      - documentsInES
-      - startedAt
-      - completedAt
       type: object
   parameters:
     AccountIdentifierV3:

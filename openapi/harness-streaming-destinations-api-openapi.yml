@@ -168,186 +168,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/AccountHeader3'
 components:
-  parameters:
-    PageIndex:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-    StreamingDestinationParam:
-      name: streaming-destination
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Streaming Destination identifier
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    Sort:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - identifier
-        - name
-        - created
-        - updated
-      description: Parameter on the basis of which sorting is done.
-    AccountHeader3:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    SearchTerm:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching the search term.
-    Status:
-      name: status
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Status of the Streaming Destination
-    Limit:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 30
-        maximum: 100
-      description: 'Pagination: Number of items to return.'
   schemas:
-    FailureInfoCard:
-      title: FailureCard
-      x-stoplight:
-        id: a2d05f2010784
-      type: object
-      description: Info about failure in streaming attempt
-      properties:
-        count:
-          type: integer
-          description: Number of streaming destinations that have failure
-          format: int64
-    StreamingDestinationDTO:
-      title: StreamingDestinationDTO
-      x-stoplight:
-        id: ooye81jxpefty
-      type: object
-      description: Streaming Destination model
-      properties:
-        identifier:
-          type: string
-          description: Streaming Destination identifier
-        name:
-          type: string
-          description: Streaming Destination name
-        status:
-          $ref: '#/components/schemas/StreamingDestinationStatus'
-        connector_ref:
-          type: string
-          description: Streaming Destination scoped connector reference identifier
-        spec:
-          $ref: '#/components/schemas/StreamingDestinationSpecDTO'
-        description:
-          type: string
-          maxLength: 1024
-          description: Description for Streaming Destination
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          maxProperties: 128
-          description: Tags for Streaming Destination
-      required:
-      - identifier
-      - name
-      - status
-      - connector_ref
-      - spec
-    StatusWiseCount:
-      title: StatusWiseCount
-      x-stoplight:
-        id: 2ad155c277a03
-      type: object
-      description: Streaming Destination count by status card
-      properties:
-        status:
-          $ref: '#/components/schemas/StreamingDestinationStatus'
-        count:
-          type: integer
-          description: Number of streaming destinations at the status
-    LastStreamedCard:
-      title: LastStreamedInfo
-      x-stoplight:
-        id: a35601e416967
-      type: object
-      description: Info about last successfull streaming attempt
-      properties:
-        lastStreamedAt:
-          type: integer
-          format: int64
-          description: Timestamp of last successfull streaming attempt
-    StreamingDestinationResponse:
-      title: StreamingDestinationResponse
-      x-stoplight:
-        id: rulrehs9nk5a3
-      type: object
-      description: Streaming Destination response model
-      properties:
-        streaming_destination:
-          $ref: '#/components/schemas/StreamingDestinationDTO'
-        created:
-          type: integer
-          format: int64
-          description: Created time of the Streaming Destination
-        updated:
-          type: integer
-          format: int64
-          description: Last updated time of the Streaming Destination
-        status_updated:
-          type: integer
-          format: int64
-          description: Last updated time of the Streaming Destination status
-      required:
-      - streaming_destination
-    StreamingDestinationSpecDTO:
-      title: StreamingDestinationSpecDTO
-      x-stoplight:
-        id: s4mguy0st7rtt
-      type: object
-      discriminator:
-        propertyName: type
-        mapping:
-          AWS_S3: '#/components/schemas/AwsS3StreamingDestinationSpecDTO'
-      properties:
-        type:
-          type: string
-          enum:
-          - AWS_S3
-          description: This specifies the type of Streaming Destination
-      required:
-      - type
-      description: ''
     Connector1:
       type: object
       x-internal: true
@@ -381,6 +202,58 @@ components:
       required:
       - name
       - identifier
+    StreamingDestinationSpecDTO:
+      title: StreamingDestinationSpecDTO
+      x-stoplight:
+        id: s4mguy0st7rtt
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          AWS_S3: '#/components/schemas/AwsS3StreamingDestinationSpecDTO'
+      properties:
+        type:
+          type: string
+          enum:
+          - AWS_S3
+          description: This specifies the type of Streaming Destination
+      required:
+      - type
+      description: ''
+    StreamingDestinationResponse:
+      title: StreamingDestinationResponse
+      x-stoplight:
+        id: rulrehs9nk5a3
+      type: object
+      description: Streaming Destination response model
+      properties:
+        streaming_destination:
+          $ref: '#/components/schemas/StreamingDestinationDTO'
+        created:
+          type: integer
+          format: int64
+          description: Created time of the Streaming Destination
+        updated:
+          type: integer
+          format: int64
+          description: Last updated time of the Streaming Destination
+        status_updated:
+          type: integer
+          format: int64
+          description: Last updated time of the Streaming Destination status
+      required:
+      - streaming_destination
+    StreamingDestinationStatus:
+      title: StreamingDestinationStatus
+      x-stoplight:
+        id: 6k8zse7tcg5y0
+      type: string
+      x-extension-1: null
+      enum:
+      - ACTIVE
+      - INACTIVE
+      description: Streaming Destination Status enum
+      x-internal: false
     StreamingDestinationCards:
       title: StreamingDestinationCards
       x-stoplight:
@@ -396,6 +269,40 @@ components:
           $ref: '#/components/schemas/LastStreamedCard'
         failureInfoCard:
           $ref: '#/components/schemas/FailureInfoCard'
+    LastStreamedCard:
+      title: LastStreamedInfo
+      x-stoplight:
+        id: a35601e416967
+      type: object
+      description: Info about last successfull streaming attempt
+      properties:
+        lastStreamedAt:
+          type: integer
+          format: int64
+          description: Timestamp of last successfull streaming attempt
+    StatusWiseCount:
+      title: StatusWiseCount
+      x-stoplight:
+        id: 2ad155c277a03
+      type: object
+      description: Streaming Destination count by status card
+      properties:
+        status:
+          $ref: '#/components/schemas/StreamingDestinationStatus'
+        count:
+          type: integer
+          description: Number of streaming destinations at the status
+    FailureInfoCard:
+      title: FailureCard
+      x-stoplight:
+        id: a2d05f2010784
+      type: object
+      description: Info about failure in streaming attempt
+      properties:
+        count:
+          type: integer
+          description: Number of streaming destinations that have failure
+          format: int64
     StreamingDestinationAggregateDTO:
       title: StreamingDestinationAggregateDTO
       x-stoplight:
@@ -433,48 +340,64 @@ components:
           type: string
       description: Details of the last streamed batch
       x-internal: true
-    StreamingDestinationStatus:
-      title: StreamingDestinationStatus
+    StreamingDestinationDTO:
+      title: StreamingDestinationDTO
       x-stoplight:
-        id: 6k8zse7tcg5y0
-      type: string
-      x-extension-1: null
-      enum:
-      - ACTIVE
-      - INACTIVE
-      description: Streaming Destination Status enum
-      x-internal: false
-  requestBodies:
-    CreateStreamingDestinationRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/StreamingDestinationDTO'
-          examples:
-            example-aws-s3-stream-destination-request:
-              value:
-                identifier: example_destination
-                name: example destination name
-                status: ACTIVE
-                connector_ref: account.example_aws_connector
-                spec:
-                  type: AWS_S3
-                  bucket: example_bucket
-      description: Streaming Destination request body
+        id: ooye81jxpefty
+      type: object
+      description: Streaming Destination model
+      properties:
+        identifier:
+          type: string
+          description: Streaming Destination identifier
+        name:
+          type: string
+          description: Streaming Destination name
+        status:
+          $ref: '#/components/schemas/StreamingDestinationStatus'
+        connector_ref:
+          type: string
+          description: Streaming Destination scoped connector reference identifier
+        spec:
+          $ref: '#/components/schemas/StreamingDestinationSpecDTO'
+        description:
+          type: string
+          maxLength: 1024
+          description: Description for Streaming Destination
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Tags for Streaming Destination
+      required:
+      - identifier
+      - name
+      - status
+      - connector_ref
+      - spec
   responses:
-    StreamingDestinationCardsResponse:
-      description: Streaming Destination cards response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/StreamingDestinationCards'
-    StreamingDestinationValidateResponse:
+    StreamingDestinationAggregateListResponse:
       description: Example response
       content:
         application/json:
           schema:
-            type: boolean
-            description: It returns true if the Identifier is unique and false if the Identifier is not unique
+            type: array
+            items:
+              $ref: '#/components/schemas/StreamingDestinationAggregateDTO'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
     StreamingDestinationListResponse:
       description: Streaming Destination list response
       content:
@@ -509,6 +432,13 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
+    StreamingDestinationValidateResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: boolean
+            description: It returns true if the Identifier is unique and false if the Identifier is not unique
     StreamingDestinationResponse:
       description: Streaming Destination response
       content:
@@ -528,27 +458,97 @@ components:
                     bucket: example_bucket
                 created: 1670304106000
                 update: 1670304106000
-    StreamingDestinationAggregateListResponse:
-      description: Example response
+    StreamingDestinationCardsResponse:
+      description: Streaming Destination cards response
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/StreamingDestinationAggregateDTO'
-      headers:
-        X-Total-Elements:
+            $ref: '#/components/schemas/StreamingDestinationCards'
+  parameters:
+    SearchTerm:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching the search term.
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    StreamingDestinationParam:
+      name: streaming-destination
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Streaming Destination identifier
+    AccountHeader3:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+        maximum: 100
+      description: 'Pagination: Number of items to return.'
+    PageIndex:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - identifier
+        - name
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    Status:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Status of the Streaming Destination
+  requestBodies:
+    CreateStreamingDestinationRequest:
+      content:
+        application/json:
           schema:
-            type: integer
-          description: Total number of elements returned in Paginated response.
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Page number in Paginated response.
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum page size in Paginated response.
+            $ref: '#/components/schemas/StreamingDestinationDTO'
+          examples:
+            example-aws-s3-stream-destination-request:
+              value:
+                identifier: example_destination
+                name: example destination name
+                status: ACTIVE
+                connector_ref: account.example_aws_connector
+                spec:
+                  type: AWS_S3
+                  bucket: example_bucket
+      description: Streaming Destination request body
   securitySchemes:
     x-api-key:
       name: x-api-key

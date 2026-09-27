@@ -554,218 +554,6 @@ paths:
           description: JSON Schema for entity validation successfully retrieved
 components:
   schemas:
-    BulkFieldUpdateProperty:
-      title: BulkFieldUpdateProperty
-      type: object
-      description: A single field to update, as a key/value pair with an optional write mode.
-      required:
-      - key
-      - value
-      properties:
-        key:
-          type: string
-          description: The field to update. Currently only "owner" is supported.
-        value:
-          type: string
-          description: The new value for the field, e.g. "group:account/TeamA".
-        mode:
-          type: string
-          description: Write mode. Defaults to REPLACE. APPEND is reserved for future scope.
-          enum:
-          - REPLACE
-          - APPEND
-    BulkFieldUpdateOperationResponse:
-      title: BulkFieldUpdateOperationResponse
-      type: object
-      description: Current status and result of an async bulk field update operation.
-      properties:
-        operationId:
-          type: string
-        status:
-          type: string
-          description: One of QUEUED, PROCESSING, SUCCESS, PARTIAL_SUCCESS, FAILED, DEAD_LETTER.
-        matched:
-          type: integer
-        permitted:
-          type: integer
-        updated:
-          type: integer
-          description: Number of entities actually updated.
-        skipped:
-          type: array
-          description: Entities that matched but were not updated, with a reason.
-          items:
-            $ref: '#/components/schemas/BulkEntityFieldUpdateSkipped'
-        errors:
-          type: array
-          description: Per-entity failures encountered during processing.
-          items:
-            $ref: '#/components/schemas/BulkEntityFieldUpdateError'
-        errorMessage:
-          type: string
-          description: Top-level error message when the whole operation failed.
-    EntityKindsResponse:
-      title: Entity Kinds Response
-      description: Information about an Entity Kind, including its display name, description, and the count of entities of this kind in the system.
-      type: object
-      properties:
-        kind:
-          type: string
-          description: Kind identifier (e.g., component, api)
-        display_name:
-          type: string
-          description: Human-readable display name for the kind
-        description:
-          type: string
-          description: Description of the entity kind and its purpose
-        total:
-          type: integer
-          description: Total number of entities of this kind in the system
-    EntityMoveOperationType:
-      type: string
-      enum:
-      - INLINE_TO_REMOTE
-      - REMOTE_TO_INLINE
-      description: Operation type to move the entity
-      x-stoplight:
-        id: 2x10v7rnqfd1z
-    BulkEntityFieldUpdateSkipped:
-      title: BulkEntityFieldUpdateSkipped
-      type: object
-      properties:
-        entityRef:
-          type: string
-        reason:
-          type: string
-          description: One of NO_PERMISSION, GIT_NON_DEFAULT_BRANCH, VALIDATION_FAILED.
-    EntityUpdateRequest:
-      title: Entity Update Request Body
-      description: Entity Update Request Body
-      type: object
-      properties:
-        yaml:
-          type: string
-          description: Entity YAML (to be passed as a String).
-        git_details:
-          $ref: '#/components/schemas/GitUpdateDetails2'
-      required:
-      - yaml
-    BulkFieldUpdateSubmitResponse:
-      title: BulkFieldUpdateSubmitResponse
-      type: object
-      description: Returned on submit; carries the operationId to poll for status.
-      properties:
-        operationId:
-          type: string
-          description: Identifier of the async bulk update operation. Poll GET .../bulk-field-update/{operationId}.
-        status:
-          type: string
-          description: Initial status of the operation, e.g. QUEUED.
-        matched:
-          type: integer
-          description: Number of entities matched (computed synchronously at submit).
-        permitted:
-          type: integer
-          description: Number of matched entities the caller had edit permission on (computed synchronously at submit).
-    GitCreateDetails2:
-      title: Create Git Details
-      x-stoplight:
-        id: p1h9vvkuks7kq
-      type: object
-      description: Contains parameters related to creating an Entity for Git Experience.
-      x-examples:
-        example-create-git:
-          branch_name: branch
-          file_path: /folder/file.json
-          commit_message: Added Harness Git Experience
-          base_branch: old_branch
-          connector_ref: git_connector
-          store_type: REMOTE
-          repo_name: example_repository
-          is_harness_code_repo: false
-      properties:
-        branch_name:
-          type: string
-          description: Name of the branch.
-        file_path:
-          type: string
-          description: File path of the Entity in the repository.
-        commit_message:
-          type: string
-          description: Commit message used for the merge commit.
-        base_branch:
-          type: string
-          description: Name of the default branch (this checks out a new branch titled by branch_name).
-        connector_ref:
-          type: string
-          description: Identifier of the Harness Connector used for CRUD operations on the Entity.
-        store_type:
-          type: string
-          description: Specifies whether the Entity is to be stored in Git or not.
-          enum:
-          - INLINE
-          - REMOTE
-        repo_name:
-          type: string
-          description: Name of the repository.
-        is_harness_code_repo:
-          type: boolean
-          description: Is Git Experience repo harness code.
-    EntityConvertResponse:
-      title: Entity Convert Response
-      description: Result of converting an Entity between formats (Backstage to Harness or vice versa), containing the converted YAML definition.
-      type: object
-      properties:
-        yaml:
-          type: string
-          description: Converted entity YAML definition in the target format
-      required:
-      - yaml
-    EntitiesGroups:
-      title: Entities Groups
-      description: Represents a group of entities organized by organization and project, providing a hierarchical view of entities within the system.
-      type: object
-      properties:
-        org_identifier:
-          type: string
-          description: Unique identifier of the organization
-        org_name:
-          type: string
-          description: Display name of the organization
-        project_identifier:
-          type: string
-          description: Unique identifier of the project
-        project_name:
-          type: string
-          description: Display name of the project
-        group_identifier:
-          type: string
-          description: Unique identifier of the group
-        group_name:
-          type: string
-          description: Display name of the group
-        group_description:
-          type: string
-          description: Description of the group
-        group_icon:
-          type: string
-          description: Icon URL representing the group
-        order:
-          type: integer
-          description: Display order for the group
-        workflows:
-          type: array
-          items:
-            type: string
-          description: Workflows associated with the group
-        total:
-          type: integer
-          description: Total number of entities in the group
-        entities:
-          type: array
-          items:
-            $ref: '#/components/schemas/EntityResponse'
-          description: Entities belonging to the group
     GitDetails1:
       title: Git Details
       x-stoplight:
@@ -824,18 +612,254 @@ components:
         is_harness_code_repo:
           type: boolean
           description: Is Git Experience repo harness code.
-    EntityCreateRequest:
-      title: Entity Create Request Body
-      description: Entity Create Request Body
+    BulkEntityFieldUpdateError:
+      title: BulkEntityFieldUpdateError
       type: object
       properties:
-        yaml:
+        entityRef:
           type: string
-          description: Entity YAML (to be passed as a String).
-        git_details:
-          $ref: '#/components/schemas/GitCreateDetails2'
+        errorMessage:
+          type: string
+    EntityFiltersResponse:
+      title: Entity Filters Response
+      description: Filter options for Entities, including the filter name and its possible values. Used for building dynamic filter UIs.
+      type: object
+      properties:
+        filter:
+          type: string
+          description: Name of the filter (e.g., type, lifecycle, owner)
+        values:
+          type: object
+          description: Available values for the filter (depends on the filter type)
+    EntitiesGroupsResponse:
+      title: Entities Groups Response
+      description: Entities organized in hierarchical groups based on account, organization, and project, along with count information for each level.
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            account:
+              type: object
+              properties:
+                with_group:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EntitiesGroups'
+                  description: Account-level entities organized into groups
+                without_group:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EntityResponse'
+                  description: Account-level entities not associated with any group
+              description: Account-level entities
+            org:
+              type: object
+              properties:
+                with_group:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EntitiesGroups'
+                  description: Organization-level entities organized into groups
+                without_group:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EntityResponse'
+                  description: Organization-level entities not associated with any group
+              description: Organization-level entities
+            project:
+              type: object
+              properties:
+                with_group:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EntitiesGroups'
+                  description: Project-level entities organized into groups
+                without_group:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EntityResponse'
+                  description: Project-level entities not associated with any group
+              description: Project-level entities
+          description: Grouped entity data
+        count:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total number of entities across all scopes
+            total_owned:
+              type: integer
+              description: Total number of entities owned by the current user or their groups
+            total_starred:
+              type: integer
+              description: Total number of entities marked as favorites by the current user
+            account:
+              type: array
+              items:
+                $ref: '#/components/schemas/EntitiesGroups'
+              description: Entity counts at the account level by group
+            org:
+              type: array
+              items:
+                type: object
+                properties:
+                  org_identifier:
+                    type: string
+                    description: Organization identifier
+                  org_name:
+                    type: string
+                    description: Organization name
+                  groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EntitiesGroups'
+                    description: Entity counts by group within the organization
+              description: Entity counts at the organization level
+            project:
+              type: array
+              items:
+                type: object
+                properties:
+                  org_identifier:
+                    type: string
+                    description: Organization identifier
+                  org_name:
+                    type: string
+                    description: Organization name
+                  project_identifier:
+                    type: string
+                    description: Project identifier
+                  project_name:
+                    type: string
+                    description: Project name
+                  groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EntitiesGroups'
+                    description: Entity counts by group within the project
+              description: Entity counts at the project level
+          description: Count information for entities by scope and group
+    GitMoveDetails1:
+      title: Move Git Details
+      x-stoplight:
+        id: ua9qwi7im72e0
+      type: object
+      description: Parameters related to moving an entity for Git Experience.
+      x-examples:
+        example-create-git:
+          branch_name: branch
+          file_path: /folder/file.json
+          commit_message: Added Harness Git Experience
+          base_branch: old_branch
+          connector_ref: git_connector
+          repo_name: example_repository
+          is_harness_code_repo: false
+      properties:
+        branch_name:
+          type: string
+          description: Name of the branch. When moving an inline pipeline or a remote pipeline, this branch is where the remote entity is created or fetched.
+        file_path:
+          type: string
+          description: File path of the entity in the repository.
+        commit_message:
+          type: string
+          description: Merge commit message.
+        base_branch:
+          type: string
+          description: Default branch name. This checks out the branch titled branch_name
+        connector_ref:
+          type: string
+          description: Harness connector id used for entity CRUD operations
+        repo_name:
+          type: string
+          description: Name of the repository.
+        is_harness_code_repo:
+          type: boolean
+          description: Is Git Experience repo harness code.
       required:
-      - yaml
+      - branch_name
+      - file_path
+      - connector_ref
+      - repo_name
+    GitImportDetails1:
+      title: Import Git Details
+      x-stoplight:
+        id: 2ij8fppk6n5pq
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        repo_name:
+          type: string
+        branch_name:
+          type: string
+        file_path:
+          type: string
+        is_harness_code_repo:
+          type: boolean
+      description: Parameters related to importing an entity for Git.
+    EntityJsonSchemaResponse:
+      title: Entity JSON Schema Response
+      description: JSON Schema for validating Entity definitions, which can be used for client-side validation before submitting entity operations.
+      type: object
+    GitMetadataUpdateRequest:
+      title: GitMetadataUpdateRequest
+      x-stoplight:
+        id: bpd31demfes1n
+      type: object
+      properties:
+        connector_ref:
+          type: string
+          description: Harness connector id used for entity CRUD operations
+        repo_name:
+          type: string
+          description: Name of the repository.
+        file_path:
+          type: string
+          description: File path of the entity in the repository.
+        branch_name:
+          type: string
+          description: Name of the branch.
+    BulkFieldUpdateOperationResponse:
+      title: BulkFieldUpdateOperationResponse
+      type: object
+      description: Current status and result of an async bulk field update operation.
+      properties:
+        operationId:
+          type: string
+        status:
+          type: string
+          description: One of QUEUED, PROCESSING, SUCCESS, PARTIAL_SUCCESS, FAILED, DEAD_LETTER.
+        matched:
+          type: integer
+        permitted:
+          type: integer
+        updated:
+          type: integer
+          description: Number of entities actually updated.
+        skipped:
+          type: array
+          description: Entities that matched but were not updated, with a reason.
+          items:
+            $ref: '#/components/schemas/BulkEntityFieldUpdateSkipped'
+        errors:
+          type: array
+          description: Per-entity failures encountered during processing.
+          items:
+            $ref: '#/components/schemas/BulkEntityFieldUpdateError'
+        errorMessage:
+          type: string
+          description: Top-level error message when the whole operation failed.
+    BulkEntityFieldUpdateSkipped:
+      title: BulkEntityFieldUpdateSkipped
+      type: object
+      properties:
+        entityRef:
+          type: string
+        reason:
+          type: string
+          description: One of NO_PERMISSION, GIT_NON_DEFAULT_BRANCH, VALIDATION_FAILED.
     EntityFilterQueryRequest:
       title: EntityFilterQueryRequest
       x-stoplight:
@@ -850,10 +874,34 @@ components:
             x-stoplight:
               id: 17xzqu8gnc2vm
             type: string
-    EntityJsonSchemaResponse:
-      title: Entity JSON Schema Response
-      description: JSON Schema for validating Entity definitions, which can be used for client-side validation before submitting entity operations.
+    CacheResponseData:
+      title: CacheResponseData
+      x-stoplight:
+        id: 5twby12bhyems
       type: object
+      x-examples:
+        example-1:
+          cache_state: VALID_CACHE
+          ttl_left: 9223372036854776000
+          last_updated_at: 9223372036854776000
+      properties:
+        cache_state:
+          type: string
+          enum:
+          - VALID_CACHE
+          - STALE_CACHE
+          - UNKNOWN
+          description: Tells the state of cache.
+        ttl_left:
+          type: integer
+          format: int64
+          description: Time left till cache expriry.
+        last_updated_at:
+          type: integer
+          format: int64
+          description: Time when the cache was last updated at.
+        is_sync_enabled:
+          type: boolean
     BulkEntityFieldUpdateRequest:
       title: BulkEntityFieldUpdateRequest
       type: object
@@ -873,46 +921,87 @@ components:
           description: The fields to update. Currently only "owner" is supported as a key.
           items:
             $ref: '#/components/schemas/BulkFieldUpdateProperty'
-    ScorecardFilter:
-      title: ScorecardFilter
+    GitUpdateDetails2:
+      title: Update Git Details
       x-stoplight:
-        id: xwnr2xalsb1fv
+        id: w2ue8wampbxe3
+      type: object
+      description: Contains parameters related to updating an Entity for Git Experience.
+      x-examples:
+        example-update-git:
+          branch_name: branch
+          commit_message: Added Harness Git Experience
+          last_object_id: abcdXYZ
+          base_branch: old_branch
+          last_commit_id: abcdXYZ
+          connector_ref: git_connector
+          store_type: REMOTE
+          repo_name: example_repository
+          file_path: /folder/file.json
+          is_harness_code_repo: false
+      properties:
+        branch_name:
+          type: string
+          description: Name of the branch.
+        commit_message:
+          type: string
+          description: Commit message used for the merge commit.
+        last_object_id:
+          type: string
+          description: Last object identifier (for Github only).
+        base_branch:
+          type: string
+          description: Name of the default branch (this checks out a new branch titled by branch_name).
+        last_commit_id:
+          type: string
+          description: Last commit identifier.
+        connector_ref:
+          type: string
+          description: Identifier of the Harness Connector used for CRUD operations on the Entity.
+        store_type:
+          type: string
+          enum:
+          - INLINE
+          - REMOTE
+          description: Specifies whether the Entity is to be stored in Git or not.
+        repo_name:
+          type: string
+          description: Name of the repository.
+        file_path:
+          type: string
+        is_harness_code_repo:
+          type: boolean
+          description: Is Git Experience repo harness code.
+    EntityConvertResponse:
+      title: Entity Convert Response
+      description: Result of converting an Entity between formats (Backstage to Harness or vice versa), containing the converted YAML definition.
       type: object
       properties:
-        kind:
+        yaml:
           type: string
-          x-stoplight:
-            id: ni2n6gaelw2sh
-        type:
-          type: string
-          x-stoplight:
-            id: pit0to8ng7rtl
-        owners:
-          type: array
-          x-stoplight:
-            id: ibe4axxxrnwpl
-          items:
-            x-stoplight:
-              id: kde7prhuw2ww2
-            type: string
-        tags:
-          type: array
-          x-stoplight:
-            id: 9sqie0nb3f08d
-          items:
-            x-stoplight:
-              id: 8sko0og6lpbyh
-            type: string
-        lifecycle:
-          type: array
-          x-stoplight:
-            id: 9rtf97h3uu9z3
-          items:
-            x-stoplight:
-              id: etzt6sp88w5iz
-            type: string
+          description: Converted entity YAML definition in the target format
       required:
-      - kind
+      - yaml
+    BulkFieldUpdateProperty:
+      title: BulkFieldUpdateProperty
+      type: object
+      description: A single field to update, as a key/value pair with an optional write mode.
+      required:
+      - key
+      - value
+      properties:
+        key:
+          type: string
+          description: The field to update. Currently only "owner" is supported.
+        value:
+          type: string
+          description: The new value for the field, e.g. "group:account/TeamA".
+        mode:
+          type: string
+          description: Write mode. Defaults to REPLACE. APPEND is reserved for future scope.
+          enum:
+          - REPLACE
+          - APPEND
     EntityResponse:
       title: Entity Response Body
       description: Detailed information about an Entity, including its metadata, relationships, and YAML representation.
@@ -1102,14 +1191,112 @@ components:
             x-stoplight:
               id: t7219d30v5hya
             type: string
-    BulkEntityFieldUpdateError:
-      title: BulkEntityFieldUpdateError
+    EntityMoveOperationType:
+      type: string
+      enum:
+      - INLINE_TO_REMOTE
+      - REMOTE_TO_INLINE
+      description: Operation type to move the entity
+      x-stoplight:
+        id: 2x10v7rnqfd1z
+    EntityKindsResponse:
+      title: Entity Kinds Response
+      description: Information about an Entity Kind, including its display name, description, and the count of entities of this kind in the system.
       type: object
       properties:
-        entityRef:
+        kind:
           type: string
-        errorMessage:
+          description: Kind identifier (e.g., component, api)
+        display_name:
           type: string
+          description: Human-readable display name for the kind
+        description:
+          type: string
+          description: Description of the entity kind and its purpose
+        total:
+          type: integer
+          description: Total number of entities of this kind in the system
+    EntityMoveRequest:
+      title: EntityMoveRequest
+      description: Request body for moving an entity
+      type: object
+      properties:
+        git_details:
+          $ref: '#/components/schemas/GitMoveDetails1'
+        entity_move_operation_type:
+          $ref: '#/components/schemas/EntityMoveOperationType'
+      required:
+      - git_details
+      - entity_move_operation_type
+    EntityUpdateRequest:
+      title: Entity Update Request Body
+      description: Entity Update Request Body
+      type: object
+      properties:
+        yaml:
+          type: string
+          description: Entity YAML (to be passed as a String).
+        git_details:
+          $ref: '#/components/schemas/GitUpdateDetails2'
+      required:
+      - yaml
+    EntityCreateRequest:
+      title: Entity Create Request Body
+      description: Entity Create Request Body
+      type: object
+      properties:
+        yaml:
+          type: string
+          description: Entity YAML (to be passed as a String).
+        git_details:
+          $ref: '#/components/schemas/GitCreateDetails2'
+      required:
+      - yaml
+    EntitiesGroups:
+      title: Entities Groups
+      description: Represents a group of entities organized by organization and project, providing a hierarchical view of entities within the system.
+      type: object
+      properties:
+        org_identifier:
+          type: string
+          description: Unique identifier of the organization
+        org_name:
+          type: string
+          description: Display name of the organization
+        project_identifier:
+          type: string
+          description: Unique identifier of the project
+        project_name:
+          type: string
+          description: Display name of the project
+        group_identifier:
+          type: string
+          description: Unique identifier of the group
+        group_name:
+          type: string
+          description: Display name of the group
+        group_description:
+          type: string
+          description: Description of the group
+        group_icon:
+          type: string
+          description: Icon URL representing the group
+        order:
+          type: integer
+          description: Display order for the group
+        workflows:
+          type: array
+          items:
+            type: string
+          description: Workflows associated with the group
+        total:
+          type: integer
+          description: Total number of entities in the group
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityResponse'
+          description: Entities belonging to the group
     DefaultSaveResponse:
       title: DefaultSaveResponse
       x-stoplight:
@@ -1123,45 +1310,23 @@ components:
             id: cskevfqvaydbn
       required:
       - status
-    EntityFiltersResponse:
-      title: Entity Filters Response
-      description: Filter options for Entities, including the filter name and its possible values. Used for building dynamic filter UIs.
+    BulkFieldUpdateSubmitResponse:
+      title: BulkFieldUpdateSubmitResponse
       type: object
+      description: Returned on submit; carries the operationId to poll for status.
       properties:
-        filter:
+        operationId:
           type: string
-          description: Name of the filter (e.g., type, lifecycle, owner)
-        values:
-          type: object
-          description: Available values for the filter (depends on the filter type)
-    CacheResponseData:
-      title: CacheResponseData
-      x-stoplight:
-        id: 5twby12bhyems
-      type: object
-      x-examples:
-        example-1:
-          cache_state: VALID_CACHE
-          ttl_left: 9223372036854776000
-          last_updated_at: 9223372036854776000
-      properties:
-        cache_state:
+          description: Identifier of the async bulk update operation. Poll GET .../bulk-field-update/{operationId}.
+        status:
           type: string
-          enum:
-          - VALID_CACHE
-          - STALE_CACHE
-          - UNKNOWN
-          description: Tells the state of cache.
-        ttl_left:
+          description: Initial status of the operation, e.g. QUEUED.
+        matched:
           type: integer
-          format: int64
-          description: Time left till cache expriry.
-        last_updated_at:
+          description: Number of entities matched (computed synchronously at submit).
+        permitted:
           type: integer
-          format: int64
-          description: Time when the cache was last updated at.
-        is_sync_enabled:
-          type: boolean
+          description: Number of matched entities the caller had edit permission on (computed synchronously at submit).
     EntityRequest:
       title: Entity Request Body
       description: Request body for creating or updating an Entity, containing the entity YAML definition as a string.
@@ -1172,47 +1337,52 @@ components:
           description: Entity YAML definition as a string. Should conform to either the Harness entity format or the Backstage entity format, depending on the operation.
       required:
       - yaml
-    GitMetadataUpdateRequest:
-      title: GitMetadataUpdateRequest
+    ScorecardFilter:
+      title: ScorecardFilter
       x-stoplight:
-        id: bpd31demfes1n
+        id: xwnr2xalsb1fv
       type: object
       properties:
-        connector_ref:
+        kind:
           type: string
-          description: Harness connector id used for entity CRUD operations
-        repo_name:
+          x-stoplight:
+            id: ni2n6gaelw2sh
+        type:
           type: string
-          description: Name of the repository.
-        file_path:
-          type: string
-          description: File path of the entity in the repository.
-        branch_name:
-          type: string
-          description: Name of the branch.
-    GitImportDetails1:
-      title: Import Git Details
+          x-stoplight:
+            id: pit0to8ng7rtl
+        owners:
+          type: array
+          x-stoplight:
+            id: ibe4axxxrnwpl
+          items:
+            x-stoplight:
+              id: kde7prhuw2ww2
+            type: string
+        tags:
+          type: array
+          x-stoplight:
+            id: 9sqie0nb3f08d
+          items:
+            x-stoplight:
+              id: 8sko0og6lpbyh
+            type: string
+        lifecycle:
+          type: array
+          x-stoplight:
+            id: 9rtf97h3uu9z3
+          items:
+            x-stoplight:
+              id: etzt6sp88w5iz
+            type: string
+      required:
+      - kind
+    GitCreateDetails2:
+      title: Create Git Details
       x-stoplight:
-        id: 2ij8fppk6n5pq
+        id: p1h9vvkuks7kq
       type: object
-      properties:
-        connector_ref:
-          type: string
-        repo_name:
-          type: string
-        branch_name:
-          type: string
-        file_path:
-          type: string
-        is_harness_code_repo:
-          type: boolean
-      description: Parameters related to importing an entity for Git.
-    GitMoveDetails1:
-      title: Move Git Details
-      x-stoplight:
-        id: ua9qwi7im72e0
-      type: object
-      description: Parameters related to moving an entity for Git Experience.
+      description: Contains parameters related to creating an Entity for Git Experience.
       x-examples:
         example-create-git:
           branch_name: branch
@@ -1220,248 +1390,47 @@ components:
           commit_message: Added Harness Git Experience
           base_branch: old_branch
           connector_ref: git_connector
-          repo_name: example_repository
-          is_harness_code_repo: false
-      properties:
-        branch_name:
-          type: string
-          description: Name of the branch. When moving an inline pipeline or a remote pipeline, this branch is where the remote entity is created or fetched.
-        file_path:
-          type: string
-          description: File path of the entity in the repository.
-        commit_message:
-          type: string
-          description: Merge commit message.
-        base_branch:
-          type: string
-          description: Default branch name. This checks out the branch titled branch_name
-        connector_ref:
-          type: string
-          description: Harness connector id used for entity CRUD operations
-        repo_name:
-          type: string
-          description: Name of the repository.
-        is_harness_code_repo:
-          type: boolean
-          description: Is Git Experience repo harness code.
-      required:
-      - branch_name
-      - file_path
-      - connector_ref
-      - repo_name
-    EntitiesGroupsResponse:
-      title: Entities Groups Response
-      description: Entities organized in hierarchical groups based on account, organization, and project, along with count information for each level.
-      type: object
-      properties:
-        data:
-          type: object
-          properties:
-            account:
-              type: object
-              properties:
-                with_group:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/EntitiesGroups'
-                  description: Account-level entities organized into groups
-                without_group:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/EntityResponse'
-                  description: Account-level entities not associated with any group
-              description: Account-level entities
-            org:
-              type: object
-              properties:
-                with_group:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/EntitiesGroups'
-                  description: Organization-level entities organized into groups
-                without_group:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/EntityResponse'
-                  description: Organization-level entities not associated with any group
-              description: Organization-level entities
-            project:
-              type: object
-              properties:
-                with_group:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/EntitiesGroups'
-                  description: Project-level entities organized into groups
-                without_group:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/EntityResponse'
-                  description: Project-level entities not associated with any group
-              description: Project-level entities
-          description: Grouped entity data
-        count:
-          type: object
-          properties:
-            total:
-              type: integer
-              description: Total number of entities across all scopes
-            total_owned:
-              type: integer
-              description: Total number of entities owned by the current user or their groups
-            total_starred:
-              type: integer
-              description: Total number of entities marked as favorites by the current user
-            account:
-              type: array
-              items:
-                $ref: '#/components/schemas/EntitiesGroups'
-              description: Entity counts at the account level by group
-            org:
-              type: array
-              items:
-                type: object
-                properties:
-                  org_identifier:
-                    type: string
-                    description: Organization identifier
-                  org_name:
-                    type: string
-                    description: Organization name
-                  groups:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/EntitiesGroups'
-                    description: Entity counts by group within the organization
-              description: Entity counts at the organization level
-            project:
-              type: array
-              items:
-                type: object
-                properties:
-                  org_identifier:
-                    type: string
-                    description: Organization identifier
-                  org_name:
-                    type: string
-                    description: Organization name
-                  project_identifier:
-                    type: string
-                    description: Project identifier
-                  project_name:
-                    type: string
-                    description: Project name
-                  groups:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/EntitiesGroups'
-                    description: Entity counts by group within the project
-              description: Entity counts at the project level
-          description: Count information for entities by scope and group
-    GitUpdateDetails2:
-      title: Update Git Details
-      x-stoplight:
-        id: w2ue8wampbxe3
-      type: object
-      description: Contains parameters related to updating an Entity for Git Experience.
-      x-examples:
-        example-update-git:
-          branch_name: branch
-          commit_message: Added Harness Git Experience
-          last_object_id: abcdXYZ
-          base_branch: old_branch
-          last_commit_id: abcdXYZ
-          connector_ref: git_connector
           store_type: REMOTE
           repo_name: example_repository
-          file_path: /folder/file.json
           is_harness_code_repo: false
       properties:
         branch_name:
           type: string
           description: Name of the branch.
+        file_path:
+          type: string
+          description: File path of the Entity in the repository.
         commit_message:
           type: string
           description: Commit message used for the merge commit.
-        last_object_id:
-          type: string
-          description: Last object identifier (for Github only).
         base_branch:
           type: string
           description: Name of the default branch (this checks out a new branch titled by branch_name).
-        last_commit_id:
-          type: string
-          description: Last commit identifier.
         connector_ref:
           type: string
           description: Identifier of the Harness Connector used for CRUD operations on the Entity.
         store_type:
           type: string
+          description: Specifies whether the Entity is to be stored in Git or not.
           enum:
           - INLINE
           - REMOTE
-          description: Specifies whether the Entity is to be stored in Git or not.
         repo_name:
           type: string
           description: Name of the repository.
-        file_path:
-          type: string
         is_harness_code_repo:
           type: boolean
           description: Is Git Experience repo harness code.
-    EntityMoveRequest:
-      title: EntityMoveRequest
-      description: Request body for moving an entity
-      type: object
-      properties:
-        git_details:
-          $ref: '#/components/schemas/GitMoveDetails1'
-        entity_move_operation_type:
-          $ref: '#/components/schemas/EntityMoveOperationType'
-      required:
-      - git_details
-      - entity_move_operation_type
   responses:
-    EntityFiltersResponseBodyList:
-      description: Response containing available filter options that can be used when querying entities, including filter names and their possible values.
+    BulkFieldUpdateSubmitResponse:
+      description: Async bulk field update accepted
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/EntityFiltersResponse'
+            $ref: '#/components/schemas/BulkFieldUpdateSubmitResponse'
         application/yaml:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/EntityFiltersResponse'
-    EntitiesGroupsResponseBody:
-      description: Response containing entities organized in hierarchical groups based on account, organization, and project, along with counts at each level.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/EntitiesGroupsResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/EntitiesGroupsResponse'
-      headers:
-        Total-Owned:
-          schema:
-            type: integer
-          description: Total number of entities owned by the current user or their groups
-        Total-Starred:
-          schema:
-            type: integer
-          description: Total number of entities marked as favorites by the current user
-    BulkFieldUpdateOperationResponse:
-      description: Status and result of a bulk field update operation
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BulkFieldUpdateOperationResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/BulkFieldUpdateOperationResponse'
+            $ref: '#/components/schemas/BulkFieldUpdateSubmitResponse'
     EntityKindsResponseBody:
       description: Response containing a list of all supported Entity Kinds along with their display names, descriptions, and counts.
       content:
@@ -1475,15 +1444,6 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/EntityKindsResponse'
-    EntityResponseBody:
-      description: Response containing a complete Entity definition including its metadata, relationships, and YAML representation.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/EntityResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/EntityResponse'
     DefaultSaveResponse:
       description: Default response for Save/Edit operations
       content:
@@ -1493,6 +1453,46 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/DefaultSaveResponse'
+    EntityResponseBody:
+      description: Response containing a complete Entity definition including its metadata, relationships, and YAML representation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EntityResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/EntityResponse'
+    EntityFiltersResponseBodyList:
+      description: Response containing available filter options that can be used when querying entities, including filter names and their possible values.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityFiltersResponse'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityFiltersResponse'
+    BulkFieldUpdateOperationResponse:
+      description: Status and result of a bulk field update operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BulkFieldUpdateOperationResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/BulkFieldUpdateOperationResponse'
+    EntityConvertResponseBody:
+      description: Response containing the converted Entity YAML in the target format (either Backstage or Harness format).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EntityConvertResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/EntityConvertResponse'
     EntityJsonSchemaResponseBody:
       description: Response containing the JSON Schema for validating Entity definitions, which can be used for client-side validation.
       content:
@@ -1538,25 +1538,162 @@ components:
           schema:
             type: integer
           description: Total number of entities marked as favorites by the current user
-    BulkFieldUpdateSubmitResponse:
-      description: Async bulk field update accepted
+    EntitiesGroupsResponseBody:
+      description: Response containing entities organized in hierarchical groups based on account, organization, and project, along with counts at each level.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/BulkFieldUpdateSubmitResponse'
+            $ref: '#/components/schemas/EntitiesGroupsResponse'
         application/yaml:
           schema:
-            $ref: '#/components/schemas/BulkFieldUpdateSubmitResponse'
-    EntityConvertResponseBody:
-      description: Response containing the converted Entity YAML in the target format (either Backstage or Harness format).
-      content:
-        application/json:
+            $ref: '#/components/schemas/EntitiesGroupsResponse'
+      headers:
+        Total-Owned:
           schema:
-            $ref: '#/components/schemas/EntityConvertResponse'
-        application/yaml:
+            type: integer
+          description: Total number of entities owned by the current user or their groups
+        Total-Starred:
           schema:
-            $ref: '#/components/schemas/EntityConvertResponse'
+            type: integer
+          description: Total number of entities marked as favorites by the current user
+  parameters:
+    AccountIdentifierQueryParam:
+      name: accountIdentifier
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Unique identifier of the account to operate on
+    Page1:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: null
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    KindParam:
+      name: kind
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Kind of the entity (e.g., component, api, resource, user, workflow)
+    IdentifierParam:
+      name: identifier
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier of the entity within its scope and kind
+    SearchTerm5:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: This would be used to filter resources having attributes matching the search term.
+    ProjectIdentifierQueryParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Unique identifier of the project within the organization
+    KindQueryParam:
+      name: kind
+      description: Filter entities by their kind (e.g., component, api, resource, user, workflow)
+      in: query
+      schema:
+        type: string
+        default: null
+    OrgIdentifierQueryParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Unique identifier of the organization within the account
+    ScopeParam:
+      name: scope
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Scope of the entity (account, account.orgId, account.orgId.projectId)
+    LimitWithRestriction:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 10
+        maximum: 100
+      description: 'Maximum number of items to return per page (1-100, default: 10)'
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Sort6:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Parameter on the basis of which sorting is done.
   requestBodies:
+    GitMetadataUpdateRequestBody1:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GitMetadataUpdateRequest'
+          x-examples:
+            example-git-metadata-update:
+              branch_name: branch
+              file_path: /folder/file.json
+              connector_ref: git_connector
+              repo_name: example_repository
+    EntityMoveRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EntityMoveRequest'
+          examples:
+            example-move-entity:
+              value:
+                git_details:
+                  branch_name: branch
+                  file_path: /folder/file.json
+                  commit_message: Added Harness Git Experience
+                  base_branch: old_branch
+                  connector_ref: git_connector
+                  repo_name: example_repository
+                  is_harness_code_repo: false
+                entity_move_operation_type: INLINE_TO_REMOTE
+      description: Entity Move Request Body
+    EntityRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EntityRequest'
+          examples:
+            example-entity:
+              value:
+                yaml: "apiVersion: harness.io/v1\nkind: component\ntype: Service\nidentifier: my-sample-service\nname: my-sample-service\nowner: sample-owner\nspec:\n  lifecycle: experimental\n  ownedBy:\n    - group/sample-group\nmetadata:\n  description: My Sample service.\n  annotations:\n    backstage.io/source-location: url:https://github.com/sample/sample/tree/main/harness/sample/\n    backstage.io/techdocs-ref: dir:.\n  links:\n    - title: Website\n      url: http://my-sample-website.com\n  tags:\n    - my-sample\n"
+            backstage-entity:
+              value:
+                yaml: "apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: my-sample-service\n  description: My Sample service.\n  annotations:\n    backstage.io/source-location: url:https://github.com/sample/sample/tree/main/\n  tags:\n    - my-sample\nspec:\n  type: service\n  lifecycle: experimental\n  owner: sample-owner\n"
+      description: Entity YAML definition provided as a string. The YAML should conform to either the  Harness entity format or the Backstage entity format, depending on the operation.
     EntityFilterQueryRequest:
       content:
         application/json:
@@ -1583,32 +1720,6 @@ components:
                   repo_name: example_repository
                   is_harness_code_repo: false
       description: Entity Create Request Body
-    EntityMoveRequestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/EntityMoveRequest'
-          examples:
-            example-move-entity:
-              value:
-                git_details:
-                  branch_name: branch
-                  file_path: /folder/file.json
-                  commit_message: Added Harness Git Experience
-                  base_branch: old_branch
-                  connector_ref: git_connector
-                  repo_name: example_repository
-                  is_harness_code_repo: false
-                entity_move_operation_type: INLINE_TO_REMOTE
-      description: Entity Move Request Body
-    GitImportRequestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GitImportDetails1'
-      description: Git Import Request Body
     EntityUpdateRequestBody:
       required: true
       content:
@@ -1630,130 +1741,19 @@ components:
                   repo_name: example_repository
                   is_harness_code_repo: false
       description: Entity Update Request Body
-    EntityRequestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/EntityRequest'
-          examples:
-            example-entity:
-              value:
-                yaml: "apiVersion: harness.io/v1\nkind: component\ntype: Service\nidentifier: my-sample-service\nname: my-sample-service\nowner: sample-owner\nspec:\n  lifecycle: experimental\n  ownedBy:\n    - group/sample-group\nmetadata:\n  description: My Sample service.\n  annotations:\n    backstage.io/source-location: url:https://github.com/sample/sample/tree/main/harness/sample/\n    backstage.io/techdocs-ref: dir:.\n  links:\n    - title: Website\n      url: http://my-sample-website.com\n  tags:\n    - my-sample\n"
-            backstage-entity:
-              value:
-                yaml: "apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: my-sample-service\n  description: My Sample service.\n  annotations:\n    backstage.io/source-location: url:https://github.com/sample/sample/tree/main/\n  tags:\n    - my-sample\nspec:\n  type: service\n  lifecycle: experimental\n  owner: sample-owner\n"
-      description: Entity YAML definition provided as a string. The YAML should conform to either the  Harness entity format or the Backstage entity format, depending on the operation.
-    GitMetadataUpdateRequestBody1:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GitMetadataUpdateRequest'
-          x-examples:
-            example-git-metadata-update:
-              branch_name: branch
-              file_path: /folder/file.json
-              connector_ref: git_connector
-              repo_name: example_repository
     EntitesByRefsRequest:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/EntitiesByRefsRequest'
       description: Entity Refs for which entities need to be fetched
-  parameters:
-    IdentifierParam:
-      name: identifier
-      in: path
+    GitImportRequestBody:
       required: true
-      schema:
-        type: string
-      description: Unique identifier of the entity within its scope and kind
-    Page1:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: null
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    ProjectIdentifierQueryParam:
-      name: projectIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: Unique identifier of the project within the organization
-    OrgIdentifierQueryParam:
-      name: orgIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: Unique identifier of the organization within the account
-    ScopeParam:
-      name: scope
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Scope of the entity (account, account.orgId, account.orgId.projectId)
-    KindParam:
-      name: kind
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Kind of the entity (e.g., component, api, resource, user, workflow)
-    AccountHeader5:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    Sort6:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: Parameter on the basis of which sorting is done.
-    LimitWithRestriction:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 10
-        maximum: 100
-      description: 'Maximum number of items to return per page (1-100, default: 10)'
-    SearchTerm5:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: This would be used to filter resources having attributes matching the search term.
-    AccountIdentifierQueryParam:
-      name: accountIdentifier
-      in: query
-      required: true
-      schema:
-        type: string
-      description: Unique identifier of the account to operate on
-    KindQueryParam:
-      name: kind
-      description: Filter entities by their kind (e.g., component, api, resource, user, workflow)
-      in: query
-      schema:
-        type: string
-        default: null
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GitImportDetails1'
+      description: Git Import Request Body
   securitySchemes:
     x-api-key:
       name: x-api-key

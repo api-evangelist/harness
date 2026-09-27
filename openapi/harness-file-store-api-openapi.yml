@@ -1424,21 +1424,27 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOFile'
 components:
   schemas:
-    ResponseDTOBoolean:
+    NGTag:
+      required:
+      - key
       type: object
       properties:
-        status:
+        key:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
+          description: Tag key
+        value:
+          type: string
+          description: Tag value
+      description: This is the view of the tags of the entity.
+    Sort:
+      type: object
+      properties:
+        empty:
           type: boolean
-        metaData:
-          type: object
-        correlationId:
-          type: string
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
     FileStoreNode:
       required:
       - identifier
@@ -1473,6 +1479,84 @@ components:
         lastModifiedBy:
           $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
       description: This is the view of the file store node entity defined in Harness
+    EntityReference:
+      type: object
+      properties:
+        default:
+          type: boolean
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        branch:
+          type: string
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        parentUniqueId:
+          type: string
+        repoIdentifier:
+          type: string
+        isDefault:
+          type: boolean
+          writeOnly: true
+        scope:
+          type: string
+          enum:
+          - account
+          - org
+          - project
+          - unknown
+        identifier:
+          type: string
+        accountIdentifier:
+          type: string
+    ResponseDTOPageResponseEntitySetupUsage:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseEntitySetupUsage'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTOPageFile:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageFile'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTOString:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: string
+        metaData:
+          type: object
+        correlationId:
+          type: string
     Failure:
       type: object
       properties:
@@ -1892,152 +1976,92 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    File:
-      required:
-      - name
-      - parentIdentifier
-      - type
+    PageFile:
       type: object
       properties:
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        identifier:
-          type: string
-          description: Identifier of the File or Folder
-        name:
-          type: string
-          description: Name of the File or Folder
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/Pageable'
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        numberOfElements:
+          type: integer
+          format: int32
+        empty:
+          type: boolean
+    FilesFilterPropertiesDTO:
+      required:
+      - filterType
+      type: object
+      properties:
         fileUsage:
           type: string
           description: This specifies the file usage
-        type:
-          type: string
-          description: This specifies the type of the File
           enum:
-          - FILE
-          - FOLDER
-        parentIdentifier:
-          type: string
-          description: This specifies parent directory identifier. The value of Root directory identifier is Root.
-        description:
-          type: string
-          description: Description of the File or Folder
-        tags:
-          type: array
-          description: Tags
-          items:
-            $ref: '#/components/schemas/NGTag'
-        mimeType:
-          type: string
-          description: Mime type of the File
-        path:
-          type: string
-          description: The path of the File or Folder
-          readOnly: true
-        draft:
-          type: boolean
-          description: Whether File is draft or not
-          readOnly: true
+          - MANIFEST_FILE
+          - CONFIG
+          - SCRIPT
         createdBy:
           $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
-        lastModifiedBy:
-          $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
-        lastModifiedAt:
-          type: integer
-          description: Last modified time for the File or Folder
-          format: int64
-          readOnly: true
-      description: This is details of the File or Folder entity defined in Harness.
-    EntitySetupUsage:
-      required:
-      - referredByEntity
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-        referredEntity:
-          $ref: '#/components/schemas/TemplateEntityDetail'
-        referredByEntity:
-          $ref: '#/components/schemas/TemplateEntityDetail'
-        detail:
-          $ref: '#/components/schemas/SetupUsageDetail'
-        createdAt:
-          type: integer
-          format: int64
-      description: This is the view of the Entity Setup Usage defined in Harness
-    ResponseDTOPageResponseEntitySetupUsage:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseEntitySetupUsage'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    EntityReference:
-      type: object
-      properties:
-        default:
-          type: boolean
-        metadata:
+        referencedBy:
+          $ref: '#/components/schemas/ReferencedByDTO'
+        tags:
           type: object
           additionalProperties:
             type: string
-        branch:
+            description: Filter tags as a key-value pair.
+          description: Filter tags as a key-value pair.
+        filterType:
           type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        parentUniqueId:
-          type: string
-        repoIdentifier:
-          type: string
-        isDefault:
-          type: boolean
-          writeOnly: true
-        scope:
-          type: string
+          description: This specifies the corresponding Entity of the filter.
           enum:
-          - account
-          - org
-          - project
-          - unknown
-        identifier:
-          type: string
-        accountIdentifier:
-          type: string
-    ResponseDTOSetEmbeddedUserDetailsDTO:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          uniqueItems: true
-          type: array
-          items:
-            $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
-        metaData:
-          type: object
-        correlationId:
-          type: string
+          - Connector
+          - Secret
+          - DelegateProfile
+          - Delegate
+          - PipelineSetup
+          - PipelineExecution
+          - Deployment
+          - Audit
+          - Template
+          - Trigger
+          - EnvironmentGroup
+          - FileStore
+          - CCMRecommendation
+          - Anomaly
+          - RIInventory
+          - SPInventory
+          - Autocud
+          - CCMConnector
+          - CCMK8sConnector
+          - Environment
+          - RuleExecution
+          - Override
+          - InputSet
+          - Webhook
+          - CCMBudget
+          - Service
+          - QueuedPipeline
+      description: Properties of the Files Filter defined in Harness
     TemplateEntityDetail:
       type: object
       properties:
@@ -2405,74 +2429,31 @@ components:
           type: string
         entityGitMetadata:
           $ref: '#/components/schemas/TemplateEntityGitMetadata'
-    ResponseDTOString:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: string
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    PageFile:
+    PageResponseEntitySetupUsage:
       type: object
       properties:
         totalPages:
           type: integer
-          format: int32
-        totalElements:
+          format: int64
+        totalItems:
           type: integer
           format: int64
-        first:
-          type: boolean
-        last:
-          type: boolean
-        pageable:
-          $ref: '#/components/schemas/Pageable'
-        size:
+        pageItemCount:
           type: integer
-          format: int32
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
         content:
           type: array
           items:
-            $ref: '#/components/schemas/File'
-        number:
+            $ref: '#/components/schemas/EntitySetupUsage'
+        pageIndex:
           type: integer
-          format: int32
-        sort:
-          $ref: '#/components/schemas/Sort'
-        numberOfElements:
-          type: integer
-          format: int32
+          format: int64
         empty:
           type: boolean
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    ResponseDTOFile:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/File'
-        metaData:
-          type: object
-        correlationId:
+        pageToken:
           type: string
     ResponseMessage:
       type: object
@@ -3064,472 +3045,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    ReferencedByDTO:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - CreatePR
-          - MergePR
-          - Projects
-          - Pipelines
-          - PipelineSteps
-          - Http
-          - Email
-          - JiraCreate
-          - JiraUpdate
-          - JiraApproval
-          - HarnessApproval
-          - CustomApproval
-          - Barrier
-          - Queue
-          - FlagConfiguration
-          - ShellScript
-          - K8sCanaryDeploy
-          - K8sApply
-          - K8sBlueGreenDeploy
-          - K8sRollingDeploy
-          - K8sRollingRollback
-          - K8sScale
-          - K8sDelete
-          - K8sBGSwapServices
-          - K8sCanaryDelete
-          - TerraformApply
-          - TerraformPlan
-          - TerraformDestroy
-          - TerraformRollback
-          - HelmDeploy
-          - HelmRollback
-          - Connectors
-          - Secrets
-          - Files
-          - Service
-          - Environment
-          - EnvironmentGroup
-          - InputSets
-          - CvConfig
-          - Verify
-          - Delegates
-          - DelegateConfigurations
-          - CvVerificationJob
-          - IntegrationStage
-          - IntegrationSteps
-          - SecurityStage
-          - SecuritySteps
-          - CvKubernetesActivitySource
-          - DeploymentSteps
-          - DeploymentStage
-          - ApprovalStage
-          - PipelineStage
-          - FeatureFlagStage
-          - Template
-          - TemplateStage
-          - CustomDeployment
-          - Triggers
-          - MonitoredService
-          - GitRepositories
-          - FeatureFlags
-          - ServiceNowApproval
-          - ServiceNowCreate
-          - ServiceNowUpdate
-          - ServiceNowImportSet
-          - GovernancePolicies
-          - Policy
-          - Run
-          - RunTests
-          - Plugin
-          - RestoreCacheGCS
-          - RestoreCacheS3
-          - SaveCacheGCS
-          - SaveCacheS3
-          - Security
-          - AquaTrivy
-          - AWSECR
-          - Bandit
-          - BlackDuck
-          - Brakeman
-          - Burp
-          - Checkmarx
-          - Clair
-          - DataTheorem
-          - DockerContentTrust
-          - External
-          - FortifyOnDemand
-          - Grype
-          - JfrogXray
-          - Mend
-          - Metasploit
-          - Nessus
-          - NexusIQ
-          - Nikto
-          - Nmap
-          - Openvas
-          - Owasp
-          - PrismaCloud
-          - Prowler
-          - Qualys
-          - Reapsaw
-          - ShiftLeft
-          - Sniper
-          - Snyk
-          - Sonarqube
-          - Sysdig
-          - Tenable
-          - Veracode
-          - Zap
-          - GitClone
-          - ArtifactoryUpload
-          - GCSUpload
-          - S3Upload
-          - BuildAndPushGCR
-          - BuildAndPushGAR
-          - BuildAndPushECR
-          - BuildAndPushDockerRegistry
-          - CreateStack
-          - DeleteStack
-          - ServerlessAwsLambdaDeploy
-          - ServerlessAwsLambdaRollback
-          - CustomStage
-          - RollbackStack
-          - Infrastructure
-          - Command
-          - StrategyNode
-          - AzureSlotDeployment
-          - AzureTrafficShift
-          - FetchInstanceScript
-          - AzureSwapSlot
-          - AzureWebAppRollback
-          - JenkinsBuild
-          - EcsRollingDeploy
-          - EcsRollingRollback
-          - EcsCanaryDeploy
-          - EcsCanaryDelete
-          - AzureCreateARMResource
-          - BuildAndPushACR
-          - AzureCreateBPResource
-          - AzureARMRollback
-          - Background
-          - Wait
-          - ArtifactSource
-          - EcsBlueGreenCreateService
-          - EcsBlueGreenSwapTargetGroups
-          - EcsBlueGreenRollback
-          - ShellScriptProvision
-          - Freeze
-          - GitOpsUpdateReleaseRepo
-          - GitOpsFetchLinkedApps
-          - EcsRunTask
-          - Chaos
-          - ElastigroupDeploy
-          - ElastigroupRollback
-          - Action
-          - ElastigroupSetup
-          - Bitrise
-          - TerragruntPlan
-          - TerragruntApply
-          - TerragruntDestroy
-          - TerragruntRollback
-          - IACMStage
-          - IACMStep
-          - IACM
-          - Container
-          - IACMTerraformPlugin
-          - IACMApproval
-          - ElastigroupBGStageSetup
-          - ElastigroupSwapRoute
-          - AsgCanaryDeploy
-          - AsgCanaryDelete
-          - SwapRoutes
-          - SwapRollback
-          - AppResize
-          - AppRollback
-          - CanaryAppSetup
-          - BGAppSetup
-          - BasicAppSetup
-          - TanzuCommand
-          - AsgRollingDeploy
-          - AsgRollingRollback
-          - GovernanceRuleAWS
-          - TasRollingDeploy
-          - TasRollingRollback
-          - K8sDryRun
-          - AsgBlueGreenSwapService
-          - AsgBlueGreenDeploy
-          - AsgBlueGreenRollback
-          - TerraformCloudRun
-          - TerraformCloudRollback
-          - DeployCloudFunction
-          - DeployCloudFunctionWithNoTraffic
-          - CloudFunctionTrafficShift
-          - CloudFunctionRollback
-          - AwsLambdaDeploy
-          - AwsSamDeploy
-          - AwsSamRollback
-          - SscaOrchestration
-          - AwsLambdaRollback
-          - GitOpsSync
-          - BambooBuild
-          - CdSscaOrchestration
-          - RouteMapping
-          - AWSSecurityHub
-          - CustomIngest
-          - BackstageEnvironmentVariable
-          - Fossa
-          - CodeQL
-          - Gitleaks
-          - DeployCloudFunctionGenOne
-          - RollbackCloudFunctionGenOne
-          - K8sBlueGreenStageScaleDown
-          - AwsSamBuild
-          - Semgrep
-          - SscaEnforcement
-          - IdpConnector
-          - CdSscaEnforcement
-          - DownloadManifests
-          - ServerlessAwsLambdaPrepareRollbackV2
-          - ServerlessAwsLambdaRollbackV2
-          - Coverity
-          - ServerlessAwsLambdaDeployV2
-          - AnalyzeDeploymentImpact
-          - ServerlessAwsLambdaPackageV2
-          - RevertPR
-          - AwsCdkBootstrap
-          - AwsCdkSynth
-          - AwsCdkDiff
-          - AwsCdkDeploy
-          - AwsCdkDestroy
-          - IdpScorecard
-          - IdpCheck
-          - AwsCdkRollback
-          - SlsaVerification
-          - UpdateGitOpsApp
-          - EcsServiceSetup
-          - EcsUpgradeContainer
-          - EcsBasicRollback
-          - ChaosInfrastructure
-          - Anchore
-          - Overrides
-          - AsgShiftTraffic
-          - AquaSecurity
-          - IDPStage
-          - ChaosHub
-          - CookieCutter
-          - CreateRepo
-          - DownloadAwsS3
-          - DirectPush
-          - RegisterCatalog
-          - K8sTrafficRouting
-          - DownloadHarnessStore
-          - CreateCatalog
-          - SlackNotify
-          - OsvScaner
-          - IACMOpenTofuPlugin
-          - AsgPhasedDeploy
-          - AsgSetup
-          - AsgRollback
-          - Test
-          - Wiz
-          - Certificates
-          - IACMCheckov
-          - IACMTFCompliance
-          - IACMTFLint
-          - IACMTFSec
-          - NotificationRule
-          - NotificationChannel
-          - K8sPatch
-          - CreateOrganisation
-          - CreateProject
-          - DBSchemaApply
-          - IACMPrepareExecution
-          - DBSchemaRollback
-          - K8sRollout
-          - CreateResource
-          - Checkov
-          - ServiceDiscoveryAgent
-          - ChaosInfrastructureV2
-          - Traceable
-          - AzureFunctionDeploy
-          - AzureFunctionRollback
-          - GoogleCloudRunDeploy
-          - GoogleCloudRunPrepareRollbackData
-          - GoogleCloudRunTrafficShift
-          - GoogleCloudRunRollback
-          - GoogleCloudRunJob
-          - UpdateCatalogProperty
-          - IACMWorkspace
-          - IACMModuleTestPlugin
-          - CheckmarxOne
-          - AsgSteadyState
-          - SscaArtifactVerification
-          - GitOpsApplication
-          - HelmDelete
-          - EcsBlueGreenTrafficShift
-          - StandAloneTrafficShiftRollback
-          - ElastigroupBlueGreenTrafficShift
-          - IdpCatalog
-          - IACMTerragruntPlugin
-          - IACMAnsiblePlugin
-          - GitHubAdvancedSecurity
-          - AiVerify
-          - AIExperiment
-          - ModelScan
-          - SaveCache
-          - RestoreCache
-          - DataSink
-          - IdpCdService
-          - IdpEnvironment
-          - IdpEnvironmentBlueprint
-          - SalesforceDeploy
-          - SalesforceRollback
-          - GitOpsRollout
-          - AuditStreamingDestination
-          - AIEvaluation
-          - SalesforceValidate
-          - SalesforceQuickDeploy
-          - SASTSecret
-          - SCA
-          - SalesforceCreateScratchOrg
-          - SalesforceDeleteScratchOrg
-          - HarUpload
-          - UserGroup
-          - SalesforceApexTest
-          - IACMAwsCdkPlugin
-          - EcsScale
-          - RestoreCacheAzure
-          - SaveCacheAzure
-          - Deployable
-          - SalesforceComparisonPair
-          - AlertSetting
-          - SalesforceDownloadDeployables
-          - SalesforceDownloadOrg
-          - SalesforceEvaluateDiff
-          - SalesforceChangeset
-          - SalesforceSourceBackup
-          - AiTestAutomation
-          - SalesforceExecution
-          - AsgScale
-          - CortexCloud
-          - IACMBlastRadiusAgent
-          - IACMRemediationAgent
-          - K8sBlueGreenStageScaleUp
-          - DeployGoogleAgentRuntimeRevision
-          - ShiftGoogleAgentRuntimeTraffic
-          - RollbackGoogleAgentRuntimeRevision
-          - K8sProgressiveCanaryRollback
-          - DeployAwsAgentCoreRevision
-          - ShiftAwsAgentCoreTraffic
-          - RollbackAwsAgentCoreRevision
-          - OpenAi
-          - GitOpsRollback
-          - IntegrationSetting
-          - IntegrationConfiguration
-          - MythosAgent
-        name:
-          type: string
-      description: File referenced by other entity
-    FilesFilterPropertiesDTO:
-      required:
-      - filterType
-      type: object
-      properties:
-        fileUsage:
-          type: string
-          description: This specifies the file usage
-          enum:
-          - MANIFEST_FILE
-          - CONFIG
-          - SCRIPT
-        createdBy:
-          $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
-        referencedBy:
-          $ref: '#/components/schemas/ReferencedByDTO'
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-            description: Filter tags as a key-value pair.
-          description: Filter tags as a key-value pair.
-        filterType:
-          type: string
-          description: This specifies the corresponding Entity of the filter.
-          enum:
-          - Connector
-          - Secret
-          - DelegateProfile
-          - Delegate
-          - PipelineSetup
-          - PipelineExecution
-          - Deployment
-          - Audit
-          - Template
-          - Trigger
-          - EnvironmentGroup
-          - FileStore
-          - CCMRecommendation
-          - Anomaly
-          - RIInventory
-          - SPInventory
-          - Autocud
-          - CCMConnector
-          - CCMK8sConnector
-          - Environment
-          - RuleExecution
-          - Override
-          - InputSet
-          - Webhook
-          - CCMBudget
-          - Service
-          - QueuedPipeline
-      description: Properties of the Files Filter defined in Harness
-    SetupUsageDetail:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-      discriminator:
-        propertyName: type
-    FolderNode:
-      required:
-      - identifier
-      - name
-      - type
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: Identifier of the File Store Node
-        parentIdentifier:
-          type: string
-          description: Parent identifier of the File Store Node
-        name:
-          type: string
-          description: Name of the File Store Node
-        type:
-          type: string
-          description: Type of the File Store Node
-          enum:
-          - FILE
-          - FOLDER
-        path:
-          type: string
-          description: Path of the file or folder
-          readOnly: true
-        lastModifiedAt:
-          type: integer
-          description: Last modified time for the File Store Node
-          format: int64
-          readOnly: true
-        lastModifiedBy:
-          $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
-        children:
-          type: array
-          description: Node children
-          items:
-            $ref: '#/components/schemas/FileStoreNode'
-      description: This contains folder details
     EmbeddedUserDetailsDTO:
       type: object
       properties:
@@ -3538,64 +3053,23 @@ components:
         email:
           type: string
       description: Updated by user details
-    SortOrder:
+    EntitySetupUsage:
+      required:
+      - referredByEntity
       type: object
       properties:
-        fieldName:
+        accountIdentifier:
           type: string
-        orderType:
-          type: string
-          enum:
-          - ASC
-          - DESC
-    ResponseDTOFolderNode:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/FolderNode'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ResponseDTOPageFile:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageFile'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    Pageable:
-      type: object
-      properties:
-        offset:
+        referredEntity:
+          $ref: '#/components/schemas/TemplateEntityDetail'
+        referredByEntity:
+          $ref: '#/components/schemas/TemplateEntityDetail'
+        detail:
+          $ref: '#/components/schemas/SetupUsageDetail'
+        createdAt:
           type: integer
           format: int64
-        sort:
-          $ref: '#/components/schemas/Sort'
-        pageSize:
-          type: integer
-          format: int32
-        pageNumber:
-          type: integer
-          format: int32
-        paged:
-          type: boolean
-        unpaged:
-          type: boolean
+      description: This is the view of the Entity Setup Usage defined in Harness
     ResponseDTOListEntityType:
       type: object
       properties:
@@ -3969,6 +3443,87 @@ components:
           type: object
         correlationId:
           type: string
+    File:
+      required:
+      - name
+      - parentIdentifier
+      - type
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        identifier:
+          type: string
+          description: Identifier of the File or Folder
+        name:
+          type: string
+          description: Name of the File or Folder
+        fileUsage:
+          type: string
+          description: This specifies the file usage
+        type:
+          type: string
+          description: This specifies the type of the File
+          enum:
+          - FILE
+          - FOLDER
+        parentIdentifier:
+          type: string
+          description: This specifies parent directory identifier. The value of Root directory identifier is Root.
+        description:
+          type: string
+          description: Description of the File or Folder
+        tags:
+          type: array
+          description: Tags
+          items:
+            $ref: '#/components/schemas/NGTag'
+        mimeType:
+          type: string
+          description: Mime type of the File
+        path:
+          type: string
+          description: The path of the File or Folder
+          readOnly: true
+        draft:
+          type: boolean
+          description: Whether File is draft or not
+          readOnly: true
+        createdBy:
+          $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
+        lastModifiedBy:
+          $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
+        lastModifiedAt:
+          type: integer
+          description: Last modified time for the File or Folder
+          format: int64
+          readOnly: true
+      description: This is details of the File or Folder entity defined in Harness.
+    Pageable:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/Sort'
+        pageSize:
+          type: integer
+          format: int32
+        pageNumber:
+          type: integer
+          format: int32
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
     Error1:
       type: object
       properties:
@@ -4392,15 +3947,54 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    Sort:
+    ResponseDTOSetEmbeddedUserDetailsDTO:
       type: object
       properties:
-        empty:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTOFile:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/File'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTOBoolean:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
           type: boolean
-        sorted:
-          type: boolean
-        unsorted:
-          type: boolean
+        metaData:
+          type: object
+        correlationId:
+          type: string
     ErrorMetadata2:
       type: object
       properties:
@@ -4417,44 +4011,389 @@ components:
         file:
           $ref: '#/components/schemas/File'
       description: Wrapper object for File Store YAML operations containing a file field with File or Folder metadata.
-    PageResponseEntitySetupUsage:
+    ReferencedByDTO:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/EntitySetupUsage'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
+        type:
           type: string
-    NGTag:
+          enum:
+          - CreatePR
+          - MergePR
+          - Projects
+          - Pipelines
+          - PipelineSteps
+          - Http
+          - Email
+          - JiraCreate
+          - JiraUpdate
+          - JiraApproval
+          - HarnessApproval
+          - CustomApproval
+          - Barrier
+          - Queue
+          - FlagConfiguration
+          - ShellScript
+          - K8sCanaryDeploy
+          - K8sApply
+          - K8sBlueGreenDeploy
+          - K8sRollingDeploy
+          - K8sRollingRollback
+          - K8sScale
+          - K8sDelete
+          - K8sBGSwapServices
+          - K8sCanaryDelete
+          - TerraformApply
+          - TerraformPlan
+          - TerraformDestroy
+          - TerraformRollback
+          - HelmDeploy
+          - HelmRollback
+          - Connectors
+          - Secrets
+          - Files
+          - Service
+          - Environment
+          - EnvironmentGroup
+          - InputSets
+          - CvConfig
+          - Verify
+          - Delegates
+          - DelegateConfigurations
+          - CvVerificationJob
+          - IntegrationStage
+          - IntegrationSteps
+          - SecurityStage
+          - SecuritySteps
+          - CvKubernetesActivitySource
+          - DeploymentSteps
+          - DeploymentStage
+          - ApprovalStage
+          - PipelineStage
+          - FeatureFlagStage
+          - Template
+          - TemplateStage
+          - CustomDeployment
+          - Triggers
+          - MonitoredService
+          - GitRepositories
+          - FeatureFlags
+          - ServiceNowApproval
+          - ServiceNowCreate
+          - ServiceNowUpdate
+          - ServiceNowImportSet
+          - GovernancePolicies
+          - Policy
+          - Run
+          - RunTests
+          - Plugin
+          - RestoreCacheGCS
+          - RestoreCacheS3
+          - SaveCacheGCS
+          - SaveCacheS3
+          - Security
+          - AquaTrivy
+          - AWSECR
+          - Bandit
+          - BlackDuck
+          - Brakeman
+          - Burp
+          - Checkmarx
+          - Clair
+          - DataTheorem
+          - DockerContentTrust
+          - External
+          - FortifyOnDemand
+          - Grype
+          - JfrogXray
+          - Mend
+          - Metasploit
+          - Nessus
+          - NexusIQ
+          - Nikto
+          - Nmap
+          - Openvas
+          - Owasp
+          - PrismaCloud
+          - Prowler
+          - Qualys
+          - Reapsaw
+          - ShiftLeft
+          - Sniper
+          - Snyk
+          - Sonarqube
+          - Sysdig
+          - Tenable
+          - Veracode
+          - Zap
+          - GitClone
+          - ArtifactoryUpload
+          - GCSUpload
+          - S3Upload
+          - BuildAndPushGCR
+          - BuildAndPushGAR
+          - BuildAndPushECR
+          - BuildAndPushDockerRegistry
+          - CreateStack
+          - DeleteStack
+          - ServerlessAwsLambdaDeploy
+          - ServerlessAwsLambdaRollback
+          - CustomStage
+          - RollbackStack
+          - Infrastructure
+          - Command
+          - StrategyNode
+          - AzureSlotDeployment
+          - AzureTrafficShift
+          - FetchInstanceScript
+          - AzureSwapSlot
+          - AzureWebAppRollback
+          - JenkinsBuild
+          - EcsRollingDeploy
+          - EcsRollingRollback
+          - EcsCanaryDeploy
+          - EcsCanaryDelete
+          - AzureCreateARMResource
+          - BuildAndPushACR
+          - AzureCreateBPResource
+          - AzureARMRollback
+          - Background
+          - Wait
+          - ArtifactSource
+          - EcsBlueGreenCreateService
+          - EcsBlueGreenSwapTargetGroups
+          - EcsBlueGreenRollback
+          - ShellScriptProvision
+          - Freeze
+          - GitOpsUpdateReleaseRepo
+          - GitOpsFetchLinkedApps
+          - EcsRunTask
+          - Chaos
+          - ElastigroupDeploy
+          - ElastigroupRollback
+          - Action
+          - ElastigroupSetup
+          - Bitrise
+          - TerragruntPlan
+          - TerragruntApply
+          - TerragruntDestroy
+          - TerragruntRollback
+          - IACMStage
+          - IACMStep
+          - IACM
+          - Container
+          - IACMTerraformPlugin
+          - IACMApproval
+          - ElastigroupBGStageSetup
+          - ElastigroupSwapRoute
+          - AsgCanaryDeploy
+          - AsgCanaryDelete
+          - SwapRoutes
+          - SwapRollback
+          - AppResize
+          - AppRollback
+          - CanaryAppSetup
+          - BGAppSetup
+          - BasicAppSetup
+          - TanzuCommand
+          - AsgRollingDeploy
+          - AsgRollingRollback
+          - GovernanceRuleAWS
+          - TasRollingDeploy
+          - TasRollingRollback
+          - K8sDryRun
+          - AsgBlueGreenSwapService
+          - AsgBlueGreenDeploy
+          - AsgBlueGreenRollback
+          - TerraformCloudRun
+          - TerraformCloudRollback
+          - DeployCloudFunction
+          - DeployCloudFunctionWithNoTraffic
+          - CloudFunctionTrafficShift
+          - CloudFunctionRollback
+          - AwsLambdaDeploy
+          - AwsSamDeploy
+          - AwsSamRollback
+          - SscaOrchestration
+          - AwsLambdaRollback
+          - GitOpsSync
+          - BambooBuild
+          - CdSscaOrchestration
+          - RouteMapping
+          - AWSSecurityHub
+          - CustomIngest
+          - BackstageEnvironmentVariable
+          - Fossa
+          - CodeQL
+          - Gitleaks
+          - DeployCloudFunctionGenOne
+          - RollbackCloudFunctionGenOne
+          - K8sBlueGreenStageScaleDown
+          - AwsSamBuild
+          - Semgrep
+          - SscaEnforcement
+          - IdpConnector
+          - CdSscaEnforcement
+          - DownloadManifests
+          - ServerlessAwsLambdaPrepareRollbackV2
+          - ServerlessAwsLambdaRollbackV2
+          - Coverity
+          - ServerlessAwsLambdaDeployV2
+          - AnalyzeDeploymentImpact
+          - ServerlessAwsLambdaPackageV2
+          - RevertPR
+          - AwsCdkBootstrap
+          - AwsCdkSynth
+          - AwsCdkDiff
+          - AwsCdkDeploy
+          - AwsCdkDestroy
+          - IdpScorecard
+          - IdpCheck
+          - AwsCdkRollback
+          - SlsaVerification
+          - UpdateGitOpsApp
+          - EcsServiceSetup
+          - EcsUpgradeContainer
+          - EcsBasicRollback
+          - ChaosInfrastructure
+          - Anchore
+          - Overrides
+          - AsgShiftTraffic
+          - AquaSecurity
+          - IDPStage
+          - ChaosHub
+          - CookieCutter
+          - CreateRepo
+          - DownloadAwsS3
+          - DirectPush
+          - RegisterCatalog
+          - K8sTrafficRouting
+          - DownloadHarnessStore
+          - CreateCatalog
+          - SlackNotify
+          - OsvScaner
+          - IACMOpenTofuPlugin
+          - AsgPhasedDeploy
+          - AsgSetup
+          - AsgRollback
+          - Test
+          - Wiz
+          - Certificates
+          - IACMCheckov
+          - IACMTFCompliance
+          - IACMTFLint
+          - IACMTFSec
+          - NotificationRule
+          - NotificationChannel
+          - K8sPatch
+          - CreateOrganisation
+          - CreateProject
+          - DBSchemaApply
+          - IACMPrepareExecution
+          - DBSchemaRollback
+          - K8sRollout
+          - CreateResource
+          - Checkov
+          - ServiceDiscoveryAgent
+          - ChaosInfrastructureV2
+          - Traceable
+          - AzureFunctionDeploy
+          - AzureFunctionRollback
+          - GoogleCloudRunDeploy
+          - GoogleCloudRunPrepareRollbackData
+          - GoogleCloudRunTrafficShift
+          - GoogleCloudRunRollback
+          - GoogleCloudRunJob
+          - UpdateCatalogProperty
+          - IACMWorkspace
+          - IACMModuleTestPlugin
+          - CheckmarxOne
+          - AsgSteadyState
+          - SscaArtifactVerification
+          - GitOpsApplication
+          - HelmDelete
+          - EcsBlueGreenTrafficShift
+          - StandAloneTrafficShiftRollback
+          - ElastigroupBlueGreenTrafficShift
+          - IdpCatalog
+          - IACMTerragruntPlugin
+          - IACMAnsiblePlugin
+          - GitHubAdvancedSecurity
+          - AiVerify
+          - AIExperiment
+          - ModelScan
+          - SaveCache
+          - RestoreCache
+          - DataSink
+          - IdpCdService
+          - IdpEnvironment
+          - IdpEnvironmentBlueprint
+          - SalesforceDeploy
+          - SalesforceRollback
+          - GitOpsRollout
+          - AuditStreamingDestination
+          - AIEvaluation
+          - SalesforceValidate
+          - SalesforceQuickDeploy
+          - SASTSecret
+          - SCA
+          - SalesforceCreateScratchOrg
+          - SalesforceDeleteScratchOrg
+          - HarUpload
+          - UserGroup
+          - SalesforceApexTest
+          - IACMAwsCdkPlugin
+          - EcsScale
+          - RestoreCacheAzure
+          - SaveCacheAzure
+          - Deployable
+          - SalesforceComparisonPair
+          - AlertSetting
+          - SalesforceDownloadDeployables
+          - SalesforceDownloadOrg
+          - SalesforceEvaluateDiff
+          - SalesforceChangeset
+          - SalesforceSourceBackup
+          - AiTestAutomation
+          - SalesforceExecution
+          - AsgScale
+          - CortexCloud
+          - IACMBlastRadiusAgent
+          - IACMRemediationAgent
+          - K8sBlueGreenStageScaleUp
+          - DeployGoogleAgentRuntimeRevision
+          - ShiftGoogleAgentRuntimeTraffic
+          - RollbackGoogleAgentRuntimeRevision
+          - K8sProgressiveCanaryRollback
+          - DeployAwsAgentCoreRevision
+          - ShiftAwsAgentCoreTraffic
+          - RollbackAwsAgentCoreRevision
+          - OpenAi
+          - GitOpsRollback
+          - IntegrationSetting
+          - IntegrationConfiguration
+          - MythosAgent
+        name:
+          type: string
+      description: File referenced by other entity
+    SetupUsageDetail:
       required:
-      - key
+      - type
       type: object
       properties:
-        key:
+        type:
           type: string
-          description: Tag key
-        value:
+      discriminator:
+        propertyName: type
+    SortOrder:
+      type: object
+      properties:
+        fieldName:
           type: string
-          description: Tag value
-      description: This is the view of the tags of the entity.
+        orderType:
+          type: string
+          enum:
+          - ASC
+          - DESC
     TemplateEntityGitMetadata:
       type: object
       properties:
@@ -4462,6 +4401,67 @@ components:
           type: string
         repo:
           type: string
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    ResponseDTOFolderNode:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/FolderNode'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    FolderNode:
+      required:
+      - identifier
+      - name
+      - type
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Identifier of the File Store Node
+        parentIdentifier:
+          type: string
+          description: Parent identifier of the File Store Node
+        name:
+          type: string
+          description: Name of the File Store Node
+        type:
+          type: string
+          description: Type of the File Store Node
+          enum:
+          - FILE
+          - FOLDER
+        path:
+          type: string
+          description: Path of the file or folder
+          readOnly: true
+        lastModifiedAt:
+          type: integer
+          description: Last modified time for the File Store Node
+          format: int64
+          readOnly: true
+        lastModifiedBy:
+          $ref: '#/components/schemas/EmbeddedUserDetailsDTO'
+        children:
+          type: array
+          description: Node children
+          items:
+            $ref: '#/components/schemas/FileStoreNode'
+      description: This contains folder details
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -150,6 +150,84 @@ paths:
       x-codegen-request-body-name: accessPoint
 components:
   schemas:
+    AccessPoint:
+      type: object
+      properties:
+        id:
+          type: string
+        account_id:
+          type: string
+        cloud_account_id:
+          type: string
+        org_id:
+          type: string
+        project_id:
+          type: string
+        host_name:
+          type: string
+        region:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+        vpc:
+          type: string
+        status:
+          type: string
+          enum:
+          - created
+          - submitted
+          - errored
+        metadata:
+          $ref: '#/components/schemas/AccessPointMeta'
+        subnets:
+          type: array
+          items:
+            type: string
+        security_groups:
+          type: array
+          items:
+            type: string
+        editables:
+          type: array
+          items:
+            type: string
+    OnboardToClusterOrchestratorRequest:
+      type: object
+      description: Configuration for cluster setup
+      required:
+      - name
+      - user_config
+      - k8s_connector_id
+      properties:
+        name:
+          type: string
+          description: Name identifier for the cluster configuration
+        user_config:
+          type: object
+          description: User-specific configuration settings for the cluster
+          required:
+          - cluster_endpoint
+          properties:
+            cluster_endpoint:
+              type: string
+              description: API end point of the Kubernetes cluster as per the cloud provider
+        k8s_connector_id:
+          type: string
+          description: ID for the CACM Cloud Cost Kubernetes connector
+    CreateAccessPointResponse:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/AccessPoint'
+        errors:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          properties: {}
     ClusterConsolidationBudget:
       type: object
       properties:
@@ -174,6 +252,89 @@ components:
           - string
           - 'null'
           example: 10m0s
+    AccessPointMeta:
+      type: object
+      properties:
+        error:
+          type: string
+        certificate_id:
+          type: string
+        security_groups:
+          type: array
+          items:
+            type: string
+        dns:
+          type: object
+          properties:
+            route53:
+              type: object
+              properties:
+                hosted_zone_id:
+                  type: string
+            others:
+              type: string
+        albArn:
+          type: string
+        resource_group:
+          type: string
+        fe_ip_id:
+          type: string
+        subnet_id:
+          type: string
+        size:
+          type: string
+        app_gateway_id:
+          type: string
+        subnet_name:
+          type: string
+        fe_ip_name:
+          type: string
+        certificate:
+          $ref: '#/components/schemas/CertificateData'
+        func_region:
+          type: string
+    ClusterOrchestratorPodEvictor:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: false
+        evict_single_replicas:
+          type: boolean
+          example: false
+        minimum_cpu:
+          type: integer
+          example: 50
+        minimum_memory:
+          type: integer
+          example: 50
+    ConnectedClusterHealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        service:
+          type: string
+          example: telemetry_collector
+        raw_json:
+          type:
+          - string
+          - 'null'
+          example: null
+        last_heart_beat_received_at:
+          type: string
+          format: date-time
+          example: '2025-02-28T20:07:13Z'
+    CertificateData:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        content:
+          type: string
     ConnectedKubernetesClustersGetResponse:
       type: object
       properties:
@@ -289,155 +450,6 @@ components:
               - 'null'
               example: 6h
               description: The nodes which were replaced by a fallback ondemand node will be retried for spot after this window
-    OnboardToClusterOrchestratorRequest:
-      type: object
-      description: Configuration for cluster setup
-      required:
-      - name
-      - user_config
-      - k8s_connector_id
-      properties:
-        name:
-          type: string
-          description: Name identifier for the cluster configuration
-        user_config:
-          type: object
-          description: User-specific configuration settings for the cluster
-          required:
-          - cluster_endpoint
-          properties:
-            cluster_endpoint:
-              type: string
-              description: API end point of the Kubernetes cluster as per the cloud provider
-        k8s_connector_id:
-          type: string
-          description: ID for the CACM Cloud Cost Kubernetes connector
-    CertificateData:
-      type: object
-      properties:
-        name:
-          type: string
-        password:
-          type: string
-        content:
-          type: string
-    AccessPointMeta:
-      type: object
-      properties:
-        error:
-          type: string
-        certificate_id:
-          type: string
-        security_groups:
-          type: array
-          items:
-            type: string
-        dns:
-          type: object
-          properties:
-            route53:
-              type: object
-              properties:
-                hosted_zone_id:
-                  type: string
-            others:
-              type: string
-        albArn:
-          type: string
-        resource_group:
-          type: string
-        fe_ip_id:
-          type: string
-        subnet_id:
-          type: string
-        size:
-          type: string
-        app_gateway_id:
-          type: string
-        subnet_name:
-          type: string
-        fe_ip_name:
-          type: string
-        certificate:
-          $ref: '#/components/schemas/CertificateData'
-        func_region:
-          type: string
-    AccessPoint:
-      type: object
-      properties:
-        id:
-          type: string
-        account_id:
-          type: string
-        cloud_account_id:
-          type: string
-        org_id:
-          type: string
-        project_id:
-          type: string
-        host_name:
-          type: string
-        region:
-          type: string
-        type:
-          type: string
-        name:
-          type: string
-        vpc:
-          type: string
-        status:
-          type: string
-          enum:
-          - created
-          - submitted
-          - errored
-        metadata:
-          $ref: '#/components/schemas/AccessPointMeta'
-        subnets:
-          type: array
-          items:
-            type: string
-        security_groups:
-          type: array
-          items:
-            type: string
-        editables:
-          type: array
-          items:
-            type: string
-    ClusterOrchestratorPodEvictor:
-      type: object
-      properties:
-        enabled:
-          type: boolean
-          example: false
-        evict_single_replicas:
-          type: boolean
-          example: false
-        minimum_cpu:
-          type: integer
-          example: 50
-        minimum_memory:
-          type: integer
-          example: 50
-    ConnectedClusterHealthStatus:
-      type: object
-      properties:
-        status:
-          type: string
-          example: success
-        service:
-          type: string
-          example: telemetry_collector
-        raw_json:
-          type:
-          - string
-          - 'null'
-          example: null
-        last_heart_beat_received_at:
-          type: string
-          format: date-time
-          example: '2025-02-28T20:07:13Z'
     ConnectedKubernetesClustersListResponse:
       type: object
       properties:
@@ -457,18 +469,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/ConnectedKubernetesCluster'
-    CreateAccessPointResponse:
-      type: object
-      properties:
-        response:
-          $ref: '#/components/schemas/AccessPoint'
-        errors:
-          type: array
-          items:
-            type: string
-        metadata:
-          type: object
-          properties: {}
   securitySchemes:
     x-api-key:
       name: x-api-key

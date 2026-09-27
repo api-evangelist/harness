@@ -754,58 +754,132 @@ paths:
       - x-api-key: []
 components:
   schemas:
-    InfrastructureState:
+    Implementation:
+      type: object
+      properties:
+        backend:
+          type: string
+        steps:
+          $ref: '#/components/schemas/Steps'
+        values:
+          type: object
+          additionalProperties: true
+      required:
+      - backend
+      - steps
+      additionalProperties: false
+    InfrastructureProgress:
+      type: object
+      properties:
+        progress:
+          type: string
+          enum:
+          - unknown
+          - pending
+          - processing
+          - done
+          - failed
+          - aborted
+          - deleted
+          - replaced
+      required:
+      - progress
+    InfrastructureExecutionList:
+      type: object
+      properties:
+        executions:
+          type: array
+          items:
+            $ref: '#/components/schemas/InfrastructureExecution'
+        total:
+          type: integer
+          format: int64
+    SchemasRequestBody:
+      type: object
+      properties:
+        orgIdentifier:
+          type: string
+          description: Org is the organization identifier.
+        projectIdentifier:
+          type: string
+          description: Project is the project identifier.
+      description: Scope for the request, including account, org and project.
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: string
+        message:
+          type: string
+        name:
+          type: string
+      required:
+      - name
+      - message
+    InfrastructureSpec:
       type: object
       properties:
         createdAt:
           type: string
           description: date (RFC3339) when the spec was created
-        sessionEndedAt:
-          type: string
-        sessionStartedAt:
-          type: string
-        updatedAt:
-          type: string
-          description: date (RFC3339) when the spec was updated
-    InfrastructureList:
+        infrastructure:
+          $ref: '#/components/schemas/Infrastructure1'
+        revision:
+          type: integer
+          format: int64
+    InfrastructureSpecList:
       type: object
       properties:
-        infrastructures:
+        specs:
           type: array
           items:
-            $ref: '#/components/schemas/InfrastructureOutput'
+            $ref: '#/components/schemas/InfrastructureSpec'
         total:
           type: integer
           format: int64
-    InstanceApproval:
+    ApprovePipelineExecutionRequestBody:
       type: object
       properties:
-        instanceId:
-          type: string
-        pipelineApprovals:
-          type: array
-          items:
-            $ref: '#/components/schemas/PipelineApproval'
-      required:
-      - instanceId
-      - pipelineApprovals
-    Output:
-      type: object
-      properties:
-        description:
-          type: string
-        type:
+        action:
           type: string
           enum:
-          - string
-          - integer
-          - number
-          - object
-          - boolean
-          - array
-        value: {}
+          - APPROVE
+          - REJECT
+        approvalID:
+          type: string
+          description: ID of the approval
+        message:
+          type: string
+          description: Message to send with the approval
       required:
-      - value
+      - approvalID
+      - action
+    InfraInstance:
+      type: object
+      properties:
+        dependencies:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Dependency'
+        identifier:
+          type: string
+        implementation:
+          $ref: '#/components/schemas/Implementation'
+        metadata:
+          type: object
+          additionalProperties: true
+        outputs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Output'
+        targetState:
+          $ref: '#/components/schemas/State'
+      required:
+      - identifier
       additionalProperties: false
     Infrastructure1:
       type: object
@@ -829,42 +903,19 @@ components:
       - identifier
       - targetState
       additionalProperties: false
-    Error:
+    InfrastructureState:
       type: object
       properties:
-        code:
+        createdAt:
           type: string
-        details:
-          type: object
-          additionalProperties:
-            type: string
-        message:
+          description: date (RFC3339) when the spec was created
+        sessionEndedAt:
           type: string
-        name:
+        sessionStartedAt:
           type: string
-      required:
-      - name
-      - message
-    Dependency:
-      type: object
-      properties:
-        identifier:
+        updatedAt:
           type: string
-        optional:
-          type: boolean
-      required:
-      - identifier
-      additionalProperties: false
-    InfrastructureSpecList:
-      type: object
-      properties:
-        specs:
-          type: array
-          items:
-            $ref: '#/components/schemas/InfrastructureSpec'
-        total:
-          type: integer
-          format: int64
+          description: date (RFC3339) when the spec was updated
     ExecuteRequestBody:
       type: object
       properties:
@@ -880,17 +931,6 @@ components:
       description: Scope for the request, including account, org and project.
       required:
       - infrastructureYaml
-    ExecutionOutput:
-      type: object
-      properties:
-        description:
-          type: string
-          description: Description of the output
-        value:
-          description: Value of the output
-      required:
-      - value
-      additionalProperties: false
     ExecutionEvent:
       type: object
       properties:
@@ -904,42 +944,37 @@ components:
       required:
       - event
       - createdAt
-    InfrastructureSpec:
+    InfrastructureOutput:
       type: object
       properties:
-        createdAt:
+        activeExecutions:
+          type: array
+          items:
+            $ref: '#/components/schemas/InfrastructureExecution'
+        identifier:
           type: string
-          description: date (RFC3339) when the spec was created
-        infrastructure:
-          $ref: '#/components/schemas/Infrastructure1'
-        revision:
-          type: integer
-          format: int64
-    Steps:
+          description: ID of the infrastructure
+        spec:
+          $ref: '#/components/schemas/InfrastructureSpec'
+        state:
+          $ref: '#/components/schemas/InfrastructureState'
+      required:
+      - identifier
+      - state
+      - activeExecutions
+    State:
       type: object
       properties:
-        apply:
-          type: object
-          additionalProperties: true
-        create:
-          type: object
-          additionalProperties: true
-        delete:
-          type: object
-          additionalProperties: true
-        destroy:
-          type: object
-          additionalProperties: true
-        pause:
-          type: object
-          additionalProperties: true
-        resume:
-          type: object
-          additionalProperties: true
+        state:
+          type: string
+          enum:
+          - unknown
+          - inactive
+          - instantiated
+          - running
+          - paused
       required:
-      - apply
-      - destroy
-      additionalProperties: false
+      - state
     PipelineApproval:
       type: object
       properties:
@@ -965,117 +1000,92 @@ components:
       - orgID
       - projectID
       - message
-    InfrastructureOutput:
+    Dependency:
       type: object
       properties:
-        activeExecutions:
+        identifier:
+          type: string
+        optional:
+          type: boolean
+      required:
+      - identifier
+      additionalProperties: false
+    InfrastructureList:
+      type: object
+      properties:
+        infrastructures:
           type: array
           items:
-            $ref: '#/components/schemas/InfrastructureExecution'
-        identifier:
-          type: string
-          description: ID of the infrastructure
-        spec:
-          $ref: '#/components/schemas/InfrastructureSpec'
-        state:
-          $ref: '#/components/schemas/InfrastructureState'
-      required:
-      - identifier
-      - state
-      - activeExecutions
-    ApprovePipelineExecutionRequestBody:
+            $ref: '#/components/schemas/InfrastructureOutput'
+        total:
+          type: integer
+          format: int64
+    InstanceApproval:
       type: object
       properties:
-        action:
+        instanceId:
+          type: string
+        pipelineApprovals:
+          type: array
+          items:
+            $ref: '#/components/schemas/PipelineApproval'
+      required:
+      - instanceId
+      - pipelineApprovals
+    ExecutionOutput:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Description of the output
+        value:
+          description: Value of the output
+      required:
+      - value
+      additionalProperties: false
+    Output:
+      type: object
+      properties:
+        description:
+          type: string
+        type:
           type: string
           enum:
-          - APPROVE
-          - REJECT
-        approvalID:
-          type: string
-          description: ID of the approval
-        message:
-          type: string
-          description: Message to send with the approval
+          - string
+          - integer
+          - number
+          - object
+          - boolean
+          - array
+        value: {}
       required:
-      - approvalID
-      - action
-    SchemasRequestBody:
+      - value
+      additionalProperties: false
+    Steps:
       type: object
       properties:
-        orgIdentifier:
-          type: string
-          description: Org is the organization identifier.
-        projectIdentifier:
-          type: string
-          description: Project is the project identifier.
-      description: Scope for the request, including account, org and project.
-    InfrastructureProgress:
-      type: object
-      properties:
-        progress:
-          type: string
-          enum:
-          - unknown
-          - pending
-          - processing
-          - done
-          - failed
-          - aborted
-          - deleted
-          - replaced
-      required:
-      - progress
-    InfraInstance:
-      type: object
-      properties:
-        dependencies:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Dependency'
-        identifier:
-          type: string
-        implementation:
-          $ref: '#/components/schemas/Implementation'
-        metadata:
+        apply:
           type: object
           additionalProperties: true
-        outputs:
+        create:
           type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Output'
-        targetState:
-          $ref: '#/components/schemas/State'
-      required:
-      - identifier
-      additionalProperties: false
-    Implementation:
-      type: object
-      properties:
-        backend:
-          type: string
-        steps:
-          $ref: '#/components/schemas/Steps'
-        values:
+          additionalProperties: true
+        delete:
+          type: object
+          additionalProperties: true
+        destroy:
+          type: object
+          additionalProperties: true
+        pause:
+          type: object
+          additionalProperties: true
+        resume:
           type: object
           additionalProperties: true
       required:
-      - backend
-      - steps
+      - apply
+      - destroy
       additionalProperties: false
-    State:
-      type: object
-      properties:
-        state:
-          type: string
-          enum:
-          - unknown
-          - inactive
-          - instantiated
-          - running
-          - paused
-      required:
-      - state
     InfrastructureExecution:
       type: object
       properties:
@@ -1134,16 +1144,6 @@ components:
       - targetState
       - progress
       - completedInstanceIds
-    InfrastructureExecutionList:
-      type: object
-      properties:
-        executions:
-          type: array
-          items:
-            $ref: '#/components/schemas/InfrastructureExecution'
-        total:
-          type: integer
-          format: int64
   securitySchemes:
     x-api-key:
       name: x-api-key

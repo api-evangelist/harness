@@ -943,83 +943,79 @@ paths:
       - Onboarding
 components:
   schemas:
-    pipelineonboarding.PipelineChaosOnboardingCheckResponse:
+    v2_onboarding.ConfirmExperimentCreationResponse:
       type: object
       properties:
-        check:
+        completed:
           type: boolean
-        infrastructures:
+        targetNetworkMapStatus:
           type: object
           additionalProperties:
-            type: object
-            additionalProperties:
-              $ref: '#/components/schemas/pipelineonboarding.InfrastructuresStatus'
-        message:
+            $ref: '#/components/schemas/targetnetworkmap.Status'
+    v1.TolerationOperator:
+      type: string
+      enum:
+      - Exists
+      - Equal
+      x-enum-varnames:
+      - TolerationOpExists
+      - TolerationOpEqual
+    v1.TaintEffect:
+      type: string
+      enum:
+      - NoSchedule
+      - PreferNoSchedule
+      - NoExecute
+      x-enum-varnames:
+      - TaintEffectNoSchedule
+      - TaintEffectPreferNoSchedule
+      - TaintEffectNoExecute
+    v1.PullPolicy:
+      type: string
+      enum:
+      - Always
+      - Never
+      - IfNotPresent
+      x-enum-varnames:
+      - PullAlways
+      - PullNever
+      - PullIfNotPresent
+    infra_v2.Env:
+      type: object
+      properties:
+        key:
           type: string
         name:
           type: string
-        services:
-          type: object
-          additionalProperties:
-            type: object
-    pipelineonboarding.PipelineChaosOnboardingTaskRequest:
+        value:
+          type: string
+        valueFrom:
+          $ref: '#/components/schemas/infra_v2.EnvValueFrom'
+    database.DataCollectionConfiguration:
       type: object
       properties:
-        chaosAdvanceConfiguration:
-          $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
-        discoveryAdvanceConfiguration:
-          $ref: '#/components/schemas/database.AgentConfiguration'
-        isAIEnabled:
-          type: boolean
-        pipelineIdentity:
-          type: string
-    v2_onboarding.ChaosInfraAdvanceConfiguration:
-      type: object
-      properties:
-        annotation:
-          type: object
-          additionalProperties:
-            type: string
-        autopilotEnabled:
-          type: boolean
-        containers:
-          type: string
-        env:
+        blacklistedNamespaces:
           type: array
           items:
-            $ref: '#/components/schemas/infra_v2.Env'
-        imagePullPolicy:
-          $ref: '#/components/schemas/v1.PullPolicy'
-        insecureSkipVerify:
-          type: boolean
-        label:
-          type: object
-          additionalProperties:
             type: string
-        mtls:
-          $ref: '#/components/schemas/infra_v2.MTLSConfiguration'
-        nodeSelector:
-          type: object
-          additionalProperties:
-            type: string
-        proxy:
-          $ref: '#/components/schemas/infra_v2.ProxyConfiguration'
-        runAsGroup:
+        collectionWindowInMin:
           type: integer
-        runAsUser:
-          type: integer
-        tolerations:
+        cron:
+          $ref: '#/components/schemas/database.CronConfig'
+        enableBatchResources:
+          type: boolean
+        enableNodeAgent:
+          type: boolean
+        enableOrphanedPod:
+          type: boolean
+        namespaceSelector:
+          type: string
+        nodeAgentSelector:
+          type: string
+        observedNamespaces:
           type: array
           items:
-            $ref: '#/components/schemas/v1.Toleration'
-        volumeMounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.VolumeMount'
-        volumes:
-          type: array
-          items:
-            $ref: '#/components/schemas/infra_v2.Volumes'
+            type: string
     OnboardingContext:
       type: object
       properties:
@@ -1150,6 +1146,90 @@ components:
           type: string
           description: Kubernetes service-account token value; stored as a secret and referenced by the connector.
       description: Declarative context describing the resources to onboard
+    v2_onboarding.OnboardingMode:
+      type: string
+      enum:
+      - Manual
+      - Automatic
+      x-enum-varnames:
+      - ManualMode
+      - AutomaticMode
+    v2_onboarding.OnboardingExperimentResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/v2_onboarding.OnboardingTargetExperiment'
+        isProcessed:
+          type: boolean
+        pagination:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    OnboardingExecuteResponse:
+      type: object
+      properties:
+        secret_identifiers:
+          type: array
+          description: Identifiers of the secrets created (credentials materialized from the context).
+          items:
+            type: string
+            description: Identifiers of the secrets created (credentials materialized from the context).
+        manifest_identifier:
+          type: string
+          description: Identifier of the manifest attached to the service. Populated whenever a manifest is provisioned, including providers (e.g. Harness Code) that need no connector.
+        manifest_connector_identifier:
+          type: string
+          description: Identifier of the created manifest connector. Null for providers whose connection is built-in (e.g. Harness Code) and therefore create no connector.
+        artifact_identifier:
+          type: string
+          description: Identifier of the artifact attached to the service. Populated whenever an artifact is provisioned.
+        artifact_connector_identifier:
+          type: string
+          description: Identifier of the created Docker (artifact) connector.
+        service_identifier:
+          type: string
+          description: Identifier of the created service.
+        environment_identifier:
+          type: string
+          description: Identifier of the environment created (or reused) to hold the infrastructure. Populated whenever an infrastructure is provisioned.
+        infrastructure_identifier:
+          type: string
+          description: Identifier of the created infrastructure definition. Populated whenever an infrastructure is provisioned.
+        infra_connector_identifier:
+          type: string
+          description: Identifier of the created Kubernetes cluster connector referenced by the infrastructure.
+        pipeline_yaml:
+          type: string
+          description: Rendered pipeline YAML for the requested deployment strategy. Populated only for strategy-based requests; the caller can display it and run the pipeline as-is.
+      description: Identifiers of the resources created during onboarding
+    v2_onboarding.NetworkMapCreationMode:
+      type: string
+      enum:
+      - Manual
+      - Automatic
+      x-enum-varnames:
+      - NetworkMapCreationManual
+      - NetworkMapCreationAutomatic
+    database.MTLSConfiguration:
+      type: object
+      properties:
+        certPath:
+          type: string
+        keyPath:
+          type: string
+        secretName:
+          type: string
+        url:
+          type: string
+    v2_onboarding.AgentData:
+      type: object
+      properties:
+        clusterAgent:
+          $ref: '#/components/schemas/v2_onboarding.AgentDetails'
+        nodeAgent:
+          type: array
+          items:
+            $ref: '#/components/schemas/v2_onboarding.AgentDetails'
     Failure:
       type: object
       properties:
@@ -1569,253 +1649,57 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    v2_onboarding.TargetNetworkMapStatus:
-      type: object
-      properties:
-        status:
-          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
-        targetNetworkMapStatus:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/targetnetworkmap.Status'
-        totalTargetNetworkMaps:
-          type: integer
-        totalTargetNetworkMapsExperiments:
-          type: integer
-    v2_onboarding.OnboardingTargetExperiment:
-      type: object
-      properties:
-        identity:
-          type: string
-        isProcessed:
-          type: boolean
-        name:
-          type: string
-        totalChaosExperiments:
-          type: integer
-        totalServiceCount:
-          type: integer
-    pipelineonboarding.PipelineOnboarding:
+    database.AgentConfiguration:
       type: object
       required:
-      - accountID
-      - isRemoved
+      - data
       properties:
-        accountID:
+        collectorImage:
           type: string
-        chaosAdvanceConfiguration:
-          description: Advance Configurations
-          allOf:
-          - $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        discoveryAdvanceConfiguration:
-          $ref: '#/components/schemas/database.AgentConfiguration'
-        infrastructures:
-          type: object
-          additionalProperties:
-            type: object
-            additionalProperties:
-              type: object
-        isAiEnabled:
-          type: boolean
-        isRemoved:
-          type: boolean
-        message:
-          type: string
-        orgID:
-          type: string
-        pipelineIdentity:
-          type: string
-        pipelineName:
-          type: string
-        projectID:
-          type: string
-        selectedExperiments:
-          type: array
-          items:
-            $ref: '#/components/schemas/pipelineonboarding.SelectedExperiment'
-        services:
-          type: object
-          additionalProperties:
-            type: object
-        singleClickOnboardings:
+        data:
+          $ref: '#/components/schemas/database.DataCollectionConfiguration'
+        imagePullSecrets:
           type: array
           items:
             type: string
-        status:
-          $ref: '#/components/schemas/pipelineonboarding.Status'
-        updatedAt:
-          type: integer
-        updatedBy:
+        kubernetes:
+          $ref: '#/components/schemas/database.KubernetesAgentConfiguration'
+        logWatcherImage:
           type: string
-    database.DataCollectionConfiguration:
+        mtls:
+          $ref: '#/components/schemas/database.MTLSConfiguration'
+        proxy:
+          $ref: '#/components/schemas/database.ProxyConfiguration'
+        skipSecureVerify:
+          type: boolean
+    v2_onboarding.TargetServiceDetails:
       type: object
       properties:
-        blacklistedNamespaces:
-          type: array
-          items:
-            type: string
-        collectionWindowInMin:
-          type: integer
-        cron:
-          $ref: '#/components/schemas/database.CronConfig'
-        enableBatchResources:
-          type: boolean
-        enableNodeAgent:
-          type: boolean
-        enableOrphanedPod:
-          type: boolean
-        namespaceSelector:
+        id:
           type: string
-        nodeAgentSelector:
-          type: string
-        observedNamespaces:
-          type: array
-          items:
-            type: string
-    infra_v2.Volumes:
-      type: object
-      properties:
         name:
           type: string
-        sizeLimit:
-          type: string
-    v1.TaintEffect:
-      type: string
-      enum:
-      - NoSchedule
-      - PreferNoSchedule
-      - NoExecute
-      x-enum-varnames:
-      - TaintEffectNoSchedule
-      - TaintEffectPreferNoSchedule
-      - TaintEffectNoExecute
-    pipelineonboarding.PipelineChaosOnboardingStatusResponse:
+    v2_onboarding.V2OnboardingRequest:
       type: object
       required:
-      - accountID
-      - isRemoved
+      - environmentRef
+      - infrastructureRef
+      - mode
       properties:
-        accountID:
-          type: string
         chaosAdvanceConfiguration:
-          description: Advance Configurations
-          allOf:
-          - $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
+          $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
         discoveryAdvanceConfiguration:
           $ref: '#/components/schemas/database.AgentConfiguration'
-        infrastructureOnboardingMappings:
-          type: array
-          items:
-            $ref: '#/components/schemas/pipelineonboarding.InfrastructureOnboardingMapping'
-        infrastructures:
-          type: object
-          additionalProperties:
-            type: object
-            additionalProperties:
-              type: object
-        isAiEnabled:
+        environmentRef:
+          type: string
+        infrastructureRef:
+          type: string
+        isAIEnabled:
           type: boolean
-        isRemoved:
-          type: boolean
-        message:
+        mode:
+          $ref: '#/components/schemas/v2_onboarding.OnboardingMode'
+        serviceAccount:
           type: string
-        orgID:
-          type: string
-        pipelineIdentity:
-          type: string
-        pipelineName:
-          type: string
-        projectID:
-          type: string
-        selectedExperiments:
-          type: array
-          items:
-            $ref: '#/components/schemas/pipelineonboarding.SelectedExperiment'
-        services:
-          type: object
-          additionalProperties:
-            type: object
-        singleClickOnboardings:
-          type: array
-          items:
-            type: string
-        status:
-          $ref: '#/components/schemas/pipelineonboarding.Status'
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
-    database.CronConfig:
-      type: object
-      properties:
-        expression:
-          type: string
-    OnboardingExecuteResponse:
-      type: object
-      properties:
-        secret_identifiers:
-          type: array
-          description: Identifiers of the secrets created (credentials materialized from the context).
-          items:
-            type: string
-            description: Identifiers of the secrets created (credentials materialized from the context).
-        manifest_identifier:
-          type: string
-          description: Identifier of the manifest attached to the service. Populated whenever a manifest is provisioned, including providers (e.g. Harness Code) that need no connector.
-        manifest_connector_identifier:
-          type: string
-          description: Identifier of the created manifest connector. Null for providers whose connection is built-in (e.g. Harness Code) and therefore create no connector.
-        artifact_identifier:
-          type: string
-          description: Identifier of the artifact attached to the service. Populated whenever an artifact is provisioned.
-        artifact_connector_identifier:
-          type: string
-          description: Identifier of the created Docker (artifact) connector.
-        service_identifier:
-          type: string
-          description: Identifier of the created service.
-        environment_identifier:
-          type: string
-          description: Identifier of the environment created (or reused) to hold the infrastructure. Populated whenever an infrastructure is provisioned.
-        infrastructure_identifier:
-          type: string
-          description: Identifier of the created infrastructure definition. Populated whenever an infrastructure is provisioned.
-        infra_connector_identifier:
-          type: string
-          description: Identifier of the created Kubernetes cluster connector referenced by the infrastructure.
-        pipeline_yaml:
-          type: string
-          description: Rendered pipeline YAML for the requested deployment strategy. Populated only for strategy-based requests; the caller can display it and run the pipeline as-is.
-      description: Identifiers of the resources created during onboarding
-    v2_onboarding.NetworkMapCreationMode:
-      type: string
-      enum:
-      - Manual
-      - Automatic
-      x-enum-varnames:
-      - NetworkMapCreationManual
-      - NetworkMapCreationAutomatic
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
-    pipelineonboarding.ListPipelineOnboardingResponse:
-      type: object
-      properties:
-        pipelineOnboardings:
-          type: array
-          items:
-            $ref: '#/components/schemas/pipelineonboarding.PipelineOnboarding'
     api.RestError:
       type: object
       properties:
@@ -1830,7 +1714,37 @@ components:
       properties:
         mode:
           $ref: '#/components/schemas/targetnetworkmap.ExperimentCreationMode'
-    database.MTLSConfiguration:
+    OnboardingExecuteRequest:
+      type: object
+      properties:
+        input:
+          $ref: '#/components/schemas/OnboardingInput'
+      description: Top-level onboarding execute request
+    database.ResourceRequirements:
+      type: object
+      properties:
+        limits:
+          $ref: '#/components/schemas/database.ResourceList'
+        requests:
+          $ref: '#/components/schemas/database.ResourceList'
+    v2_onboarding.ConfirmExperimentRunResponse:
+      type: object
+      properties:
+        completed:
+          type: boolean
+    database.CronConfig:
+      type: object
+      properties:
+        expression:
+          type: string
+    pipelineonboarding.ListPipelineOnboardingResponse:
+      type: object
+      properties:
+        pipelineOnboardings:
+          type: array
+          items:
+            $ref: '#/components/schemas/pipelineonboarding.PipelineOnboarding'
+    infra_v2.MTLSConfiguration:
       type: object
       properties:
         certPath:
@@ -1841,118 +1755,53 @@ components:
           type: string
         url:
           type: string
-    v1.PullPolicy:
-      type: string
-      enum:
-      - Always
-      - Never
-      - IfNotPresent
-      x-enum-varnames:
-      - PullAlways
-      - PullNever
-      - PullIfNotPresent
-    database.ProxyConfiguration:
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
       type: object
       properties:
-        httpProxy:
-          type: string
-        httpsProxy:
-          type: string
-        noProxy:
-          description: 'SecretName string `bson:"secretName" json:"secretName"`
-
-            CAPath     string `bson:"caPath" json:"caPath"`'
-          type: string
-        url:
-          type: string
-    v2_onboarding.ConfirmExperimentCreationResponse:
-      type: object
-      properties:
-        completed:
-          type: boolean
-        targetNetworkMapStatus:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/targetnetworkmap.Status'
-    database.KubernetesAgentConfiguration:
-      type: object
-      properties:
-        annotations:
-          type: object
-          additionalProperties:
-            type: string
-        disableNamespaceCreation:
-          type: boolean
-        imagePullPolicy:
-          $ref: '#/components/schemas/v1.PullPolicy'
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-        namespace:
-          type: string
-        namespaced:
-          type: boolean
-        nodeSelector:
-          type: object
-          additionalProperties:
-            type: string
-        resources:
-          $ref: '#/components/schemas/database.ResourceRequirements'
-        runAsGroup:
+        index:
           type: integer
-        runAsUser:
+        limit:
           type: integer
-        serviceAccount:
-          type: string
-        tolerations:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.Toleration'
-        useStaticNameForConfigmapAndSecret:
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    pipelineonboarding.PipelineChaosOnboardingCheckResponse:
+      type: object
+      properties:
+        check:
           type: boolean
-    database.ResourceRequirements:
-      type: object
-      properties:
-        limits:
-          $ref: '#/components/schemas/database.ResourceList'
-        requests:
-          $ref: '#/components/schemas/database.ResourceList'
-    v2_onboarding.TargetServiceDetails:
-      type: object
-      properties:
-        id:
+        infrastructures:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/pipelineonboarding.InfrastructuresStatus'
+        message:
           type: string
         name:
           type: string
-    model.WorkflowRunStatus:
+        services:
+          type: object
+          additionalProperties:
+            type: object
+    v2_onboarding.V2OnboardingList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/v2_onboarding.V2Onboarding'
+        page:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    pipelineonboarding.PipelineChaosOnboardingTaskResponse:
+      type: object
+    api.ResponseErrorCode:
       type: string
       enum:
-      - All
-      - Running
-      - Completed
-      - Completed_With_Error
-      - Completed_With_Probe_Failure
-      - Stopped
-      - Skipped
-      - Error
-      - Timeout
-      - NA
-      - Queued
-      - Blocked
+      - PIPELINE_NOT_FOUND
       x-enum-varnames:
-      - WorkflowRunStatusAll
-      - WorkflowRunStatusRunning
-      - WorkflowRunStatusCompleted
-      - WorkflowRunStatusCompletedWithError
-      - WorkflowRunStatusCompletedWithProbeFailure
-      - WorkflowRunStatusStopped
-      - WorkflowRunStatusSkipped
-      - WorkflowRunStatusError
-      - WorkflowRunStatusTimeout
-      - WorkflowRunStatusNa
-      - WorkflowRunStatusQueued
-      - WorkflowRunStatusBlocked
+      - PipelineNotFound
     ResponseMessage:
       type: object
       properties:
@@ -2543,66 +2392,34 @@ components:
           type: object
           additionalProperties:
             type: string
-    v1.Toleration:
+    v2_onboarding.OnboardingTargetExperiment:
       type: object
       properties:
-        effect:
-          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
-
-            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.TaintEffect'
-        key:
-          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
-
-            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-
-            +optional'
+        identity:
           type: string
-        operator:
-          description: 'Operator represents a key''s relationship to the value.
-
-            Valid operators are Exists and Equal. Defaults to Equal.
-
-            Exists is equivalent to wildcard for value, so that a pod can
-
-            tolerate all taints of a particular category.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.TolerationOperator'
-        tolerationSeconds:
-          description: 'TolerationSeconds represents the period of time the toleration (which must be
-
-            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
-
-            it is not set, which means tolerate the taint forever (do not evict). Zero and
-
-            negative values will be treated as 0 (evict immediately) by the system.
-
-            +optional'
+        isProcessed:
+          type: boolean
+        name:
+          type: string
+        totalChaosExperiments:
           type: integer
-        value:
-          description: 'Value is the taint value the toleration matches to.
-
-            If the operator is Exists, the value should be empty, otherwise just a regular string.
-
-            +optional'
-          type: string
-    OnboardingExecuteRequest:
+        totalServiceCount:
+          type: integer
+    pipelineonboarding.InfrastructuresStatus:
       type: object
       properties:
-        input:
-          $ref: '#/components/schemas/OnboardingInput'
-      description: Top-level onboarding execute request
-    ValidationError:
+        isChaosEnabled:
+          type: boolean
+    pipelineonboarding.InfrastructureOnboardingMapping:
       type: object
       properties:
-        fieldId:
+        environmentIdentity:
           type: string
-        error:
+        identity:
+          type: string
+        onboardingId:
+          type: string
+        status:
           type: string
     v2_onboarding.AutoCreatedNetworkMapStatus:
       type: object
@@ -2611,87 +2428,240 @@ components:
           $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
         totalNetworkMaps:
           type: integer
-    v2_onboarding.OnboardingExperimentResponse:
+    v2_onboarding.ConfirmNetworkMapResponse:
       type: object
       properties:
-        data:
+        networkMapCount:
+          type: integer
+        serviceCount:
+          type: integer
+    database.ResourceList:
+      type: object
+      properties:
+        cpu:
+          type: string
+        memory:
+          type: string
+    v2_onboarding.AgentDetails:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/v1.PodPhase'
+    v2_onboarding.ChaosInfraAdvanceConfiguration:
+      type: object
+      properties:
+        annotation:
+          type: object
+          additionalProperties:
+            type: string
+        autopilotEnabled:
+          type: boolean
+        containers:
+          type: string
+        env:
           type: array
           items:
-            $ref: '#/components/schemas/v2_onboarding.OnboardingTargetExperiment'
-        isProcessed:
+            $ref: '#/components/schemas/infra_v2.Env'
+        imagePullPolicy:
+          $ref: '#/components/schemas/v1.PullPolicy'
+        insecureSkipVerify:
           type: boolean
-        pagination:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    infra_v2.EnvValueFrom:
-      type: string
-      enum:
-      - configMapKeyRef
-      - secretKeyRef
-      - value
-      - valueFrom
-      x-enum-varnames:
-      - EnvValueFromConfigMapKeyRef
-      - EnvValueFromSecretKeyRef
-      - EnvValueFromValue
-      - EnvValueFromValueFrom
-    v1.VolumeMount:
+        label:
+          type: object
+          additionalProperties:
+            type: string
+        mtls:
+          $ref: '#/components/schemas/infra_v2.MTLSConfiguration'
+        nodeSelector:
+          type: object
+          additionalProperties:
+            type: string
+        proxy:
+          $ref: '#/components/schemas/infra_v2.ProxyConfiguration'
+        runAsGroup:
+          type: integer
+        runAsUser:
+          type: integer
+        tolerations:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.Toleration'
+        volumeMounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.VolumeMount'
+        volumes:
+          type: array
+          items:
+            $ref: '#/components/schemas/infra_v2.Volumes'
+    infra_v2.Volumes:
       type: object
       properties:
-        mountPath:
-          description: 'Path within the container at which the volume should be mounted.  Must
-
-            not contain '':''.'
-          type: string
-        mountPropagation:
-          description: 'mountPropagation determines how mounts are propagated from the host
-
-            to container and the other way around.
-
-            When not set, MountPropagationNone is used.
-
-            This field is beta in 1.10.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.MountPropagationMode'
         name:
-          description: This must match the Name of a Volume.
           type: string
-        readOnly:
-          description: 'Mounted read-only if true, read-write otherwise (false or unspecified).
-
-            Defaults to false.
-
-            +optional'
-          type: boolean
-        subPath:
-          description: 'Path within the volume from which the container''s volume should be mounted.
-
-            Defaults to "" (volume''s root).
-
-            +optional'
+        sizeLimit:
           type: string
-        subPathExpr:
-          description: 'Expanded path within the volume from which the container''s volume should be mounted.
-
-            Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container''s environment.
-
-            Defaults to "" (volume''s root).
-
-            SubPathExpr and SubPath are mutually exclusive.
-
-            +optional'
-          type: string
-    github_com_harness_hce-saas_graphql_server_api.Empty:
+    database.KubernetesAgentConfiguration:
       type: object
-    v2_onboarding.OnboardingMode:
+      properties:
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        disableNamespaceCreation:
+          type: boolean
+        imagePullPolicy:
+          $ref: '#/components/schemas/v1.PullPolicy'
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        namespace:
+          type: string
+        namespaced:
+          type: boolean
+        nodeSelector:
+          type: object
+          additionalProperties:
+            type: string
+        resources:
+          $ref: '#/components/schemas/database.ResourceRequirements'
+        runAsGroup:
+          type: integer
+        runAsUser:
+          type: integer
+        serviceAccount:
+          type: string
+        tolerations:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.Toleration'
+        useStaticNameForConfigmapAndSecret:
+          type: boolean
+    v2_onboarding.DiscoveredService:
+      type: object
+      properties:
+        agentDetails:
+          $ref: '#/components/schemas/v2_onboarding.AgentData'
+        completedAgentCount:
+          type: integer
+        discoveredServiceCount:
+          type: integer
+        erroredAgentCount:
+          type: integer
+        isTracingEnabled:
+          type: boolean
+        pendingAgentCount:
+          type: integer
+        sDAgentID:
+          type: string
+        sDAgentIdentity:
+          type: string
+        status:
+          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
+        totalAgentCount:
+          type: integer
+    v2_onboarding.V2Onboarding:
+      type: object
+      required:
+      - accountID
+      - isRemoved
+      properties:
+        accountID:
+          type: string
+        autoCreateNetworkMapStatus:
+          $ref: '#/components/schemas/v2_onboarding.AutoCreatedNetworkMapStatus'
+        chaosAdvanceConfiguration:
+          $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
+        createdAt:
+          type: integer
+        createdBy:
+          type: string
+        ddciID:
+          type: string
+        discoveredServiceStatus:
+          $ref: '#/components/schemas/v2_onboarding.DiscoveredService'
+        discoveryAdvanceConfiguration:
+          $ref: '#/components/schemas/database.AgentConfiguration'
+        environmentRef:
+          type: string
+        infrastructureRef:
+          type: string
+        isRemoved:
+          type: boolean
+        mode:
+          $ref: '#/components/schemas/v2_onboarding.OnboardingMode'
+        namespace:
+          type: string
+        onboardingID:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        runSafeExperimentStatus:
+          $ref: '#/components/schemas/v2_onboarding.RunSafeExperimentStatus'
+        serviceAccount:
+          type: string
+        status:
+          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
+        targetNetworkMapStatus:
+          $ref: '#/components/schemas/v2_onboarding.TargetNetworkMapStatus'
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
+    v2_onboarding.RunSafeExperimentStatus:
+      type: object
+      properties:
+        experiments:
+          type: array
+          items:
+            $ref: '#/components/schemas/v2_onboarding.Experiments'
+        status:
+          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
+        totalSafeExperiment:
+          type: integer
+    KubeconfigUploadResponse:
+      type: object
+      properties:
+        currentContext:
+          type: string
+          description: The current-context declared in the uploaded kubeconfig
+        contexts:
+          type: array
+          description: Per-context connector-creation hints reverse-engineered from the kubeconfig
+          items:
+            $ref: '#/components/schemas/KubeconfigContextDescriptor'
+      description: Result of a kubeconfig onboarding upload
+    v1.PodPhase:
       type: string
       enum:
-      - Manual
-      - Automatic
+      - Pending
+      - Running
+      - Succeeded
+      - Failed
+      - Unknown
       x-enum-varnames:
-      - ManualMode
-      - AutomaticMode
+      - PodPending
+      - PodRunning
+      - PodSucceeded
+      - PodFailed
+      - PodUnknown
+    targetnetworkmap.Status:
+      type: string
+      enum:
+      - COMPLETED
+      - RUNNING
+      - PENDING
+      - ERRORED
+      x-enum-varnames:
+      - COMPLETED
+      - RUNNING
+      - PENDING
+      - ERRORED
     Error1:
       type: object
       properties:
@@ -3115,11 +3085,120 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    v2_onboarding.ConfirmExperimentRunResponse:
+    pipelineonboarding.Status:
+      type: string
+      enum:
+      - COMPLETED
+      - RUNNING
+      - ERRORED
+      - SKIPPED
+      x-enum-varnames:
+      - COMPLETED
+      - RUNNING
+      - ERRORED
+      - SKIPPED
+    OnboardingInput:
       type: object
       properties:
-        completed:
+        context:
+          $ref: '#/components/schemas/OnboardingContext'
+      description: Envelope carrying the onboarding context (extensible)
+    v1.Toleration:
+      type: object
+      properties:
+        effect:
+          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
+
+            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.TaintEffect'
+        key:
+          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
+
+            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+
+            +optional'
+          type: string
+        operator:
+          description: 'Operator represents a key''s relationship to the value.
+
+            Valid operators are Exists and Equal. Defaults to Equal.
+
+            Exists is equivalent to wildcard for value, so that a pod can
+
+            tolerate all taints of a particular category.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.TolerationOperator'
+        tolerationSeconds:
+          description: 'TolerationSeconds represents the period of time the toleration (which must be
+
+            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+
+            it is not set, which means tolerate the taint forever (do not evict). Zero and
+
+            negative values will be treated as 0 (evict immediately) by the system.
+
+            +optional'
+          type: integer
+        value:
+          description: 'Value is the taint value the toleration matches to.
+
+            If the operator is Exists, the value should be empty, otherwise just a regular string.
+
+            +optional'
+          type: string
+    v1.VolumeMount:
+      type: object
+      properties:
+        mountPath:
+          description: 'Path within the container at which the volume should be mounted.  Must
+
+            not contain '':''.'
+          type: string
+        mountPropagation:
+          description: 'mountPropagation determines how mounts are propagated from the host
+
+            to container and the other way around.
+
+            When not set, MountPropagationNone is used.
+
+            This field is beta in 1.10.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.MountPropagationMode'
+        name:
+          description: This must match the Name of a Volume.
+          type: string
+        readOnly:
+          description: 'Mounted read-only if true, read-write otherwise (false or unspecified).
+
+            Defaults to false.
+
+            +optional'
           type: boolean
+        subPath:
+          description: 'Path within the volume from which the container''s volume should be mounted.
+
+            Defaults to "" (volume''s root).
+
+            +optional'
+          type: string
+        subPathExpr:
+          description: 'Expanded path within the volume from which the container''s volume should be mounted.
+
+            Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container''s environment.
+
+            Defaults to "" (volume''s root).
+
+            SubPathExpr and SubPath are mutually exclusive.
+
+            +optional'
+          type: string
     ErrorMetadata2:
       type: object
       properties:
@@ -3128,86 +3207,27 @@ components:
       description: This implements different error meta data objects
       discriminator:
         propertyName: type
-    pipelineonboarding.InfrastructuresStatus:
+    targetnetworkmap.ExperimentCreationMode:
+      type: string
+      enum:
+      - Basic
+      - Intermediate
+      - Advanced
+      x-enum-varnames:
+      - BasicExperimentCreation
+      - IntermediateExperimentCreation
+      - AdvancedExperimentCreation
+    pipelineonboarding.PipelineChaosOnboardingTaskRequest:
       type: object
-      properties:
-        isChaosEnabled:
-          type: boolean
-    v2_onboarding.V2OnboardingRequest:
-      type: object
-      required:
-      - environmentRef
-      - infrastructureRef
-      - mode
       properties:
         chaosAdvanceConfiguration:
           $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
         discoveryAdvanceConfiguration:
           $ref: '#/components/schemas/database.AgentConfiguration'
-        environmentRef:
-          type: string
-        infrastructureRef:
-          type: string
         isAIEnabled:
           type: boolean
-        mode:
-          $ref: '#/components/schemas/v2_onboarding.OnboardingMode'
-        serviceAccount:
+        pipelineIdentity:
           type: string
-    pipelineonboarding.InfrastructureOnboardingMapping:
-      type: object
-      properties:
-        environmentIdentity:
-          type: string
-        identity:
-          type: string
-        onboardingId:
-          type: string
-        status:
-          type: string
-    v2_onboarding.ConfirmDiscoveryResponse:
-      type: object
-      properties:
-        agentCreated:
-          type: boolean
-        agentLinked:
-          type: boolean
-        discoveryCompleted:
-          type: boolean
-    v2_onboarding.RunSafeExperimentStatus:
-      type: object
-      properties:
-        experiments:
-          type: array
-          items:
-            $ref: '#/components/schemas/v2_onboarding.Experiments'
-        status:
-          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
-        totalSafeExperiment:
-          type: integer
-    v2_onboarding.DiscoveredService:
-      type: object
-      properties:
-        agentDetails:
-          $ref: '#/components/schemas/v2_onboarding.AgentData'
-        completedAgentCount:
-          type: integer
-        discoveredServiceCount:
-          type: integer
-        erroredAgentCount:
-          type: integer
-        isTracingEnabled:
-          type: boolean
-        pendingAgentCount:
-          type: integer
-        sDAgentID:
-          type: string
-        sDAgentIdentity:
-          type: string
-        status:
-          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
-        totalAgentCount:
-          type: integer
     v2_onboarding.Experiments:
       type: object
       properties:
@@ -3233,84 +3253,178 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/v2_onboarding.TargetServiceDetails'
-    v2_onboarding.ConfirmNetworkMapResponse:
+    pipelineonboarding.PipelineOnboarding:
       type: object
+      required:
+      - accountID
+      - isRemoved
       properties:
-        networkMapCount:
-          type: integer
-        serviceCount:
-          type: integer
-    targetnetworkmap.ExperimentCreationMode:
-      type: string
-      enum:
-      - Basic
-      - Intermediate
-      - Advanced
-      x-enum-varnames:
-      - BasicExperimentCreation
-      - IntermediateExperimentCreation
-      - AdvancedExperimentCreation
-    database.ResourceList:
-      type: object
-      properties:
-        cpu:
+        accountID:
           type: string
-        memory:
+        chaosAdvanceConfiguration:
+          description: Advance Configurations
+          allOf:
+          - $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
+        createdAt:
+          type: integer
+        createdBy:
           type: string
-    pipelineonboarding.Status:
+        discoveryAdvanceConfiguration:
+          $ref: '#/components/schemas/database.AgentConfiguration'
+        infrastructures:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+        isAiEnabled:
+          type: boolean
+        isRemoved:
+          type: boolean
+        message:
+          type: string
+        orgID:
+          type: string
+        pipelineIdentity:
+          type: string
+        pipelineName:
+          type: string
+        projectID:
+          type: string
+        selectedExperiments:
+          type: array
+          items:
+            $ref: '#/components/schemas/pipelineonboarding.SelectedExperiment'
+        services:
+          type: object
+          additionalProperties:
+            type: object
+        singleClickOnboardings:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: '#/components/schemas/pipelineonboarding.Status'
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
+    v2_onboarding.V2OnboardingStatus:
       type: string
       enum:
       - COMPLETED
       - RUNNING
+      - PENDING
+      - QUEUED
+      - NA
       - ERRORED
-      - SKIPPED
       x-enum-varnames:
       - COMPLETED
       - RUNNING
+      - PENDING
+      - QUEUED
+      - NA
       - ERRORED
-      - SKIPPED
+    model.WorkflowRunStatus:
+      type: string
+      enum:
+      - All
+      - Running
+      - Completed
+      - Completed_With_Error
+      - Completed_With_Probe_Failure
+      - Stopped
+      - Skipped
+      - Error
+      - Timeout
+      - NA
+      - Queued
+      - Blocked
+      x-enum-varnames:
+      - WorkflowRunStatusAll
+      - WorkflowRunStatusRunning
+      - WorkflowRunStatusCompleted
+      - WorkflowRunStatusCompletedWithError
+      - WorkflowRunStatusCompletedWithProbeFailure
+      - WorkflowRunStatusStopped
+      - WorkflowRunStatusSkipped
+      - WorkflowRunStatusError
+      - WorkflowRunStatusTimeout
+      - WorkflowRunStatusNa
+      - WorkflowRunStatusQueued
+      - WorkflowRunStatusBlocked
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    infra_v2.EnvValueFrom:
+      type: string
+      enum:
+      - configMapKeyRef
+      - secretKeyRef
+      - value
+      - valueFrom
+      x-enum-varnames:
+      - EnvValueFromConfigMapKeyRef
+      - EnvValueFromSecretKeyRef
+      - EnvValueFromValue
+      - EnvValueFromValueFrom
+    pipelineonboarding.SelectedExperiment:
+      type: object
+      properties:
+        environmentIdentity:
+          type: string
+        experimentId:
+          type: string
+        identity:
+          type: string
+        infraId:
+          type: string
+        infrastructureIdentity:
+          type: string
+        name:
+          type: string
+        serviceNames:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
     v2_onboarding.ConfirmNetworkMapRequest:
       type: object
       properties:
         mode:
           $ref: '#/components/schemas/v2_onboarding.NetworkMapCreationMode'
-    v2_onboarding.V2OnboardingList:
+    github_com_harness_hce-saas_graphql_server_api.Empty:
+      type: object
+    v2_onboarding.ConfirmDiscoveryResponse:
       type: object
       properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/v2_onboarding.V2Onboarding'
-        page:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    v2_onboarding.AgentData:
+        agentCreated:
+          type: boolean
+        agentLinked:
+          type: boolean
+        discoveryCompleted:
+          type: boolean
+    database.ProxyConfiguration:
       type: object
       properties:
-        clusterAgent:
-          $ref: '#/components/schemas/v2_onboarding.AgentDetails'
-        nodeAgent:
-          type: array
-          items:
-            $ref: '#/components/schemas/v2_onboarding.AgentDetails'
-    infra_v2.Env:
-      type: object
-      properties:
-        key:
+        httpProxy:
           type: string
-        name:
+        httpsProxy:
           type: string
-        value:
+        noProxy:
+          description: 'SecretName string `bson:"secretName" json:"secretName"`
+
+            CAPath     string `bson:"caPath" json:"caPath"`'
           type: string
-        valueFrom:
-          $ref: '#/components/schemas/infra_v2.EnvValueFrom'
-    v1.TolerationOperator:
-      type: string
-      enum:
-      - Exists
-      - Equal
-      x-enum-varnames:
-      - TolerationOpExists
-      - TolerationOpEqual
+        url:
+          type: string
     KubeconfigContextDescriptor:
       type: object
       properties:
@@ -3357,6 +3471,89 @@ components:
             type: string
             description: Lossy / non-portable notes for an importable context
       description: Per-context connector-creation hint reverse-engineered from a kubeconfig
+    v2_onboarding.TargetNetworkMapStatus:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
+        targetNetworkMapStatus:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/targetnetworkmap.Status'
+        totalTargetNetworkMaps:
+          type: integer
+        totalTargetNetworkMapsExperiments:
+          type: integer
+    v1.MountPropagationMode:
+      type: string
+      enum:
+      - None
+      - HostToContainer
+      - Bidirectional
+      x-enum-varnames:
+      - MountPropagationNone
+      - MountPropagationHostToContainer
+      - MountPropagationBidirectional
+    pipelineonboarding.PipelineChaosOnboardingStatusResponse:
+      type: object
+      required:
+      - accountID
+      - isRemoved
+      properties:
+        accountID:
+          type: string
+        chaosAdvanceConfiguration:
+          description: Advance Configurations
+          allOf:
+          - $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
+        createdAt:
+          type: integer
+        createdBy:
+          type: string
+        discoveryAdvanceConfiguration:
+          $ref: '#/components/schemas/database.AgentConfiguration'
+        infrastructureOnboardingMappings:
+          type: array
+          items:
+            $ref: '#/components/schemas/pipelineonboarding.InfrastructureOnboardingMapping'
+        infrastructures:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+        isAiEnabled:
+          type: boolean
+        isRemoved:
+          type: boolean
+        message:
+          type: string
+        orgID:
+          type: string
+        pipelineIdentity:
+          type: string
+        pipelineName:
+          type: string
+        projectID:
+          type: string
+        selectedExperiments:
+          type: array
+          items:
+            $ref: '#/components/schemas/pipelineonboarding.SelectedExperiment'
+        services:
+          type: object
+          additionalProperties:
+            type: object
+        singleClickOnboardings:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: '#/components/schemas/pipelineonboarding.Status'
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
     infra_v2.ProxyConfiguration:
       type: object
       properties:
@@ -3368,203 +3565,6 @@ components:
           type: string
         url:
           type: string
-    v2_onboarding.V2Onboarding:
-      type: object
-      required:
-      - accountID
-      - isRemoved
-      properties:
-        accountID:
-          type: string
-        autoCreateNetworkMapStatus:
-          $ref: '#/components/schemas/v2_onboarding.AutoCreatedNetworkMapStatus'
-        chaosAdvanceConfiguration:
-          $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        ddciID:
-          type: string
-        discoveredServiceStatus:
-          $ref: '#/components/schemas/v2_onboarding.DiscoveredService'
-        discoveryAdvanceConfiguration:
-          $ref: '#/components/schemas/database.AgentConfiguration'
-        environmentRef:
-          type: string
-        infrastructureRef:
-          type: string
-        isRemoved:
-          type: boolean
-        mode:
-          $ref: '#/components/schemas/v2_onboarding.OnboardingMode'
-        namespace:
-          type: string
-        onboardingID:
-          type: string
-        orgID:
-          type: string
-        projectID:
-          type: string
-        runSafeExperimentStatus:
-          $ref: '#/components/schemas/v2_onboarding.RunSafeExperimentStatus'
-        serviceAccount:
-          type: string
-        status:
-          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
-        targetNetworkMapStatus:
-          $ref: '#/components/schemas/v2_onboarding.TargetNetworkMapStatus'
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
-    KubeconfigUploadResponse:
-      type: object
-      properties:
-        currentContext:
-          type: string
-          description: The current-context declared in the uploaded kubeconfig
-        contexts:
-          type: array
-          description: Per-context connector-creation hints reverse-engineered from the kubeconfig
-          items:
-            $ref: '#/components/schemas/KubeconfigContextDescriptor'
-      description: Result of a kubeconfig onboarding upload
-    targetnetworkmap.Status:
-      type: string
-      enum:
-      - COMPLETED
-      - RUNNING
-      - PENDING
-      - ERRORED
-      x-enum-varnames:
-      - COMPLETED
-      - RUNNING
-      - PENDING
-      - ERRORED
-    infra_v2.MTLSConfiguration:
-      type: object
-      properties:
-        certPath:
-          type: string
-        keyPath:
-          type: string
-        secretName:
-          type: string
-        url:
-          type: string
-    pipelineonboarding.PipelineChaosOnboardingTaskResponse:
-      type: object
-    github_com_harness_hce-saas_graphql_server_api.Pagination:
-      type: object
-      properties:
-        index:
-          type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-    OnboardingInput:
-      type: object
-      properties:
-        context:
-          $ref: '#/components/schemas/OnboardingContext'
-      description: Envelope carrying the onboarding context (extensible)
-    pipelineonboarding.SelectedExperiment:
-      type: object
-      properties:
-        environmentIdentity:
-          type: string
-        experimentId:
-          type: string
-        identity:
-          type: string
-        infraId:
-          type: string
-        infrastructureIdentity:
-          type: string
-        name:
-          type: string
-        serviceNames:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-    v1.PodPhase:
-      type: string
-      enum:
-      - Pending
-      - Running
-      - Succeeded
-      - Failed
-      - Unknown
-      x-enum-varnames:
-      - PodPending
-      - PodRunning
-      - PodSucceeded
-      - PodFailed
-      - PodUnknown
-    v2_onboarding.AgentDetails:
-      type: object
-      properties:
-        name:
-          type: string
-        status:
-          $ref: '#/components/schemas/v1.PodPhase'
-    v1.MountPropagationMode:
-      type: string
-      enum:
-      - None
-      - HostToContainer
-      - Bidirectional
-      x-enum-varnames:
-      - MountPropagationNone
-      - MountPropagationHostToContainer
-      - MountPropagationBidirectional
-    v2_onboarding.V2OnboardingStatus:
-      type: string
-      enum:
-      - COMPLETED
-      - RUNNING
-      - PENDING
-      - QUEUED
-      - NA
-      - ERRORED
-      x-enum-varnames:
-      - COMPLETED
-      - RUNNING
-      - PENDING
-      - QUEUED
-      - NA
-      - ERRORED
-    database.AgentConfiguration:
-      type: object
-      required:
-      - data
-      properties:
-        collectorImage:
-          type: string
-        data:
-          $ref: '#/components/schemas/database.DataCollectionConfiguration'
-        imagePullSecrets:
-          type: array
-          items:
-            type: string
-        kubernetes:
-          $ref: '#/components/schemas/database.KubernetesAgentConfiguration'
-        logWatcherImage:
-          type: string
-        mtls:
-          $ref: '#/components/schemas/database.MTLSConfiguration'
-        proxy:
-          $ref: '#/components/schemas/database.ProxyConfiguration'
-        skipSecureVerify:
-          type: boolean
   securitySchemes:
     x-api-key:
       name: x-api-key

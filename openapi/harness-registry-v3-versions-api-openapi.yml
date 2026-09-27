@@ -408,175 +408,7 @@ paths:
       - Registry V3 - Versions
       x-internal: false
 components:
-  requestBodies:
-    MetadataRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/MetadataInputV3'
-      description: Request body containing metadata key-value pairs to add or update
-    VersionsStatsRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/VersionsStatsRequestInputV3'
-      description: Request body containing list of version UUIDs to fetch stats for
-      required: true
-    AddTagsRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AddTagsV3'
-      description: request to add tags to a version of package
-  responses:
-    RebuildVersionMetadataAcceptedV3:
-      description: Rebuild metadata request accepted for processing
-    ConanPackageDetailResponseV3:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ConanPackageDetailV3'
-            required:
-            - data
-            type: object
-      description: Response to get a Conan package detail
-    VersionsStatsResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/VersionsStatsResponseBodyV3'
-      description: Response containing statistics for the requested versions
-    ConanRecipeRevisionsResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListConanRecipeRevisionsResponseBodyV3'
-      description: Response to list Conan recipe revisions for a version
-    ConanRecipeRevisionDetailResponseV3:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ConanRecipeRevisionDetailV3'
-            required:
-            - data
-            type: object
-      description: Response to get a Conan recipe revision detail
-    ConanPackageRevisionsResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListConanPackageRevisionsResponseBodyV3'
-      description: Response to list Conan package revisions of a package
-    MetadataResponseV3:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                description: Array of metadata entries
-                items:
-                  $ref: '#/components/schemas/MetadataV3'
-                type: array
-            required:
-            - data
-            type: object
-      description: Response containing all metadata entries for the requested entity
-    ConanPackagesResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListConanPackagesResponseBodyV3'
-      description: Response to list Conan packages of a recipe revision
-    ConanPackageRevisionDetailResponseV3:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ConanPackageRevisionDetailV3'
-            required:
-            - data
-            type: object
-      description: Response to get a Conan package revision detail
-    ListVersionDeploymentsResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListVersionDeploymentsResponseBodyV3'
-      description: Paginated list of Harness CD deployments for a version
-    ListVersionResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListVersionsResponseBodyV3'
-      description: response for list versions
   schemas:
-    UserInfoV3:
-      description: Structured user information for a principal
-      properties:
-        display_name:
-          description: Human-readable display name
-          type: string
-        email:
-          description: Email address
-          type: string
-        type:
-          description: Principal type (user, service, service_account)
-          type: string
-        uid:
-          description: Principal unique identifier (username)
-          type: string
-      type: object
-    MetadataV3:
-      description: Metadata entry
-      properties:
-        id:
-          description: Unique identifier for this metadata entry
-          format: uuid
-          type: string
-        key:
-          description: The metadata key name
-          example: environment
-          type: string
-        type:
-          $ref: '#/components/schemas/MetadataTypeV3'
-        value:
-          description: The metadata value
-          example: production
-          type: string
-      required:
-      - id
-      - key
-      - value
-      - type
-      type: object
-    AddTagsV3:
-      properties:
-        tags:
-          items:
-            type: string
-          type: array
-      required:
-      - tags
-      type: object
-    ResourceMetadataV3:
-      additionalProperties: true
-      description: Resource Metadata
-      type: object
-    DeploymentMetadataV3:
-      properties:
-        nonProdEnvCount:
-          type: integer
-        prodEnvCount:
-          type: integer
-      required:
-      - prodEnvCount
-      - nonProdEnvCount
-      type: object
     ListConanPackagesResponseBodyV3:
       allOf:
       - $ref: '#/components/schemas/PageInfoV3'
@@ -589,6 +421,208 @@ components:
         - items
         type: object
       description: The packages (PKGIDs) of a Conan recipe revision.
+    RebuildVersionMetadataRequestV3:
+      description: Request to rebuild metadata for all versions in a registry
+      properties:
+        registryId:
+          description: UUID of the registry to rebuild metadata for
+          type: string
+      required:
+      - registryId
+      type: object
+    ModifiedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was last modified
+      example: 1736360000123
+      format: int64
+      type:
+      - integer
+      - 'null'
+    ListConanPackageRevisionsResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          items:
+            items:
+              $ref: '#/components/schemas/ConanPackageRevisionDetailV3'
+            type: array
+        required:
+        - items
+        type: object
+      description: The package revisions (PREVs) of a Conan package.
+    projectIdentifier:
+      type: string
+    ListConanRecipeRevisionsResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          items:
+            items:
+              $ref: '#/components/schemas/ConanRecipeRevisionDetailV3'
+            type: array
+        required:
+        - items
+        type: object
+      description: The recipe revisions (RREVs) of a Conan version.
+    ListVersionDeploymentsResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          items:
+            description: List of deployment records.
+            items:
+              $ref: '#/components/schemas/VersionDeploymentV3'
+            type: array
+          meta:
+            $ref: '#/components/schemas/DeploymentMetadataV3'
+        required:
+        - items
+        type: object
+    VersionsStatsResponseBodyV3:
+      description: Response body containing version statistics
+      properties:
+        items:
+          description: List of version statistics
+          items:
+            $ref: '#/components/schemas/VersionStatsV3'
+          type: array
+      required:
+      - items
+      type: object
+    MetadataTypeV3:
+      description: Indicates if metadata was manually added (MANUAL) or system-generated (AUTO)
+      enum:
+      - MANUAL
+      - AUTO
+      type: string
+    DeploymentMetadataV3:
+      properties:
+        nonProdEnvCount:
+          type: integer
+        prodEnvCount:
+          type: integer
+      required:
+      - prodEnvCount
+      - nonProdEnvCount
+      type: object
+    RegistryTypeV3:
+      description: refers to type of registry i.e virtual or upstream
+      enum:
+      - VIRTUAL
+      - UPSTREAM
+      type: string
+    MetaV3:
+      description: Metadata about the list response
+      properties:
+        activeCount:
+          description: Count of active (non-deleted) entities
+          example: 95
+          format: int64
+          type: integer
+        deletedCount:
+          description: Count of soft-deleted entities
+          example: 5
+          format: int64
+          type: integer
+      required:
+      - activeCount
+      - deletedCount
+      type: object
+    orgIdentifier:
+      type: string
+    ScanStatusV3:
+      description: Status of an artifact scan evaluation.
+      enum:
+      - ALLOWED
+      - BLOCKED
+      - WARN
+      - UNKNOWN
+      type: string
+    FirewallModeV3:
+      description: Firewall mode
+      enum:
+      - ENABLED
+      - QUARANTINE
+      - ALLOW
+      type: string
+    PageInfoV3:
+      description: 'Pagination metadata.
+
+        - `page` selects which page of results to return (0 = first page).
+
+        - `size` controls how many items are returned per page.
+
+        - `hasMore` is true if more results exist after this page.
+
+        '
+      properties:
+        hasMore:
+          description: True if more results exist after this page.
+          example: true
+          type: boolean
+        page:
+          description: The current page (0-indexed)
+          example: 0
+          format: int64
+          type: integer
+        size:
+          description: Number of items per page
+          example: 20
+          format: int64
+          type: integer
+      required:
+      - page
+      - size
+      - hasMore
+      type: object
+    ApiErrorsV3:
+      properties:
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
+      required:
+      - type
+      title: APIErrors
+      type: object
+    DeletedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was soft-deleted
+      example: 1736360000456
+      format: int64
+      type:
+      - integer
+      - 'null'
+    CreatedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was created
+      example: 1736360000123
+      format: int64
+      type:
+      - integer
+      - 'null'
+    AddTagsV3:
+      properties:
+        tags:
+          items:
+            type: string
+          type: array
+      required:
+      - tags
+      type: object
     VersionStatsV3:
       description: Statistics for a single version
       properties:
@@ -624,44 +658,6 @@ components:
       required:
       - id
       type: object
-    ScanStatusV3:
-      description: Status of an artifact scan evaluation.
-      enum:
-      - ALLOWED
-      - BLOCKED
-      - WARN
-      - UNKNOWN
-      type: string
-    PageInfoV3:
-      description: 'Pagination metadata.
-
-        - `page` selects which page of results to return (0 = first page).
-
-        - `size` controls how many items are returned per page.
-
-        - `hasMore` is true if more results exist after this page.
-
-        '
-      properties:
-        hasMore:
-          description: True if more results exist after this page.
-          example: true
-          type: boolean
-        page:
-          description: The current page (0-indexed)
-          example: 0
-          format: int64
-          type: integer
-        size:
-          description: Number of items per page
-          example: 20
-          format: int64
-          type: integer
-      required:
-      - page
-      - size
-      - hasMore
-      type: object
     MetadataItemInputV3:
       description: Metadata key-value pair for create/update operations
       properties:
@@ -680,6 +676,196 @@ components:
       required:
       - key
       - value
+      type: object
+    VersionsStatsRequestInputV3:
+      description: Request input for fetching version statistics
+      properties:
+        versionIds:
+          description: List of version UUIDs to fetch statistics for
+          items:
+            format: uuid
+            type: string
+          maxItems: 100
+          type: array
+      required:
+      - versionIds
+      type: object
+    ConanRecipeRevisionDetailV3:
+      description: A Conan recipe revision (RREV).
+      properties:
+        downloadCount:
+          description: Total downloads across every finalized package revision under this revision.
+          format: int64
+          type: integer
+        id:
+          description: The stable UUID of the recipe revision row.
+          format: uuid
+          type: string
+        lastDownloadedAt:
+          description: Most recent download time (Unix milliseconds), if any.
+          format: int64
+          type:
+          - integer
+          - 'null'
+        lastPushedAt:
+          description: Finalization time (Unix milliseconds).
+          format: int64
+          type:
+          - integer
+          - 'null'
+        packageCount:
+          description: Number of packages with at least one finalized package revision.
+          format: int64
+          type: integer
+        recipeRevision:
+          description: The recipe revision (RREV) hash.
+          type: string
+        size:
+          description: Recipe files plus all package binaries under this revision.
+          type: string
+      required:
+      - id
+      - recipeRevision
+      type: object
+    ConanPackageMetadataV3:
+      description: A Conan package (PKGID).
+      properties:
+        id:
+          description: The stable UUID of the package row.
+          format: uuid
+          type: string
+        latestPackageRevision:
+          description: The newest finalized package revision hash.
+          type: string
+        options:
+          additionalProperties: true
+          description: Build options parsed from conaninfo.txt.
+          type: object
+        packageId:
+          description: The package id hash.
+          type: string
+        settings:
+          additionalProperties: true
+          description: Build settings parsed from conaninfo.txt.
+          type: object
+        size:
+          description: Size of the latest finalized package revision.
+          type: string
+      required:
+      - id
+      - packageId
+      type: object
+    ConanPackageDetailV3:
+      description: A Conan package (PKGID) detail. The package revisions are listed via the package-revisions endpoint.
+      properties:
+        downloadCount:
+          description: Total downloads across every finalized package revision of this package.
+          format: int64
+          type: integer
+        id:
+          description: The stable UUID of the package row.
+          format: uuid
+          type: string
+        lastDownloadedAt:
+          description: Most recent download time (Unix milliseconds), if any.
+          format: int64
+          type:
+          - integer
+          - 'null'
+        options:
+          additionalProperties: true
+          description: Build options parsed from conaninfo.txt.
+          type: object
+        packageId:
+          type: string
+        packageRevisionCount:
+          description: Number of finalized package revisions (PREVs) of this package.
+          format: int64
+          type: integer
+        recipeRevision:
+          type: string
+        settings:
+          additionalProperties: true
+          description: Build settings parsed from conaninfo.txt.
+          type: object
+        size:
+          type: string
+      required:
+      - id
+      - packageId
+      type: object
+    ResourceMetadataV3:
+      additionalProperties: true
+      description: Resource Metadata
+      type: object
+    UserInfoV3:
+      description: Structured user information for a principal
+      properties:
+        display_name:
+          description: Human-readable display name
+          type: string
+        email:
+          description: Email address
+          type: string
+        type:
+          description: Principal type (user, service, service_account)
+          type: string
+        uid:
+          description: Principal unique identifier (username)
+          type: string
+      type: object
+    VersionDeploymentV3:
+      description: A single Harness CD deployment record for a version.
+      properties:
+        envIdentifier:
+          type: string
+        envName:
+          type: string
+        envType:
+          description: 'Environment type. Allowed values: `PRODUCTION`, `PRE_PRODUCTION`.
+
+            '
+          enum:
+          - PRODUCTION
+          - PRE_PRODUCTION
+          type: string
+        infraIdentifier:
+          type: string
+        infraName:
+          type: string
+        instanceCount:
+          description: Number of running instances for this service + environment combination.
+          format: int32
+          type: integer
+        lastDeployedAt:
+          description: Unix timestamp in milliseconds of the last deployment.
+          format: int64
+          type:
+          - integer
+          - 'null'
+        lastDeployedBy:
+          $ref: '#/components/schemas/UserInfoV3'
+        orgIdentifier:
+          type: string
+        pipelineExecutionId:
+          type: string
+        pipelineExecutionName:
+          type: string
+        projectIdentifier:
+          type: string
+        serviceIdentifier:
+          type: string
+        serviceName:
+          type: string
+      required:
+      - orgIdentifier
+      - projectIdentifier
+      - serviceIdentifier
+      - serviceName
+      - envIdentifier
+      - envName
+      - envType
+      - instanceCount
       type: object
     VersionV3:
       description: Version metadata
@@ -744,236 +930,6 @@ components:
       - packageName
       - registryType
       type: object
-    ListConanRecipeRevisionsResponseBodyV3:
-      allOf:
-      - $ref: '#/components/schemas/PageInfoV3'
-      - properties:
-          items:
-            items:
-              $ref: '#/components/schemas/ConanRecipeRevisionDetailV3'
-            type: array
-        required:
-        - items
-        type: object
-      description: The recipe revisions (RREVs) of a Conan version.
-    PackageKindV3:
-      description: refers to package kind which is being used in huggingface packages for model, dataset and terraform packages for module, provider
-      example: model
-      type: string
-    VersionDeploymentV3:
-      description: A single Harness CD deployment record for a version.
-      properties:
-        envIdentifier:
-          type: string
-        envName:
-          type: string
-        envType:
-          description: 'Environment type. Allowed values: `PRODUCTION`, `PRE_PRODUCTION`.
-
-            '
-          enum:
-          - PRODUCTION
-          - PRE_PRODUCTION
-          type: string
-        infraIdentifier:
-          type: string
-        infraName:
-          type: string
-        instanceCount:
-          description: Number of running instances for this service + environment combination.
-          format: int32
-          type: integer
-        lastDeployedAt:
-          description: Unix timestamp in milliseconds of the last deployment.
-          format: int64
-          type:
-          - integer
-          - 'null'
-        lastDeployedBy:
-          $ref: '#/components/schemas/UserInfoV3'
-        orgIdentifier:
-          type: string
-        pipelineExecutionId:
-          type: string
-        pipelineExecutionName:
-          type: string
-        projectIdentifier:
-          type: string
-        serviceIdentifier:
-          type: string
-        serviceName:
-          type: string
-      required:
-      - orgIdentifier
-      - projectIdentifier
-      - serviceIdentifier
-      - serviceName
-      - envIdentifier
-      - envName
-      - envType
-      - instanceCount
-      type: object
-    DeletedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was soft-deleted
-      example: 1736360000456
-      format: int64
-      type:
-      - integer
-      - 'null'
-    VersionsStatsRequestInputV3:
-      description: Request input for fetching version statistics
-      properties:
-        versionIds:
-          description: List of version UUIDs to fetch statistics for
-          items:
-            format: uuid
-            type: string
-          maxItems: 100
-          type: array
-      required:
-      - versionIds
-      type: object
-    VersionsStatsResponseBodyV3:
-      description: Response body containing version statistics
-      properties:
-        items:
-          description: List of version statistics
-          items:
-            $ref: '#/components/schemas/VersionStatsV3'
-          type: array
-      required:
-      - items
-      type: object
-    FirewallModeV3:
-      description: Firewall mode
-      enum:
-      - ENABLED
-      - QUARANTINE
-      - ALLOW
-      type: string
-    MetaV3:
-      description: Metadata about the list response
-      properties:
-        activeCount:
-          description: Count of active (non-deleted) entities
-          example: 95
-          format: int64
-          type: integer
-        deletedCount:
-          description: Count of soft-deleted entities
-          example: 5
-          format: int64
-          type: integer
-      required:
-      - activeCount
-      - deletedCount
-      type: object
-    CreatedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was created
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    ListVersionsResponseBodyV3:
-      allOf:
-      - $ref: '#/components/schemas/PageInfoV3'
-      - properties:
-          items:
-            items:
-              $ref: '#/components/schemas/VersionV3'
-            type: array
-          meta:
-            $ref: '#/components/schemas/MetaV3'
-        required:
-        - items
-        type: object
-    PackageTypeV3:
-      description: 'Package type. Known values include: DOCKER, MAVEN, PYTHON, GENERIC, HELM, HELM_HTTP, NUGET, NPM, RPM, CARGO, COMPOSER, GO, HUGGINGFACE, CONDA, DART, SWIFT, PUPPET, RUBY, RAW, DEBIAN, CONAN, TERRAFORM. This field is extensible; clients must handle unknown values.
-
-        '
-      example: DOCKER
-      type: string
-      x-extensible-enum:
-      - DOCKER
-      - MAVEN
-      - PYTHON
-      - GENERIC
-      - HELM
-      - HELM_HTTP
-      - NUGET
-      - NPM
-      - RPM
-      - CARGO
-      - COMPOSER
-      - GO
-      - HUGGINGFACE
-      - CONDA
-      - DART
-      - SWIFT
-      - PUPPET
-      - RUBY
-      - RAW
-      - DEBIAN
-      - CONAN
-      - TERRAFORM
-      - CRAN
-    ErrorV3:
-      description: An error response
-      properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
-      required:
-      - error
-      type: object
-    RebuildVersionMetadataRequestV3:
-      description: Request to rebuild metadata for all versions in a registry
-      properties:
-        registryId:
-          description: UUID of the registry to rebuild metadata for
-          type: string
-      required:
-      - registryId
-      type: object
-    ConanPackageDetailV3:
-      description: A Conan package (PKGID) detail. The package revisions are listed via the package-revisions endpoint.
-      properties:
-        downloadCount:
-          description: Total downloads across every finalized package revision of this package.
-          format: int64
-          type: integer
-        id:
-          description: The stable UUID of the package row.
-          format: uuid
-          type: string
-        lastDownloadedAt:
-          description: Most recent download time (Unix milliseconds), if any.
-          format: int64
-          type:
-          - integer
-          - 'null'
-        options:
-          additionalProperties: true
-          description: Build options parsed from conaninfo.txt.
-          type: object
-        packageId:
-          type: string
-        packageRevisionCount:
-          description: Number of finalized package revisions (PREVs) of this package.
-          format: int64
-          type: integer
-        recipeRevision:
-          type: string
-        settings:
-          additionalProperties: true
-          description: Build settings parsed from conaninfo.txt.
-          type: object
-        size:
-          type: string
-      required:
-      - id
-      - packageId
-      type: object
     MetadataInputV3:
       description: 'Request payload containing metadata key-value pairs to add or update.
 
@@ -1022,206 +978,191 @@ components:
       - id
       - packageRevision
       type: object
-    ListConanPackageRevisionsResponseBodyV3:
+    ListVersionsResponseBodyV3:
       allOf:
       - $ref: '#/components/schemas/PageInfoV3'
       - properties:
           items:
             items:
-              $ref: '#/components/schemas/ConanPackageRevisionDetailV3'
-            type: array
-        required:
-        - items
-        type: object
-      description: The package revisions (PREVs) of a Conan package.
-    ConanRecipeRevisionDetailV3:
-      description: A Conan recipe revision (RREV).
-      properties:
-        downloadCount:
-          description: Total downloads across every finalized package revision under this revision.
-          format: int64
-          type: integer
-        id:
-          description: The stable UUID of the recipe revision row.
-          format: uuid
-          type: string
-        lastDownloadedAt:
-          description: Most recent download time (Unix milliseconds), if any.
-          format: int64
-          type:
-          - integer
-          - 'null'
-        lastPushedAt:
-          description: Finalization time (Unix milliseconds).
-          format: int64
-          type:
-          - integer
-          - 'null'
-        packageCount:
-          description: Number of packages with at least one finalized package revision.
-          format: int64
-          type: integer
-        recipeRevision:
-          description: The recipe revision (RREV) hash.
-          type: string
-        size:
-          description: Recipe files plus all package binaries under this revision.
-          type: string
-      required:
-      - id
-      - recipeRevision
-      type: object
-    MetadataTypeV3:
-      description: Indicates if metadata was manually added (MANUAL) or system-generated (AUTO)
-      enum:
-      - MANUAL
-      - AUTO
-      type: string
-    ModifiedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was last modified
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    RegistryTypeV3:
-      description: refers to type of registry i.e virtual or upstream
-      enum:
-      - VIRTUAL
-      - UPSTREAM
-      type: string
-    projectIdentifier:
-      type: string
-    ConanPackageMetadataV3:
-      description: A Conan package (PKGID).
-      properties:
-        id:
-          description: The stable UUID of the package row.
-          format: uuid
-          type: string
-        latestPackageRevision:
-          description: The newest finalized package revision hash.
-          type: string
-        options:
-          additionalProperties: true
-          description: Build options parsed from conaninfo.txt.
-          type: object
-        packageId:
-          description: The package id hash.
-          type: string
-        settings:
-          additionalProperties: true
-          description: Build settings parsed from conaninfo.txt.
-          type: object
-        size:
-          description: Size of the latest finalized package revision.
-          type: string
-      required:
-      - id
-      - packageId
-      type: object
-    ListVersionDeploymentsResponseBodyV3:
-      allOf:
-      - $ref: '#/components/schemas/PageInfoV3'
-      - properties:
-          items:
-            description: List of deployment records.
-            items:
-              $ref: '#/components/schemas/VersionDeploymentV3'
+              $ref: '#/components/schemas/VersionV3'
             type: array
           meta:
-            $ref: '#/components/schemas/DeploymentMetadataV3'
+            $ref: '#/components/schemas/MetaV3'
         required:
         - items
         type: object
-    orgIdentifier:
-      type: string
-    ApiErrorsV3:
+    MetadataV3:
+      description: Metadata entry
       properties:
-        code:
-          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
-          maxLength: 5000
-          type: string
-        message:
-          description: A human-readable message providing more details about the error. These messages can be shown to users.
-          maxLength: 40000
-          type: string
-        param:
-          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
-          maxLength: 5000
-          type: string
-        type:
-          description: The type of error returned.
-          enum:
-          - INVALID_REQUEST_ERROR
-          - AUTHENTICATION_ERROR
-          - PERMISSION_ERROR
-          - API_ERROR
-          type: string
-      required:
-      - type
-      title: APIErrors
-      type: object
-  parameters:
-    DeleteFilterParamV3:
-      in: query
-      name: deleted
-      schema:
-        default: exclude
-        enum:
-        - exclude
-        - include
-        - only
-        type: string
-    ConanPackageIdPathParamV3:
-      description: The stable UUID of the package (PKGID) row.
-      in: path
-      name: package_id
-      required: true
-      schema:
-        type: string
-    PackageTypeListParamV3:
-      description: Registry Package Type
-      in: query
-      name: package_types
-      schema:
-        items:
-          type: string
-        type: array
-    IdPathParamV3:
-      in: path
-      name: id
-      required: true
-      schema:
-        type: string
-    ForceParamV3:
-      in: query
-      name: force
-      schema:
-        default: false
-        type: boolean
-    MetadataFilterListParamV3:
-      description: Filter by metadata using key:value format
-      in: query
-      name: metadata
-      schema:
-        items:
-          type: string
-        type: array
-    PackageIdListOptionalParamV3:
-      description: 'Unique id for the package.
-
-        '
-      example:
-      - 12345678-1234-1234-1234-123456789012
-      - aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
-      in: query
-      name: package_ids
-      schema:
-        items:
+        id:
+          description: Unique identifier for this metadata entry
           format: uuid
           type: string
-        type: array
+        key:
+          description: The metadata key name
+          example: environment
+          type: string
+        type:
+          $ref: '#/components/schemas/MetadataTypeV3'
+        value:
+          description: The metadata value
+          example: production
+          type: string
+      required:
+      - id
+      - key
+      - value
+      - type
+      type: object
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
+    PackageTypeV3:
+      description: 'Package type. Known values include: DOCKER, MAVEN, PYTHON, GENERIC, HELM, HELM_HTTP, NUGET, NPM, RPM, CARGO, COMPOSER, GO, HUGGINGFACE, CONDA, DART, SWIFT, PUPPET, RUBY, RAW, DEBIAN, CONAN, TERRAFORM. This field is extensible; clients must handle unknown values.
+
+        '
+      example: DOCKER
+      type: string
+      x-extensible-enum:
+      - DOCKER
+      - MAVEN
+      - PYTHON
+      - GENERIC
+      - HELM
+      - HELM_HTTP
+      - NUGET
+      - NPM
+      - RPM
+      - CARGO
+      - COMPOSER
+      - GO
+      - HUGGINGFACE
+      - CONDA
+      - DART
+      - SWIFT
+      - PUPPET
+      - RUBY
+      - RAW
+      - DEBIAN
+      - CONAN
+      - TERRAFORM
+      - CRAN
+    PackageKindV3:
+      description: refers to package kind which is being used in huggingface packages for model, dataset and terraform packages for module, provider
+      example: model
+      type: string
+  requestBodies:
+    AddTagsRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddTagsV3'
+      description: request to add tags to a version of package
+    VersionsStatsRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/VersionsStatsRequestInputV3'
+      description: Request body containing list of version UUIDs to fetch stats for
+      required: true
+    MetadataRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MetadataInputV3'
+      description: Request body containing metadata key-value pairs to add or update
+  responses:
+    ListVersionDeploymentsResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListVersionDeploymentsResponseBodyV3'
+      description: Paginated list of Harness CD deployments for a version
+    ConanRecipeRevisionsResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListConanRecipeRevisionsResponseBodyV3'
+      description: Response to list Conan recipe revisions for a version
+    ConanPackageDetailResponseV3:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ConanPackageDetailV3'
+            required:
+            - data
+            type: object
+      description: Response to get a Conan package detail
+    ConanPackageRevisionsResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListConanPackageRevisionsResponseBodyV3'
+      description: Response to list Conan package revisions of a package
+    RebuildVersionMetadataAcceptedV3:
+      description: Rebuild metadata request accepted for processing
+    ListVersionResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListVersionsResponseBodyV3'
+      description: response for list versions
+    ConanPackageRevisionDetailResponseV3:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ConanPackageRevisionDetailV3'
+            required:
+            - data
+            type: object
+      description: Response to get a Conan package revision detail
+    MetadataResponseV3:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                description: Array of metadata entries
+                items:
+                  $ref: '#/components/schemas/MetadataV3'
+                type: array
+            required:
+            - data
+            type: object
+      description: Response containing all metadata entries for the requested entity
+    ConanPackagesResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListConanPackagesResponseBodyV3'
+      description: Response to list Conan packages of a recipe revision
+    VersionsStatsResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/VersionsStatsResponseBodyV3'
+      description: Response containing statistics for the requested versions
+    ConanRecipeRevisionDetailResponseV3:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ConanRecipeRevisionDetailV3'
+            required:
+            - data
+            type: object
+      description: Response to get a Conan recipe revision detail
+  parameters:
     SortV3:
       description: 'The sort for the results.
 
@@ -1237,12 +1178,41 @@ components:
       name: sort
       schema:
         type: string
+    OrgIdentifierV3:
+      description: 'Unique identifier for the organization within the account.
+
+
+        Example: `default` or `engineering_org`
+
+        '
+      in: query
+      name: org_identifier
+      schema:
+        type: string
+    ProjectIdentifierV3:
+      description: 'Unique identifier for the project within the organization.
+
+
+        Example: `my_project` or `frontend_services`
+
+        '
+      in: query
+      name: project_identifier
+      schema:
+        type: string
     AccountIdentifierV3:
       description: 'Unique identifier for the Harness account.
 
         '
       in: query
       name: account_identifier
+      required: true
+      schema:
+        type: string
+    ConanPackageRevisionPathParamV3:
+      description: The stable UUID of the package revision (PREV) row.
+      in: path
+      name: package_revision_id
       required: true
       schema:
         type: string
@@ -1257,10 +1227,18 @@ components:
       name: search_term
       schema:
         type: string
-    ConanPackageRevisionPathParamV3:
-      description: The stable UUID of the package revision (PREV) row.
+    PackageTypeListParamV3:
+      description: Registry Package Type
+      in: query
+      name: package_types
+      schema:
+        items:
+          type: string
+        type: array
+    ConanPackageIdPathParamV3:
+      description: The stable UUID of the package (PKGID) row.
       in: path
-      name: package_revision_id
+      name: package_id
       required: true
       schema:
         type: string
@@ -1271,17 +1249,12 @@ components:
       required: true
       schema:
         type: string
-    ProjectIdentifierV3:
-      description: 'Unique identifier for the project within the organization.
-
-
-        Example: `my_project` or `frontend_services`
-
-        '
+    ForceParamV3:
       in: query
-      name: project_identifier
+      name: force
       schema:
-        type: string
+        default: false
+        type: boolean
     IncludeMetaParamV3:
       description: 'When `true`, include the `meta` object (e.g. active/deleted counts)
 
@@ -1293,6 +1266,69 @@ components:
       schema:
         default: false
         type: boolean
+    MetadataFilterListParamV3:
+      description: Filter by metadata using key:value format
+      in: query
+      name: metadata
+      schema:
+        items:
+          type: string
+        type: array
+    IdPathParamV3:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    PackageIdListOptionalParamV3:
+      description: 'Unique id for the package.
+
+        '
+      example:
+      - 12345678-1234-1234-1234-123456789012
+      - aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+      in: query
+      name: package_ids
+      schema:
+        items:
+          format: uuid
+          type: string
+        type: array
+    UploadedByParamV3:
+      description: 'Filter by uploaded by user ID.
+
+
+        Example: `uploaded_by=123`
+
+        '
+      in: query
+      name: uploaded_by
+      schema:
+        items:
+          example: 123
+          format: int64
+          type: integer
+        type: array
+    DeleteFilterParamV3:
+      in: query
+      name: deleted
+      schema:
+        default: exclude
+        enum:
+        - exclude
+        - include
+        - only
+        type: string
+    PageSizeV3:
+      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        maximum: 100
+        minimum: 1
+        type: integer
     PageNumberV3:
       description: 'The page number for pagination (0-indexed).
 
@@ -1311,16 +1347,6 @@ components:
         default: 0
         format: int64
         type: integer
-    PageSizeV3:
-      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        maximum: 100
-        minimum: 1
-        type: integer
     RegistryIdListOptionalParamV3:
       description: 'Unique id for the registry.
 
@@ -1336,32 +1362,6 @@ components:
         items:
           format: uuid
           type: string
-        type: array
-    OrgIdentifierV3:
-      description: 'Unique identifier for the organization within the account.
-
-
-        Example: `default` or `engineering_org`
-
-        '
-      in: query
-      name: org_identifier
-      schema:
-        type: string
-    UploadedByParamV3:
-      description: 'Filter by uploaded by user ID.
-
-
-        Example: `uploaded_by=123`
-
-        '
-      in: query
-      name: uploaded_by
-      schema:
-        items:
-          example: 123
-          format: int64
-          type: integer
         type: array
   securitySchemes:
     x-api-key:

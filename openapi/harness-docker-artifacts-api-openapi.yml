@@ -154,6 +154,32 @@ paths:
       - Docker Artifacts
 components:
   responses:
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    DockerArtifactManifestResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/DockerArtifactManifest'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get docker artifact manifest
     DockerLayersResponse:
       content:
         application/json:
@@ -174,58 +200,6 @@ components:
           schema:
             $ref: '#/components/schemas/RegistryError'
       description: Access denied due to insufficient permissions
-    RegistryUnauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Authentication failed or missing credentials
-    DockerArtifactManifestResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/DockerArtifactManifest'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get docker artifact manifest
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
-    DockerArtifactDetailResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/DockerArtifactDetail'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get docker artifact detail
     DockerManifestsResponse:
       content:
         application/json:
@@ -254,20 +228,68 @@ components:
             - data
             type: object
       description: response to get docker artifact integration detail
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
+    DockerArtifactDetailResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/DockerArtifactDetail'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get docker artifact detail
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
   schemas:
-    ArtifactEntityMetadata:
-      additionalProperties: true
-      description: Artifact Entity Metadata
-      type: object
-    DockerLayerEntry:
-      description: Harness Artifact Layers
+    DeploymentDetails:
       properties:
-        command:
-          type: string
-        size:
-          type: string
+        nonProdDeployment:
+          type: integer
+        prodDeployment:
+          type: integer
+        totalDeployment:
+          type: integer
       required:
-      - command
+      - prodDeployment
+      - nonProdDeployment
+      - totalDeployment
+      type: object
+    STODetails:
+      properties:
+        critical:
+          type: integer
+        executionId:
+          type: string
+        high:
+          type: integer
+        ignored:
+          type: integer
+        info:
+          type: integer
+        lastScanned:
+          type: string
+        low:
+          type: integer
+        medium:
+          type: integer
+        pipelineId:
+          type: string
+        total:
+          type: integer
       type: object
     PackageType:
       description: refers to package
@@ -296,34 +318,22 @@ components:
       - CONAN
       - TERRAFORM
       type: string
-    DockerManifestDetails:
-      description: Harness Artifact Layers
+    RegistryBuildDetails:
       properties:
-        createdAt:
+        orgIdentifier:
           type: string
-        digest:
+        pipelineDisplayName:
           type: string
-        downloadsCount:
-          format: int64
-          type: integer
-        isQuarantined:
-          type: boolean
-        osArch:
+        pipelineExecutionId:
           type: string
-        quarantineReason:
+        pipelineIdentifier:
           type: string
-        size:
+        projectIdentifier:
           type: string
-        stoDetails:
-          $ref: '#/components/schemas/STODetails'
-        stoExecutionId:
+        stageExecutionId:
           type: string
-        stoPipelineId:
+        stepExecutionId:
           type: string
-      required:
-      - digest
-      - layers
-      - osArch
       type: object
     DockerArtifactDetail:
       description: Docker Artifact Detail
@@ -373,6 +383,22 @@ components:
         status:
           type: string
       type: object
+    RegistryUserInfo:
+      description: Structured user information for a principal
+      properties:
+        display_name:
+          description: Human-readable display name
+          type: string
+        email:
+          description: Email address
+          type: string
+        type:
+          description: Principal type (user, service, service_account)
+          type: string
+        uid:
+          description: Principal unique identifier (username)
+          type: string
+      type: object
     DockerArtifactManifest:
       description: Docker Artifact Manifest
       properties:
@@ -381,6 +407,34 @@ components:
       required:
       - manifest
       type: object
+    DockerLayersSummary:
+      description: Harness Layers Summary
+      properties:
+        digest:
+          type: string
+        layers:
+          items:
+            $ref: '#/components/schemas/DockerLayerEntry'
+          type: array
+        osArch:
+          type: string
+      required:
+      - digest
+      type: object
+    DockerArtifactIntegrationDetail:
+      description: Docker Artifact Detail
+      properties:
+        buildDetails:
+          $ref: '#/components/schemas/RegistryBuildDetails'
+        deploymentsDetails:
+          $ref: '#/components/schemas/DeploymentDetails'
+        sbomDetails:
+          $ref: '#/components/schemas/SBOMDetails'
+        slsaDetails:
+          $ref: '#/components/schemas/SLSADetails'
+        stoDetails:
+          $ref: '#/components/schemas/STODetails'
+      type: object
     RegistryStatus:
       description: Request processing status indicator
       enum:
@@ -388,6 +442,20 @@ components:
       - FAILURE
       - ERROR
       type: string
+    DockerLayerEntry:
+      description: Harness Artifact Layers
+      properties:
+        command:
+          type: string
+        size:
+          type: string
+      required:
+      - command
+      type: object
+    ArtifactEntityMetadata:
+      additionalProperties: true
+      description: Artifact Entity Metadata
+      type: object
     RegistryError:
       description: Standard error response with code, message and optional details
       properties:
@@ -414,6 +482,35 @@ components:
       - code
       - message
       type: object
+    DockerManifestDetails:
+      description: Harness Artifact Layers
+      properties:
+        createdAt:
+          type: string
+        digest:
+          type: string
+        downloadsCount:
+          format: int64
+          type: integer
+        isQuarantined:
+          type: boolean
+        osArch:
+          type: string
+        quarantineReason:
+          type: string
+        size:
+          type: string
+        stoDetails:
+          $ref: '#/components/schemas/STODetails'
+        stoExecutionId:
+          type: string
+        stoPipelineId:
+          type: string
+      required:
+      - digest
+      - layers
+      - osArch
+      type: object
     SBOMDetails:
       properties:
         allowListViolations:
@@ -437,103 +534,6 @@ components:
         projectId:
           type: string
       type: object
-    DeploymentDetails:
-      properties:
-        nonProdDeployment:
-          type: integer
-        prodDeployment:
-          type: integer
-        totalDeployment:
-          type: integer
-      required:
-      - prodDeployment
-      - nonProdDeployment
-      - totalDeployment
-      type: object
-    RegistryUserInfo:
-      description: Structured user information for a principal
-      properties:
-        display_name:
-          description: Human-readable display name
-          type: string
-        email:
-          description: Email address
-          type: string
-        type:
-          description: Principal type (user, service, service_account)
-          type: string
-        uid:
-          description: Principal unique identifier (username)
-          type: string
-      type: object
-    DockerLayersSummary:
-      description: Harness Layers Summary
-      properties:
-        digest:
-          type: string
-        layers:
-          items:
-            $ref: '#/components/schemas/DockerLayerEntry'
-          type: array
-        osArch:
-          type: string
-      required:
-      - digest
-      type: object
-    RegistryBuildDetails:
-      properties:
-        orgIdentifier:
-          type: string
-        pipelineDisplayName:
-          type: string
-        pipelineExecutionId:
-          type: string
-        pipelineIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        stageExecutionId:
-          type: string
-        stepExecutionId:
-          type: string
-      type: object
-    DockerArtifactIntegrationDetail:
-      description: Docker Artifact Detail
-      properties:
-        buildDetails:
-          $ref: '#/components/schemas/RegistryBuildDetails'
-        deploymentsDetails:
-          $ref: '#/components/schemas/DeploymentDetails'
-        sbomDetails:
-          $ref: '#/components/schemas/SBOMDetails'
-        slsaDetails:
-          $ref: '#/components/schemas/SLSADetails'
-        stoDetails:
-          $ref: '#/components/schemas/STODetails'
-      type: object
-    STODetails:
-      properties:
-        critical:
-          type: integer
-        executionId:
-          type: string
-        high:
-          type: integer
-        ignored:
-          type: integer
-        info:
-          type: integer
-        lastScanned:
-          type: string
-        low:
-          type: integer
-        medium:
-          type: integer
-        pipelineId:
-          type: string
-        total:
-          type: integer
-      type: object
     DockerManifests:
       description: Harness Manifests
       properties:
@@ -554,29 +554,6 @@ components:
       description: Name of Artifact Version.
       in: path
       name: version
-      required: true
-      schema:
-        type: string
-    versionTypeParam:
-      description: Version Type.
-      in: query
-      name: version_type
-      schema:
-        enum:
-        - DIGEST
-        - TAG
-        type: string
-    artifactPathParam:
-      description: "Name of the artifact.\n\nThe value depends on whether the name contains a slash (`/`):\n\n- If the artifact name **contains `/`**, append a trailing `/+` at the end.\n  - Example: `mygroup/myartifact/+`\n- If the artifact name **does not contain `/`**, use the plain name.\n  - Example: `myartifact`\n\nThis is used internally to distinguish between namespaced and flat artifact names.\n"
-      examples:
-        flat:
-          summary: Flat artifact name
-          value: myartifact
-        namespaced:
-          summary: Namespaced artifact
-          value: mygroup/myartifact/+
-      in: path
-      name: artifact
       required: true
       schema:
         type: string
@@ -623,6 +600,29 @@ components:
       name: registry_ref
       required: true
       schema:
+        type: string
+    artifactPathParam:
+      description: "Name of the artifact.\n\nThe value depends on whether the name contains a slash (`/`):\n\n- If the artifact name **contains `/`**, append a trailing `/+` at the end.\n  - Example: `mygroup/myartifact/+`\n- If the artifact name **does not contain `/`**, use the plain name.\n  - Example: `myartifact`\n\nThis is used internally to distinguish between namespaced and flat artifact names.\n"
+      examples:
+        flat:
+          summary: Flat artifact name
+          value: myartifact
+        namespaced:
+          summary: Namespaced artifact
+          value: mygroup/myartifact/+
+      in: path
+      name: artifact
+      required: true
+      schema:
+        type: string
+    versionTypeParam:
+      description: Version Type.
+      in: query
+      name: version_type
+      schema:
+        enum:
+        - DIGEST
+        - TAG
         type: string
   securitySchemes:
     x-api-key:

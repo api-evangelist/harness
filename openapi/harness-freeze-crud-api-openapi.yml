@@ -661,21 +661,71 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOFreezeResponseWrapperDTO'
 components:
   schemas:
-    ResponseDTOPageResponseFreezeSummaryResponse:
+    FreezeErrorResponseDTO:
       type: object
       properties:
+        id:
+          type: string
+        name:
+          type: string
+        errorMessage:
+          type: string
+    FreezeResponse:
+      required:
+      - accountId
+      - identifier
+      - name
+      - yaml
+      type: object
+      properties:
+        accountId:
+          type: string
+        type:
+          type: string
+          enum:
+          - GLOBAL
+          - MANUAL
         status:
           type: string
           enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseFreezeSummaryResponse'
-        metaData:
-          type: object
-        correlationId:
+          - Enabled
+          - Disabled
+        name:
           type: string
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        windows:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreezeWindow'
+        identifier:
+          type: string
+        yaml:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        lastUpdatedAt:
+          type: integer
+          format: int64
+        freezeScope:
+          type: string
+          enum:
+          - account
+          - org
+          - project
+          - unknown
+      description: This contains details of the Freeze Response
     CurrentOrUpcomingWindow:
       type: object
       properties:
@@ -685,6 +735,37 @@ components:
         endTime:
           type: integer
           format: int64
+    FreezeResponseWrapperDTO:
+      type: object
+      properties:
+        noOfSuccess:
+          type: integer
+          format: int32
+        noOfFailed:
+          type: integer
+          format: int32
+        successfulFreezeResponseDTOList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreezeResponse'
+        freezeErrorResponseDTOList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreezeErrorResponseDTO'
+    FrozenExecutionDetail:
+      type: object
+      properties:
+        freeze:
+          $ref: '#/components/schemas/FreezeSummaryResponse'
+        url:
+          type: string
+    FrozenExecutionDetails:
+      type: object
+      properties:
+        freezeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FrozenExecutionDetail'
     Failure:
       type: object
       properties:
@@ -1104,24 +1185,47 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    FrozenExecutionDetail:
+    FreezeFilterPropertiesDTO:
       type: object
       properties:
-        freeze:
-          $ref: '#/components/schemas/FreezeSummaryResponse'
-        url:
+        freezeIdentifiers:
+          type: array
+          items:
+            type: string
+        sort:
+          type: array
+          items:
+            type: string
+        freezeStatus:
           type: string
-    RecurrenceSpec:
-      type: object
-      properties:
-        until:
-          type: string
-        value:
-          maximum: 11
-          minimum: 2
+          enum:
+          - Enabled
+          - Disabled
+        startTime:
           type: integer
-          format: int32
-    ResponseDTOFreezeDetailedResponse:
+          format: int64
+        endTime:
+          type: integer
+          format: int64
+        searchTerm:
+          type: string
+    FreezeWindow:
+      required:
+      - startTime
+      - timeZone
+      type: object
+      properties:
+        timeZone:
+          type: string
+        startTime:
+          type: string
+        duration:
+          type: string
+        endTime:
+          type: string
+        recurrence:
+          $ref: '#/components/schemas/Recurrence'
+    ResponseDTOPageResponseFreezeSummaryResponse:
       type: object
       properties:
         status:
@@ -1131,7 +1235,7 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/FreezeDetailedResponse'
+          $ref: '#/components/schemas/PageResponseFreezeSummaryResponse'
         metaData:
           type: object
         correlationId:
@@ -1193,78 +1297,6 @@ components:
         yaml:
           type: string
       description: This contains summary of the Freeze Response
-    PageResponseFreezeSummaryResponse:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/FreezeSummaryResponse'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
-          type: string
-    FreezeFilterPropertiesDTO:
-      type: object
-      properties:
-        freezeIdentifiers:
-          type: array
-          items:
-            type: string
-        sort:
-          type: array
-          items:
-            type: string
-        freezeStatus:
-          type: string
-          enum:
-          - Enabled
-          - Disabled
-        startTime:
-          type: integer
-          format: int64
-        endTime:
-          type: integer
-          format: int64
-        searchTerm:
-          type: string
-    ResponseDTOFreezeResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/FreezeResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
     ResponseMessage:
       type: object
       properties:
@@ -1855,22 +1887,132 @@ components:
           type: object
           additionalProperties:
             type: string
-    FreezeWindow:
-      required:
-      - startTime
-      - timeZone
+    RecurrenceSpec:
       type: object
       properties:
-        timeZone:
+        until:
           type: string
-        startTime:
+        value:
+          maximum: 11
+          minimum: 2
+          type: integer
+          format: int32
+    ResponseDTOFreezeResponseWrapperDTO:
+      type: object
+      properties:
+        status:
           type: string
-        duration:
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/FreezeResponseWrapperDTO'
+        metaData:
+          type: object
+        correlationId:
           type: string
-        endTime:
+    ResponseDTOFrozenExecutionDetails:
+      type: object
+      properties:
+        status:
           type: string
-        recurrence:
-          $ref: '#/components/schemas/Recurrence'
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/FrozenExecutionDetails'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTOFreezeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/FreezeResponse'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    FreezeDetailedResponse:
+      required:
+      - accountId
+      - identifier
+      - name
+      type: object
+      properties:
+        accountId:
+          type: string
+        type:
+          type: string
+          enum:
+          - GLOBAL
+          - MANUAL
+        status:
+          type: string
+          enum:
+          - Enabled
+          - Disabled
+        name:
+          type: string
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        windows:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreezeWindow'
+        currentOrUpcomingWindow:
+          $ref: '#/components/schemas/CurrentOrUpcomingWindow'
+        identifier:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        lastUpdatedAt:
+          type: integer
+          format: int64
+        freezeScope:
+          type: string
+          enum:
+          - account
+          - org
+          - project
+          - unknown
+        yaml:
+          type: string
+      description: This contains detailed information of the Freeze Config
+    Recurrence:
+      required:
+      - type
+      type: object
+      properties:
+        spec:
+          $ref: '#/components/schemas/RecurrenceSpec'
+        type:
+          type: string
+          enum:
+          - Daily
+          - Weekly
+          - Monthly
+          - Yearly
     Error1:
       type: object
       properties:
@@ -2294,13 +2436,32 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    FrozenExecutionDetails:
+    PageResponseFreezeSummaryResponse:
       type: object
       properties:
-        freezeList:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
           type: array
           items:
-            $ref: '#/components/schemas/FrozenExecutionDetail'
+            $ref: '#/components/schemas/FreezeSummaryResponse'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
     ErrorMetadata2:
       type: object
       properties:
@@ -2309,63 +2470,7 @@ components:
       description: This implements different error meta data objects
       discriminator:
         propertyName: type
-    FreezeResponse:
-      required:
-      - accountId
-      - identifier
-      - name
-      - yaml
-      type: object
-      properties:
-        accountId:
-          type: string
-        type:
-          type: string
-          enum:
-          - GLOBAL
-          - MANUAL
-        status:
-          type: string
-          enum:
-          - Enabled
-          - Disabled
-        name:
-          type: string
-        description:
-          maxLength: 1024
-          minLength: 0
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        windows:
-          type: array
-          items:
-            $ref: '#/components/schemas/FreezeWindow'
-        identifier:
-          type: string
-        yaml:
-          type: string
-        createdAt:
-          type: integer
-          format: int64
-        lastUpdatedAt:
-          type: integer
-          format: int64
-        freezeScope:
-          type: string
-          enum:
-          - account
-          - org
-          - project
-          - unknown
-      description: This contains details of the Freeze Response
-    ResponseDTOFrozenExecutionDetails:
+    ResponseDTOFreezeDetailedResponse:
       type: object
       properties:
         status:
@@ -2375,123 +2480,18 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/FrozenExecutionDetails'
+          $ref: '#/components/schemas/FreezeDetailedResponse'
         metaData:
           type: object
         correlationId:
           type: string
-    FreezeErrorResponseDTO:
+    ValidationError:
       type: object
       properties:
-        id:
+        fieldId:
           type: string
-        name:
+        error:
           type: string
-        errorMessage:
-          type: string
-    ResponseDTOFreezeResponseWrapperDTO:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/FreezeResponseWrapperDTO'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    Recurrence:
-      required:
-      - type
-      type: object
-      properties:
-        spec:
-          $ref: '#/components/schemas/RecurrenceSpec'
-        type:
-          type: string
-          enum:
-          - Daily
-          - Weekly
-          - Monthly
-          - Yearly
-    FreezeDetailedResponse:
-      required:
-      - accountId
-      - identifier
-      - name
-      type: object
-      properties:
-        accountId:
-          type: string
-        type:
-          type: string
-          enum:
-          - GLOBAL
-          - MANUAL
-        status:
-          type: string
-          enum:
-          - Enabled
-          - Disabled
-        name:
-          type: string
-        description:
-          maxLength: 1024
-          minLength: 0
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        windows:
-          type: array
-          items:
-            $ref: '#/components/schemas/FreezeWindow'
-        currentOrUpcomingWindow:
-          $ref: '#/components/schemas/CurrentOrUpcomingWindow'
-        identifier:
-          type: string
-        createdAt:
-          type: integer
-          format: int64
-        lastUpdatedAt:
-          type: integer
-          format: int64
-        freezeScope:
-          type: string
-          enum:
-          - account
-          - org
-          - project
-          - unknown
-        yaml:
-          type: string
-      description: This contains detailed information of the Freeze Config
-    FreezeResponseWrapperDTO:
-      type: object
-      properties:
-        noOfSuccess:
-          type: integer
-          format: int32
-        noOfFailed:
-          type: integer
-          format: int32
-        successfulFreezeResponseDTOList:
-          type: array
-          items:
-            $ref: '#/components/schemas/FreezeResponse'
-        freezeErrorResponseDTOList:
-          type: array
-          items:
-            $ref: '#/components/schemas/FreezeErrorResponseDTO'
   securitySchemes:
     x-api-key:
       name: x-api-key
