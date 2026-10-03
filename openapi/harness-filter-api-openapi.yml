@@ -1695,13 +1695,6 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOBoolean'
 components:
   schemas:
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
     Filter:
       required:
       - filterProperties
@@ -1730,7 +1723,7 @@ components:
           - EveryOne
           - OnlyCreator
       description: This has details of the Filter entity defined in Harness
-    ResponseDTOFilter:
+    ResponseDTOPageResponseFilter:
       type: object
       properties:
         status:
@@ -1740,44 +1733,10 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/Filter'
+          $ref: '#/components/schemas/PageResponseFilter'
         metaData:
           type: object
         correlationId:
-          type: string
-    PipelineErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    PageResponseFilter:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Filter'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
           type: string
     Error1:
       type: object
@@ -2202,6 +2161,14 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -2792,7 +2759,7 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOPageResponseFilter:
+    ResponseDTOBoolean:
       type: object
       properties:
         status:
@@ -2802,12 +2769,38 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/PageResponseFilter'
+          type: boolean
         metaData:
           type: object
         correlationId:
           type: string
-    TemplateError:
+    PageResponseFilter:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    Failure:
       type: object
       properties:
         status:
@@ -3221,15 +3214,64 @@ components:
           type: string
         correlationId:
           type: string
-        detailedMessage:
-          type: string
-        responseMessages:
+        errors:
           type: array
           items:
-            $ref: '#/components/schemas/ResponseMessage'
-        metadata:
-          $ref: '#/components/schemas/TemplateErrorMetadata'
-      description: This is Error entity as defined in Harness
+            $ref: '#/components/schemas/ValidationError'
+      description: This is Failure entity as defied in Harness
+    CcmErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    FilterProperties:
+      required:
+      - filterType
+      type: object
+      properties:
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+            description: Filter tags as a key-value pair.
+          description: Filter tags as a key-value pair.
+        filterType:
+          type: string
+          description: This specifies the corresponding Entity of the filter.
+          enum:
+          - Connector
+          - Secret
+          - DelegateProfile
+          - Delegate
+          - PipelineSetup
+          - PipelineExecution
+          - Deployment
+          - Audit
+          - Template
+          - Trigger
+          - EnvironmentGroup
+          - FileStore
+          - CCMRecommendation
+          - Anomaly
+          - RIInventory
+          - SPInventory
+          - Autocud
+          - CCMConnector
+          - CCMK8sConnector
+          - Environment
+          - RuleExecution
+          - Override
+          - InputSet
+          - Webhook
+          - CCMBudget
+          - Service
+          - QueuedPipeline
+      description: Properties of the Filter entity defined in Harness.
+      discriminator:
+        propertyName: filterType
     PipelineError:
       type: object
       properties:
@@ -3653,7 +3695,7 @@ components:
         metadata:
           $ref: '#/components/schemas/PipelineErrorMetadata'
       description: This is Error entity as defined in Harness
-    CcmErrorMetadata:
+    PipelineErrorMetadata:
       type: object
       properties:
         type:
@@ -3661,67 +3703,7 @@ components:
       description: This implements different error meta data objects
       discriminator:
         propertyName: type
-    ResponseDTOBoolean:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: boolean
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    FilterProperties:
-      required:
-      - filterType
-      type: object
-      properties:
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-            description: Filter tags as a key-value pair.
-          description: Filter tags as a key-value pair.
-        filterType:
-          type: string
-          description: This specifies the corresponding Entity of the filter.
-          enum:
-          - Connector
-          - Secret
-          - DelegateProfile
-          - Delegate
-          - PipelineSetup
-          - PipelineExecution
-          - Deployment
-          - Audit
-          - Template
-          - Trigger
-          - EnvironmentGroup
-          - FileStore
-          - CCMRecommendation
-          - Anomaly
-          - RIInventory
-          - SPInventory
-          - Autocud
-          - CCMConnector
-          - CCMK8sConnector
-          - Environment
-          - RuleExecution
-          - Override
-          - InputSet
-          - Webhook
-          - CCMBudget
-          - Service
-          - QueuedPipeline
-      description: Properties of the Filter entity defined in Harness.
-      discriminator:
-        propertyName: filterType
-    Failure:
+    TemplateError:
       type: object
       properties:
         status:
@@ -4135,27 +4117,15 @@ components:
           type: string
         correlationId:
           type: string
-        errors:
+        detailedMessage:
+          type: string
+        responseMessages:
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
-      description: This is Failure entity as defied in Harness
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    TemplateErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
+            $ref: '#/components/schemas/ResponseMessage'
+        metadata:
+          $ref: '#/components/schemas/TemplateErrorMetadata'
+      description: This is Error entity as defined in Harness
     CcmError:
       type: object
       properties:
@@ -4579,6 +4549,36 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    ResponseDTOFilter:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/Filter'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    TemplateErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
   securitySchemes:
     x-api-key:
       name: x-api-key

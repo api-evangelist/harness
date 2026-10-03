@@ -237,28 +237,83 @@ paths:
         name: search_term
         description: plugin name search
 components:
-  responses:
-    CICDHarnessPipelineResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CICDHarnessPipelineYamlResponseBody'
-    CICDWorklfowPluginsResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/CICDWorklfowPluginsResponse'
-    CICDOverviewResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CICDOverviewResponseBody'
+  parameters:
+    Page2:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Limit6:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    Order2:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        default: ASC
+      description: Order on the basis of which sorting is done.
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
   schemas:
+    CICDWorkflowListingResponse:
+      title: CICDWorkflowListingResponse
+      x-stoplight:
+        id: tt2e1jm0ioc1x
+      type: object
+      required:
+      - id
+      - name
+      - last_scan
+      - compliance_summary
+      - source
+      properties:
+        id:
+          type: string
+          description: Workflow Id
+        name:
+          type: string
+          description: Workflow Name
+        last_scan:
+          type: integer
+          format: int64
+        compliance_summary:
+          $ref: '#/components/schemas/ComplianceEvaluationSummary'
+        source:
+          $ref: '#/components/schemas/WorkflowSource'
     WorkflowSource:
       title: WorkflowSource
       x-stoplight:
@@ -288,6 +343,79 @@ components:
           - GITHUB
           - HARNESS
           description: Workflow Source Type
+    CICDWorkflowSummary:
+      title: CICDWorkflowSummary
+      x-stoplight:
+        id: akvm9g9wf3zhe
+      type: object
+      properties:
+        total_workflows:
+          type: integer
+          x-stoplight:
+            id: dypacgi0s04bs
+        compliance_summary:
+          $ref: '#/components/schemas/ComplianceEvaluationSummary'
+    ComplianceEvaluationSummary:
+      title: ComplianceEvaluationSummary
+      x-stoplight:
+        id: w6bm50zzc4qvm
+      type: object
+      properties:
+        passed:
+          type: integer
+          x-stoplight:
+            id: n9eea7yuwgj2p
+        failed:
+          type: integer
+          x-stoplight:
+            id: o6dgewchk2r19
+        criticial_failures:
+          type: integer
+          x-stoplight:
+            id: 67cnmw5x5e0rg
+        medium_failures:
+          type: integer
+          x-stoplight:
+            id: 8cd6cagnioamc
+        high_failures:
+          type: integer
+          x-stoplight:
+            id: lapzcy8o2c5ty
+        low_failures:
+          type: integer
+          x-stoplight:
+            id: v5iq4o1mkm0wo
+        evaluation_time:
+          type: integer
+          x-stoplight:
+            id: 55r1eicwd51tm
+          format: int64
+    CICDHarnessPipelineYamlResponseBody:
+      title: CICDHarnessPipelineYamlResponseBody
+      x-stoplight:
+        id: ver2dyae9lsfn
+      type: object
+      required:
+      - pipeline_yaml
+      properties:
+        pipeline_yaml:
+          type: string
+          x-stoplight:
+            id: h1ik5naj7j0td
+        harness_pipeline_settings:
+          $ref: '#/components/schemas/HarnessPipelineSettings'
+    CICDWorkflowListingRequest:
+      title: CICDWorkflowListingRequest
+      x-stoplight:
+        id: 091iwl7nn4zwr
+      type: object
+      x-examples: {}
+      properties:
+        search_term:
+          type: string
+        platform_type:
+          $ref: '#/components/schemas/ComplianceSourcePlatform'
+      description: CI/CD Workflow Listing Request.
     CICDOverviewResponseBody:
       title: CiCdOverviewResponseBody
       x-stoplight:
@@ -325,20 +453,6 @@ components:
           type: string
           x-stoplight:
             id: emdtllba1deoe
-    CICDHarnessPipelineYamlResponseBody:
-      title: CICDHarnessPipelineYamlResponseBody
-      x-stoplight:
-        id: ver2dyae9lsfn
-      type: object
-      required:
-      - pipeline_yaml
-      properties:
-        pipeline_yaml:
-          type: string
-          x-stoplight:
-            id: h1ik5naj7j0td
-        harness_pipeline_settings:
-          $ref: '#/components/schemas/HarnessPipelineSettings'
     ComplianceSourcePlatform:
       title: ComplianceSourcePlatform
       x-stoplight:
@@ -348,18 +462,6 @@ components:
       - GITHUB
       - HARNESS
       description: 'Source platform enum. Example: GITHUB, HARNESS'
-    CICDWorkflowSummary:
-      title: CICDWorkflowSummary
-      x-stoplight:
-        id: akvm9g9wf3zhe
-      type: object
-      properties:
-        total_workflows:
-          type: integer
-          x-stoplight:
-            id: dypacgi0s04bs
-        compliance_summary:
-          $ref: '#/components/schemas/ComplianceEvaluationSummary'
     HarnessPipelineSettings:
       title: HarnessPipelineSettings
       x-stoplight:
@@ -370,129 +472,27 @@ components:
           type: boolean
           x-stoplight:
             id: 86cw8l9rmrpjg
-    CICDWorkflowListingRequest:
-      title: CICDWorkflowListingRequest
-      x-stoplight:
-        id: 091iwl7nn4zwr
-      type: object
-      x-examples: {}
-      properties:
-        search_term:
-          type: string
-        platform_type:
-          $ref: '#/components/schemas/ComplianceSourcePlatform'
-      description: CI/CD Workflow Listing Request.
-    ComplianceEvaluationSummary:
-      title: ComplianceEvaluationSummary
-      x-stoplight:
-        id: w6bm50zzc4qvm
-      type: object
-      properties:
-        passed:
-          type: integer
-          x-stoplight:
-            id: n9eea7yuwgj2p
-        failed:
-          type: integer
-          x-stoplight:
-            id: o6dgewchk2r19
-        criticial_failures:
-          type: integer
-          x-stoplight:
-            id: 67cnmw5x5e0rg
-        medium_failures:
-          type: integer
-          x-stoplight:
-            id: 8cd6cagnioamc
-        high_failures:
-          type: integer
-          x-stoplight:
-            id: lapzcy8o2c5ty
-        low_failures:
-          type: integer
-          x-stoplight:
-            id: v5iq4o1mkm0wo
-        evaluation_time:
-          type: integer
-          x-stoplight:
-            id: 55r1eicwd51tm
-          format: int64
-    CICDWorkflowListingResponse:
-      title: CICDWorkflowListingResponse
-      x-stoplight:
-        id: tt2e1jm0ioc1x
-      type: object
-      required:
-      - id
-      - name
-      - last_scan
-      - compliance_summary
-      - source
-      properties:
-        id:
-          type: string
-          description: Workflow Id
-        name:
-          type: string
-          description: Workflow Name
-        last_scan:
-          type: integer
-          format: int64
-        compliance_summary:
-          $ref: '#/components/schemas/ComplianceEvaluationSummary'
-        source:
-          $ref: '#/components/schemas/WorkflowSource'
-  parameters:
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
-    Order2:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-        default: ASC
-      description: Order on the basis of which sorting is done.
-    Limit6:
-      name: limit
-      in: query
-      schema:
-        type: integer
-        default: 30
-        maximum: 1000
-        minimum: 1
-      description: Number of items to return per page.
-    AccountHeader6:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    ProjectParam1:
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness project ID
-      name: project
-    Page2:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-        minimum: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+  responses:
+    CICDOverviewResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CICDOverviewResponseBody'
+    CICDHarnessPipelineResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CICDHarnessPipelineYamlResponseBody'
+    CICDWorklfowPluginsResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CICDWorklfowPluginsResponse'
   securitySchemes:
     x-api-key:
       name: x-api-key

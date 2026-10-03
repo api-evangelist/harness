@@ -297,28 +297,55 @@ paths:
       - Feature Flags
 components:
   schemas:
-    ServingRule:
-      description: The rule used to determine what variation to serve to a target
+    ActivationUpdate:
+      description: An object used to specify updates for flag activation updates
       properties:
-        clauses:
-          description: A list of clauses to use in the rule
-          items:
-            $ref: '#/components/schemas/Clause'
-          type: array
-        priority:
-          description: The rules priority relative to other rules.  The rules are evaluated in order with 1 being the highest
-          example: 1
-          type: integer
-        ruleId:
-          description: The unique identifier for this rule
+        defaultOffVariation:
+          description: The default variation to serve when the flag is disabled in this environment
+          example: red
           type: string
-        serve:
-          $ref: '#/components/schemas/Serve'
+        defaultOnVariation:
+          description: The default variation to serve when the flag is enabled in this environment
+          example: blue
+          type: string
+        identifier:
+          description: The name of the environment
+          example: env1
+          type: string
+        rules:
+          items:
+            $ref: '#/components/schemas/TargetRulesUpdate'
+          type: array
+        state:
+          description: The state of the flag in this environment i.e. "on" or "off"
+          example: 'on'
+          type: string
       required:
-      - priority
-      - clauses
-      - serve
+      - identifier
       type: object
+    Prerequisite:
+      description: Feature Flag pre-requisites
+      properties:
+        feature:
+          description: The feature identifier that is the prerequisite
+          type: string
+        variations:
+          description: A list of variations that must be met
+          items:
+            type: string
+          type: array
+      required:
+      - feature
+      - variations
+      type: object
+    FeatureFlagRequestKind:
+      enum:
+      - boolean
+      - int
+      - string
+      - json
+      example: boolean
+      type: string
     FeaturePipeline:
       description: A pipeline configured to update a feature
       properties:
@@ -341,6 +368,133 @@ components:
       - identifier
       - name
       type: object
+    JiraIssue:
+      description: A Jira Issue
+      properties:
+        issueKey:
+          description: The Jira Issue key
+          example: FFM-7777
+          type: string
+        issueURL:
+          description: The jira issue URL
+          example: https://harness-dev1.atlassian.net
+          type: string
+      required:
+      - issueKey
+      - issueURL
+      type: object
+    Tag:
+      description: A Tag object used to tag feature flags - consists of name and identifier
+      properties:
+        identifier:
+          description: The identifier of the tag
+          example: feature-flag-tag-1
+          type: string
+        name:
+          description: The name of the tag
+          example: feature-flag-tag-1
+          type: string
+      required:
+      - name
+      - identifier
+      type: object
+    VariationMap:
+      description: A mapping of variations to targets and target groups (segments).  The targets listed here should receive this variation.
+      properties:
+        targetSegments:
+          description: A list of target groups (segments)
+          items:
+            type: string
+          type: array
+        targets:
+          description: A list of target mappings
+          items:
+            $ref: '#/components/schemas/TargetMap'
+          type: array
+        variation:
+          description: The variation identifier
+          example: off-variation
+          type: string
+      required:
+      - variation
+      type: object
+    Distribution:
+      description: Describes a distribution rule
+      properties:
+        bucketBy:
+          description: The attribute to use when distributing targets across buckets
+          type: string
+        variations:
+          description: A list of variations and the weight that should be given to each
+          items:
+            $ref: '#/components/schemas/WeightedVariation'
+          type: array
+      required:
+      - bucketBy
+      - variations
+      type: object
+    FeatureCounts:
+      properties:
+        totalActive:
+          description: The total number of flags with a active status in a project/environment
+          example: 5
+          type: integer
+        totalAnomaly:
+          description: The total number of flags with an unacknowledged anomaly status in the project/environment
+          example: 4
+          type: integer
+        totalArchived:
+          description: The total number of archived flags in the project/environment
+          example: 10
+          type: integer
+        totalEnabled:
+          description: The total number of flags that are turned on in a project/environment
+          example: 2
+          type: integer
+        totalFeatures:
+          description: The total number of flags in the project/environment
+          example: 10
+          type: integer
+        totalPermanent:
+          description: The total number of permanent flags in a project/environment
+          example: 7
+          type: integer
+        totalPotentiallyStale:
+          description: The total number of flags with a potentially-stale status in a project/environment
+          example: 3
+          type: integer
+        totalRecentlyAccessed:
+          description: The total number of flags with a recently-accessed status in a project/environment
+          example: 2
+          type: integer
+      type: object
+    Serve:
+      description: Describe the distribution rule and the variation that should be served to the target
+      properties:
+        distribution:
+          $ref: '#/components/schemas/Distribution'
+        variation:
+          type: string
+      type: object
+    Results:
+      description: This result object shows details of how many times a variation has been evaluated
+      properties:
+        count:
+          description: The number of times this variation has been returned in a evaluation
+          type: integer
+        variationIdentifier:
+          description: The unique variation identifier
+          example: defaultOnVariation
+          type: string
+        variationName:
+          description: The user friendly variation name
+          example: Default On Variation
+          type: string
+      required:
+      - variationIdentifier
+      - variationName
+      - count
+      type: object
     FeatureResponseMetadata:
       properties:
         details:
@@ -361,21 +515,12 @@ components:
               type: object
           type: object
       type: object
-    Tag:
-      description: A Tag object used to tag feature flags - consists of name and identifier
-      properties:
-        identifier:
-          description: The identifier of the tag
-          example: feature-flag-tag-1
-          type: string
-        name:
-          description: The name of the tag
-          example: feature-flag-tag-1
-          type: string
-      required:
-      - name
-      - identifier
-      type: object
+    FeatureState:
+      description: The state of a flag either off or on
+      enum:
+      - 'on'
+      - 'off'
+      type: string
     TargetMap:
       description: Target map provides the details of a target that belongs to a flag
       properties:
@@ -389,18 +534,49 @@ components:
       - identifier
       - name
       type: object
-    CfService:
-      description: A Harness service linked to a flag
+    GitSyncPatchOperation:
       properties:
-        identifier:
-          description: The identifier of the service
+        comment:
+          description: A comment explaining the reason for this patch operation
+          example: This is a comment string
           type: string
-        name:
-          description: The name of the service
-          type: string
+        executionTime:
+          description: Time of execution in unix epoch milliseconds when the scheduled changes will be applied
+          type: integer
+        gitDetails:
+          $ref: '#/components/schemas/CfGitDetails'
+        instructions:
+          $ref: '#/components/schemas/PatchInstruction'
       required:
-      - name
-      - identifier
+      - instructions
+      type: object
+    Pagination:
+      properties:
+        itemCount:
+          description: The total number of items
+          example: 1
+          type: integer
+        pageCount:
+          description: The total number of pages
+          example: 100
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+        version:
+          description: The version of this object.  The version will be incremented each time the object is modified
+          example: 5
+          type: integer
+      required:
+      - pageCount
+      - itemCount
+      - pageSize
+      - pageIndex
       type: object
     WeightedVariation:
       description: A variation and the weighting it should receive as part of a percentage rollout
@@ -434,6 +610,16 @@ components:
         - kind
         - parameters
       type: array
+    CfGitDetails:
+      description: The commit message to use as part of a gitsync operation
+      properties:
+        commitMsg:
+          description: A description of the change or action
+          example: Turning on flag test-flag for production
+          type: string
+      required:
+      - commitMsg
+      type: object
     CCM:
       description: CCM Details for environment
       properties:
@@ -486,78 +672,62 @@ components:
       - perspectiveIdentifier
       - perspectiveName
       type: object
-    GitSyncPatchOperation:
+    TargetRulesUpdate:
+      description: An object used to specify updates for flag activation updates
       properties:
-        comment:
-          description: A comment explaining the reason for this patch operation
-          example: This is a comment string
-          type: string
-        executionTime:
-          description: Time of execution in unix epoch milliseconds when the scheduled changes will be applied
-          type: integer
-        gitDetails:
-          $ref: '#/components/schemas/CfGitDetails'
-        instructions:
-          $ref: '#/components/schemas/PatchInstruction'
-      required:
-      - instructions
-      type: object
-    FeatureFlagRequestKind:
-      enum:
-      - boolean
-      - int
-      - string
-      - json
-      example: boolean
-      type: string
-    JiraIssue:
-      description: A Jira Issue
-      properties:
-        issueKey:
-          description: The Jira Issue key
-          example: FFM-7777
-          type: string
-        issueURL:
-          description: The jira issue URL
-          example: https://harness-dev1.atlassian.net
-          type: string
-      required:
-      - issueKey
-      - issueURL
-      type: object
-    Prerequisite:
-      description: Feature Flag pre-requisites
-      properties:
-        feature:
-          description: The feature identifier that is the prerequisite
-          type: string
-        variations:
-          description: A list of variations that must be met
+        targets:
+          description: The target rules that should be set for this variation
+          example:
+          - target1
+          - target2
           items:
             type: string
           type: array
+        variation:
+          description: The name of the variation these rules apply to
+          example: true
+          type: string
       required:
-      - feature
-      - variations
+      - variation
       type: object
-    Results:
-      description: This result object shows details of how many times a variation has been evaluated
+    ServingRule:
+      description: The rule used to determine what variation to serve to a target
       properties:
-        count:
-          description: The number of times this variation has been returned in a evaluation
+        clauses:
+          description: A list of clauses to use in the rule
+          items:
+            $ref: '#/components/schemas/Clause'
+          type: array
+        priority:
+          description: The rules priority relative to other rules.  The rules are evaluated in order with 1 being the highest
+          example: 1
           type: integer
-        variationIdentifier:
-          description: The unique variation identifier
-          example: defaultOnVariation
+        ruleId:
+          description: The unique identifier for this rule
           type: string
-        variationName:
-          description: The user friendly variation name
-          example: Default On Variation
+        serve:
+          $ref: '#/components/schemas/Serve'
+      required:
+      - priority
+      - clauses
+      - serve
+      type: object
+    CfError:
+      properties:
+        code:
+          description: The http error code
+          example: 404
+          type: string
+        details:
+          description: Additional details about the error
+          type: object
+        message:
+          description: The reason the request failed
+          example: Error retrieving projects, organization 'default_org' does not exist
           type: string
       required:
-      - variationIdentifier
-      - variationName
-      - count
+      - code
+      - message
       type: object
     Features:
       allOf:
@@ -570,119 +740,6 @@ components:
               $ref: '#/components/schemas/Feature'
             type: array
       description: A list of Feature Flags
-      type: object
-    FeatureCounts:
-      properties:
-        totalActive:
-          description: The total number of flags with a active status in a project/environment
-          example: 5
-          type: integer
-        totalAnomaly:
-          description: The total number of flags with an unacknowledged anomaly status in the project/environment
-          example: 4
-          type: integer
-        totalArchived:
-          description: The total number of archived flags in the project/environment
-          example: 10
-          type: integer
-        totalEnabled:
-          description: The total number of flags that are turned on in a project/environment
-          example: 2
-          type: integer
-        totalFeatures:
-          description: The total number of flags in the project/environment
-          example: 10
-          type: integer
-        totalPermanent:
-          description: The total number of permanent flags in a project/environment
-          example: 7
-          type: integer
-        totalPotentiallyStale:
-          description: The total number of flags with a potentially-stale status in a project/environment
-          example: 3
-          type: integer
-        totalRecentlyAccessed:
-          description: The total number of flags with a recently-accessed status in a project/environment
-          example: 2
-          type: integer
-      type: object
-    CfGitDetails:
-      description: The commit message to use as part of a gitsync operation
-      properties:
-        commitMsg:
-          description: A description of the change or action
-          example: Turning on flag test-flag for production
-          type: string
-      required:
-      - commitMsg
-      type: object
-    ActivationUpdate:
-      description: An object used to specify updates for flag activation updates
-      properties:
-        defaultOffVariation:
-          description: The default variation to serve when the flag is disabled in this environment
-          example: red
-          type: string
-        defaultOnVariation:
-          description: The default variation to serve when the flag is enabled in this environment
-          example: blue
-          type: string
-        identifier:
-          description: The name of the environment
-          example: env1
-          type: string
-        rules:
-          items:
-            $ref: '#/components/schemas/TargetRulesUpdate'
-          type: array
-        state:
-          description: The state of the flag in this environment i.e. "on" or "off"
-          example: 'on'
-          type: string
-      required:
-      - identifier
-      type: object
-    Variation:
-      description: A variation of a flag that can be returned to a target
-      properties:
-        description:
-          description: A description of the variation
-          type: string
-        identifier:
-          description: The unique identifier for the variation
-          example: off-variation
-          type: string
-        name:
-          description: The user friendly name of the variation
-          example: Off VAriation
-          type: string
-        value:
-          description: The variation value to serve such as true or false for a boolean flag
-          example: 'true'
-          type: string
-      required:
-      - identifier
-      - value
-      type: object
-    VariationMap:
-      description: A mapping of variations to targets and target groups (segments).  The targets listed here should receive this variation.
-      properties:
-        targetSegments:
-          description: A list of target groups (segments)
-          items:
-            type: string
-          type: array
-        targets:
-          description: A list of target mappings
-          items:
-            $ref: '#/components/schemas/TargetMap'
-          type: array
-        variation:
-          description: The variation identifier
-          example: off-variation
-          type: string
-      required:
-      - variation
       type: object
     Clause:
       description: A clause describes what conditions are used to evaluate a flag
@@ -713,37 +770,6 @@ components:
       - op
       - negate
       - values
-      type: object
-    CfError:
-      properties:
-        code:
-          description: The http error code
-          example: 404
-          type: string
-        details:
-          description: Additional details about the error
-          type: object
-        message:
-          description: The reason the request failed
-          example: Error retrieving projects, organization 'default_org' does not exist
-          type: string
-      required:
-      - code
-      - message
-      type: object
-    FeatureState:
-      description: The state of a flag either off or on
-      enum:
-      - 'on'
-      - 'off'
-      type: string
-    Serve:
-      description: Describe the distribution rule and the variation that should be served to the target
-      properties:
-        distribution:
-          $ref: '#/components/schemas/Distribution'
-        variation:
-          type: string
       type: object
     Feature:
       description: A Feature Flag response
@@ -910,92 +936,42 @@ components:
       - defaultOnVariation
       - defaultOffVariation
       type: object
-    Distribution:
-      description: Describes a distribution rule
+    Variation:
+      description: A variation of a flag that can be returned to a target
       properties:
-        bucketBy:
-          description: The attribute to use when distributing targets across buckets
+        description:
+          description: A description of the variation
           type: string
-        variations:
-          description: A list of variations and the weight that should be given to each
-          items:
-            $ref: '#/components/schemas/WeightedVariation'
-          type: array
-      required:
-      - bucketBy
-      - variations
-      type: object
-    TargetRulesUpdate:
-      description: An object used to specify updates for flag activation updates
-      properties:
-        targets:
-          description: The target rules that should be set for this variation
-          example:
-          - target1
-          - target2
-          items:
-            type: string
-          type: array
-        variation:
-          description: The name of the variation these rules apply to
-          example: true
+        identifier:
+          description: The unique identifier for the variation
+          example: off-variation
+          type: string
+        name:
+          description: The user friendly name of the variation
+          example: Off VAriation
+          type: string
+        value:
+          description: The variation value to serve such as true or false for a boolean flag
+          example: 'true'
           type: string
       required:
-      - variation
+      - identifier
+      - value
       type: object
-    Pagination:
+    CfService:
+      description: A Harness service linked to a flag
       properties:
-        itemCount:
-          description: The total number of items
-          example: 1
-          type: integer
-        pageCount:
-          description: The total number of pages
-          example: 100
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
-        version:
-          description: The version of this object.  The version will be incremented each time the object is modified
-          example: 5
-          type: integer
+        identifier:
+          description: The identifier of the service
+          type: string
+        name:
+          description: The name of the service
+          type: string
       required:
-      - pageCount
-      - itemCount
-      - pageSize
-      - pageIndex
+      - name
+      - identifier
       type: object
   parameters:
-    pageNumber:
-      description: PageNumber
-      in: query
-      name: pageNumber
-      schema:
-        type: integer
-    sortByField:
-      description: SortByField
-      in: query
-      name: sortByField
-      schema:
-        enum:
-        - name
-        - identifier
-        - archived
-        - kind
-        - modifiedAt
-        type: string
-    flagEnabled:
-      description: Filter for flags based on if they are enabled or disabled
-      in: query
-      name: enabled
-      schema:
-        type: boolean
     accountQueryParam:
       description: Account Identifier
       examples:
@@ -1006,56 +982,27 @@ components:
       required: true
       schema:
         type: string
-    commitMsgQueryParam:
-      allowEmptyValue: true
-      description: Git commit message
-      in: query
-      name: commitMsg
-      schema:
-        type: string
-    identifierQueryParam:
-      description: Identifier of the field
-      in: query
-      name: identifier
-      schema:
-        type: string
-    targetFilterOptionalParam:
-      allowEmptyValue: true
-      description: Identifier of the target to filter on
-      in: query
-      name: targetIdentifierFilter
-      schema:
-        type: string
-    archivedQueryParam:
-      description: Status of the feature flag
-      in: query
-      name: archived
-      schema:
-        type: boolean
     flagSummary:
       description: Returns summary info on flags if set to true
       in: query
       name: summary
       schema:
         type: boolean
+    kindQueryParam:
+      description: Kind of the feature flag
+      in: query
+      name: kind
+      schema:
+        enum:
+        - json
+        - string
+        - int
+        - boolean
+        type: string
     featuresOptionalParam:
       description: Comma separated identifiers for multiple Features
       in: query
       name: featureIdentifiers
-      schema:
-        type: string
-    environmentOptionalQueryParam:
-      allowEmptyValue: true
-      description: Environment
-      in: query
-      name: environmentIdentifier
-      schema:
-        type: string
-    projectQueryParam:
-      description: The Project identifier
-      in: query
-      name: projectIdentifier
-      required: true
       schema:
         type: string
     sortOrder:
@@ -1073,6 +1020,75 @@ components:
       name: pageSize
       schema:
         type: integer
+    orgQueryParam:
+      description: Organization Identifier
+      examples:
+        default:
+          value: default_org
+      in: query
+      name: orgIdentifier
+      required: true
+      schema:
+        type: string
+    environmentOptionalQueryParam:
+      allowEmptyValue: true
+      description: Environment
+      in: query
+      name: environmentIdentifier
+      schema:
+        type: string
+    flagEnabled:
+      description: Filter for flags based on if they are enabled or disabled
+      in: query
+      name: enabled
+      schema:
+        type: boolean
+    targetFilterOptionalParam:
+      allowEmptyValue: true
+      description: Identifier of the target to filter on
+      in: query
+      name: targetIdentifierFilter
+      schema:
+        type: string
+    commitMsgQueryParam:
+      allowEmptyValue: true
+      description: Git commit message
+      in: query
+      name: commitMsg
+      schema:
+        type: string
+    excludedFeaturesOptionalParam:
+      allowEmptyValue: true
+      description: Comma separated identifiers to exclude from the response
+      in: query
+      name: excludedFeatures
+      schema:
+        type: string
+    sortByField:
+      description: SortByField
+      in: query
+      name: sortByField
+      schema:
+        enum:
+        - name
+        - identifier
+        - archived
+        - kind
+        - modifiedAt
+        type: string
+    identifier:
+      description: Unique identifier for the object in the API.
+      in: path
+      name: identifier
+      required: true
+      schema:
+        type: string
+    archivedQueryParam:
+      description: Status of the feature flag
+      in: query
+      name: archived
+      schema:
+        type: boolean
     targetOptionalParam:
       allowEmptyValue: true
       description: Identifier of a target
@@ -1086,52 +1102,16 @@ components:
       name: forceDelete
       schema:
         type: boolean
-    kindQueryParam:
-      description: Kind of the feature flag
-      in: query
-      name: kind
-      schema:
-        enum:
-        - json
-        - string
-        - int
-        - boolean
-        type: string
-    flagLifetime:
-      description: Filter for flags based on their lifetime (permanent/temporary)
-      in: query
-      name: lifetime
-      schema:
-        type: string
     flagCounts:
       description: Returns counts for the different types of flags e.g num active, potentially-stale, recently-accessed etc
       in: query
       name: flagCounts
       schema:
         type: boolean
-    flagTags:
-      description: Filter for flags based on their tag values supplied as comma separated list
+    projectQueryParam:
+      description: The Project identifier
       in: query
-      name: tags
-      schema:
-        type: string
-    nameQueryParam:
-      allowEmptyValue: true
-      description: Name of the field
-      in: query
-      name: name
-      schema:
-        type: string
-    metricsOptionalParam:
-      description: Parameter to indicate if metrics data is requested in response
-      in: query
-      name: metrics
-      schema:
-        type: boolean
-    identifier:
-      description: Unique identifier for the object in the API.
-      in: path
-      name: identifier
+      name: projectIdentifier
       required: true
       schema:
         type: string
@@ -1141,41 +1121,67 @@ components:
       name: status
       schema:
         type: string
-    orgQueryParam:
-      description: Organization Identifier
-      examples:
-        default:
-          value: default_org
+    nameQueryParam:
+      allowEmptyValue: true
+      description: Name of the field
       in: query
-      name: orgIdentifier
-      required: true
+      name: name
       schema:
         type: string
-    excludedFeaturesOptionalParam:
-      allowEmptyValue: true
-      description: Comma separated identifiers to exclude from the response
+    pageNumber:
+      description: PageNumber
       in: query
-      name: excludedFeatures
+      name: pageNumber
+      schema:
+        type: integer
+    metricsOptionalParam:
+      description: Parameter to indicate if metrics data is requested in response
+      in: query
+      name: metrics
+      schema:
+        type: boolean
+    flagLifetime:
+      description: Filter for flags based on their lifetime (permanent/temporary)
+      in: query
+      name: lifetime
+      schema:
+        type: string
+    identifierQueryParam:
+      description: Identifier of the field
+      in: query
+      name: identifier
+      schema:
+        type: string
+    flagTags:
+      description: Filter for flags based on their tag values supplied as comma separated list
+      in: query
+      name: tags
       schema:
         type: string
   responses:
+    Unauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Unauthenticated
     Conflict:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CfError'
       description: The specified resource already exists
-    FeatureResponse:
+    NotFound:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Feature'
-      description: OK
-    FeatureEditResponse:
+            $ref: '#/components/schemas/CfError'
+      description: The specified resource was not found
+    FeaturesResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/FeatureResponseMetadata'
+            $ref: '#/components/schemas/Features'
       description: OK
     Unauthorized:
       content:
@@ -1183,12 +1189,18 @@ components:
           schema:
             $ref: '#/components/schemas/CfError'
       description: Unauthorized
-    NotFound:
+    FeatureEditResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CfError'
-      description: The specified resource was not found
+            $ref: '#/components/schemas/FeatureResponseMetadata'
+      description: OK
+    FeatureResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Feature'
+      description: OK
     InternalServerError:
       content:
         application/json:
@@ -1207,19 +1219,38 @@ components:
           schema:
             $ref: '#/components/schemas/CfError'
       description: Bad request
-    Unauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Unauthenticated
-    FeaturesResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Features'
-      description: OK
   requestBodies:
+    FeatureFlagPutRequest:
+      content:
+        application/json:
+          schema:
+            properties:
+              defaultOffVariation:
+                type: string
+              defaultOnVariation:
+                type: string
+              description:
+                type: string
+              environments:
+                items:
+                  $ref: '#/components/schemas/ActivationUpdate'
+                type: array
+              gitDetails:
+                $ref: '#/components/schemas/CfGitDetails'
+              name:
+                type: string
+              permanent:
+                type: boolean
+              tags:
+                items:
+                  $ref: '#/components/schemas/Tag'
+                type: array
+              variations:
+                items:
+                  $ref: '#/components/schemas/Variation'
+                minItems: 2
+                type: array
+            type: object
     FeatureFlagRequest:
       content:
         application/json:
@@ -1273,37 +1304,6 @@ components:
             - defaultOnVariation
             - defaultOffVariation
             - permanent
-            type: object
-    FeatureFlagPutRequest:
-      content:
-        application/json:
-          schema:
-            properties:
-              defaultOffVariation:
-                type: string
-              defaultOnVariation:
-                type: string
-              description:
-                type: string
-              environments:
-                items:
-                  $ref: '#/components/schemas/ActivationUpdate'
-                type: array
-              gitDetails:
-                $ref: '#/components/schemas/CfGitDetails'
-              name:
-                type: string
-              permanent:
-                type: boolean
-              tags:
-                items:
-                  $ref: '#/components/schemas/Tag'
-                type: array
-              variations:
-                items:
-                  $ref: '#/components/schemas/Variation'
-                minItems: 2
-                type: array
             type: object
     FeaturePatchRequest:
       content:

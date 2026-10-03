@@ -98,12 +98,69 @@ paths:
         id: 6egw8y19cxi6o
 components:
   parameters:
+    PipelineExecutionId:
+      description: plan execution Id of the pipeline execution
+      in: query
+      name: pipelineExecutionId
+      required: true
+      schema:
+        type: string
+    StageExecutionId:
+      description: stage execution id of the pipeline execution
+      in: query
+      name: stageExecutionId
+      required: true
+      schema:
+        type: string
+    ParentId:
+      description: parent unique id for the scope
+      in: query
+      name: parent_id
+      schema:
+        type: string
+    DBInstanceParam:
+      description: database instance unique id
+      in: path
+      name: dbinstance
+      required: true
+      schema:
+        type: string
+    DbSchemaQuery:
+      description: DB Schema identifier
+      in: query
+      name: dbSchema
+      required: true
+      schema:
+        type: string
     OrgParam:
       description: Organization identifier
       in: path
       name: org
       required: true
       schema:
+        type: string
+    HarnessCommand:
+      description: 'Harness command  Example : Update, Rollback'
+      in: query
+      name: harnessCommand
+      required: true
+      schema:
+        enum:
+        - Update
+        - Rollback
+        - DBOPSUpdateSQL
+        - DBOPSRollbackSQL
+        - DBOPSRollbackCountSQL
+        - DBOPSSnapshot
+        example: Update
+        type: string
+    DBSchemaParam:
+      description: Identifier of the database schema
+      in: path
+      name: dbschema
+      required: true
+      schema:
+        maxLength: 128
         type: string
     ChangesetMetadataContentType:
       description: 'changesetMetadata contentType. Example : Yaml, Sql'
@@ -116,31 +173,10 @@ components:
         - Sql
         example: Yaml
         type: string
-    DbSchemaQuery:
-      description: DB Schema identifier
-      in: query
-      name: dbSchema
-      required: true
-      schema:
-        type: string
     DbInstanceQuery:
       description: Identifier for the DBInstance
       in: query
       name: dbInstance
-      required: true
-      schema:
-        type: string
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
-    StageExecutionId:
-      description: stage execution id of the pipeline execution
-      in: query
-      name: stageExecutionId
       required: true
       schema:
         type: string
@@ -158,6 +194,13 @@ components:
       name: Harness-Account
       schema:
         type: string
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
     DbOpsLimit:
       description: 'Pagination: Number of items to return.'
       in: query
@@ -166,49 +209,6 @@ components:
         default: 10
         maximum: 100
         type: integer
-    DBSchemaParam:
-      description: Identifier of the database schema
-      in: path
-      name: dbschema
-      required: true
-      schema:
-        maxLength: 128
-        type: string
-    HarnessCommand:
-      description: 'Harness command  Example : Update, Rollback'
-      in: query
-      name: harnessCommand
-      required: true
-      schema:
-        enum:
-        - Update
-        - Rollback
-        - DBOPSUpdateSQL
-        - DBOPSRollbackSQL
-        - DBOPSRollbackCountSQL
-        - DBOPSSnapshot
-        example: Update
-        type: string
-    ParentId:
-      description: parent unique id for the scope
-      in: query
-      name: parent_id
-      schema:
-        type: string
-    DBInstanceParam:
-      description: database instance unique id
-      in: path
-      name: dbinstance
-      required: true
-      schema:
-        type: string
-    PipelineExecutionId:
-      description: plan execution Id of the pipeline execution
-      in: query
-      name: pipelineExecutionId
-      required: true
-      schema:
-        type: string
   schemas:
     DbOpsError:
       description: Error Response
@@ -222,6 +222,20 @@ components:
       type: object
       x-stoplight:
         id: 61cwtgnps2mpt
+    FlywayMigrationScriptOutput:
+      properties:
+        data:
+          items:
+            type: string
+            x-stoplight:
+              id: 8u85nqnlt1w43
+          type: array
+          x-stoplight:
+            id: 43o199tx5os71
+      title: FlywayMigrationScriptOutput
+      type: object
+      x-stoplight:
+        id: rt1400tezvyfb
     ChangeSetMetadataOutput:
       description: changeset metadata output object
       properties:
@@ -239,21 +253,13 @@ components:
       type: object
       x-stoplight:
         id: i2l6jx3t5wwbu
-    FlywayMigrationScriptOutput:
-      properties:
-        data:
-          items:
-            type: string
-            x-stoplight:
-              id: 8u85nqnlt1w43
-          type: array
-          x-stoplight:
-            id: 43o199tx5os71
-      title: FlywayMigrationScriptOutput
-      type: object
-      x-stoplight:
-        id: rt1400tezvyfb
   responses:
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
     FlywayMigrationScriptResponse:
       content:
         application/json:
@@ -292,12 +298,6 @@ components:
           description: Total number of elements returned in Paginated response.
           schema:
             type: integer
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
   securitySchemes:
     x-api-key:
       name: x-api-key

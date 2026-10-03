@@ -257,6 +257,84 @@ paths:
       - Replication
 components:
   schemas:
+    ListMigrationImage:
+      description: A list of migration images
+      properties:
+        images:
+          description: A list of Artifact versions
+          items:
+            $ref: '#/components/schemas/MigrationImage'
+          type: array
+        itemCount:
+          description: The total number of items
+          example: 1
+          format: int64
+          type: integer
+        pageCount:
+          description: The total number of pages
+          example: 100
+          format: int64
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          format: int64
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+      required:
+      - pageCount
+      - itemCount
+      - pageSize
+      - pageIndex
+      - images
+      type: object
+    LocalReplicationRegistry:
+      properties:
+        registryIdentifier:
+          type: string
+      required:
+      - registryIdentifier
+      type: object
+    RegistryError:
+      description: Standard error response with code, message and optional details
+      properties:
+        code:
+          description: The HTTP error code
+          example: '404'
+          type: string
+        details:
+          description: 'Additional context and details about the error.
+
+            May include field-specific validation errors or debugging information.
+
+            '
+          example:
+            field: registry_identifier
+            reason: Registry does not exist in the specified project
+            value: invalid-registry
+          type: object
+        message:
+          description: Human-readable error message explaining what went wrong
+          example: Registry not found
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    MigrationImage:
+      properties:
+        imageId:
+          type: string
+        imageTag:
+          type: string
+        progress:
+          type: integer
+        status:
+          type: string
+      type: object
     ReplicationRule:
       properties:
         allowedPatterns:
@@ -303,75 +381,6 @@ components:
       - modifiedAt
       - createdAt
       type: object
-    JfrogReplicationRegistry:
-      properties:
-        namespace:
-          type: string
-        passwordSecretId:
-          type: string
-        passwordSecretSpaceId:
-          type: string
-        url:
-          format: uri
-          type: string
-        username:
-          type: string
-      required:
-      - url
-      - namespace
-      type: object
-    LocalReplicationRegistry:
-      properties:
-        registryIdentifier:
-          type: string
-      required:
-      - registryIdentifier
-      type: object
-    ReplicationRuleRequest:
-      properties:
-        allowedPatterns:
-          items:
-            type: string
-          type: array
-        blockedPatterns:
-          items:
-            type: string
-          type: array
-        destination:
-          $ref: '#/components/schemas/ReplicationRegistry'
-        destinationType:
-          enum:
-          - Local
-          - Jfrog
-          - GCP
-          type: string
-        source:
-          $ref: '#/components/schemas/ReplicationRegistry'
-        sourceType:
-          enum:
-          - Local
-          - Jfrog
-          - GCP
-          type: string
-      required:
-      - source
-      - destination
-      - sourceType
-      - destinationType
-      - allowedPatterns
-      - blockedPatterns
-      type: object
-    ReplicationRegistry:
-      oneOf:
-      - $ref: '#/components/schemas/LocalReplicationRegistry'
-      - $ref: '#/components/schemas/JfrogReplicationRegistry'
-    RegistryStatus:
-      description: Request processing status indicator
-      enum:
-      - SUCCESS
-      - FAILURE
-      - ERROR
-      type: string
     ListReplicationRule:
       description: A list of replication rules
       properties:
@@ -406,98 +415,106 @@ components:
       - pageIndex
       - rules
       type: object
-    MigrationImage:
+    RegistryStatus:
+      description: Request processing status indicator
+      enum:
+      - SUCCESS
+      - FAILURE
+      - ERROR
+      type: string
+    ReplicationRegistry:
+      oneOf:
+      - $ref: '#/components/schemas/LocalReplicationRegistry'
+      - $ref: '#/components/schemas/JfrogReplicationRegistry'
+    ReplicationRuleRequest:
       properties:
-        imageId:
-          type: string
-        imageTag:
-          type: string
-        progress:
-          type: integer
-        status:
-          type: string
-      type: object
-    RegistryError:
-      description: Standard error response with code, message and optional details
-      properties:
-        code:
-          description: The HTTP error code
-          example: '404'
-          type: string
-        details:
-          description: 'Additional context and details about the error.
-
-            May include field-specific validation errors or debugging information.
-
-            '
-          example:
-            field: registry_identifier
-            reason: Registry does not exist in the specified project
-            value: invalid-registry
-          type: object
-        message:
-          description: Human-readable error message explaining what went wrong
-          example: Registry not found
-          type: string
-      required:
-      - code
-      - message
-      type: object
-    ListMigrationImage:
-      description: A list of migration images
-      properties:
-        images:
-          description: A list of Artifact versions
+        allowedPatterns:
           items:
-            $ref: '#/components/schemas/MigrationImage'
+            type: string
           type: array
-        itemCount:
-          description: The total number of items
-          example: 1
-          format: int64
-          type: integer
-        pageCount:
-          description: The total number of pages
-          example: 100
-          format: int64
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          format: int64
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
+        blockedPatterns:
+          items:
+            type: string
+          type: array
+        destination:
+          $ref: '#/components/schemas/ReplicationRegistry'
+        destinationType:
+          enum:
+          - Local
+          - Jfrog
+          - GCP
+          type: string
+        source:
+          $ref: '#/components/schemas/ReplicationRegistry'
+        sourceType:
+          enum:
+          - Local
+          - Jfrog
+          - GCP
+          type: string
       required:
-      - pageCount
-      - itemCount
-      - pageSize
-      - pageIndex
-      - images
+      - source
+      - destination
+      - sourceType
+      - destinationType
+      - allowedPatterns
+      - blockedPatterns
       type: object
+    JfrogReplicationRegistry:
+      properties:
+        namespace:
+          type: string
+        passwordSecretId:
+          type: string
+        passwordSecretSpaceId:
+          type: string
+        url:
+          format: uri
+          type: string
+        username:
+          type: string
+      required:
+      - url
+      - namespace
+      type: object
+  parameters:
+    RegistrypageSize:
+      description: Number of items per page
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        type: integer
+    RegistrypageNumber:
+      description: Current page number
+      in: query
+      name: page
+      schema:
+        default: 1
+        format: int64
+        type: integer
+    RegistrysortOrder:
+      description: sortOrder
+      in: query
+      name: sort_order
+      schema:
+        type: string
+    spaceRefQueryParam:
+      description: 'Reference to the scope in which the registry exists.
+
+        '
+      in: query
+      name: space_ref
+      schema:
+        type: string
+    sortField:
+      description: sortField
+      in: query
+      name: sort_field
+      schema:
+        type: string
   responses:
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    ListReplicationRuleResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ListReplicationRule'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: Response for list replication rules
     ReplicationRuleResponse:
       content:
         application/json:
@@ -512,19 +529,6 @@ components:
             - data
             type: object
       description: Response for replication rule update
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    PlainTextResponse:
-      content:
-        text/plain; charset=utf-8:
-          schema:
-            example: Hello, world!
-            type: string
-      description: A plain text response
     ListMigrationImageResponse:
       content:
         application/json:
@@ -539,24 +543,57 @@ components:
             - data
             type: object
       description: Response for list migration images
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
     RegistryUnauthenticated:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/RegistryError'
       description: Authentication failed or missing credentials
+    ListReplicationRuleResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ListReplicationRule'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: Response for list replication rules
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
+    PlainTextResponse:
+      content:
+        text/plain; charset=utf-8:
+          schema:
+            example: Hello, world!
+            type: string
+      description: A plain text response
     RegistryInternalServerError:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/RegistryError'
       description: An unexpected server error occurred
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
     Success:
       content:
         application/json:
@@ -568,43 +605,6 @@ components:
             - status
             type: object
       description: Generic success response
-  parameters:
-    sortField:
-      description: sortField
-      in: query
-      name: sort_field
-      schema:
-        type: string
-    RegistrypageSize:
-      description: Number of items per page
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        type: integer
-    spaceRefQueryParam:
-      description: 'Reference to the scope in which the registry exists.
-
-        '
-      in: query
-      name: space_ref
-      schema:
-        type: string
-    RegistrysortOrder:
-      description: sortOrder
-      in: query
-      name: sort_order
-      schema:
-        type: string
-    RegistrypageNumber:
-      description: Current page number
-      in: query
-      name: page
-      schema:
-        default: 1
-        format: int64
-        type: integer
   requestBodies:
     ReplicationRuleRequest:
       content:

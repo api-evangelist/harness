@@ -167,6 +167,22 @@ paths:
                     type: string
 components:
   schemas:
+    TimeInDay:
+      type: object
+      properties:
+        hour:
+          type: number
+          description: Hour
+        min:
+          type: number
+          description: Minutes
+    SaveStaticSchedulesRequest:
+      type: object
+      properties:
+        schedule:
+          $ref: '#/components/schemas/FixedSchedule'
+        id:
+          type: number
     OccurrenceSchedule:
       type: object
       properties:
@@ -178,25 +194,29 @@ components:
           type: string
           description: Time zone in which the schedule should be applied
       description: Details of time schedule by which the resource should be controlled
-    StaticScheduleResource:
+    FixedSchedule:
       type: object
       properties:
-        id:
+        name:
           type: string
-          description: ID of the resource to be controlled by schedule. For AutoStopping rule, this would be the ID of the rule
-        type:
-          type: string
-          description: Type of the resource to be controlled
-          enum:
-          - autostop_rule
-      description: Details of an independent resource that can be controlled by a schedule
-    SaveStaticSchedulesRequest:
-      type: object
-      properties:
-        schedule:
-          $ref: '#/components/schemas/FixedSchedule'
+          description: Name of the schedule
         id:
           type: number
+          description: ID of fixed schedule
+          readOnly: true
+        account:
+          type: string
+          description: ID of account
+        description:
+          type: string
+          description: Description of fixed schedule
+        resources:
+          type: array
+          description: List of resources to be controlled by the schedule
+          items:
+            $ref: '#/components/schemas/StaticScheduleResource'
+        details:
+          $ref: '#/components/schemas/OccurrenceSchedule'
     TimeSchedule:
       type: object
       properties:
@@ -229,38 +249,6 @@ components:
               $ref: '#/components/schemas/TimeInDay'
           description: For specifying a recurring schedule in terms of week days
       description: Specifies the occurrence schedule. Occurrence schedule can either be specified as period or as days
-    TimeInDay:
-      type: object
-      properties:
-        hour:
-          type: number
-          description: Hour
-        min:
-          type: number
-          description: Minutes
-    FixedSchedule:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Name of the schedule
-        id:
-          type: number
-          description: ID of fixed schedule
-          readOnly: true
-        account:
-          type: string
-          description: ID of account
-        description:
-          type: string
-          description: Description of fixed schedule
-        resources:
-          type: array
-          description: List of resources to be controlled by the schedule
-          items:
-            $ref: '#/components/schemas/StaticScheduleResource'
-        details:
-          $ref: '#/components/schemas/OccurrenceSchedule'
     FixedSchedulesListResponse:
       type: object
       properties:
@@ -268,6 +256,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FixedSchedule'
+    StaticScheduleResource:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the resource to be controlled by schedule. For AutoStopping rule, this would be the ID of the rule
+        type:
+          type: string
+          description: Type of the resource to be controlled
+          enum:
+          - autostop_rule
+      description: Details of an independent resource that can be controlled by a schedule
   securitySchemes:
     x-api-key:
       name: x-api-key

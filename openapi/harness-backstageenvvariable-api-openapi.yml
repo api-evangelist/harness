@@ -212,18 +212,61 @@ paths:
       tags:
       - BackstageEnvVariable
 components:
+  parameters:
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    BackstageEnvVariable:
+      name: backstage-env-variable
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the backstage env variable the resource is scoped to
+    Namespace:
+      name: namespace
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Namespace from where the request is being made
+    Limit5:
+      name: limit
+      in: query
+      required: false
+      schema:
+        default: null
+        type: integer
+      description: 'Pagination: Number of items to return'
+    Page1:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: null
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    NamespacePathParam:
+      name: namespace
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Namespace from where the request is being made
+    Sort6:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Parameter on the basis of which sorting is done.
   schemas:
-    BackstageEnvVariableResponse:
-      x-stoplight:
-        id: np7bj0rjx6gb4
-      type: object
-      properties:
-        env_variable:
-          $ref: '#/components/schemas/BackstageEnvVariable'
-          x-stoplight:
-            id: ru3parenuqcu1
-      required:
-      - env_variable
     BackstageEnvVariable:
       title: BackstageEnvVariable
       x-stoplight:
@@ -266,6 +309,19 @@ components:
       required:
       - env_name
       - type
+    ResolvedEnvVariableResponse:
+      title: ResolvedEnvVariableResponse
+      x-stoplight:
+        id: 2dlc8i0aobls7
+      type: object
+      x-examples:
+        Example 1:
+          resolved_env_variable:
+            env_name: GITHUB_TOKEN
+            decrypted_value: abc
+      properties:
+        resolved_env_variables:
+          type: string
     BackstageEnvVariableBatchRequest:
       type: object
       x-stoplight:
@@ -281,19 +337,6 @@ components:
               id: i0vefhckdjymq
       required:
       - env_variables
-    ResolvedEnvVariableResponse:
-      title: ResolvedEnvVariableResponse
-      x-stoplight:
-        id: 2dlc8i0aobls7
-      type: object
-      x-examples:
-        Example 1:
-          resolved_env_variable:
-            env_name: GITHUB_TOKEN
-            decrypted_value: abc
-      properties:
-        resolved_env_variables:
-          type: string
     BackstageEnvVariableRequest:
       x-stoplight:
         id: e7t9o0ci4dra4
@@ -303,7 +346,66 @@ components:
           $ref: '#/components/schemas/BackstageEnvVariable'
           x-stoplight:
             id: t8p54gz9pdy56
+    BackstageEnvVariableResponse:
+      x-stoplight:
+        id: np7bj0rjx6gb4
+      type: object
+      properties:
+        env_variable:
+          $ref: '#/components/schemas/BackstageEnvVariable'
+          x-stoplight:
+            id: ru3parenuqcu1
+      required:
+      - env_variable
+  requestBodies:
+    BackstageEnvVariableRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BackstageEnvVariableRequest'
+          examples:
+            Example 1:
+              value:
+                env_variable:
+                  identifier: 641c7f1aa18dbf72522d78f0
+                  env_name: PAGERDUTY_TOKEN
+                  created: 1679589047352
+                  updated: 1679589047352
+                  type: Secret
+                  harness_secret_identifier: pdtoken
+            Example 2:
+              value:
+                env_variable:
+                  identifier: 641c7f1aa18dbf72522d78f1
+                  env_name: GITHUB_APP_APPLICATION_ID
+                  created: 1679589047352
+                  updated: 1679589047352
+                  type: Config
+                  value: '1234'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/BackstageEnvVariableRequest'
+    BackstageEnvVariableBatchRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BackstageEnvVariableBatchRequest'
+          examples: {}
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/BackstageEnvVariableBatchRequest'
   responses:
+    ResolvedEnvVariableResponse:
+      description: Returns encrypted string of list of env variables with the decrypted value
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResolvedEnvVariableResponse'
+          examples: {}
+        application/yaml:
+          schema:
+            type: string
+          examples: {}
     BackstageEnvVariableResponse:
       description: Example response
       content:
@@ -339,108 +441,6 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-    ResolvedEnvVariableResponse:
-      description: Returns encrypted string of list of env variables with the decrypted value
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ResolvedEnvVariableResponse'
-          examples: {}
-        application/yaml:
-          schema:
-            type: string
-          examples: {}
-  requestBodies:
-    BackstageEnvVariableBatchRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BackstageEnvVariableBatchRequest'
-          examples: {}
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/BackstageEnvVariableBatchRequest'
-    BackstageEnvVariableRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BackstageEnvVariableRequest'
-          examples:
-            Example 1:
-              value:
-                env_variable:
-                  identifier: 641c7f1aa18dbf72522d78f0
-                  env_name: PAGERDUTY_TOKEN
-                  created: 1679589047352
-                  updated: 1679589047352
-                  type: Secret
-                  harness_secret_identifier: pdtoken
-            Example 2:
-              value:
-                env_variable:
-                  identifier: 641c7f1aa18dbf72522d78f1
-                  env_name: GITHUB_APP_APPLICATION_ID
-                  created: 1679589047352
-                  updated: 1679589047352
-                  type: Config
-                  value: '1234'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/BackstageEnvVariableRequest'
-  parameters:
-    NamespacePathParam:
-      name: namespace
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Namespace from where the request is being made
-    BackstageEnvVariable:
-      name: backstage-env-variable
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the backstage env variable the resource is scoped to
-    AccountHeader5:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    Sort6:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: Parameter on the basis of which sorting is done.
-    Page1:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: null
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Limit5:
-      name: limit
-      in: query
-      required: false
-      schema:
-        default: null
-        type: integer
-      description: 'Pagination: Number of items to return'
-    Namespace:
-      name: namespace
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: Namespace from where the request is being made
   securitySchemes:
     x-api-key:
       name: x-api-key

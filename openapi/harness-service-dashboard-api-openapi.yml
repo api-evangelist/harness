@@ -112,6 +112,24 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOPipelineExecutionCountInfo'
 components:
   schemas:
+    CountGroupedOnService:
+      type: object
+      properties:
+        serviceReference:
+          type: string
+        serviceName:
+          type: string
+        count:
+          type: integer
+          format: int64
+        executionCountGroupedOnStatusList:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountGroupedOnStatus'
+        executionCountGroupedOnArtifactList:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountGroupedOnArtifact'
     PipelineExecutionCountInfo:
       type: object
       properties:
@@ -119,28 +137,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CountGroupedOnService'
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    ResponseDTOPipelineExecutionCountInfo:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PipelineExecutionCountInfo'
-        metaData:
-          type: object
-        correlationId:
-          type: string
     Error1:
       type: object
       properties:
@@ -564,22 +560,14 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    CountGroupedOnArtifact:
+    ErrorMetadata2:
       type: object
       properties:
-        artifactPath:
+        type:
           type: string
-        artifactVersion:
-          type: string
-        artifact:
-          type: string
-        count:
-          type: integer
-          format: int64
-        executionCountGroupedOnStatusList:
-          type: array
-          items:
-            $ref: '#/components/schemas/CountGroupedOnStatus'
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -1170,6 +1158,14 @@ components:
           type: object
           additionalProperties:
             type: string
+    CountGroupedOnStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        count:
+          type: integer
+          format: int64
     Failure:
       type: object
       properties:
@@ -1589,28 +1585,14 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    ErrorMetadata2:
+    CountGroupedOnArtifact:
       type: object
       properties:
-        type:
+        artifactPath:
           type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    CountGroupedOnStatus:
-      type: object
-      properties:
-        status:
+        artifactVersion:
           type: string
-        count:
-          type: integer
-          format: int64
-    CountGroupedOnService:
-      type: object
-      properties:
-        serviceReference:
-          type: string
-        serviceName:
+        artifact:
           type: string
         count:
           type: integer
@@ -1619,10 +1601,28 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CountGroupedOnStatus'
-        executionCountGroupedOnArtifactList:
-          type: array
-          items:
-            $ref: '#/components/schemas/CountGroupedOnArtifact'
+    ResponseDTOPipelineExecutionCountInfo:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PipelineExecutionCountInfo'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -204,35 +204,7 @@ paths:
                 $ref: '#/components/schemas/CcmError'
 components:
   schemas:
-    AnomalyCostTimeSeries:
-      type: object
-      properties:
-        time:
-          type: integer
-          format: int64
-        anomalousCost:
-          type: number
-          format: double
-        cost:
-          type: number
-          format: double
-      description: This object details cost data about a particular anomaly for given timeStamp
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    CCMCostCategoryDTO:
-      type: object
-      properties:
-        costCategory:
-          type: string
-        costBucket:
-          type: string
-      description: This object will contain cost category and it's bucket value
-    ResponseDTOListAnomalyCostTimeSeries:
+    ResponseDTOListAnomalyResourceCostTimeSeries:
       type: object
       properties:
         status:
@@ -244,56 +216,123 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/AnomalyCostTimeSeries'
+            $ref: '#/components/schemas/AnomalyResourceCostTimeSeries'
         metaData:
           type: object
         correlationId:
           type: string
-    AnomalyResourceCostTimeSeries:
+    AnomalyData:
       type: object
       properties:
+        id:
+          type: string
         time:
           type: integer
           format: int64
-        cost:
+        endTime:
+          type: integer
+          format: int64
+        anomalyRelativeTime:
+          type: string
+        actualAmount:
           type: number
           format: double
-      description: This object details cost data about a particular resource associated with an anomaly for given timeStamp
-    ResponseDTOAnomalyData:
-      type: object
-      properties:
+        expectedAmount:
+          type: number
+          format: double
+        anomalousSpend:
+          type: number
+          format: double
+        anomalousSpendPercentage:
+          type: number
+          format: double
+        resourceName:
+          type: string
+        resourceInfo:
+          type: string
+        entity:
+          $ref: '#/components/schemas/EntityInfo'
+        details:
+          type: string
         status:
           type: string
           enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/AnomalyData'
-        metaData:
-          type: object
-        correlationId:
+          - ACTIVE
+          - IGNORED
+          - ARCHIVED
+          - RESOLVED
+        statusRelativeTime:
           type: string
-    AnomalyDailyBreakdown:
+        comment:
+          type: string
+        cloudProvider:
+          type: string
+        anomalyScore:
+          type: number
+          format: double
+        userFeedback:
+          type: string
+          enum:
+          - TRUE_ANOMALY
+          - TRUE_EXPECTED_ANOMALY
+          - FALSE_ANOMALY
+          - NOT_RESPONDED
+        perspectiveId:
+          type: string
+        perspectiveName:
+          type: string
+        criticality:
+          type: string
+          enum:
+          - CRITICAL
+          - MEDIUM
+          - LOW
+        duration:
+          type: integer
+          format: int32
+        isOngoingAnomaly:
+          type: boolean
+          writeOnly: true
+        expectedCostUpper:
+          type: number
+          format: double
+        expectedCostLower:
+          type: number
+          format: double
+        statusUpdatedBy:
+          type: string
+        statusUpdatedAt:
+          type: integer
+          format: int64
+        statusUpdateRelativeTime:
+          type: integer
+          format: int32
+        dailyBreakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnomalyDailyBreakdown'
+        alertedRecipients:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        costPreferences:
+          $ref: '#/components/schemas/CostPreferences'
+        costCategoryDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/CCMCostCategoryDTO'
+        ongoingAnomaly:
+          type: boolean
+      description: This object contains details of a cost anomaly
+    CCMCostCategoryDTO:
       type: object
       properties:
-        date:
-          type: integer
-          description: Date in epoch timestamp (milliseconds)
-          format: int64
-        expectedSpend:
-          type: number
-          description: Expected spend for this day
-          format: double
-        actualSpend:
-          type: number
-          description: Actual spend for this day
-          format: double
-        unusualSpend:
-          type: number
-          description: Unusual spend for this day (actualSpend - expectedSpend)
-          format: double
-      description: Daily breakdown of anomaly spend data
+        costCategory:
+          type: string
+        costBucket:
+          type: string
+      description: This object will contain cost category and it's bucket value
     ResponseMessage:
       type: object
       properties:
@@ -884,68 +923,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    GCPViewPreferences:
-      type: object
-      properties:
-        gcpCost:
-          type: string
-          description: Show GCP Cost As
-          enum:
-          - COST
-          - LIST
-        includeDiscounts:
-          type: boolean
-        includeTaxes:
-          type: boolean
-        includePromotions:
-          type: boolean
-        includeNegotiatedSavings:
-          type: boolean
-        includeSubscriptionCredits:
-          type: boolean
-        includeSustainedUseDiscounts:
-          type: boolean
-        includeResourceBasedCudCredits:
-          type: boolean
-        includeLegacyBasedCudCredits:
-          type: boolean
-        includeSpendBasedCudDiscounts:
-          type: boolean
-    AzureViewPreferences:
-      type: object
-      properties:
-        costType:
-          type: string
-          enum:
-          - ACTUAL
-          - AMORTIZED
-          - LIST_ACTUAL
-          - LIST_AMORTIZED
-    CcmErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    ResponseDTOListAnomalyResourceCostTimeSeries:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/AnomalyResourceCostTimeSeries'
-        metaData:
-          type: object
-        correlationId:
-          type: string
     Failure:
       type: object
       properties:
@@ -1365,27 +1342,57 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    AWSViewPreferences:
+    CcmErrorMetadata:
       type: object
       properties:
-        includeDiscounts:
-          type: boolean
-        includeCredits:
-          type: boolean
-        includeRefunds:
-          type: boolean
-        includeTaxes:
-          type: boolean
-        awsCost:
+        type:
           type: string
-          description: Show AWS Cost As
-          enum:
-          - AMORTISED
-          - NET_AMORTISED
-          - BLENDED
-          - UNBLENDED
-          - EFFECTIVE
-          - LIST
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    AnomalyCostTimeSeries:
+      type: object
+      properties:
+        time:
+          type: integer
+          format: int64
+        anomalousCost:
+          type: number
+          format: double
+        cost:
+          type: number
+          format: double
+      description: This object details cost data about a particular anomaly for given timeStamp
+    AnomalyResourceCostTimeSeries:
+      type: object
+      properties:
+        time:
+          type: integer
+          format: int64
+        cost:
+          type: number
+          format: double
+      description: This object details cost data about a particular resource associated with an anomaly for given timeStamp
+    AnomalyDailyBreakdown:
+      type: object
+      properties:
+        date:
+          type: integer
+          description: Date in epoch timestamp (milliseconds)
+          format: int64
+        expectedSpend:
+          type: number
+          description: Expected spend for this day
+          format: double
+        actualSpend:
+          type: number
+          description: Actual spend for this day
+          format: double
+        unusualSpend:
+          type: number
+          description: Unusual spend for this day (actualSpend - expectedSpend)
+          format: double
+      description: Daily breakdown of anomaly spend data
     EntityInfo:
       type: object
       properties:
@@ -1457,119 +1464,6 @@ components:
           type: string
         unitMetricType:
           type: string
-    CostPreferences:
-      type: object
-      properties:
-        awsCostPreferences:
-          $ref: '#/components/schemas/AWSViewPreferences'
-        azureCostPreferences:
-          $ref: '#/components/schemas/AzureViewPreferences'
-        gcpCostPreferences:
-          $ref: '#/components/schemas/GCPViewPreferences'
-    AnomalyData:
-      type: object
-      properties:
-        id:
-          type: string
-        time:
-          type: integer
-          format: int64
-        endTime:
-          type: integer
-          format: int64
-        anomalyRelativeTime:
-          type: string
-        actualAmount:
-          type: number
-          format: double
-        expectedAmount:
-          type: number
-          format: double
-        anomalousSpend:
-          type: number
-          format: double
-        anomalousSpendPercentage:
-          type: number
-          format: double
-        resourceName:
-          type: string
-        resourceInfo:
-          type: string
-        entity:
-          $ref: '#/components/schemas/EntityInfo'
-        details:
-          type: string
-        status:
-          type: string
-          enum:
-          - ACTIVE
-          - IGNORED
-          - ARCHIVED
-          - RESOLVED
-        statusRelativeTime:
-          type: string
-        comment:
-          type: string
-        cloudProvider:
-          type: string
-        anomalyScore:
-          type: number
-          format: double
-        userFeedback:
-          type: string
-          enum:
-          - TRUE_ANOMALY
-          - TRUE_EXPECTED_ANOMALY
-          - FALSE_ANOMALY
-          - NOT_RESPONDED
-        perspectiveId:
-          type: string
-        perspectiveName:
-          type: string
-        criticality:
-          type: string
-          enum:
-          - CRITICAL
-          - MEDIUM
-          - LOW
-        duration:
-          type: integer
-          format: int32
-        isOngoingAnomaly:
-          type: boolean
-          writeOnly: true
-        expectedCostUpper:
-          type: number
-          format: double
-        expectedCostLower:
-          type: number
-          format: double
-        statusUpdatedBy:
-          type: string
-        statusUpdatedAt:
-          type: integer
-          format: int64
-        statusUpdateRelativeTime:
-          type: integer
-          format: int32
-        dailyBreakdown:
-          type: array
-          items:
-            $ref: '#/components/schemas/AnomalyDailyBreakdown'
-        alertedRecipients:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        costPreferences:
-          $ref: '#/components/schemas/CostPreferences'
-        costCategoryDetails:
-          type: array
-          items:
-            $ref: '#/components/schemas/CCMCostCategoryDTO'
-        ongoingAnomaly:
-          type: boolean
-      description: This object contains details of a cost anomaly
     CcmError:
       type: object
       properties:
@@ -1993,6 +1887,112 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
+    ResponseDTOListAnomalyCostTimeSeries:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnomalyCostTimeSeries'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    GCPViewPreferences:
+      type: object
+      properties:
+        gcpCost:
+          type: string
+          description: Show GCP Cost As
+          enum:
+          - COST
+          - LIST
+        includeDiscounts:
+          type: boolean
+        includeTaxes:
+          type: boolean
+        includePromotions:
+          type: boolean
+        includeNegotiatedSavings:
+          type: boolean
+        includeSubscriptionCredits:
+          type: boolean
+        includeSustainedUseDiscounts:
+          type: boolean
+        includeResourceBasedCudCredits:
+          type: boolean
+        includeLegacyBasedCudCredits:
+          type: boolean
+        includeSpendBasedCudDiscounts:
+          type: boolean
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    AzureViewPreferences:
+      type: object
+      properties:
+        costType:
+          type: string
+          enum:
+          - ACTUAL
+          - AMORTIZED
+          - LIST_ACTUAL
+          - LIST_AMORTIZED
+    AWSViewPreferences:
+      type: object
+      properties:
+        includeDiscounts:
+          type: boolean
+        includeCredits:
+          type: boolean
+        includeRefunds:
+          type: boolean
+        includeTaxes:
+          type: boolean
+        awsCost:
+          type: string
+          description: Show AWS Cost As
+          enum:
+          - AMORTISED
+          - NET_AMORTISED
+          - BLENDED
+          - UNBLENDED
+          - EFFECTIVE
+          - LIST
+    CostPreferences:
+      type: object
+      properties:
+        awsCostPreferences:
+          $ref: '#/components/schemas/AWSViewPreferences'
+        azureCostPreferences:
+          $ref: '#/components/schemas/AzureViewPreferences'
+        gcpCostPreferences:
+          $ref: '#/components/schemas/GCPViewPreferences'
+    ResponseDTOAnomalyData:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/AnomalyData'
+        metaData:
+          type: object
+        correlationId:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

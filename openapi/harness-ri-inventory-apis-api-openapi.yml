@@ -167,19 +167,93 @@ paths:
           description: Invalid request parameters
 components:
   schemas:
-    ApprovalInfo:
+    ListReservedInstancesResponse:
       type: object
       properties:
-        approved_by:
+        ts:
+          type: integer
+          description: Response timestamp
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+        errors:
+          type:
+          - string
+          - 'null'
+          description: Error details, if any
+        response:
+          $ref: '#/components/schemas/ReservedInstancesData'
+    ReservedInstanceDetail:
+      type: object
+      properties:
+        id:
           type: string
-          description: User who approved the change
-        approved_at:
+          description: Unique identifier for the Reserved Instance
+        instance_type:
           type: string
-          format: date-time
-          description: Timestamp of approval
+          description: Type of EC2 instance
+        scope:
+          type: string
+          description: Scope of the reservation (e.g., region)
+        instance_count:
+          type: integer
+          description: Number of instances in this reservation
+        availability_zone:
+          type: string
+          description: Availability zone if applicable
+        platform:
+          type: string
+          description: Operating system platform
+        tenancy:
+          type: string
+          description: Instance tenancy (e.g., Shared, Dedicated)
+        type:
+          type: string
+          description: Type of Reserved Instance (e.g., Convertible)
+        utilization:
+          type: number
+          format: float
+          description: Current utilization percentage
         status:
           type: string
-          description: Current approval status
+          description: Current status of the reservation
+        start_date:
+          type: string
+          format: date-time
+          description: Start date of the reservation
+        expiry_date:
+          type: string
+          format: date-time
+          description: Expiration date of the reservation
+        purchase_term_years:
+          type: string
+          description: Term length of the reservation
+        payment_option:
+          type: string
+          description: Payment option selected
+        upfront_fee:
+          type: number
+          format: double
+          description: Upfront payment amount
+        usage_price:
+          type: number
+          format: double
+          description: Usage price per hour
+        hourly_cost:
+          type: number
+          format: double
+          description: Total hourly cost
+        purchase_date:
+          type: string
+          format: date-time
+          description: Date when the reservation was purchased
+        previously_was:
+          $ref: '#/components/schemas/PreviousStateInfo'
+        approval_info:
+          $ref: '#/components/schemas/ApprovalInfo'
+        is_harness_managed:
+          type: boolean
+          description: Indicates if the reservation is managed by Harness
     ReservedInstanceDetailsResponse:
       type: object
       properties:
@@ -196,23 +270,19 @@ components:
           description: Error details, if any
         response:
           $ref: '#/components/schemas/ReservedInstanceDetail'
-    ReservedInstancesData:
+    ApprovalInfo:
       type: object
       properties:
-        total:
-          type: integer
-          format: int64
-          description: Total number of Reserved Instances
-        pages:
-          type: integer
-          format: int64
-          description: Total number of pages
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReservedInstance'
-        pagination:
-          $ref: '#/components/schemas/PaginationInput'
+        approved_by:
+          type: string
+          description: User who approved the change
+        approved_at:
+          type: string
+          format: date-time
+          description: Timestamp of approval
+        status:
+          type: string
+          description: Current approval status
     ReservedInstance:
       type: object
       properties:
@@ -255,22 +325,34 @@ components:
         is_seed_ri:
           type: boolean
           description: Indicates if this is a seed reservation
-    ListReservedInstancesResponse:
+    PreviousStateInfo:
       type: object
       properties:
-        ts:
-          type: integer
-          description: Response timestamp
-        success:
-          type: boolean
-          description: Indicates if the request was successful
-        errors:
-          type:
-          - string
-          - 'null'
-          description: Error details, if any
-        response:
-          $ref: '#/components/schemas/ReservedInstancesData'
+        instance_type:
+          type: string
+          description: Previous instance type
+        platform:
+          type: string
+          description: Previous platform
+        tenancy:
+          type: string
+          description: Previous tenancy
+    ListReservedInstancesRequest:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/PaginationInput'
+        filters:
+          $ref: '#/components/schemas/InventoryRIAPIFilter'
+        sort_by:
+          type: string
+          description: Field to sort results by
+        sort_order:
+          type: string
+          enum:
+          - asc
+          - desc
+          description: Sort order direction
     InventoryRIAPIFilter:
       type: object
       properties:
@@ -354,34 +436,23 @@ components:
           - Amazon Elastic Compute Cloud - Compute
           default: Amazon Elastic Compute Cloud - Compute
           description: Service to fetch the inventory for.
-    ListReservedInstancesRequest:
+    ReservedInstancesData:
       type: object
       properties:
+        total:
+          type: integer
+          format: int64
+          description: Total number of Reserved Instances
+        pages:
+          type: integer
+          format: int64
+          description: Total number of pages
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReservedInstance'
         pagination:
           $ref: '#/components/schemas/PaginationInput'
-        filters:
-          $ref: '#/components/schemas/InventoryRIAPIFilter'
-        sort_by:
-          type: string
-          description: Field to sort results by
-        sort_order:
-          type: string
-          enum:
-          - asc
-          - desc
-          description: Sort order direction
-    PreviousStateInfo:
-      type: object
-      properties:
-        instance_type:
-          type: string
-          description: Previous instance type
-        platform:
-          type: string
-          description: Previous platform
-        tenancy:
-          type: string
-          description: Previous tenancy
     PaginationInput:
       type: object
       properties:
@@ -393,77 +464,6 @@ components:
           type: integer
           example: 1
           maximum: 100
-    ReservedInstanceDetail:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the Reserved Instance
-        instance_type:
-          type: string
-          description: Type of EC2 instance
-        scope:
-          type: string
-          description: Scope of the reservation (e.g., region)
-        instance_count:
-          type: integer
-          description: Number of instances in this reservation
-        availability_zone:
-          type: string
-          description: Availability zone if applicable
-        platform:
-          type: string
-          description: Operating system platform
-        tenancy:
-          type: string
-          description: Instance tenancy (e.g., Shared, Dedicated)
-        type:
-          type: string
-          description: Type of Reserved Instance (e.g., Convertible)
-        utilization:
-          type: number
-          format: float
-          description: Current utilization percentage
-        status:
-          type: string
-          description: Current status of the reservation
-        start_date:
-          type: string
-          format: date-time
-          description: Start date of the reservation
-        expiry_date:
-          type: string
-          format: date-time
-          description: Expiration date of the reservation
-        purchase_term_years:
-          type: string
-          description: Term length of the reservation
-        payment_option:
-          type: string
-          description: Payment option selected
-        upfront_fee:
-          type: number
-          format: double
-          description: Upfront payment amount
-        usage_price:
-          type: number
-          format: double
-          description: Usage price per hour
-        hourly_cost:
-          type: number
-          format: double
-          description: Total hourly cost
-        purchase_date:
-          type: string
-          format: date-time
-          description: Date when the reservation was purchased
-        previously_was:
-          $ref: '#/components/schemas/PreviousStateInfo'
-        approval_info:
-          $ref: '#/components/schemas/ApprovalInfo'
-        is_harness_managed:
-          type: boolean
-          description: Indicates if the reservation is managed by Harness
   securitySchemes:
     x-api-key:
       name: x-api-key

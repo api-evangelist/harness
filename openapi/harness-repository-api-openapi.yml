@@ -3970,37 +3970,255 @@ paths:
       x-summary-source: derived
 components:
   schemas:
-    OpenapiContentInfo:
+    EnumPullReqType:
+      type:
+      - string
+      - 'null'
+    EnumMergeCheckStatus:
+      type: string
+    TypesCheckPayload:
       properties:
-        latest_commit:
-          $ref: '#/components/schemas/TypesCommit'
+        data: {}
+        kind:
+          $ref: '#/components/schemas/EnumCheckPayloadKind'
+        version:
+          type: string
+      type: object
+    OpenapiUpdateDefaultBranchRequest:
+      properties:
         name:
           type: string
-        path:
-          type: string
-        sha:
-          type: string
-        type:
-          $ref: '#/components/schemas/OpenapiContentType'
       type: object
+    TypesRulesViolations:
+      properties:
+        message:
+          type: string
+        violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type:
+          - array
+          - 'null'
+      type: object
+    RepoMergeQueueFullInfo:
+      properties:
+        active:
+          type: boolean
+        entries:
+          items:
+            $ref: '#/components/schemas/TypesMergeQueueListItem'
+          type:
+          - array
+          - 'null'
+        setup:
+          $ref: '#/components/schemas/ProtectionMergeQueueSetup'
+      type: object
+    TypesMergeQueueListItem:
+      properties:
+        merge_queue_info:
+          $ref: '#/components/schemas/TypesMergeQueueInfo'
+        pull_request:
+          $ref: '#/components/schemas/TypesPullReq'
+      type: object
+    RepoMergeCheck:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type: array
+        mergeable:
+          type: boolean
+      type: object
+    OpenapiCreateRepositoryRequest:
+      properties:
+        default_branch:
+          type: string
+        description:
+          type: string
+        git_ignore:
+          type: string
+        identifier:
+          type: string
+        is_public:
+          type: boolean
+        license:
+          type: string
+        parent_ref:
+          type: string
+        readme:
+          type: boolean
+        tags:
+          $ref: '#/components/schemas/TypesRepoTags'
+        uid:
+          deprecated: true
+          type: string
+      type: object
+    RepoListPathsOutput:
+      properties:
+        directories:
+          items:
+            type: string
+          type: array
+        files:
+          items:
+            type: string
+          type: array
+      type: object
+    GitFileAction:
+      enum:
+      - CREATE
+      - UPDATE
+      - DELETE
+      - MOVE
+      - PATCH_TEXT
+      type: string
+    GitSignature:
+      properties:
+        identity:
+          $ref: '#/components/schemas/GitIdentity'
+        when:
+          format: date-time
+          type: string
+      type: object
+    OpenapiCommitFilesRequest:
+      properties:
+        actions:
+          items:
+            $ref: '#/components/schemas/RepoCommitFileAction'
+          type:
+          - array
+          - 'null'
+        author:
+          $ref: '#/components/schemas/GitIdentity'
+        branch:
+          type: string
+        bypass_rules:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        message:
+          type: string
+        new_branch:
+          type: string
+        title:
+          type: string
+      type: object
+    EnumCheckStatus:
+      enum:
+      - error
+      - failure
+      - failure_ignored
+      - pending
+      - running
+      - success
+      type: string
     EnumPullReqState:
       enum:
       - closed
       - merged
       - open
       type: string
-    TypesRepoActivity:
+    EnumCheckPayloadKind:
+      enum:
+      - ''
+      - markdown
+      - pipeline
+      - raw
+      type: string
+    OpenapiGeneralSettingsRequest:
       properties:
-        payload:
-          $ref: '#/components/schemas/TypesRepoActivityPayload'
-        principal_id:
+        auto_merge_enabled:
+          type:
+          - boolean
+          - 'null'
+        file_size_limit:
+          description: file size limit in bytes
+          type:
+          - integer
+          - 'null'
+        git_lfs_enabled:
+          type:
+          - boolean
+          - 'null'
+      type: object
+    OpenapiCalculateCommitDivergenceRequest:
+      properties:
+        max_count:
           type: integer
-        repo_id:
+        requests:
+          items:
+            $ref: '#/components/schemas/RepoCommitDivergenceRequest'
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesSquashResponse:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type: array
+        dry_run:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        new_head_branch_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    EnumLabelColor:
+      enum:
+      - blue
+      - brown
+      - cyan
+      - green
+      - indigo
+      - lime
+      - mint
+      - orange
+      - pink
+      - purple
+      - red
+      - violet
+      - yellow
+      type: string
+    TypesCommitDivergence:
+      properties:
+        ahead:
           type: integer
-        timestamp:
+        behind:
           type: integer
-        type:
-          $ref: '#/components/schemas/EnumRepoActivityType'
+      type: object
+    TypesCheckCountSummary:
+      properties:
+        error:
+          type: integer
+        failure:
+          type: integer
+        failure_ignored:
+          type: integer
+        pending:
+          type: integer
+        running:
+          type: integer
+        success:
+          type: integer
+      type: object
+    OpenapiSecuritySettingsRequest:
+      properties:
+        principal_committer_match:
+          type:
+          - boolean
+          - 'null'
+        secret_scanning_enabled:
+          type:
+          - boolean
+          - 'null'
+        vulnerability_scanning_mode:
+          $ref: '#/components/schemas/SettingsVulnerabilityScanningMode'
       type: object
     TypesCommitTag:
       properties:
@@ -4021,17 +4239,23 @@ components:
         title:
           type: string
       type: object
-    EnumPullReqSubState:
-      enum:
-      - ''
-      - auto_merge
-      - merge_queue
-      type: string
-    RepoPathsDetailsOutput:
+    TypesViolation:
       properties:
-        details:
+        code:
+          type: string
+        message:
+          type: string
+        params:
+          items: {}
+          type:
+          - array
+          - 'null'
+      type: object
+    RepoLinkedSyncOutput:
+      properties:
+        branches:
           items:
-            $ref: '#/components/schemas/TypesPathDetails'
+            $ref: '#/components/schemas/HookReferenceUpdate'
           type:
           - array
           - 'null'
@@ -4049,13 +4273,37 @@ components:
         sha:
           $ref: '#/components/schemas/ShaSHA'
       type: object
-    EnumCheckPayloadKind:
-      enum:
-      - ''
-      - markdown
-      - pipeline
-      - raw
+    ImporterProvider:
+      properties:
+        host:
+          type: string
+        password:
+          type: string
+        type:
+          $ref: '#/components/schemas/ImporterProviderType'
+        username:
+          type: string
+      type: object
+    ShaSHA:
+      description: Git object hash
       type: string
+    TypesGitSignatureResult:
+      properties:
+        created:
+          type: integer
+        key_fingerprint:
+          type: string
+        key_id:
+          type: string
+        key_scheme:
+          $ref: '#/components/schemas/EnumPublicKeyScheme'
+        result:
+          $ref: '#/components/schemas/EnumGitSignatureResult'
+        updated:
+          type: integer
+      type:
+      - object
+      - 'null'
     RepoSubmoduleContent:
       properties:
         commit_sha:
@@ -4063,8 +4311,19 @@ components:
         url:
           type: string
       type: object
-    TypesSquashResponse:
+    RepoPathsDetailsOutput:
       properties:
+        details:
+          items:
+            $ref: '#/components/schemas/TypesPathDetails'
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesMergeCommitResponse:
+      properties:
+        already_ancestor:
+          type: boolean
         conflict_files:
           items:
             type: string
@@ -4080,107 +4339,64 @@ components:
             $ref: '#/components/schemas/TypesRuleViolations'
           type: array
       type: object
-    TypesForkSyncOutput:
+    GitIdentity:
       properties:
-        already_ancestor:
-          type: boolean
-        new_commit_sha:
-          $ref: '#/components/schemas/ShaSHA'
-      type: object
-    HookReferenceUpdate:
-      properties:
-        new:
-          $ref: '#/components/schemas/ShaSHA'
-        old:
-          $ref: '#/components/schemas/ShaSHA'
-        ref:
+        email:
           type: string
-      type: object
-    TypesRepositorySummary:
-      properties:
-        branch_count:
-          type: integer
-        default_branch_commit_count:
-          type: integer
-        pull_req_summary:
-          $ref: '#/components/schemas/TypesRepositoryPullReqSummary'
-        tag_count:
-          type: integer
-      type: object
-    EnumContentEncodingType:
-      enum:
-      - base64
-      - utf8
-      type: string
-    TypesCreateBranchOutput:
-      properties:
-        commit:
-          $ref: '#/components/schemas/TypesCommit'
-        dry_run_rules:
-          type: boolean
         name:
           type: string
+      type:
+      - object
+      - 'null'
+    TypesCommit:
+      properties:
+        author:
+          $ref: '#/components/schemas/TypesSignature'
+        committer:
+          $ref: '#/components/schemas/TypesSignature'
+        message:
+          type: string
+        parent_shas:
+          items:
+            $ref: '#/components/schemas/ShaSHA'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+        signature:
+          $ref: '#/components/schemas/TypesGitSignatureResult'
+        stats:
+          $ref: '#/components/schemas/TypesCommitStats'
+        title:
+          type: string
+      type: object
+    TypesDeleteBranchOutput:
+      properties:
+        dry_run_rules:
+          type: boolean
         rule_violations:
           items:
             $ref: '#/components/schemas/TypesRuleViolations'
           type: array
-        sha:
-          $ref: '#/components/schemas/ShaSHA'
       type: object
-    TypesRepositoryCore:
+    TypesPrincipalInfo:
       properties:
-        default_branch:
-          type: string
-        fork_id:
+        created:
           type: integer
+        display_name:
+          type: string
+        email:
+          type: string
         id:
           type: integer
-        identifier:
-          type: string
-        parent_id:
-          type: integer
-        path:
-          type: string
         type:
-          $ref: '#/components/schemas/EnumRepoType'
-      type: object
-    SettingsSecuritySettings:
-      properties:
-        principal_committer_match:
-          type:
-          - boolean
-          - 'null'
-        secret_scanning_enabled:
-          type:
-          - boolean
-          - 'null'
-        vulnerability_scanning_mode:
-          $ref: '#/components/schemas/SettingsVulnerabilityScanningMode'
-      type: object
-    GitBlamePartPrevious:
-      properties:
-        commit_sha:
-          $ref: '#/components/schemas/ShaSHA'
-        file_name:
+          $ref: '#/components/schemas/EnumPrincipalType'
+        uid:
           type: string
-      type: object
-    TypesListCommitResponse:
-      properties:
-        commits:
-          items:
-            $ref: '#/components/schemas/TypesCommit'
-          type:
-          - array
-          - 'null'
-        rename_details:
-          items:
-            $ref: '#/components/schemas/TypesRenameDetails'
-          type:
-          - array
-          - 'null'
-        total_commits:
+        updated:
           type: integer
-      type: object
+      type:
+      - object
+      - 'null'
     TypesLabelPullReqAssignmentInfo:
       properties:
         color:
@@ -4204,112 +4420,6 @@ components:
           - integer
           - 'null'
       type: object
-    GitCommit:
-      properties:
-        author:
-          $ref: '#/components/schemas/GitSignature'
-        committer:
-          $ref: '#/components/schemas/GitSignature'
-        file_stats:
-          items:
-            $ref: '#/components/schemas/GitCommitFileStats'
-          type: array
-        message:
-          type: string
-        parent_shas:
-          items:
-            $ref: '#/components/schemas/ShaSHA'
-          type: array
-        sha:
-          $ref: '#/components/schemas/ShaSHA'
-        title:
-          type: string
-      type:
-      - object
-      - 'null'
-    OpenapiContentType:
-      enum:
-      - file
-      - dir
-      - symlink
-      - submodule
-      type: string
-    TypesDeleteBranchOutput:
-      properties:
-        dry_run_rules:
-          type: boolean
-        rule_violations:
-          items:
-            $ref: '#/components/schemas/TypesRuleViolations'
-          type: array
-      type: object
-    UsererrorError:
-      properties:
-        message:
-          type: string
-        values:
-          additionalProperties: {}
-          type: object
-      type: object
-    TypesRepoTags:
-      additionalProperties:
-        type: string
-      type:
-      - object
-      - 'null'
-    TypesBranchExtended:
-      properties:
-        check_summary:
-          $ref: '#/components/schemas/TypesCheckCountSummary'
-        commit:
-          $ref: '#/components/schemas/TypesCommit'
-        commit_divergence:
-          $ref: '#/components/schemas/TypesCommitDivergence'
-        is_default:
-          type: boolean
-        name:
-          type: string
-        pull_requests:
-          items:
-            $ref: '#/components/schemas/TypesPullReq'
-          type: array
-        rules:
-          items:
-            $ref: '#/components/schemas/TypesRuleInfo'
-          type: array
-        sha:
-          $ref: '#/components/schemas/ShaSHA'
-      type: object
-    TypesGitSignatureResult:
-      properties:
-        created:
-          type: integer
-        key_fingerprint:
-          type: string
-        key_id:
-          type: string
-        key_scheme:
-          $ref: '#/components/schemas/EnumPublicKeyScheme'
-        result:
-          $ref: '#/components/schemas/EnumGitSignatureResult'
-        updated:
-          type: integer
-      type:
-      - object
-      - 'null'
-    EnumMergeCheckStatus:
-      type: string
-    OpenapiRestoreRequest:
-      properties:
-        new_identifier:
-          type:
-          - string
-          - 'null'
-        new_parent_ref:
-          type:
-          - string
-          - 'null'
-      type: object
     OpenapiUpdateRepoRequest:
       properties:
         description:
@@ -4320,120 +4430,6 @@ components:
           $ref: '#/components/schemas/EnumRepoState'
         tags:
           $ref: '#/components/schemas/TypesRepoTags'
-      type: object
-    RepoMergeCheck:
-      properties:
-        conflict_files:
-          items:
-            type: string
-          type: array
-        mergeable:
-          type: boolean
-      type: object
-    OpenapiPostRawDiffRequest:
-      items:
-        $ref: '#/components/schemas/ApiFileDiffRequest'
-      type:
-      - array
-      - 'null'
-    EnumFileDiffStatus:
-      type: string
-    OpenapiContent:
-      oneOf:
-      - $ref: '#/components/schemas/RepoFileContent'
-      - $ref: '#/components/schemas/OpenapiDirContent'
-      - $ref: '#/components/schemas/RepoSymlinkContent'
-      - $ref: '#/components/schemas/RepoSubmoduleContent'
-      type: object
-    TypesCommitDivergence:
-      properties:
-        ahead:
-          type: integer
-        behind:
-          type: integer
-      type: object
-    TypesRuleViolations:
-      properties:
-        bypassable:
-          type: boolean
-        bypassed:
-          type: boolean
-        rule:
-          $ref: '#/components/schemas/TypesRuleInfo'
-        violations:
-          items:
-            $ref: '#/components/schemas/TypesViolation'
-          type:
-          - array
-          - 'null'
-      type: object
-    GitCommitFileStats:
-      type: object
-    OpenapiDirContent:
-      properties:
-        entries:
-          items:
-            $ref: '#/components/schemas/OpenapiContentInfo'
-          type:
-          - array
-          - 'null'
-      type: object
-    TypesSignature:
-      properties:
-        identity:
-          $ref: '#/components/schemas/TypesIdentity'
-        when:
-          format: date-time
-          type: string
-      type: object
-    EnumMergeMethod:
-      enum:
-      - fast-forward
-      - merge
-      - rebase
-      - squash
-      type: string
-    GitBlamePart:
-      properties:
-        commit:
-          $ref: '#/components/schemas/GitCommit'
-        lines:
-          items:
-            type: string
-          type:
-          - array
-          - 'null'
-        previous:
-          $ref: '#/components/schemas/GitBlamePartPrevious'
-      type: object
-    ProtectionMergeQueueSetup:
-      properties:
-        checks_concurrency:
-          type: integer
-        group_size:
-          type: integer
-        max_check_duration_seconds:
-          type: integer
-        required_checks:
-          items:
-            type: string
-          type:
-          - array
-          - 'null'
-      type: object
-    EnumCheckStatus:
-      enum:
-      - error
-      - failure
-      - failure_ignored
-      - pending
-      - running
-      - success
-      type: string
-    RepoSoftDeleteResponse:
-      properties:
-        deleted_at:
-          type: integer
       type: object
     GitFileDiff:
       properties:
@@ -4463,7 +4459,68 @@ components:
         status:
           $ref: '#/components/schemas/EnumFileDiffStatus'
       type: object
-    OpenapiSecuritySettingsRequest:
+    TypesRenameDetails:
+      properties:
+        commit_sha_after:
+          type: string
+        commit_sha_before:
+          type: string
+        new_path:
+          type: string
+        old_path:
+          type: string
+      type: object
+    EnumFileDiffStatus:
+      type: string
+    EnumPrincipalType:
+      enum:
+      - service
+      - serviceaccount
+      - user
+      type: string
+    RepoSoftDeleteResponse:
+      properties:
+        deleted_at:
+          type: integer
+      type: object
+    TypesRuleViolations:
+      properties:
+        bypassable:
+          type: boolean
+        bypassed:
+          type: boolean
+        rule:
+          $ref: '#/components/schemas/TypesRuleInfo'
+        violations:
+          items:
+            $ref: '#/components/schemas/TypesViolation'
+          type:
+          - array
+          - 'null'
+      type: object
+    TypesRepositoryPullReqSummary:
+      properties:
+        closed_count:
+          type: integer
+        merged_count:
+          type: integer
+        open_count:
+          type: integer
+      type: object
+    OpenapiPostRawDiffRequest:
+      items:
+        $ref: '#/components/schemas/ApiFileDiffRequest'
+      type:
+      - array
+      - 'null'
+    GitBlamePartPrevious:
+      properties:
+        commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        file_name:
+          type: string
+      type: object
+    SettingsSecuritySettings:
       properties:
         principal_committer_match:
           type:
@@ -4476,308 +4533,55 @@ components:
         vulnerability_scanning_mode:
           $ref: '#/components/schemas/SettingsVulnerabilityScanningMode'
       type: object
-    ImporterPipelineOption:
+    EnumMergeQueueEntryState:
       enum:
-      - convert
-      - ignore
+      - checks_in_progress
+      - checks_pending
+      - merge_group
+      - merge_pending
       type: string
-    TypesRuleInfo:
+    GitCommit:
       properties:
-        identifier:
-          type: string
-        repo_path:
-          type: string
-        space_path:
-          type: string
-        state:
-          $ref: '#/components/schemas/EnumRuleState'
-        type:
-          $ref: '#/components/schemas/EnumRuleType'
-      type: object
-    TypesIdentity:
-      properties:
-        email:
-          type: string
-        name:
-          type: string
-      type: object
-    EnumPrincipalType:
-      enum:
-      - service
-      - serviceaccount
-      - user
-      type: string
-    TypesMergeViolations:
-      properties:
-        conflict_files:
+        author:
+          $ref: '#/components/schemas/GitSignature'
+        committer:
+          $ref: '#/components/schemas/GitSignature'
+        file_stats:
           items:
-            type: string
+            $ref: '#/components/schemas/GitCommitFileStats'
           type: array
         message:
           type: string
-        rule_violations:
+        parent_shas:
           items:
-            $ref: '#/components/schemas/TypesRuleViolations'
+            $ref: '#/components/schemas/ShaSHA'
           type: array
-      type: object
-    TypesRepoActivityPayload: {}
-    EnumGitSignatureResult:
-      enum:
-      - bad
-      - good
-      - invalid
-      - key_expired
-      - revoked
-      - unsupported
-      - unverified
-      type: string
-    TypesChangeStats:
-      properties:
-        changes:
-          type: integer
-        deletions:
-          type: integer
-        insertions:
-          type: integer
-      type: object
-    TypesCommitFileStats:
-      properties:
-        changes:
-          type: integer
-        deletions:
-          type: integer
-        insertions:
-          type: integer
-        old_path:
-          type: string
-        path:
-          type: string
-        status:
-          $ref: '#/components/schemas/EnumFileDiffStatus'
-      type: object
-    OpenapiCreateRepositoryRequest:
-      properties:
-        default_branch:
-          type: string
-        description:
-          type: string
-        git_ignore:
-          type: string
-        identifier:
-          type: string
-        is_public:
-          type: boolean
-        license:
-          type: string
-        parent_ref:
-          type: string
-        readme:
-          type: boolean
-        tags:
-          $ref: '#/components/schemas/TypesRepoTags'
-        uid:
-          deprecated: true
-          type: string
-      type: object
-    ShaSHA:
-      description: Git object hash
-      type: string
-    TypesRebaseResponse:
-      properties:
-        already_ancestor:
-          type: boolean
-        conflict_files:
-          items:
-            type: string
-          type: array
-        dry_run:
-          type: boolean
-        dry_run_rules:
-          type: boolean
-        new_head_branch_sha:
+        sha:
           $ref: '#/components/schemas/ShaSHA'
-        rule_violations:
-          items:
-            $ref: '#/components/schemas/TypesRuleViolations'
-          type: array
-      type: object
-    OpenapiCreateTagRequest:
-      properties:
-        bypass_rules:
-          type: boolean
-        dry_run_rules:
-          type: boolean
-        message:
+        title:
           type: string
-        name:
-          type: string
-        target:
-          type: string
-      type: object
-    ApiFileDiffRequest:
-      properties:
-        path:
-          type: string
-        start_line:
-          type: integer
-      type: object
-    EnumRepoState:
-      type:
-      - integer
-      - 'null'
-    EnumRuleType:
-      enum:
-      - branch
-      - push
-      - tag
-      type: string
-    EnumRepoType:
-      type: string
-    TypesRepoLangStat:
-      type: object
-    TypesCheckCountSummary:
-      properties:
-        error:
-          type: integer
-        failure:
-          type: integer
-        failure_ignored:
-          type: integer
-        pending:
-          type: integer
-        running:
-          type: integer
-        success:
-          type: integer
-      type: object
-    TypesMergeQueueListItem:
-      properties:
-        merge_queue_info:
-          $ref: '#/components/schemas/TypesMergeQueueInfo'
-        pull_request:
-          $ref: '#/components/schemas/TypesPullReq'
-      type: object
-    RepoListPathsOutput:
-      properties:
-        directories:
-          items:
-            type: string
-          type: array
-        files:
-          items:
-            type: string
-          type: array
-      type: object
-    TypesCommitFilesResponse:
-      properties:
-        changed_files:
-          items:
-            $ref: '#/components/schemas/TypesFileReference'
-          type:
-          - array
-          - 'null'
-        commit_id:
-          $ref: '#/components/schemas/ShaSHA'
-        dry_run_rules:
-          type: boolean
-        rule_violations:
-          items:
-            $ref: '#/components/schemas/TypesRuleViolations'
-          type: array
-      type: object
-    TypesPullReqCheck:
-      properties:
-        bypassable:
-          type: boolean
-        check:
-          $ref: '#/components/schemas/TypesCheck'
-        required:
-          type: boolean
-      type: object
-    TypesViolation:
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        params:
-          items: {}
-          type:
-          - array
-          - 'null'
-      type: object
-    TypesCheck:
-      properties:
-        bypassed_by:
-          type:
-          - integer
-          - 'null'
-        created:
-          type: integer
-        ended:
-          type: integer
-        id:
-          type: integer
-        identifier:
-          type: string
-        link:
-          type: string
-        metadata: {}
-        payload:
-          $ref: '#/components/schemas/TypesCheckPayload'
-        reported_by:
-          $ref: '#/components/schemas/TypesPrincipalInfo'
-        started:
-          type: integer
-        status:
-          $ref: '#/components/schemas/EnumCheckStatus'
-        summary:
-          type: string
-        updated:
-          type: integer
-      type: object
-    TypesCommitStats:
-      properties:
-        files:
-          items:
-            $ref: '#/components/schemas/TypesCommitFileStats'
-          type: array
-        total:
-          $ref: '#/components/schemas/TypesChangeStats'
-      type: object
-    ImporterProviderType:
-      enum:
-      - github
-      - gitlab
-      - bitbucket
-      - stash
-      - gitea
-      - gogs
-      - azure
-      type: string
-    TypesMergeQueueInfo:
-      properties:
-        checks:
-          items:
-            $ref: '#/components/schemas/TypesPullReqCheck'
-          type:
-          - array
-          - 'null'
-        checks_commit_sha:
-          $ref: '#/components/schemas/ShaSHA'
-        merge_commit_sha:
-          $ref: '#/components/schemas/ShaSHA'
-        pull_requests_ahead:
-          type: integer
-        state:
-          $ref: '#/components/schemas/EnumMergeQueueEntryState'
       type:
       - object
       - 'null'
-    EnumPublicKeyScheme:
+    RepoFileContent:
+      properties:
+        data:
+          type: string
+        data_size:
+          type: integer
+        encoding:
+          $ref: '#/components/schemas/EnumContentEncodingType'
+        lfs_object_id:
+          type: string
+        lfs_object_size:
+          type: integer
+        size:
+          type: integer
+      type: object
+    EnumContentEncodingType:
       enum:
-      - pgp
-      - ssh
+      - base64
+      - utf8
       type: string
     RepoRepositoryOutput:
       properties:
@@ -4853,6 +4657,200 @@ components:
         upstream:
           $ref: '#/components/schemas/TypesRepositoryCore'
       type: object
+    TypesMergeViolations:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type: array
+        message:
+          type: string
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    TypesCommitStats:
+      properties:
+        files:
+          items:
+            $ref: '#/components/schemas/TypesCommitFileStats'
+          type: array
+        total:
+          $ref: '#/components/schemas/TypesChangeStats'
+      type: object
+    TypesRepositoryCore:
+      properties:
+        default_branch:
+          type: string
+        fork_id:
+          type: integer
+        id:
+          type: integer
+        identifier:
+          type: string
+        parent_id:
+          type: integer
+        path:
+          type: string
+        type:
+          $ref: '#/components/schemas/EnumRepoType'
+      type: object
+    TypesForkSyncConflict:
+      properties:
+        conflict_files:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+        message:
+          type: string
+      type: object
+    OpenapiDirContent:
+      properties:
+        entries:
+          items:
+            $ref: '#/components/schemas/OpenapiContentInfo'
+          type:
+          - array
+          - 'null'
+      type: object
+    ApiFileDiffRequest:
+      properties:
+        path:
+          type: string
+        start_line:
+          type: integer
+      type: object
+    TypesRepoActivity:
+      properties:
+        payload:
+          $ref: '#/components/schemas/TypesRepoActivityPayload'
+        principal_id:
+          type: integer
+        repo_id:
+          type: integer
+        timestamp:
+          type: integer
+        type:
+          $ref: '#/components/schemas/EnumRepoActivityType'
+      type: object
+    UsererrorError:
+      properties:
+        message:
+          type: string
+        values:
+          additionalProperties: {}
+          type: object
+      type: object
+    OpenapiCreateTagRequest:
+      properties:
+        bypass_rules:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        message:
+          type: string
+        name:
+          type: string
+        target:
+          type: string
+      type: object
+    EnumRepoType:
+      type: string
+    TypesCreateBranchOutput:
+      properties:
+        commit:
+          $ref: '#/components/schemas/TypesCommit'
+        dry_run_rules:
+          type: boolean
+        name:
+          type: string
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    EnumRepoActivityType:
+      enum:
+      - branch-created
+      - branch-deleted
+      - branch-updated
+      type: string
+    RepoCommitDivergenceRequest:
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+      type: object
+    EnumRuleState:
+      enum:
+      - active
+      - disabled
+      - monitor
+      type:
+      - string
+      - 'null'
+    TypesCheck:
+      properties:
+        bypassed_by:
+          type:
+          - integer
+          - 'null'
+        created:
+          type: integer
+        ended:
+          type: integer
+        id:
+          type: integer
+        identifier:
+          type: string
+        link:
+          type: string
+        metadata: {}
+        payload:
+          $ref: '#/components/schemas/TypesCheckPayload'
+        reported_by:
+          $ref: '#/components/schemas/TypesPrincipalInfo'
+        started:
+          type: integer
+        status:
+          $ref: '#/components/schemas/EnumCheckStatus'
+        summary:
+          type: string
+        updated:
+          type: integer
+      type: object
+    RepoSymlinkContent:
+      properties:
+        size:
+          type: integer
+        target:
+          type: string
+      type: object
+    TypesMergeQueueInfo:
+      properties:
+        checks:
+          items:
+            $ref: '#/components/schemas/TypesPullReqCheck'
+          type:
+          - array
+          - 'null'
+        checks_commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        merge_commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        pull_requests_ahead:
+          type: integer
+        state:
+          $ref: '#/components/schemas/EnumMergeQueueEntryState'
+      type:
+      - object
+      - 'null'
     TypesPathDetails:
       properties:
         last_commit:
@@ -4860,46 +4858,19 @@ components:
         path:
           type: string
       type: object
-    RepoLinkedSyncOutput:
-      properties:
-        branches:
-          items:
-            $ref: '#/components/schemas/HookReferenceUpdate'
-          type:
-          - array
-          - 'null'
+    TypesRepoLangStat:
       type: object
-    TypesRulesViolations:
+    TypesRepositorySummary:
       properties:
-        message:
-          type: string
-        violations:
-          items:
-            $ref: '#/components/schemas/TypesRuleViolations'
-          type:
-          - array
-          - 'null'
+        branch_count:
+          type: integer
+        default_branch_commit_count:
+          type: integer
+        pull_req_summary:
+          $ref: '#/components/schemas/TypesRepositoryPullReqSummary'
+        tag_count:
+          type: integer
       type: object
-    OpenapiCreateBranchRequest:
-      properties:
-        bypass_rules:
-          type: boolean
-        dry_run_rules:
-          type: boolean
-        name:
-          type: string
-        target:
-          type: string
-      type: object
-    GitIdentity:
-      properties:
-        email:
-          type: string
-        name:
-          type: string
-      type:
-      - object
-      - 'null'
     TypesPullReqStats:
       properties:
         additions:
@@ -4923,25 +4894,12 @@ components:
         unresolved_count:
           type: integer
       type: object
-    TypesMergeCommitResponse:
-      properties:
-        already_ancestor:
-          type: boolean
-        conflict_files:
-          items:
-            type: string
-          type: array
-        dry_run:
-          type: boolean
-        dry_run_rules:
-          type: boolean
-        new_head_branch_sha:
-          $ref: '#/components/schemas/ShaSHA'
-        rule_violations:
-          items:
-            $ref: '#/components/schemas/TypesRuleViolations'
-          type: array
-      type: object
+    TypesRepoTags:
+      additionalProperties:
+        type: string
+      type:
+      - object
+      - 'null'
     TypesDiffStats:
       properties:
         additions:
@@ -4961,80 +4919,36 @@ components:
           - integer
           - 'null'
       type: object
-    EnumLabelColor:
+    TypesForkSyncOutput:
+      properties:
+        already_ancestor:
+          type: boolean
+        new_commit_sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    TypesRepoActivityPayload: {}
+    OpenapiContent:
+      oneOf:
+      - $ref: '#/components/schemas/RepoFileContent'
+      - $ref: '#/components/schemas/OpenapiDirContent'
+      - $ref: '#/components/schemas/RepoSymlinkContent'
+      - $ref: '#/components/schemas/RepoSubmoduleContent'
+      type: object
+    TypesChangeStats:
+      properties:
+        changes:
+          type: integer
+        deletions:
+          type: integer
+        insertions:
+          type: integer
+      type: object
+    EnumPublicKeyScheme:
       enum:
-      - blue
-      - brown
-      - cyan
-      - green
-      - indigo
-      - lime
-      - mint
-      - orange
-      - pink
-      - purple
-      - red
-      - violet
-      - yellow
+      - pgp
+      - ssh
       type: string
-    TypesRenameDetails:
-      properties:
-        commit_sha_after:
-          type: string
-        commit_sha_before:
-          type: string
-        new_path:
-          type: string
-        old_path:
-          type: string
-      type: object
-    RepoLinkedSourceOutput:
-      properties:
-        url:
-          type: string
-      type: object
-    OpenapiUpdateDefaultBranchRequest:
-      properties:
-        name:
-          type: string
-      type: object
-    TypesRepositoryPullReqSummary:
-      properties:
-        closed_count:
-          type: integer
-        merged_count:
-          type: integer
-        open_count:
-          type: integer
-      type: object
-    OpenapiCalculateCommitDivergenceRequest:
-      properties:
-        max_count:
-          type: integer
-        requests:
-          items:
-            $ref: '#/components/schemas/RepoCommitDivergenceRequest'
-          type:
-          - array
-          - 'null'
-      type: object
-    TypesCheckPayload:
-      properties:
-        data: {}
-        kind:
-          $ref: '#/components/schemas/EnumCheckPayloadKind'
-        version:
-          type: string
-      type: object
-    GitFileAction:
-      enum:
-      - CREATE
-      - UPDATE
-      - DELETE
-      - MOVE
-      - PATCH_TEXT
-      type: string
-    OpenapiGeneralSettingsRequest:
+    SettingsGeneralSettings:
       properties:
         auto_merge_enabled:
           type:
@@ -5049,6 +4963,187 @@ components:
           type:
           - boolean
           - 'null'
+      type: object
+    ImporterProviderType:
+      enum:
+      - github
+      - gitlab
+      - bitbucket
+      - stash
+      - gitea
+      - gogs
+      - azure
+      type: string
+    OpenapiContentInfo:
+      properties:
+        latest_commit:
+          $ref: '#/components/schemas/TypesCommit'
+        name:
+          type: string
+        path:
+          type: string
+        sha:
+          type: string
+        type:
+          $ref: '#/components/schemas/OpenapiContentType'
+      type: object
+    EnumMergeMethod:
+      enum:
+      - fast-forward
+      - merge
+      - rebase
+      - squash
+      type: string
+    TypesPullReqCheck:
+      properties:
+        bypassable:
+          type: boolean
+        check:
+          $ref: '#/components/schemas/TypesCheck'
+        required:
+          type: boolean
+      type: object
+    TypesListCommitResponse:
+      properties:
+        commits:
+          items:
+            $ref: '#/components/schemas/TypesCommit'
+          type:
+          - array
+          - 'null'
+        rename_details:
+          items:
+            $ref: '#/components/schemas/TypesRenameDetails'
+          type:
+          - array
+          - 'null'
+        total_commits:
+          type: integer
+      type: object
+    GitBlamePart:
+      properties:
+        commit:
+          $ref: '#/components/schemas/GitCommit'
+        lines:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+        previous:
+          $ref: '#/components/schemas/GitBlamePartPrevious'
+      type: object
+    TypesFileReference:
+      properties:
+        blob_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        path:
+          type: string
+      type: object
+    OpenapiCreateBranchRequest:
+      properties:
+        bypass_rules:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        name:
+          type: string
+        target:
+          type: string
+      type: object
+    TypesBranchExtended:
+      properties:
+        check_summary:
+          $ref: '#/components/schemas/TypesCheckCountSummary'
+        commit:
+          $ref: '#/components/schemas/TypesCommit'
+        commit_divergence:
+          $ref: '#/components/schemas/TypesCommitDivergence'
+        is_default:
+          type: boolean
+        name:
+          type: string
+        pull_requests:
+          items:
+            $ref: '#/components/schemas/TypesPullReq'
+          type: array
+        rules:
+          items:
+            $ref: '#/components/schemas/TypesRuleInfo'
+          type: array
+        sha:
+          $ref: '#/components/schemas/ShaSHA'
+      type: object
+    TypesIdentity:
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+      type: object
+    TypesSignature:
+      properties:
+        identity:
+          $ref: '#/components/schemas/TypesIdentity'
+        when:
+          format: date-time
+          type: string
+      type: object
+    ProtectionMergeQueueSetup:
+      properties:
+        checks_concurrency:
+          type: integer
+        group_size:
+          type: integer
+        max_check_duration_seconds:
+          type: integer
+        required_checks:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+      type: object
+    EnumGitSignatureResult:
+      enum:
+      - bad
+      - good
+      - invalid
+      - key_expired
+      - revoked
+      - unsupported
+      - unverified
+      type: string
+    OpenapiPathsDetailsRequest:
+      properties:
+        paths:
+          items:
+            type: string
+          type:
+          - array
+          - 'null'
+      type: object
+    OpenapiRestoreRequest:
+      properties:
+        new_identifier:
+          type:
+          - string
+          - 'null'
+        new_parent_ref:
+          type:
+          - string
+          - 'null'
+      type: object
+    HookReferenceUpdate:
+      properties:
+        new:
+          $ref: '#/components/schemas/ShaSHA'
+        old:
+          $ref: '#/components/schemas/ShaSHA'
+        ref:
+          type: string
+      type: object
+    GitCommitFileStats:
       type: object
     OpenapiGetContentOutput:
       properties:
@@ -5065,11 +5160,103 @@ components:
         type:
           $ref: '#/components/schemas/OpenapiContentType'
       type: object
-    RepoCommitDivergenceRequest:
+    TypesCommitFileStats:
       properties:
-        from:
+        changes:
+          type: integer
+        deletions:
+          type: integer
+        insertions:
+          type: integer
+        old_path:
           type: string
-        to:
+        path:
+          type: string
+        status:
+          $ref: '#/components/schemas/EnumFileDiffStatus'
+      type: object
+    EnumRepoState:
+      type:
+      - integer
+      - 'null'
+    SettingsVulnerabilityScanningMode:
+      enum:
+      - disabled
+      - detect
+      - block
+      type:
+      - string
+      - 'null'
+    TypesRebaseResponse:
+      properties:
+        already_ancestor:
+          type: boolean
+        conflict_files:
+          items:
+            type: string
+          type: array
+        dry_run:
+          type: boolean
+        dry_run_rules:
+          type: boolean
+        new_head_branch_sha:
+          $ref: '#/components/schemas/ShaSHA'
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    ImporterPipelineOption:
+      enum:
+      - convert
+      - ignore
+      type: string
+    OpenapiContentType:
+      enum:
+      - file
+      - dir
+      - symlink
+      - submodule
+      type: string
+    TypesRuleInfo:
+      properties:
+        identifier:
+          type: string
+        repo_path:
+          type: string
+        space_path:
+          type: string
+        state:
+          $ref: '#/components/schemas/EnumRuleState'
+        type:
+          $ref: '#/components/schemas/EnumRuleType'
+      type: object
+    EnumRuleType:
+      enum:
+      - branch
+      - push
+      - tag
+      type: string
+    TypesCommitFilesResponse:
+      properties:
+        changed_files:
+          items:
+            $ref: '#/components/schemas/TypesFileReference'
+          type:
+          - array
+          - 'null'
+        commit_id:
+          $ref: '#/components/schemas/ShaSHA'
+        dry_run_rules:
+          type: boolean
+        rule_violations:
+          items:
+            $ref: '#/components/schemas/TypesRuleViolations'
+          type: array
+      type: object
+    RepoLinkedSourceOutput:
+      properties:
+        url:
           type: string
       type: object
     TypesPullReq:
@@ -5161,199 +5348,12 @@ components:
         updated:
           type: integer
       type: object
-    SettingsGeneralSettings:
-      properties:
-        auto_merge_enabled:
-          type:
-          - boolean
-          - 'null'
-        file_size_limit:
-          description: file size limit in bytes
-          type:
-          - integer
-          - 'null'
-        git_lfs_enabled:
-          type:
-          - boolean
-          - 'null'
-      type: object
-    EnumRuleState:
+    EnumPullReqSubState:
       enum:
-      - active
-      - disabled
-      - monitor
-      type:
-      - string
-      - 'null'
-    EnumPullReqType:
-      type:
-      - string
-      - 'null'
-    OpenapiCommitFilesRequest:
-      properties:
-        actions:
-          items:
-            $ref: '#/components/schemas/RepoCommitFileAction'
-          type:
-          - array
-          - 'null'
-        author:
-          $ref: '#/components/schemas/GitIdentity'
-        branch:
-          type: string
-        bypass_rules:
-          type: boolean
-        dry_run_rules:
-          type: boolean
-        message:
-          type: string
-        new_branch:
-          type: string
-        title:
-          type: string
-      type: object
-    ImporterProvider:
-      properties:
-        host:
-          type: string
-        password:
-          type: string
-        type:
-          $ref: '#/components/schemas/ImporterProviderType'
-        username:
-          type: string
-      type: object
-    RepoMergeQueueFullInfo:
-      properties:
-        active:
-          type: boolean
-        entries:
-          items:
-            $ref: '#/components/schemas/TypesMergeQueueListItem'
-          type:
-          - array
-          - 'null'
-        setup:
-          $ref: '#/components/schemas/ProtectionMergeQueueSetup'
-      type: object
-    TypesFileReference:
-      properties:
-        blob_sha:
-          $ref: '#/components/schemas/ShaSHA'
-        path:
-          type: string
-      type: object
-    TypesForkSyncConflict:
-      properties:
-        conflict_files:
-          items:
-            type: string
-          type:
-          - array
-          - 'null'
-        message:
-          type: string
-      type: object
-    GitSignature:
-      properties:
-        identity:
-          $ref: '#/components/schemas/GitIdentity'
-        when:
-          format: date-time
-          type: string
-      type: object
-    EnumRepoActivityType:
-      enum:
-      - branch-created
-      - branch-deleted
-      - branch-updated
+      - ''
+      - auto_merge
+      - merge_queue
       type: string
-    SettingsVulnerabilityScanningMode:
-      enum:
-      - disabled
-      - detect
-      - block
-      type:
-      - string
-      - 'null'
-    TypesPrincipalInfo:
-      properties:
-        created:
-          type: integer
-        display_name:
-          type: string
-        email:
-          type: string
-        id:
-          type: integer
-        type:
-          $ref: '#/components/schemas/EnumPrincipalType'
-        uid:
-          type: string
-        updated:
-          type: integer
-      type:
-      - object
-      - 'null'
-    RepoSymlinkContent:
-      properties:
-        size:
-          type: integer
-        target:
-          type: string
-      type: object
-    EnumMergeQueueEntryState:
-      enum:
-      - checks_in_progress
-      - checks_pending
-      - merge_group
-      - merge_pending
-      type: string
-    OpenapiPathsDetailsRequest:
-      properties:
-        paths:
-          items:
-            type: string
-          type:
-          - array
-          - 'null'
-      type: object
-    RepoFileContent:
-      properties:
-        data:
-          type: string
-        data_size:
-          type: integer
-        encoding:
-          $ref: '#/components/schemas/EnumContentEncodingType'
-        lfs_object_id:
-          type: string
-        lfs_object_size:
-          type: integer
-        size:
-          type: integer
-      type: object
-    TypesCommit:
-      properties:
-        author:
-          $ref: '#/components/schemas/TypesSignature'
-        committer:
-          $ref: '#/components/schemas/TypesSignature'
-        message:
-          type: string
-        parent_shas:
-          items:
-            $ref: '#/components/schemas/ShaSHA'
-          type: array
-        sha:
-          $ref: '#/components/schemas/ShaSHA'
-        signature:
-          $ref: '#/components/schemas/TypesGitSignatureResult'
-        stats:
-          $ref: '#/components/schemas/TypesCommitStats'
-        title:
-          type: string
-      type: object
   securitySchemes:
     x-api-key:
       name: x-api-key

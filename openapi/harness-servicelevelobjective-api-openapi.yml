@@ -219,12 +219,75 @@ paths:
       - x-api-key: []
 components:
   schemas:
-    SLOTargetType:
+    SLOError:
+      required:
+      - failed_state
+      type: object
+      properties:
+        failed_state:
+          type: boolean
+          description: Failed State of the SLO. If SLO has some failures this field will be true.
+        error_message:
+          type: string
+          description: Error Message if there is an SLO failure.
+        slo_error_type:
+          type: string
+          description: Types of SLO Errors.
+      description: SLO Error Details.
+    ServiceLevelObjectiveType:
       type: object
       properties:
         type:
           type: string
-      description: Types of SLO Target Period.
+      description: Types of Service Level Objectives.
+    DowntimeStatusDetails:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/DowntimeStatus'
+        start_time:
+          type: integer
+          description: Start time of the Downtime.
+          format: int64
+        end_time:
+          type: integer
+          description: End time of the Downtime.
+          format: int64
+        end_date_time:
+          type: string
+          description: 'End time of the Downtime in the format: yyyy-MM-dd hh:mm a'
+      description: Details of Downtime with Status
+    MetricGraph:
+      required:
+      - start_time
+      type: object
+      properties:
+        start_time:
+          type: integer
+          description: Start time of the Graph Values.
+          format: int64
+        end_time:
+          type: integer
+          description: End time of the Graph Values.
+          format: int64
+        data_points:
+          type: array
+          description: List of the Data points between start and end times.
+          items:
+            $ref: '#/components/schemas/DataPoints'
+        metric_name:
+          type: string
+          description: 'Name of the Metric. '
+        metric_identifier:
+          type: string
+          description: 'Identifier of the Metric. '
+      description: Metric Graph
+    DowntimeStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      description: Enum For Downtime Statuses
     SLOHealthListView:
       required:
       - burn_rate
@@ -332,42 +395,6 @@ components:
           type: string
           description: 'Error Budget Risk for the SLO. - It''s Healthy if Error Budget Remaining Percentage >= 75. - It''s Observe if Error Budget Remaining Percentage >= 50 < 75. - It''s Need Attention if Error Budget Remaining Percentage >= 25 < 50. - It''s Unhealthy if Error Budget Remaining Percentage >= 0 < 25. - It''s Exhausted if Error Budget Remaining Percentage < 0. '
       description: Health List View of SLO.
-    DataPoints:
-      required:
-      - timestamp
-      type: object
-      properties:
-        value:
-          type: number
-          description: Value of the data point.
-          format: double
-        timestamp:
-          type: integer
-          description: Timestamp of the data point.
-          format: int64
-      description: Representation of one data point.
-    UserJourney:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Name of the User Journey.
-        identifier:
-          type: string
-          description: Identifier of the User Journey.
-      description: User Journey Details.
-    SLIEvaluationType:
-      type: object
-      properties:
-        type:
-          type: string
-      description: Evaluation Type of SLI
-    ServiceLevelObjectiveType:
-      type: object
-      properties:
-        type:
-          type: string
-      description: Types of Service Level Objectives.
     ProjectParams:
       required:
       - account_identifier
@@ -383,69 +410,42 @@ components:
           type: string
           description: Project Identifier.
       description: Project Parameters
-    MetricGraph:
+    SLIEvaluationType:
+      type: object
+      properties:
+        type:
+          type: string
+      description: Evaluation Type of SLI
+    DataPoints:
       required:
-      - start_time
+      - timestamp
       type: object
       properties:
-        start_time:
+        value:
+          type: number
+          description: Value of the data point.
+          format: double
+        timestamp:
           type: integer
-          description: Start time of the Graph Values.
+          description: Timestamp of the data point.
           format: int64
-        end_time:
-          type: integer
-          description: End time of the Graph Values.
-          format: int64
-        data_points:
-          type: array
-          description: List of the Data points between start and end times.
-          items:
-            $ref: '#/components/schemas/DataPoints'
-        metric_name:
-          type: string
-          description: 'Name of the Metric. '
-        metric_identifier:
-          type: string
-          description: 'Identifier of the Metric. '
-      description: Metric Graph
-    SLOError:
-      required:
-      - failed_state
+      description: Representation of one data point.
+    SLOTargetType:
       type: object
       properties:
-        failed_state:
-          type: boolean
-          description: Failed State of the SLO. If SLO has some failures this field will be true.
-        error_message:
+        type:
           type: string
-          description: Error Message if there is an SLO failure.
-        slo_error_type:
-          type: string
-          description: Types of SLO Errors.
-      description: SLO Error Details.
-    DowntimeStatus:
+      description: Types of SLO Target Period.
+    UserJourney:
       type: object
       properties:
-        status:
+        name:
           type: string
-      description: Enum For Downtime Statuses
-    DowntimeStatusDetails:
-      type: object
-      properties:
-        status:
-          $ref: '#/components/schemas/DowntimeStatus'
-        start_time:
-          type: integer
-          description: Start time of the Downtime.
-          format: int64
-        end_time:
-          type: integer
-          description: End time of the Downtime.
-          format: int64
-        end_date_time:
+          description: Name of the User Journey.
+        identifier:
           type: string
-          description: 'End time of the Downtime in the format: yyyy-MM-dd hh:mm a'
-      description: Details of Downtime with Status
+          description: Identifier of the User Journey.
+      description: User Journey Details.
   securitySchemes:
     x-api-key:
       name: x-api-key

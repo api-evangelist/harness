@@ -314,116 +314,68 @@ paths:
                 $ref: '#/components/schemas/Error1'
 components:
   schemas:
-    EmbeddedUser:
+    Principal2:
+      required:
+      - name
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - USER
+          - SERVICE
+          - API_KEY
+          - SERVICE_ACCOUNT
+        name:
+          type: string
+        jwtclaims:
+          type: object
+          additionalProperties:
+            type: string
+      discriminator:
+        propertyName: type
+    ZtsDetails:
+      type: object
+      properties:
+        ztsEnabled:
+          type: boolean
+        ztsEnforce:
+          type: boolean
+        ztsTimeoutSeconds:
+          type: integer
+          format: int32
+        ztsRetryCount:
+          type: integer
+          format: int32
+        ztsMode:
+          type: string
+          enum:
+          - ENFORCE
+          - SHADOW
+          - MIXED
+          - PARTIAL
+    DelegateVersionStatusInstanceLevelCount:
+      type: object
+      properties:
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+    DelegateConnectionDetails:
       type: object
       properties:
         uuid:
           type: string
-        name:
+        version:
           type: string
-        email:
-          type: string
-        externalUserId:
-          type: string
-    DelegateGroupListing:
-      type: object
-      properties:
-        delegateGroupDetails:
-          type: array
-          items:
-            $ref: '#/components/schemas/DelegateGroupDetails'
-        delegateVersionStatusAggregatedCount:
-          $ref: '#/components/schemas/DelegateVersionStatusInstanceLevelCount'
-        autoUpgradeOffCount:
+        lastHeartbeat:
           type: integer
           format: int64
-    DelegateGroupDetails:
-      type: object
-      properties:
-        groupId:
-          type: string
-        delegateGroupIdentifier:
-          type: string
-        delegateType:
-          type: string
-        groupName:
-          type: string
-        delegateDescription:
-          type: string
-        delegateConfigurationId:
-          type: string
-        groupImplicitSelectors:
-          type: object
-          additionalProperties:
-            type: string
-            enum:
-            - PROFILE_NAME
-            - DELEGATE_NAME
-            - HOST_NAME
-            - GROUP_NAME
-            - GROUP_SELECTORS
-            - PROFILE_SELECTORS
-        groupCustomSelectors:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        lastHeartBeat:
+        lastGrpcHeartbeat:
           type: integer
           format: int64
-        connectivityStatus:
-          type: string
-        activelyConnected:
-          type: boolean
-        grpcActive:
-          type: boolean
-        delegateInstanceDetails:
-          type: array
-          items:
-            $ref: '#/components/schemas/DelegateGroupInner'
-        tokenActive:
-          type: boolean
-        autoUpgrade:
-          type: string
-          enum:
-          - 'ON'
-          - 'OFF'
-          - DETECTING
-        delegateGroupExpirationTime:
-          type: integer
-          format: int64
-        delegateVersion:
-          type: string
-        upgraderLastUpdated:
-          type: integer
-          format: int64
-        immutable:
-          type: boolean
-        groupVersion:
-          type: string
-        isUnsupported:
-          type: boolean
-          writeOnly: true
-        delegateGroupVersionStatus:
-          type: string
-          enum:
-          - EXPIRED
-          - EXPIRING
-          - UNSUPPORTED
-          - ACTIVE
-        delegateVersionStatusInstanceLevelCount:
-          $ref: '#/components/schemas/DelegateVersionStatusInstanceLevelCount'
-        ztsDetails:
-          $ref: '#/components/schemas/ZtsDetails'
-        unsupported:
-          type: boolean
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
     Error1:
       type: object
       properties:
@@ -847,14 +799,6 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    DelegateVersionStatusInstanceLevelCount:
-      type: object
-      properties:
-        counts:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int64
     ResponseMessage:
       type: object
       properties:
@@ -1445,44 +1389,25 @@ components:
           type: object
           additionalProperties:
             type: string
-    DelegateGroupInner:
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    EmbeddedUser:
       type: object
       properties:
         uuid:
           type: string
-        lastHeartbeat:
-          type: integer
-          format: int64
-        activelyConnected:
-          type: boolean
-        hostName:
+        name:
           type: string
-        tokenActive:
-          type: boolean
-        version:
+        email:
           type: string
-        delegateExpirationTime:
-          type: integer
-          format: int64
-        polllingModeEnabled:
-          type: boolean
-        connections:
-          type: array
-          items:
-            $ref: '#/components/schemas/DelegateConnectionDetails'
-        delegateInstanceVersionStatus:
+        externalUserId:
           type: string
-          enum:
-          - EXPIRED
-          - EXPIRING
-          - UNSUPPORTED
-          - ACTIVE
-        runner:
-          type: boolean
-        disabled:
-          type: boolean
-        ztsDetails:
-          $ref: '#/components/schemas/ZtsDetails'
     Failure:
       type: object
       properties:
@@ -1902,68 +1827,44 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    DelegateConnectionDetails:
+    DelegateGroupInner:
       type: object
       properties:
         uuid:
           type: string
-        version:
-          type: string
         lastHeartbeat:
           type: integer
           format: int64
-        lastGrpcHeartbeat:
+        activelyConnected:
+          type: boolean
+        hostName:
+          type: string
+        tokenActive:
+          type: boolean
+        version:
+          type: string
+        delegateExpirationTime:
           type: integer
           format: int64
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    ZtsDetails:
-      type: object
-      properties:
-        ztsEnabled:
+        polllingModeEnabled:
           type: boolean
-        ztsEnforce:
-          type: boolean
-        ztsTimeoutSeconds:
-          type: integer
-          format: int32
-        ztsRetryCount:
-          type: integer
-          format: int32
-        ztsMode:
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/DelegateConnectionDetails'
+        delegateInstanceVersionStatus:
           type: string
           enum:
-          - ENFORCE
-          - SHADOW
-          - MIXED
-          - PARTIAL
-    Principal2:
-      required:
-      - name
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - USER
-          - SERVICE
-          - API_KEY
-          - SERVICE_ACCOUNT
-        name:
-          type: string
-        jwtclaims:
-          type: object
-          additionalProperties:
-            type: string
-      discriminator:
-        propertyName: type
+          - EXPIRED
+          - EXPIRING
+          - UNSUPPORTED
+          - ACTIVE
+        runner:
+          type: boolean
+        disabled:
+          type: boolean
+        ztsDetails:
+          $ref: '#/components/schemas/ZtsDetails'
     DelegateTokenDetails:
       type: object
       properties:
@@ -1995,6 +1896,105 @@ components:
         revokeAfter:
           type: integer
           format: int64
+    DelegateGroupListing:
+      type: object
+      properties:
+        delegateGroupDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/DelegateGroupDetails'
+        delegateVersionStatusAggregatedCount:
+          $ref: '#/components/schemas/DelegateVersionStatusInstanceLevelCount'
+        autoUpgradeOffCount:
+          type: integer
+          format: int64
+    DelegateGroupDetails:
+      type: object
+      properties:
+        groupId:
+          type: string
+        delegateGroupIdentifier:
+          type: string
+        delegateType:
+          type: string
+        groupName:
+          type: string
+        delegateDescription:
+          type: string
+        delegateConfigurationId:
+          type: string
+        groupImplicitSelectors:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+            - PROFILE_NAME
+            - DELEGATE_NAME
+            - HOST_NAME
+            - GROUP_NAME
+            - GROUP_SELECTORS
+            - PROFILE_SELECTORS
+        groupCustomSelectors:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        lastHeartBeat:
+          type: integer
+          format: int64
+        connectivityStatus:
+          type: string
+        activelyConnected:
+          type: boolean
+        grpcActive:
+          type: boolean
+        delegateInstanceDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/DelegateGroupInner'
+        tokenActive:
+          type: boolean
+        autoUpgrade:
+          type: string
+          enum:
+          - 'ON'
+          - 'OFF'
+          - DETECTING
+        delegateGroupExpirationTime:
+          type: integer
+          format: int64
+        delegateVersion:
+          type: string
+        upgraderLastUpdated:
+          type: integer
+          format: int64
+        immutable:
+          type: boolean
+        groupVersion:
+          type: string
+        isUnsupported:
+          type: boolean
+          writeOnly: true
+        delegateGroupVersionStatus:
+          type: string
+          enum:
+          - EXPIRED
+          - EXPIRING
+          - UNSUPPORTED
+          - ACTIVE
+        delegateVersionStatusInstanceLevelCount:
+          $ref: '#/components/schemas/DelegateVersionStatusInstanceLevelCount'
+        ztsDetails:
+          $ref: '#/components/schemas/ZtsDetails'
+        unsupported:
+          type: boolean
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

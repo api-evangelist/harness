@@ -195,60 +195,18 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOListHostValidationDTO'
 components:
   schemas:
-    PageResponseHostDTO:
+    HostDTO:
+      required:
+      - hostname
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/HostDTO'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
+        hostname:
           type: string
-    ErrorDetail:
-      type: object
-      properties:
-        reason:
-          type: string
-        message:
-          type: string
-        code:
-          type: integer
-          format: int32
-      description: Host error details
-    SortOrder:
-      type: object
-      properties:
-        fieldName:
-          type: string
-        orderType:
-          type: string
-          enum:
-          - ASC
-          - DESC
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
+        hostAttributes:
+          type: object
+          additionalProperties:
+            type: string
+      description: This entity contains the Host details
     HostValidationDTO:
       type: object
       properties:
@@ -267,21 +225,6 @@ components:
         error:
           $ref: '#/components/schemas/ErrorDetail'
       description: This has validation details for the host
-    ResponseDTOPageResponseHostDTO:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseHostDTO'
-        metaData:
-          type: object
-        correlationId:
-          type: string
     Error1:
       type: object
       properties:
@@ -705,24 +648,14 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    HostValidationParams:
-      required:
-      - hosts
+    ErrorMetadata2:
       type: object
       properties:
-        hosts:
-          type: array
-          description: Hosts to be validated
-          items:
-            type: string
-            description: Hosts to be validated
-        tags:
-          type: array
-          description: Delegate tags (optional)
-          items:
-            type: string
-            description: Delegate tags (optional)
-      description: Host validation parameters, including host names and delegate tags.
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -1313,31 +1246,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    HostDTO:
-      required:
-      - hostname
-      type: object
-      properties:
-        hostname:
-          type: string
-        hostAttributes:
-          type: object
-          additionalProperties:
-            type: string
-      description: This entity contains the Host details
-    HostFilterDTO:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - All
-          - HostNames
-          - HostAttributes
-        filter:
-          type: string
-        matchCriteria:
-          type: string
     Failure:
       type: object
       properties:
@@ -1757,14 +1665,95 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    ErrorMetadata2:
+    HostFilterDTO:
       type: object
       properties:
         type:
           type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
+          enum:
+          - All
+          - HostNames
+          - HostAttributes
+        filter:
+          type: string
+        matchCriteria:
+          type: string
+    ResponseDTOPageResponseHostDTO:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseHostDTO'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    SortOrder:
+      type: object
+      properties:
+        fieldName:
+          type: string
+        orderType:
+          type: string
+          enum:
+          - ASC
+          - DESC
+    PageResponseHostDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostDTO'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    HostValidationParams:
+      required:
+      - hosts
+      type: object
+      properties:
+        hosts:
+          type: array
+          description: Hosts to be validated
+          items:
+            type: string
+            description: Hosts to be validated
+        tags:
+          type: array
+          description: Delegate tags (optional)
+          items:
+            type: string
+            description: Delegate tags (optional)
+      description: Host validation parameters, including host names and delegate tags.
     ResponseDTOListHostValidationDTO:
       type: object
       properties:
@@ -1782,6 +1771,17 @@ components:
           type: object
         correlationId:
           type: string
+    ErrorDetail:
+      type: object
+      properties:
+        reason:
+          type: string
+        message:
+          type: string
+        code:
+          type: integer
+          format: int32
+      description: Host error details
   securitySchemes:
     x-api-key:
       name: x-api-key

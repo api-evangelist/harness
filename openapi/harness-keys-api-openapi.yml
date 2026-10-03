@@ -327,144 +327,35 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOBoolean'
 components:
   schemas:
-    Key:
-      required:
-      - identifier
-      - name
+    ResponseDTOPageResponseKey:
       type: object
       properties:
-        identifier:
+        status:
           type: string
-          description: Identifier of the Key
-        name:
-          type: string
-          description: Name of the key
-        validFrom:
-          type: integer
-          description: This is the time from which the key is valid. The time is in milliseconds.
-          format: int64
-        validTo:
-          type: integer
-          description: This is the time till which the key is valid. The time is in milliseconds.
-          format: int64
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        parentIdentifier:
-          type: string
-          description: This is the ID of the Parent entity from which the Token inherits its role bindings.
-        description:
-          maxLength: 1024
-          minLength: 0
-          type: string
-          description: Description of the key
-        tags:
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseKey'
+        metaData:
           type: object
-          additionalProperties:
-            type: string
-            description: Tags for the key
-          description: Tags for the key
-        key:
+        correlationId:
           type: string
-          description: Public key value
-        keyUsage:
-          type: array
-          description: Keys can be used to authenticate, sign, encrypt, or certify
-          items:
-            type: string
-            description: Keys can be used to authenticate, sign, encrypt, or certify
-            enum:
-            - SIGN
-            - ENCRYPT
-            - AUTH
-            - CERTIFY
-        keyId:
-          type: string
-          description: 'Key ID: Last 8 bytes of the fingerprint'
-        primaryUserId:
-          type: string
-          description: Primary user ID associated with the key
-        keyAlgorithm:
-          type: string
-          description: Key algorithm (RSA, DSA, ECDSA, EdDSA)
-        keyScheme:
-          type: string
-          description: 'Key scheme: ssh (default) or pgp'
-          enum:
-          - SSH
-          - PGP
-        identities:
-          type: array
-          description: Key identities (name and email pairs, PGP only)
-          items:
-            $ref: '#/components/schemas/PGPKeyIdentity'
-        primaryIdentity:
-          $ref: '#/components/schemas/PGPKeyIdentity'
-        parentKeyId:
-          type: string
-          description: 'For subkeys: the keyId of the parent/master key. Null for primary keys.'
-        isSubKey:
-          type: boolean
-          description: Indicates if this is a subkey (true) or a primary/master key (false)
-        revocationReason:
-          type: string
-          description: Revocation reason if the key has been revoked
-          enum:
-          - UNKNOWN
-          - SUPERSEDED
-          - RETIRED
-          - COMPROMISED
-      description: This has the Key details defined in Harness.
-    SortOrder:
+    ResponseDTOKey:
       type: object
       properties:
-        fieldName:
-          type: string
-        orderType:
+        status:
           type: string
           enum:
-          - ASC
-          - DESC
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    PGPKeyIdentity:
-      type: object
-      properties:
-        name:
-          type: string
-        email:
-          type: string
-      description: Primary identity associated with the PGP key
-    PageResponseKey:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Key'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/Key'
+        metaData:
+          type: object
+        correlationId:
           type: string
     Error1:
       type: object
@@ -889,6 +780,14 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -1479,21 +1378,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOString:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: string
-        metaData:
-          type: object
-        correlationId:
-          type: string
     ResponseDTOBoolean:
       type: object
       properties:
@@ -1509,7 +1393,7 @@ components:
           type: object
         correlationId:
           type: string
-    ResponseDTOKey:
+    ResponseDTOString:
       type: object
       properties:
         status:
@@ -1519,7 +1403,7 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/Key'
+          type: string
         metaData:
           type: object
         correlationId:
@@ -1943,21 +1827,112 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    ResponseDTOPageResponseKey:
+    Key:
+      required:
+      - identifier
+      - name
       type: object
       properties:
-        status:
+        identifier:
+          type: string
+          description: Identifier of the Key
+        name:
+          type: string
+          description: Name of the key
+        validFrom:
+          type: integer
+          description: This is the time from which the key is valid. The time is in milliseconds.
+          format: int64
+        validTo:
+          type: integer
+          description: This is the time till which the key is valid. The time is in milliseconds.
+          format: int64
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        parentIdentifier:
+          type: string
+          description: This is the ID of the Parent entity from which the Token inherits its role bindings.
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+          description: Description of the key
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+            description: Tags for the key
+          description: Tags for the key
+        key:
+          type: string
+          description: Public key value
+        keyUsage:
+          type: array
+          description: Keys can be used to authenticate, sign, encrypt, or certify
+          items:
+            type: string
+            description: Keys can be used to authenticate, sign, encrypt, or certify
+            enum:
+            - SIGN
+            - ENCRYPT
+            - AUTH
+            - CERTIFY
+        keyId:
+          type: string
+          description: 'Key ID: Last 8 bytes of the fingerprint'
+        primaryUserId:
+          type: string
+          description: Primary user ID associated with the key
+        keyAlgorithm:
+          type: string
+          description: Key algorithm (RSA, DSA, ECDSA, EdDSA)
+        keyScheme:
+          type: string
+          description: 'Key scheme: ssh (default) or pgp'
+          enum:
+          - SSH
+          - PGP
+        identities:
+          type: array
+          description: Key identities (name and email pairs, PGP only)
+          items:
+            $ref: '#/components/schemas/PGPKeyIdentity'
+        primaryIdentity:
+          $ref: '#/components/schemas/PGPKeyIdentity'
+        parentKeyId:
+          type: string
+          description: 'For subkeys: the keyId of the parent/master key. Null for primary keys.'
+        isSubKey:
+          type: boolean
+          description: Indicates if this is a subkey (true) or a primary/master key (false)
+        revocationReason:
+          type: string
+          description: Revocation reason if the key has been revoked
+          enum:
+          - UNKNOWN
+          - SUPERSEDED
+          - RETIRED
+          - COMPROMISED
+      description: This has the Key details defined in Harness.
+    SortOrder:
+      type: object
+      properties:
+        fieldName:
+          type: string
+        orderType:
           type: string
           enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseKey'
-        metaData:
-          type: object
-        correlationId:
+          - ASC
+          - DESC
+    PGPKeyIdentity:
+      type: object
+      properties:
+        name:
           type: string
+        email:
+          type: string
+      description: Primary identity associated with the PGP key
     UpdatePublicKeyRequest:
       type: object
       properties:
@@ -1978,14 +1953,39 @@ components:
           description: End of validity period (epoch millis). Cannot be combined with revocationReason.
           format: int64
       description: Request to update public key (SSH/PGP) validity or revocation status
-    ErrorMetadata2:
+    ValidationError:
       type: object
       properties:
-        type:
+        fieldId:
           type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
+        error:
+          type: string
+    PageResponseKey:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Key'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

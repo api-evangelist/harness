@@ -838,23 +838,6 @@ components:
           description: Time at which the Git Sync error was logged
           format: int64
       description: This contains Git Sync Error Details
-    SortOrder:
-      type: object
-      properties:
-        fieldName:
-          type: string
-        orderType:
-          type: string
-          enum:
-          - ASC
-          - DESC
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
     Error1:
       type: object
       properties:
@@ -1278,32 +1261,17 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    PageResponseGitSyncError:
+    ErrorMetadata2:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/GitSyncError'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
+        type:
           type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    GitSyncErrorDetails:
+      type: object
+      description: This contains Git Sync error details specific to Error Type
     ResponseMessage:
       type: object
       properties:
@@ -1894,35 +1862,21 @@ components:
           type: object
           additionalProperties:
             type: string
-    GitSyncErrorAggregateByCommit:
+    ResponseDTOPageResponseGitSyncErrorAggregateByCommit:
       type: object
       properties:
-        gitCommitId:
+        status:
           type: string
-          description: Commit Id
-        failedCount:
-          type: integer
-          description: The number of active errors in a commit
-          format: int32
-        repoId:
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseGitSyncErrorAggregateByCommit'
+        metaData:
+          type: object
+        correlationId:
           type: string
-          description: Git Sync Config Id. [Applicable for Old Git Sync only]
-        branchName:
-          type: string
-          description: Name of the branch.
-        commitMessage:
-          type: string
-          description: Commit Message to use for the merge commit.
-        createdAt:
-          type: integer
-          description: This is the time at which the Git Sync error was logged
-          format: int64
-        errorsForSummaryView:
-          type: array
-          description: This has the list of Git Sync errors corresponding to a specific Commit Id
-          items:
-            $ref: '#/components/schemas/GitSyncError'
-      description: This contains a list of Git Sync Error details for a given Commit Id
     Failure:
       type: object
       properties:
@@ -2342,86 +2296,6 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    GitSyncErrorCount:
-      type: object
-      properties:
-        gitToHarnessErrorCount:
-          type: integer
-          description: This is the number of Git to Harness errors
-          format: int64
-        connectivityErrorCount:
-          type: integer
-          description: This is the number of connectivity errors
-          format: int64
-      description: This is the total number of Git sync and connectivity errors
-    GitSyncErrorDetails:
-      type: object
-      description: This contains Git Sync error details specific to Error Type
-    ResponseDTOPageResponseGitSyncErrorAggregateByCommit:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseGitSyncErrorAggregateByCommit'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ResponseDTOPageResponseGitSyncError:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseGitSyncError'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ErrorMetadata2:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    ResponseDTOGitSyncErrorCount:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/GitSyncErrorCount'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    Scope1:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
     PageResponseGitSyncErrorAggregateByCommit:
       type: object
       properties:
@@ -2447,6 +2321,132 @@ components:
         empty:
           type: boolean
         pageToken:
+          type: string
+    SortOrder:
+      type: object
+      properties:
+        fieldName:
+          type: string
+        orderType:
+          type: string
+          enum:
+          - ASC
+          - DESC
+    GitSyncErrorCount:
+      type: object
+      properties:
+        gitToHarnessErrorCount:
+          type: integer
+          description: This is the number of Git to Harness errors
+          format: int64
+        connectivityErrorCount:
+          type: integer
+          description: This is the number of connectivity errors
+          format: int64
+      description: This is the total number of Git sync and connectivity errors
+    Scope1:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    PageResponseGitSyncError:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/GitSyncError'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    ResponseDTOGitSyncErrorCount:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/GitSyncErrorCount'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    GitSyncErrorAggregateByCommit:
+      type: object
+      properties:
+        gitCommitId:
+          type: string
+          description: Commit Id
+        failedCount:
+          type: integer
+          description: The number of active errors in a commit
+          format: int32
+        repoId:
+          type: string
+          description: Git Sync Config Id. [Applicable for Old Git Sync only]
+        branchName:
+          type: string
+          description: Name of the branch.
+        commitMessage:
+          type: string
+          description: Commit Message to use for the merge commit.
+        createdAt:
+          type: integer
+          description: This is the time at which the Git Sync error was logged
+          format: int64
+        errorsForSummaryView:
+          type: array
+          description: This has the list of Git Sync errors corresponding to a specific Commit Id
+          items:
+            $ref: '#/components/schemas/GitSyncError'
+      description: This contains a list of Git Sync Error details for a given Commit Id
+    ResponseDTOPageResponseGitSyncError:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseGitSyncError'
+        metaData:
+          type: object
+        correlationId:
           type: string
   securitySchemes:
     x-api-key:

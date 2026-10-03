@@ -258,60 +258,153 @@ paths:
         '500':
           $ref: '#/components/responses/RmErrorResponse'
 components:
-  requestBodies:
-    PatchReleaseGroupRequest:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              autoExecuteOnSchedule:
-                $ref: '#/components/schemas/AutoExecuteOnScheduleProperty'
-                x-stoplight:
-                  id: jkl7eq9tfte67
-      description: Request body for partial update of release group. At least one field must be provided.
-    CreateReleaseGroupRequest:
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - yaml
-            properties:
-              yaml:
-                type: string
-              processIdentifier:
-                type: string
-                description: Identifier of the orchestration process
-                x-stoplight:
-                  id: hmp4eq9tftof7
-              processInputIdentifier:
-                type: string
-                description: Identifier of the orchestration process input
-                x-stoplight:
-                  id: abc4eq9tfte34
-      description: Example Request Body
-    UpdateReleaseGroupRequest:
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - yaml
-            properties:
-              yaml:
-                type: string
-              processIdentifier:
-                type: string
-                description: Identifier of the orchestration process
-                x-stoplight:
-                  id: abc4eq9tfte34
-              processInputIdentifier:
-                type: string
-                description: Identifier of the orchestration process input
-                x-stoplight:
-                  id: 56umfjays44bm
   schemas:
+    RmError:
+      title: Error Response
+      x-stoplight:
+        id: d53gtsgvwyk44
+      type: object
+      description: Error Response
+      required:
+      - message
+      properties:
+        message:
+          type: string
+          x-stoplight:
+            id: 5n8vetciod7k8
+          description: error message detail
+        code:
+          type: string
+          description: canonical error code name
+          enum:
+          - BAD_REQUEST
+          - UNAUTHORIZED
+          - FORBIDDEN
+          - NOT_FOUND
+          - INTERNAL_SERVER_ERROR
+    RmStatus:
+      type: string
+      description: Status of the stage.
+      enum:
+      - ABORTED
+      - OUTPUT_WAITING
+      - ASYNC_WAITING
+      - APPROVAL_REJECTED
+      - APPROVAL_WAITING
+      - DISCONTINUING
+      - ERROR
+      - ERRORED
+      - EXPIRED
+      - FAILED
+      - FREEZE_FAILED
+      - IGNORE_FAILED
+      - INPUT_WAITING
+      - INTERVENTION_WAITING
+      - QUEUED
+      - REJECTED
+      - RESUMED
+      - RUNNING
+      - SCHEDULED
+      - SKIPPED
+      - STARTING
+      - STARTING_QUEUED_STEP
+      - SUCCESS
+      - SUCCEEDED
+      - SUSPENDED
+      - TIMED_WAITING
+      - TASK_WAITING
+      - UPLOAD_WAITING
+      - WAIT_STEP_RUNNING
+      - WAITING
+      - ON_HOLD
+    ReleaseFrequency:
+      type: string
+      enum:
+      - Daily
+      - Weekly
+      - Monthly
+      - Custom
+      - BiWeekly
+      description: Frequency of the release cadence.
+    ReleaseType:
+      type: string
+      enum:
+      - System
+      - Beta
+      - Hotfix
+      - Patch
+      description: Type of release.
+    ReleaseCadence:
+      type: object
+      properties:
+        spec:
+          type: object
+          properties:
+            freq:
+              $ref: '#/components/schemas/Freq'
+            interval:
+              type: integer
+              description: Number of units between releases.
+            weekday:
+              type: string
+              description: weekday
+          required:
+          - freq
+          - interval
+        timezone:
+          type: string
+          description: Timezone for the release cadence.
+        duration:
+          type: string
+          description: duration for the release cadence.
+        frequency:
+          $ref: '#/components/schemas/ReleaseFrequency'
+        startDate:
+          type: string
+          description: Start date of the release cadence (YYYY-MM-DD).
+        endDate:
+          type: string
+          description: End date of the release cadence (YYYY-MM-DD).
+      required:
+      - timezone
+      - frequency
+      - startDate
+      - duration
+      - endDate
+    RmUser:
+      title: User
+      x-stoplight:
+        id: rh69gotswtjb8
+      type: object
+      properties:
+        identifier:
+          type: string
+          x-stoplight:
+            id: bufykxrconv69
+        email:
+          type: string
+          x-stoplight:
+            id: wlfcw3vsnz35e
+    GetReleaseGroupResponse:
+      title: Get Release Group Response
+      type: object
+      properties:
+        yaml:
+          type: string
+          description: YAML representation of the release group.
+        processIdentifier:
+          type: string
+          description: Identifier for the orchestration process.
+          x-omitempty: true
+        processInputIdentifier:
+          type: string
+          description: Identifier for the orchestration process input.
+          x-omitempty: true
+        autoExecuteOnSchedule:
+          $ref: '#/components/schemas/AutoExecuteOnScheduleProperty'
+          x-omitempty: true
+      required:
+      - yaml
     ExecutionConflict:
       type: object
       x-stoplight:
@@ -397,130 +490,99 @@ components:
         comment:
           type: string
           description: Comment associated with the conflict
-    RmError:
-      title: Error Response
-      x-stoplight:
-        id: d53gtsgvwyk44
-      type: object
-      description: Error Response
-      required:
-      - message
-      properties:
-        message:
-          type: string
-          x-stoplight:
-            id: 5n8vetciod7k8
-          description: error message detail
-        code:
-          type: string
-          description: canonical error code name
-          enum:
-          - BAD_REQUEST
-          - UNAUTHORIZED
-          - FORBIDDEN
-          - NOT_FOUND
-          - INTERNAL_SERVER_ERROR
-    ConflictStatus:
-      title: ConflictStatus
+    TriggerType:
       type: string
-      x-stoplight:
-        id: m55o0a5zbv4yf
       enum:
-      - Conflict
-      - Resolved
-      - None
-    GetReleaseGroupResponse:
-      title: Get Release Group Response
+      - MANUAL
+      - WEBHOOK
+      - WEBHOOK_CUSTOM
+      - ARTIFACT
+      - MANIFEST
+      - SCHEDULER_CRON
+      description: Unit of time used for repeating releases.
+    AutoExecuteOnScheduleProperty:
+      type: boolean
+      default: false
+      description: Automatically execute releases when their scheduled time arrives
+    ReleaseComponent:
       type: object
       properties:
-        yaml:
+        orgIdentifier:
           type: string
-          description: YAML representation of the release group.
-        processIdentifier:
+          description: Identifier for the organization.
+        projectIdentifier:
           type: string
-          description: Identifier for the orchestration process.
-          x-omitempty: true
-        processInputIdentifier:
-          type: string
-          description: Identifier for the orchestration process input.
-          x-omitempty: true
-        autoExecuteOnSchedule:
-          $ref: '#/components/schemas/AutoExecuteOnScheduleProperty'
-          x-omitempty: true
-      required:
-      - yaml
-    ReleaseCadence:
-      type: object
-      properties:
-        spec:
+          description: Identifier for the project.
+        services:
           type: object
+          description: Details about services with filterType and refs.
           properties:
-            freq:
-              $ref: '#/components/schemas/Freq'
-            interval:
-              type: integer
-              description: Number of units between releases.
-            weekday:
+            filterType:
               type: string
-              description: weekday
-          required:
-          - freq
-          - interval
-        timezone:
-          type: string
-          description: Timezone for the release cadence.
-        duration:
-          type: string
-          description: duration for the release cadence.
-        frequency:
-          $ref: '#/components/schemas/ReleaseFrequency'
-        startDate:
-          type: string
-          description: Start date of the release cadence (YYYY-MM-DD).
-        endDate:
-          type: string
-          description: End date of the release cadence (YYYY-MM-DD).
+              enum:
+              - Equals
+              - All
+              description: Type of filter applied for services.
+            refs:
+              type: array
+              items:
+                type: string
+              description: List of service identifiers.
+        pipelines:
+          type: object
+          description: Details about pipelines with filterType and refs.
+          properties:
+            filterType:
+              type: string
+              enum:
+              - Equals
+              - All
+              description: Type of filter applied for pipelines.
+            refs:
+              type: array
+              items:
+                type: string
+              description: List of pipeline identifiers.
+        environments:
+          type: object
+          description: Details about environments with filterType and refs.
+          properties:
+            filterType:
+              type: string
+              enum:
+              - Equals
+              - All
+              description: Type of filter applied for environments.
+            refs:
+              type: array
+              items:
+                type: string
+              description: List of environment identifiers.
       required:
-      - timezone
-      - frequency
-      - startDate
-      - duration
-      - endDate
-    RmStatus:
+      - orgIdentifier
+      - projectIdentifier
+    Freq:
       type: string
-      description: Status of the stage.
       enum:
-      - ABORTED
-      - OUTPUT_WAITING
-      - ASYNC_WAITING
-      - APPROVAL_REJECTED
-      - APPROVAL_WAITING
-      - DISCONTINUING
-      - ERROR
-      - ERRORED
-      - EXPIRED
-      - FAILED
-      - FREEZE_FAILED
-      - IGNORE_FAILED
-      - INPUT_WAITING
-      - INTERVENTION_WAITING
-      - QUEUED
-      - REJECTED
-      - RESUMED
-      - RUNNING
-      - SCHEDULED
-      - SKIPPED
-      - STARTING
-      - STARTING_QUEUED_STEP
-      - SUCCESS
-      - SUCCEEDED
-      - SUSPENDED
-      - TIMED_WAITING
-      - TASK_WAITING
-      - UPLOAD_WAITING
-      - WAIT_STEP_RUNNING
-      - WAITING
-      - ON_HOLD
+      - Weekly
+      - Monthly
+      - Daily
+      description: Unit of time used for repeating releases.
+    TriggeredByDTO:
+      type: object
+      description: Details of the user who triggered the activity.
+      properties:
+        name:
+          type: string
+          description: Name of the person who triggered the activity.
+        id:
+          type: string
+          description: Identifier of the person who triggered the activity.
+        avatar:
+          type: string
+          description: Avatar URL of the person.
+        triggerType:
+          $ref: '#/components/schemas/TriggerType'
     RmPageable:
       type: object
       properties:
@@ -536,23 +598,71 @@ components:
           type: boolean
         unpaged:
           type: boolean
-    ReleaseFrequency:
+    LastUpdatedByDTO:
+      title: LastUpdatedByDTO
+      type: object
+      required:
+      - identifier
+      properties:
+        name:
+          type: string
+        identifier:
+          type: string
+        email:
+          type: string
+      x-stoplight:
+        id: q1hm7j6egaq6k
+    PageableSort:
+      type: object
+      x-go-name: PageableSort
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    ConflictStatus:
+      title: ConflictStatus
       type: string
+      x-stoplight:
+        id: m55o0a5zbv4yf
       enum:
-      - Daily
-      - Weekly
-      - Monthly
-      - Custom
-      - BiWeekly
-      description: Frequency of the release cadence.
-    ReleaseType:
-      type: string
-      enum:
-      - System
-      - Beta
-      - Hotfix
-      - Patch
-      description: Type of release.
+      - Conflict
+      - Resolved
+      - None
+    ReleaseConflictInfo:
+      title: ReleaseInfo
+      x-stoplight:
+        id: kchn8txfsnjkn
+      type: object
+      required:
+      - recommended
+      - releaseName
+      - releaseId
+      - releaseGroupId
+      - version
+      properties:
+        recommended:
+          type: boolean
+          x-stoplight:
+            id: i89vv2vpyxqwf
+        releaseName:
+          type: string
+          x-stoplight:
+            id: adeh63dza3mpc
+        releaseId:
+          type: string
+          x-stoplight:
+            id: ye3bhvdjcpc08
+        releaseGroupId:
+          type: string
+          x-stoplight:
+            id: bos9d10eph7xt
+        version:
+          type: string
+          x-stoplight:
+            id: pcp0nfwyes0oq
     ReleaseGroupDTO:
       title: ReleaseGroupDTO
       x-stoplight:
@@ -624,170 +734,275 @@ components:
         autoExecuteOnSchedule:
           $ref: '#/components/schemas/AutoExecuteOnScheduleProperty'
           x-omitempty: true
-    PageableSort:
-      type: object
-      x-go-name: PageableSort
-      properties:
-        empty:
-          type: boolean
-        sorted:
-          type: boolean
-        unsorted:
-          type: boolean
-    ReleaseComponent:
-      type: object
-      properties:
-        orgIdentifier:
-          type: string
-          description: Identifier for the organization.
-        projectIdentifier:
-          type: string
-          description: Identifier for the project.
-        services:
-          type: object
-          description: Details about services with filterType and refs.
-          properties:
-            filterType:
-              type: string
-              enum:
-              - Equals
-              - All
-              description: Type of filter applied for services.
-            refs:
-              type: array
-              items:
+  requestBodies:
+    PatchReleaseGroupRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              autoExecuteOnSchedule:
+                $ref: '#/components/schemas/AutoExecuteOnScheduleProperty'
+                x-stoplight:
+                  id: jkl7eq9tfte67
+      description: Request body for partial update of release group. At least one field must be provided.
+    UpdateReleaseGroupRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - yaml
+            properties:
+              yaml:
                 type: string
-              description: List of service identifiers.
-        pipelines:
-          type: object
-          description: Details about pipelines with filterType and refs.
-          properties:
-            filterType:
-              type: string
-              enum:
-              - Equals
-              - All
-              description: Type of filter applied for pipelines.
-            refs:
-              type: array
-              items:
+              processIdentifier:
                 type: string
-              description: List of pipeline identifiers.
-        environments:
-          type: object
-          description: Details about environments with filterType and refs.
-          properties:
-            filterType:
-              type: string
-              enum:
-              - Equals
-              - All
-              description: Type of filter applied for environments.
-            refs:
-              type: array
-              items:
+                description: Identifier of the orchestration process
+                x-stoplight:
+                  id: abc4eq9tfte34
+              processInputIdentifier:
                 type: string
-              description: List of environment identifiers.
-      required:
-      - orgIdentifier
-      - projectIdentifier
-    ReleaseConflictInfo:
-      title: ReleaseInfo
-      x-stoplight:
-        id: kchn8txfsnjkn
-      type: object
-      required:
-      - recommended
-      - releaseName
-      - releaseId
-      - releaseGroupId
-      - version
-      properties:
-        recommended:
-          type: boolean
-          x-stoplight:
-            id: i89vv2vpyxqwf
-        releaseName:
+                description: Identifier of the orchestration process input
+                x-stoplight:
+                  id: 56umfjays44bm
+    CreateReleaseGroupRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - yaml
+            properties:
+              yaml:
+                type: string
+              processIdentifier:
+                type: string
+                description: Identifier of the orchestration process
+                x-stoplight:
+                  id: hmp4eq9tftof7
+              processInputIdentifier:
+                type: string
+                description: Identifier of the orchestration process input
+                x-stoplight:
+                  id: abc4eq9tfte34
+      description: Example Request Body
+  parameters:
+    ConflictStatusList:
+      name: conflictStatus
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
           type: string
-          x-stoplight:
-            id: adeh63dza3mpc
-        releaseId:
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+    AccountParam:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Account Identifier
+    RmPage:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+    RmOrgParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Organisation Identifier
+    StatusListParam:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
           type: string
-          x-stoplight:
-            id: ye3bhvdjcpc08
-        releaseGroupId:
+        uniqueItems: false
+      allowReserved: false
+    RmProjectParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Project Identifier
+    RmSort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
           type: string
-          x-stoplight:
-            id: bos9d10eph7xt
-        version:
-          type: string
-          x-stoplight:
-            id: pcp0nfwyes0oq
-    RmUser:
-      title: User
-      x-stoplight:
-        id: rh69gotswtjb8
-      type: object
-      properties:
-        identifier:
-          type: string
-          x-stoplight:
-            id: bufykxrconv69
-        email:
-          type: string
-          x-stoplight:
-            id: wlfcw3vsnz35e
-    Freq:
-      type: string
-      enum:
-      - Weekly
-      - Monthly
-      - Daily
-      description: Unit of time used for repeating releases.
-    TriggerType:
-      type: string
-      enum:
-      - MANUAL
-      - WEBHOOK
-      - WEBHOOK_CUSTOM
-      - ARTIFACT
-      - MANIFEST
-      - SCHEDULER_CRON
-      description: Unit of time used for repeating releases.
-    LastUpdatedByDTO:
-      title: LastUpdatedByDTO
-      type: object
-      required:
-      - identifier
-      properties:
-        name:
-          type: string
-        identifier:
-          type: string
-        email:
-          type: string
-      x-stoplight:
-        id: q1hm7j6egaq6k
-    AutoExecuteOnScheduleProperty:
-      type: boolean
-      default: false
-      description: Automatically execute releases when their scheduled time arrives
-    TriggeredByDTO:
-      type: object
-      description: Details of the user who triggered the activity.
-      properties:
-        name:
-          type: string
-          description: Name of the person who triggered the activity.
-        id:
-          type: string
-          description: Identifier of the person who triggered the activity.
-        avatar:
-          type: string
-          description: Avatar URL of the person.
-        triggerType:
-          $ref: '#/components/schemas/TriggerType'
+      description: 'Sort parameters as an array. Format: `[field_name, direction]` where direction is `asc` or `desc`.
+
+        Supported fields: `start_ts`, `startTs`, `end_ts`, `endTs`, `last_updated_at`, `lastUpdatedAt`, `created_at`, `createdAt`, `name`, `identifier`, `status`, `type`.
+
+        When used in query params, use format: `sort=field_name&sort=direction` (e.g., `sort=start_ts&sort=desc`).
+
+        '
+      examples:
+        example1:
+          value:
+          - created_at,asc
+        example2:
+          value:
+          - last_updated_at,desc
+        example3:
+          value:
+          - start_ts,desc
+        example4:
+          value:
+          - end_ts,asc
+    ReleaseTypeParam:
+      name: type
+      in: query
+      description: Optional release type filter (Orchestration or Tracking)
+      required: false
+      schema:
+        type: string
+        enum:
+        - Orchestration
+        - Tracking
+    SearchTermParam:
+      name: searchTerm
+      in: query
+      description: Optional search string to filter releases by name.
+      required: false
+      schema:
+        type: string
   responses:
+    DeleteReleaseGroupResponse:
+      description: Response for Delete Release Group API
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: boolean
+    GetReleaseGroupResponse:
+      description: Response for Get Release Group API
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GetReleaseGroupResponse'
+    UpdateReleaseGroupResponse:
+      description: Update release group response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              yaml:
+                type: string
+    PatchReleaseGroupResponse:
+      description: Patch release group response
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - id
+            properties:
+              id:
+                type: string
+              autoExecuteOnSchedule:
+                type: boolean
+    ReleaseGroupSummaryResponse:
+      description: This wraps the list of all release groups along with pagination
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              content:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReleaseGroupDTO'
+              pageable:
+                $ref: '#/components/schemas/RmPageable'
+              totalPages:
+                type: integer
+              last:
+                type: boolean
+              totalElements:
+                type: integer
+              size:
+                type: integer
+              number:
+                type: integer
+              sort:
+                $ref: '#/components/schemas/PageableSort'
+              numberOfElements:
+                type: integer
+              first:
+                type: boolean
+              empty:
+                type: boolean
+            required:
+            - content
+            - pageable
+            - totalPages
+            - last
+            - totalElements
+            - size
+            - number
+            - sort
+            - numberOfElements
+            - first
+            - empty
+    ReleaseGroupComponentResponse:
+      description: This wraps the components that are tied to a release
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - components
+            properties:
+              components:
+                type: array
+                x-stoplight:
+                  id: svhdvanbrvev7
+                items:
+                  $ref: '#/components/schemas/ReleaseComponent'
+    CreateReleaseGroupResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              yaml:
+                type: string
+            x-examples:
+              Example 1:
+                id: string
+                yaml: string
+    RmErrorResponse:
+      description: Error Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RmError'
     ReleaseConflictListResponse:
       description: Example response
       content:
@@ -877,221 +1092,6 @@ components:
                 type: boolean
                 x-stoplight:
                   id: qfjbwop25t01s
-    ReleaseGroupComponentResponse:
-      description: This wraps the components that are tied to a release
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - components
-            properties:
-              components:
-                type: array
-                x-stoplight:
-                  id: svhdvanbrvev7
-                items:
-                  $ref: '#/components/schemas/ReleaseComponent'
-    UpdateReleaseGroupResponse:
-      description: Update release group response
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-              yaml:
-                type: string
-    RmErrorResponse:
-      description: Error Response body
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RmError'
-    GetReleaseGroupResponse:
-      description: Response for Get Release Group API
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GetReleaseGroupResponse'
-    DeleteReleaseGroupResponse:
-      description: Response for Delete Release Group API
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              data:
-                type: boolean
-    ReleaseGroupSummaryResponse:
-      description: This wraps the list of all release groups along with pagination
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              content:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ReleaseGroupDTO'
-              pageable:
-                $ref: '#/components/schemas/RmPageable'
-              totalPages:
-                type: integer
-              last:
-                type: boolean
-              totalElements:
-                type: integer
-              size:
-                type: integer
-              number:
-                type: integer
-              sort:
-                $ref: '#/components/schemas/PageableSort'
-              numberOfElements:
-                type: integer
-              first:
-                type: boolean
-              empty:
-                type: boolean
-            required:
-            - content
-            - pageable
-            - totalPages
-            - last
-            - totalElements
-            - size
-            - number
-            - sort
-            - numberOfElements
-            - first
-            - empty
-    PatchReleaseGroupResponse:
-      description: Patch release group response
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - id
-            properties:
-              id:
-                type: string
-              autoExecuteOnSchedule:
-                type: boolean
-    CreateReleaseGroupResponse:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-              yaml:
-                type: string
-            x-examples:
-              Example 1:
-                id: string
-                yaml: string
-  parameters:
-    AccountParam:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Account Identifier
-    ReleaseTypeParam:
-      name: type
-      in: query
-      description: Optional release type filter (Orchestration or Tracking)
-      required: false
-      schema:
-        type: string
-        enum:
-        - Orchestration
-        - Tracking
-    Size:
-      name: size
-      in: query
-      required: false
-      schema:
-        type: integer
-    RmOrgParam:
-      name: orgIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Organisation Identifier
-    ConflictStatusList:
-      name: conflictStatus
-      in: query
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
-    SearchTermParam:
-      name: searchTerm
-      in: query
-      description: Optional search string to filter releases by name.
-      required: false
-      schema:
-        type: string
-    RmPage:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-    RmProjectParam:
-      name: projectIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Project Identifier
-    StatusListParam:
-      name: status
-      in: query
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
-        uniqueItems: false
-      allowReserved: false
-    RmSort:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
-      description: 'Sort parameters as an array. Format: `[field_name, direction]` where direction is `asc` or `desc`.
-
-        Supported fields: `start_ts`, `startTs`, `end_ts`, `endTs`, `last_updated_at`, `lastUpdatedAt`, `created_at`, `createdAt`, `name`, `identifier`, `status`, `type`.
-
-        When used in query params, use format: `sort=field_name&sort=direction` (e.g., `sort=start_ts&sort=desc`).
-
-        '
-      examples:
-        example1:
-          value:
-          - created_at,asc
-        example2:
-          value:
-          - last_updated_at,desc
-        example3:
-          value:
-          - start_ts,desc
-        example4:
-          value:
-          - end_ts,asc
   securitySchemes:
     x-api-key:
       name: x-api-key

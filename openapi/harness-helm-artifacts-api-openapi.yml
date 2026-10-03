@@ -75,133 +75,6 @@ paths:
       tags:
       - Helm Artifacts
 components:
-  responses:
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    HelmArtifactManifestResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/HelmArtifactManifest'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get helm artifact manifest
-    RegistryUnauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Authentication failed or missing credentials
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
-    HelmArtifactDetailResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/HelmArtifactDetail'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get helm artifact detail
-  parameters:
-    artifactPathParam:
-      description: "Name of the artifact.\n\nThe value depends on whether the name contains a slash (`/`):\n\n- If the artifact name **contains `/`**, append a trailing `/+` at the end.\n  - Example: `mygroup/myartifact/+`\n- If the artifact name **does not contain `/`**, use the plain name.\n  - Example: `myartifact`\n\nThis is used internally to distinguish between namespaced and flat artifact names.\n"
-      examples:
-        flat:
-          summary: Flat artifact name
-          value: myartifact
-        namespaced:
-          summary: Namespaced artifact
-          value: mygroup/myartifact/+
-      in: path
-      name: artifact
-      required: true
-      schema:
-        type: string
-    versionPathParam:
-      description: Name of Artifact Version.
-      in: path
-      name: version
-      required: true
-      schema:
-        type: string
-    registryRefPathParam:
-      description: 'Reference to the scope in which the registry exists.
-
-
-        Format depends on the scope:
-
-
-        - **Account-level**: `account_id/registry_name/+`
-
-        - **Organization-level**: `account_id/org_id/registry_name/+`
-
-        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
-
-
-        The `/+` suffix is used internally to route scoped requests.
-
-        It must be included **exactly as shown** in the URL.
-
-        '
-      examples:
-        accountLevel:
-          description: Only account ID, scoped at account level
-          summary: Account-level registry
-          value: acc123/registry123/+
-        orgLevel:
-          description: Account and org ID, scoped at org level
-          summary: Organization-level registry
-          value: acc123/org456/registry123/+
-        projectLevel:
-          description: Account, org, and project ID, scoped at project level
-          summary: Project-level registry
-          value: acc123/org456/proj789/registry123/+
-      in: path
-      name: registry_ref
-      required: true
-      schema:
-        type: string
-    versionTypeParam:
-      description: Version Type.
-      in: query
-      name: version_type
-      schema:
-        enum:
-        - DIGEST
-        - TAG
-        type: string
   schemas:
     PackageType:
       description: refers to package
@@ -229,6 +102,13 @@ components:
       - DEBIAN
       - CONAN
       - TERRAFORM
+      type: string
+    RegistryStatus:
+      description: Request processing status indicator
+      enum:
+      - SUCCESS
+      - FAILURE
+      - ERROR
       type: string
     HelmArtifactDetail:
       description: Helm Artifact Detail
@@ -303,13 +183,133 @@ components:
       - code
       - message
       type: object
-    RegistryStatus:
-      description: Request processing status indicator
-      enum:
-      - SUCCESS
-      - FAILURE
-      - ERROR
-      type: string
+  responses:
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
+    HelmArtifactDetailResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/HelmArtifactDetail'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get helm artifact detail
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
+    HelmArtifactManifestResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/HelmArtifactManifest'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get helm artifact manifest
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
+  parameters:
+    versionTypeParam:
+      description: Version Type.
+      in: query
+      name: version_type
+      schema:
+        enum:
+        - DIGEST
+        - TAG
+        type: string
+    artifactPathParam:
+      description: "Name of the artifact.\n\nThe value depends on whether the name contains a slash (`/`):\n\n- If the artifact name **contains `/`**, append a trailing `/+` at the end.\n  - Example: `mygroup/myartifact/+`\n- If the artifact name **does not contain `/`**, use the plain name.\n  - Example: `myartifact`\n\nThis is used internally to distinguish between namespaced and flat artifact names.\n"
+      examples:
+        flat:
+          summary: Flat artifact name
+          value: myartifact
+        namespaced:
+          summary: Namespaced artifact
+          value: mygroup/myartifact/+
+      in: path
+      name: artifact
+      required: true
+      schema:
+        type: string
+    registryRefPathParam:
+      description: 'Reference to the scope in which the registry exists.
+
+
+        Format depends on the scope:
+
+
+        - **Account-level**: `account_id/registry_name/+`
+
+        - **Organization-level**: `account_id/org_id/registry_name/+`
+
+        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
+
+
+        The `/+` suffix is used internally to route scoped requests.
+
+        It must be included **exactly as shown** in the URL.
+
+        '
+      examples:
+        accountLevel:
+          description: Only account ID, scoped at account level
+          summary: Account-level registry
+          value: acc123/registry123/+
+        orgLevel:
+          description: Account and org ID, scoped at org level
+          summary: Organization-level registry
+          value: acc123/org456/registry123/+
+        projectLevel:
+          description: Account, org, and project ID, scoped at project level
+          summary: Project-level registry
+          value: acc123/org456/proj789/registry123/+
+      in: path
+      name: registry_ref
+      required: true
+      schema:
+        type: string
+    versionPathParam:
+      description: Name of Artifact Version.
+      in: path
+      name: version
+      required: true
+      schema:
+        type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

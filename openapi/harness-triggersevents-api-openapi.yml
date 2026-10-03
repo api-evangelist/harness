@@ -488,15 +488,69 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOPageNGTriggerEventHistoryDTO'
 components:
   schemas:
-    Sort:
+    ResponseDTOPageNGTriggerEventHistoryBaseDTO:
       type: object
       properties:
-        empty:
-          type: boolean
-        sorted:
-          type: boolean
-        unsorted:
-          type: boolean
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageNGTriggerEventHistoryBaseDTO'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    NGTriggerEventsApiResponse:
+      required:
+      - triggerIdentifier
+      type: object
+      properties:
+        triggerIdentifier:
+          type: string
+        name:
+          type: string
+        scope:
+          $ref: '#/components/schemas/PipelineScope'
+        eventCorrelationId:
+          type: string
+        eventCreatedAt:
+          type: integer
+          format: int64
+        message:
+          type: string
+        triggerEventStatus:
+          $ref: '#/components/schemas/TriggerEventStatus'
+        ngTriggerType:
+          type: string
+          enum:
+          - Webhook
+          - Artifact
+          - Manifest
+          - Scheduled
+          - MultiRegionArtifact
+          - SystemEvent
+        subTriggerType:
+          type: string
+        ngTriggerMetaData:
+          $ref: '#/components/schemas/NGTriggerMetaData'
+    PipelineErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
     PollingInfoForTriggers:
       type: object
       properties:
@@ -508,107 +562,15 @@ components:
           type: string
         perpetualTaskInfoForTriggers:
           $ref: '#/components/schemas/PerpetualTaskInfoForTriggers'
-    PageNGTriggerEventHistoryDTO:
+    Sort:
       type: object
       properties:
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/NGTriggerEventHistoryDTO'
-        number:
-          type: integer
-          format: int32
-        sort:
-          $ref: '#/components/schemas/Sort'
-        first:
-          type: boolean
-        pageable:
-          $ref: '#/components/schemas/Pageable'
-        numberOfElements:
-          type: integer
-          format: int32
-        last:
-          type: boolean
         empty:
           type: boolean
-    NGTriggerEventHistoryBaseDTO:
-      type: object
-      properties:
-        triggerIdentifier:
-          type: string
-        accountId:
-          type: string
-        eventCorrelationId:
-          type: string
-        payload:
-          type: string
-        headers:
-          type: object
-          additionalProperties:
-            type: string
-        eventCreatedAt:
-          type: integer
-          format: int64
-        finalStatus:
-          type: string
-          enum:
-          - SCM_SERVICE_CONNECTION_FAILED
-          - INVALID_PAYLOAD
-          - TRIGGER_DID_NOT_MATCH_EVENT_CONDITION
-          - TRIGGER_DID_NOT_MATCH_METADATA_CONDITION
-          - TRIGGER_DID_NOT_MATCH_ARTIFACT_JEXL_CONDITION
-          - NO_MATCHING_TRIGGER_FOR_REPO
-          - NO_MATCHING_TRIGGER_FOR_EVENT_ACTION
-          - NO_MATCHING_TRIGGER_FOR_METADATA_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_PAYLOAD_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_JEXL_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_HEADER_CONDITIONS
-          - INVALID_RUNTIME_INPUT_YAML
-          - TARGET_DID_NOT_EXECUTE
-          - TARGET_EXECUTION_REQUESTED
-          - NO_ENABLED_CUSTOM_TRIGGER_FOUND
-          - NO_ENABLED_CUSTOM_TRIGGER_FOUND_FOR_ACCOUNT
-          - NO_ENABLED_TRIGGER_FOR_PROJECT
-          - NO_ENABLED_TRIGGER_FOR_ACCOUNT
-          - NO_ENABLED_TRIGGER_FOR_SOURCEREPO_TYPE
-          - NO_ENABLED_TRIGGER_FOR_ACCOUNT_SOURCE_REPO
-          - NO_MATCHING_TRIGGER_FOR_FILEPATH_CONDITIONS
-          - FAILED_TO_FETCH_PR_DETAILS
-          - FAILED_TO_FETCH_PR_COMMITS
-          - EXCEPTION_WHILE_PROCESSING
-          - TRIGGER_CONFIRMATION_SUCCESSFUL
-          - TRIGGER_CONFIRMATION_FAILED
-          - TRIGGER_AUTHENTICATION_FAILED
-          - VALIDATION_FAILED_FOR_TRIGGER
-          - ALL_MAPPED_TRIGGER_FAILED_VALIDATION_FOR_POLLING_EVENT
-          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_SIGNATURES
-          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_CONDITION
-          - POLLING_EVENT_WITH_NO_VERSIONS
-          - NEW_ARTIFACT_EVENT_PROCESSED
-          - NEW_MANIFEST_EVENT_PROCESSED
-          - SKIPPED
-          - QUEUED
-          - INVALID_HARNESS_ARTIFACT_REGISTRY_TRIGGER_ACTION
-          - NO_TRIGGERS_FOUND_FOR_HARNESS_ARTIFACT_REGISTRY_WEBHOOK
-          - HARNESS_ARTIFACT_REGISTRY_WEBHOOK_NOT_EXECUTED
-        message:
-          type: string
-        exceptionOccurred:
+        sorted:
           type: boolean
-        createdAt:
-          type: integer
-          format: int64
-        triggerEventStatus:
-          $ref: '#/components/schemas/TriggerEventStatus'
+        unsorted:
+          type: boolean
     PipelineError:
       type: object
       properties:
@@ -1032,27 +994,192 @@ components:
         metadata:
           $ref: '#/components/schemas/PipelineErrorMetadata'
       description: This is Error entity as defined in Harness
-    NGTriggerEventsApiResponse:
-      required:
-      - triggerIdentifier
+    PolledResponse:
+      type: object
+      properties:
+        allPolledKeys:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+    NGTriggerEventInfo:
+      type: object
+    TriggerEventStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILED
+          - SKIPPED
+        message:
+          type: string
+    Pageable:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/Sort'
+        pageSize:
+          type: integer
+          format: int32
+        pageNumber:
+          type: integer
+          format: int32
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+    NGTriggerEventHistoryBaseDTO:
       type: object
       properties:
         triggerIdentifier:
           type: string
-        name:
+        accountId:
           type: string
-        scope:
-          $ref: '#/components/schemas/PipelineScope'
         eventCorrelationId:
           type: string
+        payload:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
         eventCreatedAt:
           type: integer
           format: int64
+        finalStatus:
+          type: string
+          enum:
+          - SCM_SERVICE_CONNECTION_FAILED
+          - INVALID_PAYLOAD
+          - TRIGGER_DID_NOT_MATCH_EVENT_CONDITION
+          - TRIGGER_DID_NOT_MATCH_METADATA_CONDITION
+          - TRIGGER_DID_NOT_MATCH_ARTIFACT_JEXL_CONDITION
+          - NO_MATCHING_TRIGGER_FOR_REPO
+          - NO_MATCHING_TRIGGER_FOR_EVENT_ACTION
+          - NO_MATCHING_TRIGGER_FOR_METADATA_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_PAYLOAD_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_JEXL_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_HEADER_CONDITIONS
+          - INVALID_RUNTIME_INPUT_YAML
+          - TARGET_DID_NOT_EXECUTE
+          - TARGET_EXECUTION_REQUESTED
+          - NO_ENABLED_CUSTOM_TRIGGER_FOUND
+          - NO_ENABLED_CUSTOM_TRIGGER_FOUND_FOR_ACCOUNT
+          - NO_ENABLED_TRIGGER_FOR_PROJECT
+          - NO_ENABLED_TRIGGER_FOR_ACCOUNT
+          - NO_ENABLED_TRIGGER_FOR_SOURCEREPO_TYPE
+          - NO_ENABLED_TRIGGER_FOR_ACCOUNT_SOURCE_REPO
+          - NO_MATCHING_TRIGGER_FOR_FILEPATH_CONDITIONS
+          - FAILED_TO_FETCH_PR_DETAILS
+          - FAILED_TO_FETCH_PR_COMMITS
+          - EXCEPTION_WHILE_PROCESSING
+          - TRIGGER_CONFIRMATION_SUCCESSFUL
+          - TRIGGER_CONFIRMATION_FAILED
+          - TRIGGER_AUTHENTICATION_FAILED
+          - VALIDATION_FAILED_FOR_TRIGGER
+          - ALL_MAPPED_TRIGGER_FAILED_VALIDATION_FOR_POLLING_EVENT
+          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_SIGNATURES
+          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_CONDITION
+          - POLLING_EVENT_WITH_NO_VERSIONS
+          - NEW_ARTIFACT_EVENT_PROCESSED
+          - NEW_MANIFEST_EVENT_PROCESSED
+          - SKIPPED
+          - QUEUED
+          - INVALID_HARNESS_ARTIFACT_REGISTRY_TRIGGER_ACTION
+          - NO_TRIGGERS_FOUND_FOR_HARNESS_ARTIFACT_REGISTRY_WEBHOOK
+          - HARNESS_ARTIFACT_REGISTRY_WEBHOOK_NOT_EXECUTED
         message:
           type: string
+        exceptionOccurred:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
         triggerEventStatus:
           $ref: '#/components/schemas/TriggerEventStatus'
-        ngTriggerType:
+    NGTriggerEventHistoryDTO:
+      type: object
+      properties:
+        triggerIdentifier:
+          type: string
+        accountId:
+          type: string
+        eventCorrelationId:
+          type: string
+        payload:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        eventCreatedAt:
+          type: integer
+          format: int64
+        finalStatus:
+          type: string
+          enum:
+          - SCM_SERVICE_CONNECTION_FAILED
+          - INVALID_PAYLOAD
+          - TRIGGER_DID_NOT_MATCH_EVENT_CONDITION
+          - TRIGGER_DID_NOT_MATCH_METADATA_CONDITION
+          - TRIGGER_DID_NOT_MATCH_ARTIFACT_JEXL_CONDITION
+          - NO_MATCHING_TRIGGER_FOR_REPO
+          - NO_MATCHING_TRIGGER_FOR_EVENT_ACTION
+          - NO_MATCHING_TRIGGER_FOR_METADATA_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_PAYLOAD_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_JEXL_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_HEADER_CONDITIONS
+          - INVALID_RUNTIME_INPUT_YAML
+          - TARGET_DID_NOT_EXECUTE
+          - TARGET_EXECUTION_REQUESTED
+          - NO_ENABLED_CUSTOM_TRIGGER_FOUND
+          - NO_ENABLED_CUSTOM_TRIGGER_FOUND_FOR_ACCOUNT
+          - NO_ENABLED_TRIGGER_FOR_PROJECT
+          - NO_ENABLED_TRIGGER_FOR_ACCOUNT
+          - NO_ENABLED_TRIGGER_FOR_SOURCEREPO_TYPE
+          - NO_ENABLED_TRIGGER_FOR_ACCOUNT_SOURCE_REPO
+          - NO_MATCHING_TRIGGER_FOR_FILEPATH_CONDITIONS
+          - FAILED_TO_FETCH_PR_DETAILS
+          - FAILED_TO_FETCH_PR_COMMITS
+          - EXCEPTION_WHILE_PROCESSING
+          - TRIGGER_CONFIRMATION_SUCCESSFUL
+          - TRIGGER_CONFIRMATION_FAILED
+          - TRIGGER_AUTHENTICATION_FAILED
+          - VALIDATION_FAILED_FOR_TRIGGER
+          - ALL_MAPPED_TRIGGER_FAILED_VALIDATION_FOR_POLLING_EVENT
+          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_SIGNATURES
+          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_CONDITION
+          - POLLING_EVENT_WITH_NO_VERSIONS
+          - NEW_ARTIFACT_EVENT_PROCESSED
+          - NEW_MANIFEST_EVENT_PROCESSED
+          - SKIPPED
+          - QUEUED
+          - INVALID_HARNESS_ARTIFACT_REGISTRY_TRIGGER_ACTION
+          - NO_TRIGGERS_FOUND_FOR_HARNESS_ARTIFACT_REGISTRY_WEBHOOK
+          - HARNESS_ARTIFACT_REGISTRY_WEBHOOK_NOT_EXECUTED
+        message:
+          type: string
+        exceptionOccurred:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
+        triggerEventStatus:
+          $ref: '#/components/schemas/TriggerEventStatus'
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        targetIdentifier:
+          type: string
+        targetExecutionSummary:
+          $ref: '#/components/schemas/TargetExecutionSummary'
+        type:
           type: string
           enum:
           - Webhook
@@ -1061,25 +1188,8 @@ components:
           - Scheduled
           - MultiRegionArtifact
           - SystemEvent
-        subTriggerType:
-          type: string
-        ngTriggerMetaData:
-          $ref: '#/components/schemas/NGTriggerMetaData'
-    ResponseDTOPageNGTriggerEventsApiResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageNGTriggerEventsApiResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
+        ngTriggerEventInfo:
+          $ref: '#/components/schemas/NGTriggerEventInfo'
     Failure:
       type: object
       properties:
@@ -1499,6 +1609,21 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
+    ResponseDTOPollingInfoForTriggers:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PollingInfoForTriggers'
+        metaData:
+          type: object
+        correlationId:
+          type: string
     TargetExecutionSummary:
       type: object
       properties:
@@ -1518,14 +1643,92 @@ components:
         startTs:
           type: integer
           format: int64
-    PolledResponse:
+    PipelineScope:
+      required:
+      - accountIdentifier
       type: object
       properties:
-        allPolledKeys:
-          uniqueItems: true
+        accountIdentifier:
+          type: string
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        parentUniqueId:
+          type: string
+    PageNGTriggerEventsApiResponse:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/NGTriggerEventsApiResponse'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/Pageable'
+        numberOfElements:
+          type: integer
+          format: int32
+        last:
+          type: boolean
+        empty:
+          type: boolean
+    PageNGTriggerEventHistoryDTO:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/NGTriggerEventHistoryDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/Pageable'
+        numberOfElements:
+          type: integer
+          format: int32
+        last:
+          type: boolean
+        empty:
+          type: boolean
+    NGTriggerMetaData:
+      type: object
+      properties:
+        pollingDocumentId:
+          type: string
+          writeOnly: true
+        build:
+          type: string
+          writeOnly: true
     ResponseMessage:
       type: object
       properties:
@@ -2116,7 +2319,7 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOPageNGTriggerEventHistoryDTO:
+    ResponseDTOPageNGTriggerEventsApiResponse:
       type: object
       properties:
         status:
@@ -2126,197 +2329,11 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/PageNGTriggerEventHistoryDTO'
+          $ref: '#/components/schemas/PageNGTriggerEventsApiResponse'
         metaData:
           type: object
         correlationId:
           type: string
-    ResponseDTOPageNGTriggerEventHistoryBaseDTO:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageNGTriggerEventHistoryBaseDTO'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    TriggerEventStatus:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILED
-          - SKIPPED
-        message:
-          type: string
-    Pageable:
-      type: object
-      properties:
-        offset:
-          type: integer
-          format: int64
-        sort:
-          $ref: '#/components/schemas/Sort'
-        pageSize:
-          type: integer
-          format: int32
-        pageNumber:
-          type: integer
-          format: int32
-        paged:
-          type: boolean
-        unpaged:
-          type: boolean
-    NGTriggerEventHistoryDTO:
-      type: object
-      properties:
-        triggerIdentifier:
-          type: string
-        accountId:
-          type: string
-        eventCorrelationId:
-          type: string
-        payload:
-          type: string
-        headers:
-          type: object
-          additionalProperties:
-            type: string
-        eventCreatedAt:
-          type: integer
-          format: int64
-        finalStatus:
-          type: string
-          enum:
-          - SCM_SERVICE_CONNECTION_FAILED
-          - INVALID_PAYLOAD
-          - TRIGGER_DID_NOT_MATCH_EVENT_CONDITION
-          - TRIGGER_DID_NOT_MATCH_METADATA_CONDITION
-          - TRIGGER_DID_NOT_MATCH_ARTIFACT_JEXL_CONDITION
-          - NO_MATCHING_TRIGGER_FOR_REPO
-          - NO_MATCHING_TRIGGER_FOR_EVENT_ACTION
-          - NO_MATCHING_TRIGGER_FOR_METADATA_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_PAYLOAD_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_JEXL_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_HEADER_CONDITIONS
-          - INVALID_RUNTIME_INPUT_YAML
-          - TARGET_DID_NOT_EXECUTE
-          - TARGET_EXECUTION_REQUESTED
-          - NO_ENABLED_CUSTOM_TRIGGER_FOUND
-          - NO_ENABLED_CUSTOM_TRIGGER_FOUND_FOR_ACCOUNT
-          - NO_ENABLED_TRIGGER_FOR_PROJECT
-          - NO_ENABLED_TRIGGER_FOR_ACCOUNT
-          - NO_ENABLED_TRIGGER_FOR_SOURCEREPO_TYPE
-          - NO_ENABLED_TRIGGER_FOR_ACCOUNT_SOURCE_REPO
-          - NO_MATCHING_TRIGGER_FOR_FILEPATH_CONDITIONS
-          - FAILED_TO_FETCH_PR_DETAILS
-          - FAILED_TO_FETCH_PR_COMMITS
-          - EXCEPTION_WHILE_PROCESSING
-          - TRIGGER_CONFIRMATION_SUCCESSFUL
-          - TRIGGER_CONFIRMATION_FAILED
-          - TRIGGER_AUTHENTICATION_FAILED
-          - VALIDATION_FAILED_FOR_TRIGGER
-          - ALL_MAPPED_TRIGGER_FAILED_VALIDATION_FOR_POLLING_EVENT
-          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_SIGNATURES
-          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_CONDITION
-          - POLLING_EVENT_WITH_NO_VERSIONS
-          - NEW_ARTIFACT_EVENT_PROCESSED
-          - NEW_MANIFEST_EVENT_PROCESSED
-          - SKIPPED
-          - QUEUED
-          - INVALID_HARNESS_ARTIFACT_REGISTRY_TRIGGER_ACTION
-          - NO_TRIGGERS_FOUND_FOR_HARNESS_ARTIFACT_REGISTRY_WEBHOOK
-          - HARNESS_ARTIFACT_REGISTRY_WEBHOOK_NOT_EXECUTED
-        message:
-          type: string
-        exceptionOccurred:
-          type: boolean
-        createdAt:
-          type: integer
-          format: int64
-        triggerEventStatus:
-          $ref: '#/components/schemas/TriggerEventStatus'
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        targetIdentifier:
-          type: string
-        targetExecutionSummary:
-          $ref: '#/components/schemas/TargetExecutionSummary'
-        type:
-          type: string
-          enum:
-          - Webhook
-          - Artifact
-          - Manifest
-          - Scheduled
-          - MultiRegionArtifact
-          - SystemEvent
-        ngTriggerEventInfo:
-          $ref: '#/components/schemas/NGTriggerEventInfo'
-    PipelineScope:
-      required:
-      - accountIdentifier
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        parentUniqueId:
-          type: string
-    ResponseDTOPollingInfoForTriggers:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PollingInfoForTriggers'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    NGTriggerEventInfo:
-      type: object
-    NGTriggerMetaData:
-      type: object
-      properties:
-        pollingDocumentId:
-          type: string
-          writeOnly: true
-        build:
-          type: string
-          writeOnly: true
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    PipelineErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
     PageNGTriggerEventHistoryBaseDTO:
       type: object
       properties:
@@ -2349,38 +2366,6 @@ components:
           type: boolean
         empty:
           type: boolean
-    PageNGTriggerEventsApiResponse:
-      type: object
-      properties:
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/NGTriggerEventsApiResponse'
-        number:
-          type: integer
-          format: int32
-        sort:
-          $ref: '#/components/schemas/Sort'
-        first:
-          type: boolean
-        pageable:
-          $ref: '#/components/schemas/Pageable'
-        numberOfElements:
-          type: integer
-          format: int32
-        last:
-          type: boolean
-        empty:
-          type: boolean
     PerpetualTaskInfoForTriggers:
       type: object
       properties:
@@ -2396,6 +2381,21 @@ components:
         delegateId:
           type: string
         delegateHostName:
+          type: string
+    ResponseDTOPageNGTriggerEventHistoryDTO:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageNGTriggerEventHistoryDTO'
+        metaData:
+          type: object
+        correlationId:
           type: string
   securitySchemes:
     x-api-key:

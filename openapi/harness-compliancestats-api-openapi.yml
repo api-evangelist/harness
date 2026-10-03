@@ -164,6 +164,38 @@ paths:
       - ComplianceStats
 components:
   schemas:
+    SeverityComplianceMetrics:
+      title: SeverityComplianceMetrics
+      x-stoplight:
+        id: i4qcivi1ic7hu
+      type: object
+      description: 'Stores severity vs failure count '
+      properties:
+        severity:
+          $ref: '#/components/schemas/ComplianceCheckSeverity'
+        failed:
+          type: integer
+          x-stoplight:
+            id: yu6c57ls9hgps
+    ComplianceScanType:
+      title: ComplianceScanType
+      x-stoplight:
+        id: xofqrlg94b1o5
+      type: string
+      enum:
+      - REPOSITORY
+      - CICD
+      description: Type of scan on the source like Repository scan or Worklfow scan
+    ComplianceCheckSeverity:
+      title: ComplianceCheckSeverity
+      type: string
+      x-stoplight:
+        id: kpbii4pjiw1ff
+      enum:
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
     ComplianceResultFilter:
       type: object
       x-examples:
@@ -196,68 +228,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ComplianceScanType'
-    ComplianceScanType:
-      title: ComplianceScanType
-      x-stoplight:
-        id: xofqrlg94b1o5
-      type: string
-      enum:
-      - REPOSITORY
-      - CICD
-      description: Type of scan on the source like Repository scan or Worklfow scan
-    SeverityComplianceMetrics:
-      title: SeverityComplianceMetrics
-      x-stoplight:
-        id: i4qcivi1ic7hu
-      type: object
-      description: 'Stores severity vs failure count '
-      properties:
-        severity:
-          $ref: '#/components/schemas/ComplianceCheckSeverity'
-        failed:
-          type: integer
-          x-stoplight:
-            id: yu6c57ls9hgps
-    ComplianceStandardType:
-      title: ComplianceStandardType
-      type: string
-      x-stoplight:
-        id: hqwyia5x65e2x
-      enum:
-      - CIS
-      - OWASP
-    ComplianceEvaluationTrend:
-      title: ComplianceEvaluationTrend
-      x-stoplight:
-        id: pjgvs47v5rtej
-      type: object
-      description: Data point for compliane evaluation trend api
-      properties:
-        window_start_time:
-          type: string
-          x-stoplight:
-            id: rmrtkj4ikb0ov
-        window_end_time:
-          type: string
-          x-stoplight:
-            id: 159g6x7sv80gx
-        passed:
-          type: integer
-          x-stoplight:
-            id: 3plfwztlj4pki
-        failed:
-          type: integer
-          x-stoplight:
-            id: 5prsa89cck6v6
-    ComplianceResultStatus:
-      title: ComplianceResultStatus
-      type: string
-      x-stoplight:
-        id: g7eq9rgfjalfb
-      enum:
-      - PASSED
-      - FAILED
-      - UNKNOWN
     ComplianceChecksMetrics:
       title: ComplianceChecksMetrics
       x-stoplight:
@@ -295,6 +265,38 @@ components:
           type: string
           x-stoplight:
             id: vhtwdq312xu3r
+    ComplianceEvaluationTrend:
+      title: ComplianceEvaluationTrend
+      x-stoplight:
+        id: pjgvs47v5rtej
+      type: object
+      description: Data point for compliane evaluation trend api
+      properties:
+        window_start_time:
+          type: string
+          x-stoplight:
+            id: rmrtkj4ikb0ov
+        window_end_time:
+          type: string
+          x-stoplight:
+            id: 159g6x7sv80gx
+        passed:
+          type: integer
+          x-stoplight:
+            id: 3plfwztlj4pki
+        failed:
+          type: integer
+          x-stoplight:
+            id: 5prsa89cck6v6
+    ComplianceResultStatus:
+      title: ComplianceResultStatus
+      type: string
+      x-stoplight:
+        id: g7eq9rgfjalfb
+      enum:
+      - PASSED
+      - FAILED
+      - UNKNOWN
     ArtifactComplianceMetrics:
       title: ArtifactComplianceMetrics
       x-stoplight:
@@ -338,16 +340,36 @@ components:
             id: m2ju4nhsgkoub
           items:
             $ref: '#/components/schemas/SeverityComplianceMetrics'
-    ComplianceCheckSeverity:
-      title: ComplianceCheckSeverity
+    ComplianceStandardType:
+      title: ComplianceStandardType
       type: string
       x-stoplight:
-        id: kpbii4pjiw1ff
+        id: hqwyia5x65e2x
       enum:
-      - CRITICAL
-      - HIGH
-      - MEDIUM
-      - LOW
+      - CIS
+      - OWASP
+  requestBodies:
+    ComplianceEvaluationTrendRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceResultFilter'
+    ComplianceResultsEvaluationBreakdownByArtifactsRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceResultFilter'
+    FetchComplianeResultChecksStatsRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceResultFilter'
+    ComplianceResultsOverviewRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceResultFilter'
+      description: ''
   parameters:
     Page2:
       name: page
@@ -358,13 +380,22 @@ components:
         default: 0
         minimum: 0
       description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    OrgParam1:
-      name: org
-      in: path
+    Limit6:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
+    AccountHeader6:
+      name: Harness-Account
+      in: header
       required: true
       schema:
         type: string
-      description: Harness organization ID
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
     Order2:
       name: order
       in: query
@@ -376,15 +407,6 @@ components:
         - DESC
         default: ASC
       description: Order on the basis of which sorting is done.
-    Limit6:
-      name: limit
-      in: query
-      schema:
-        type: integer
-        default: 30
-        maximum: 1000
-        minimum: 1
-      description: Number of items to return per page.
     ProjectParam1:
       in: path
       required: true
@@ -392,44 +414,22 @@ components:
         type: string
       description: Harness project ID
       name: project
-    AccountHeader6:
-      name: Harness-Account
-      in: header
+    OrgParam1:
+      name: org
+      in: path
       required: true
       schema:
         type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-  requestBodies:
-    ComplianceResultsEvaluationBreakdownByArtifactsRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceResultFilter'
-    FetchComplianeResultChecksStatsRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceResultFilter'
-    ComplianceEvaluationTrendRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceResultFilter'
-    ComplianceResultsOverviewRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceResultFilter'
-      description: ''
+      description: Harness organization ID
   responses:
-    ComplianceChecksStatsResponse:
-      description: ''
+    ComplianceEvaluationTrendResponse:
+      description: Example response
       content:
         application/json:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/ComplianceChecksMetrics'
+              $ref: '#/components/schemas/ComplianceEvaluationTrend'
     ComplianceResultsEvaluationBreakdownByArtifactsResponse:
       description: Example response
       content:
@@ -444,14 +444,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ComplianceResultsEvaluationBreakdown'
-    ComplianceEvaluationTrendResponse:
-      description: Example response
+    ComplianceChecksStatsResponse:
+      description: ''
       content:
         application/json:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/ComplianceEvaluationTrend'
+              $ref: '#/components/schemas/ComplianceChecksMetrics'
   securitySchemes:
     x-api-key:
       name: x-api-key

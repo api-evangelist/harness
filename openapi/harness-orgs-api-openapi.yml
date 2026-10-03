@@ -115,64 +115,29 @@ paths:
       tags:
       - Orgs
 components:
-  parameters:
-    DbOpsSort:
-      description: Parameter on the basis of which sorting is done.
-      in: query
-      name: sort
-      schema:
-        default: created
-        enum:
-        - name
-        - updated
-        - created
-        type: string
-    DbOpsOrder:
-      description: Order on the basis of which sorting is done.
-      in: query
-      name: order
-      schema:
-        default: DESC
-        enum:
-        - ASC
-        - DESC
-        type: string
-    DbOpsPageIndex:
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-      in: query
-      name: page
-      schema:
-        default: 0
-        format: int64
-        type: integer
-    DbOpsLimit:
-      description: 'Pagination: Number of items to return.'
-      in: query
-      name: limit
-      schema:
-        default: 10
-        maximum: 100
-        type: integer
-    DbOpsSearchTerm:
-      allowEmptyValue: true
-      description: This would be used to filter resources having attributes matching the search term.
-      in: query
-      name: search_term
-      schema:
-        type: string
   requestBodies:
-    DBSchemaFilterRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DBSchemaFilterIn'
     DBInstanceListRequest:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/DBInstanceListInput'
       description: Request for listing instances where schema input is not a required property.
+    DBSchemaFilterRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DBSchemaFilterIn'
   schemas:
+    MigrationType:
+      default: Liquibase
+      description: DB Migration tool type
+      enum:
+      - Liquibase
+      - Flyway
+      title: MigrationType
+      type: string
+      x-stoplight:
+        id: jxued8v34v6x0
     DbOpsError:
       description: Error Response
       properties:
@@ -185,136 +150,6 @@ components:
       type: object
       x-stoplight:
         id: 61cwtgnps2mpt
-    Changelog:
-      additionalProperties: false
-      description: 'if schemaType is Repository location of the changelog file containing schema changes in a git repository.
-
-        Provide connector for third-party git connectors, or repo without connector to use Harness Code Repository.
-
-        '
-      properties:
-        archivePath:
-          description: path excluding the repo till the archive file
-          minLength: 1
-          type: string
-          x-stoplight:
-            id: 53mqhpfa5038m
-        connector:
-          description: 'identifier of the harness git connector. Optional when using Harness Code Repository. Omit or set to empty string to use Harness Code Repository (requires `repo` to be set).
-
-            '
-          example: harness_git
-          type: string
-          x-go-type-skip-optional-pointer: true
-        location:
-          description: path to the change log file
-          example: folder/changelog.yaml
-          minLength: 1
-          type: string
-        repo:
-          description: repo name of the git based connector when ConnectionType is Account
-          example: folder/changelog.yaml
-          minLength: 1
-          type: string
-          x-stoplight:
-            id: pw3ul0rkm8xt6
-        toml:
-          description: config file for Flyway migration type
-          type: string
-          x-stoplight:
-            id: ojrzuagzdfn20
-      required:
-      - location
-      type: object
-      x-stoplight:
-        id: rytv7gaa34yns
-    DBSchemaOut:
-      description: Database Schema Response
-      properties:
-        changeLogScript:
-          $ref: '#/components/schemas/ChangeLogScript'
-        changelog:
-          $ref: '#/components/schemas/Changelog'
-        created:
-          description: epoch seconds when the database schema was created
-          format: int64
-          type: integer
-        identifier:
-          description: identifier of the database schema
-          type: string
-        instanceCount:
-          description: number of database instances corresponding to database schema
-          format: int64
-          type: integer
-        migrationType:
-          $ref: '#/components/schemas/MigrationType'
-        name:
-          description: name of the database schema
-          type: string
-        parentId:
-          description: parentUniqueId for scope schema belongs to
-          type: string
-          x-stoplight:
-            id: ly84xx0ojw0dw
-        primaryDbInstanceId:
-          description: Identifier for the primary dbInstance used for advanced feature like LLM Authoring etc.
-          type: string
-          x-stoplight:
-            id: 2q5akpayctizx
-        schemaSourceType:
-          enum:
-          - Git
-          - Artifactory
-          - Custom
-          - HarnessCode
-          readOnly: true
-          type: string
-          x-stoplight:
-            id: 802m1r25ghm6l
-        service:
-          description: harness service corresponding to database schema
-          type: string
-        tags:
-          additionalProperties:
-            type: string
-          description: tags attached to the database schema
-          type: object
-          x-go-type-skip-optional-pointer: true
-        type:
-          $ref: '#/components/schemas/DBSchemaType'
-        updated:
-          description: epoch seconds when the database schema was last updated
-          format: int64
-          type: integer
-        usePercona:
-          default: false
-          description: if percona-toolkit is enabled
-          type: boolean
-          x-stoplight:
-            id: dnfipv17ffs3v
-      required:
-      - identifier
-      - name
-      - created
-      - instanceCount
-      - type
-      - parentId
-      - migrationType
-      - usePercona
-      title: Database Schema Response
-      type: object
-      x-stoplight:
-        id: 1y01syuq8w851
-    MigrationType:
-      default: Liquibase
-      description: DB Migration tool type
-      enum:
-      - Liquibase
-      - Flyway
-      title: MigrationType
-      type: string
-      x-stoplight:
-        id: jxued8v34v6x0
     DBSchemaType:
       description: db schema type
       enum:
@@ -324,83 +159,6 @@ components:
       type: string
       x-stoplight:
         id: 8x2xf0r3syqjg
-    DBInstanceOut:
-      description: Database Instance Response
-      properties:
-        branch:
-          description: branch where the instance is stored
-          type: string
-        commitSha:
-          description: commit SHA to pin the changelog to a specific revision
-          type: string
-        connector:
-          description: DB Connector
-          type: string
-        context:
-          description: Liquibase context
-          type: string
-        created:
-          description: epoch seconds when the database instance was created
-          format: int64
-          type: integer
-        gitTag:
-          description: Git tag to pin the changelog to a specific tagged revision
-          type: string
-        identifier:
-          description: identifier of the database instance
-          type: string
-        lastAppliedTag:
-          description: Most recent tag applied to the database
-          type: string
-        lastDeployedChangeSetTag:
-          description: Tag on last deployed changeSet
-          type: string
-          x-stoplight:
-            id: dlbvh5adtk2de
-        name:
-          description: name of the database instance
-          type: string
-        schemaId:
-          type: string
-          x-stoplight:
-            id: 2n2zy2gxgmycn
-        schemaIdentifier:
-          type: string
-          x-stoplight:
-            id: delov0umr51kp
-        substituteProperties:
-          additionalProperties:
-            type: string
-            x-stoplight:
-              id: lhgrpfvhx5bfk
-          description: Placeholder replacement in migration scripts.
-          type: object
-          x-stoplight:
-            id: npmul0cgghe3c
-        tags:
-          additionalProperties:
-            type: string
-          description: tags attached to the database instance
-          type: object
-          x-go-type-skip-optional-pointer: true
-        toOnboard:
-          type: boolean
-          x-stoplight:
-            id: y8hnyznezal4i
-        updated:
-          description: epoch seconds when the database instance was last updated
-          format: int64
-          type: integer
-      required:
-      - identifier
-      - name
-      - created
-      - connector
-      - lastDeployedChangeSetTag
-      title: Database Instance Response
-      type: object
-      x-stoplight:
-        id: qcmn5nllz3a1z
     ChangeLogScript:
       additionalProperties: false
       description: if schemaType is Script location of the changelog file after using a custom script to download
@@ -484,6 +242,203 @@ components:
       type: object
       x-stoplight:
         id: sj7v1o7j1aoz2
+    DBSchemaOut:
+      description: Database Schema Response
+      properties:
+        changeLogScript:
+          $ref: '#/components/schemas/ChangeLogScript'
+        changelog:
+          $ref: '#/components/schemas/Changelog'
+        created:
+          description: epoch seconds when the database schema was created
+          format: int64
+          type: integer
+        identifier:
+          description: identifier of the database schema
+          type: string
+        instanceCount:
+          description: number of database instances corresponding to database schema
+          format: int64
+          type: integer
+        migrationType:
+          $ref: '#/components/schemas/MigrationType'
+        name:
+          description: name of the database schema
+          type: string
+        parentId:
+          description: parentUniqueId for scope schema belongs to
+          type: string
+          x-stoplight:
+            id: ly84xx0ojw0dw
+        primaryDbInstanceId:
+          description: Identifier for the primary dbInstance used for advanced feature like LLM Authoring etc.
+          type: string
+          x-stoplight:
+            id: 2q5akpayctizx
+        schemaSourceType:
+          enum:
+          - Git
+          - Artifactory
+          - Custom
+          - HarnessCode
+          readOnly: true
+          type: string
+          x-stoplight:
+            id: 802m1r25ghm6l
+        service:
+          description: harness service corresponding to database schema
+          type: string
+        tags:
+          additionalProperties:
+            type: string
+          description: tags attached to the database schema
+          type: object
+          x-go-type-skip-optional-pointer: true
+        type:
+          $ref: '#/components/schemas/DBSchemaType'
+        updated:
+          description: epoch seconds when the database schema was last updated
+          format: int64
+          type: integer
+        usePercona:
+          default: false
+          description: if percona-toolkit is enabled
+          type: boolean
+          x-stoplight:
+            id: dnfipv17ffs3v
+      required:
+      - identifier
+      - name
+      - created
+      - instanceCount
+      - type
+      - parentId
+      - migrationType
+      - usePercona
+      title: Database Schema Response
+      type: object
+      x-stoplight:
+        id: 1y01syuq8w851
+    Changelog:
+      additionalProperties: false
+      description: 'if schemaType is Repository location of the changelog file containing schema changes in a git repository.
+
+        Provide connector for third-party git connectors, or repo without connector to use Harness Code Repository.
+
+        '
+      properties:
+        archivePath:
+          description: path excluding the repo till the archive file
+          minLength: 1
+          type: string
+          x-stoplight:
+            id: 53mqhpfa5038m
+        connector:
+          description: 'identifier of the harness git connector. Optional when using Harness Code Repository. Omit or set to empty string to use Harness Code Repository (requires `repo` to be set).
+
+            '
+          example: harness_git
+          type: string
+          x-go-type-skip-optional-pointer: true
+        location:
+          description: path to the change log file
+          example: folder/changelog.yaml
+          minLength: 1
+          type: string
+        repo:
+          description: repo name of the git based connector when ConnectionType is Account
+          example: folder/changelog.yaml
+          minLength: 1
+          type: string
+          x-stoplight:
+            id: pw3ul0rkm8xt6
+        toml:
+          description: config file for Flyway migration type
+          type: string
+          x-stoplight:
+            id: ojrzuagzdfn20
+      required:
+      - location
+      type: object
+      x-stoplight:
+        id: rytv7gaa34yns
+    DBInstanceOut:
+      description: Database Instance Response
+      properties:
+        branch:
+          description: branch where the instance is stored
+          type: string
+        commitSha:
+          description: commit SHA to pin the changelog to a specific revision
+          type: string
+        connector:
+          description: DB Connector
+          type: string
+        context:
+          description: Liquibase context
+          type: string
+        created:
+          description: epoch seconds when the database instance was created
+          format: int64
+          type: integer
+        gitTag:
+          description: Git tag to pin the changelog to a specific tagged revision
+          type: string
+        identifier:
+          description: identifier of the database instance
+          type: string
+        lastAppliedTag:
+          description: Most recent tag applied to the database
+          type: string
+        lastDeployedChangeSetTag:
+          description: Tag on last deployed changeSet
+          type: string
+          x-stoplight:
+            id: dlbvh5adtk2de
+        name:
+          description: name of the database instance
+          type: string
+        schemaId:
+          type: string
+          x-stoplight:
+            id: 2n2zy2gxgmycn
+        schemaIdentifier:
+          type: string
+          x-stoplight:
+            id: delov0umr51kp
+        substituteProperties:
+          additionalProperties:
+            type: string
+            x-stoplight:
+              id: lhgrpfvhx5bfk
+          description: Placeholder replacement in migration scripts.
+          type: object
+          x-stoplight:
+            id: npmul0cgghe3c
+        tags:
+          additionalProperties:
+            type: string
+          description: tags attached to the database instance
+          type: object
+          x-go-type-skip-optional-pointer: true
+        toOnboard:
+          type: boolean
+          x-stoplight:
+            id: y8hnyznezal4i
+        updated:
+          description: epoch seconds when the database instance was last updated
+          format: int64
+          type: integer
+      required:
+      - identifier
+      - name
+      - created
+      - connector
+      - lastDeployedChangeSetTag
+      title: Database Instance Response
+      type: object
+      x-stoplight:
+        id: qcmn5nllz3a1z
   responses:
     DBInstanceListResponse:
       content:
@@ -535,6 +490,51 @@ components:
           description: Total number of elements returned in Paginated response.
           schema:
             type: integer
+  parameters:
+    DbOpsOrder:
+      description: Order on the basis of which sorting is done.
+      in: query
+      name: order
+      schema:
+        default: DESC
+        enum:
+        - ASC
+        - DESC
+        type: string
+    DbOpsPageIndex:
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
+    DbOpsSort:
+      description: Parameter on the basis of which sorting is done.
+      in: query
+      name: sort
+      schema:
+        default: created
+        enum:
+        - name
+        - updated
+        - created
+        type: string
+    DbOpsLimit:
+      description: 'Pagination: Number of items to return.'
+      in: query
+      name: limit
+      schema:
+        default: 10
+        maximum: 100
+        type: integer
+    DbOpsSearchTerm:
+      allowEmptyValue: true
+      description: This would be used to filter resources having attributes matching the search term.
+      in: query
+      name: search_term
+      schema:
+        type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

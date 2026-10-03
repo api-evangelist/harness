@@ -129,44 +129,152 @@ paths:
       tags:
       - Account Environments
 components:
+  parameters:
+    EnvironmentPathParam:
+      name: environment
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the scoped environment entity to be used for the selected operation.
+    ForceDelete:
+      name: forceDelete
+      in: query
+      schema:
+        type: boolean
+        default: false
+      description: Enable this field to force delete the entity
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    Sort1:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - name
+        - identifier
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    EnvironmentIdentifiers:
+      name: environment_ids
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+      description: List of Environment Identifiers
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    SearchTerm1:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching with search term.
   schemas:
-    EnvironmentResponse:
+    Environment:
       type: object
       x-examples:
         example-1:
-          service:
-            account: sample_account
-            identifier: example_environment
-            org: sample_organization
-            project: sample_project
-            name: Example_environment
-            description: This is a example environment
-            tags:
-              example-tag-1: example-tag-1-value
-              example-tag-2: example-tag-2-value
-            yaml: "service:\n  name: \"Example_environment\"\n  identifier: \"example_environment\"\n  tags: {}\n"
-          created: 1234567890
-          updated: 1234567890
-      description: Default response when a environment is returned
-      title: EnvironmentResponse
+          account: sample_account
+          identifier: example_environment
+          org: sample_organization
+          project: sample_project
+          name: Example_environment
+          description: This is a example environment
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          yaml: "environment:\n  name: \"Example_environment\"\n  identifier: \"example_environment\"\n  tags: {}\n"
+      description: This is the Environment entity defined in Harness
+      title: Environment
       properties:
-        environment:
-          $ref: '#/components/schemas/Environment'
-        created:
-          type: integer
-          format: int64
-          description: Creation timestamp for environment.
-        updated:
-          type: integer
-          format: int64
-          description: Last modification timestamp for environment.
+        account:
+          type: string
+          description: Account Identifier
+          minLength: 1
+          maxLength: 128
+        identifier:
+          type: string
+          description: Identifier of the Environment Request.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          description: Organization Identifier for the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        project:
+          type: string
+          description: Project Identifier for the Entity.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Name of the Environment Request.
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          description: Description of the entity
+          maxLength: 1024
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Environment tags
+          maxProperties: 128
+        harness_version:
+          type: string
+          description: version of harness yaml
+        yaml:
+          type: string
+          description: Yaml related to environment
+      required:
+      - identifier
+      - name
       x-stoplight:
-        id: 8wkghgenuyufw
-    EnvironmentType:
-      type: string
-      enum:
-      - PreProduction
-      - Production
+        id: t0gj2z2q9pwsn
     EnvironmentCreateRequest:
       type: object
       x-examples:
@@ -273,73 +381,43 @@ components:
       - type
       x-stoplight:
         id: stztl057sv571
-    Environment:
+    EnvironmentType:
+      type: string
+      enum:
+      - PreProduction
+      - Production
+    EnvironmentResponse:
       type: object
       x-examples:
         example-1:
-          account: sample_account
-          identifier: example_environment
-          org: sample_organization
-          project: sample_project
-          name: Example_environment
-          description: This is a example environment
-          tags:
-            example-tag-1: example-tag-1-value
-            example-tag-2: example-tag-2-value
-          yaml: "environment:\n  name: \"Example_environment\"\n  identifier: \"example_environment\"\n  tags: {}\n"
-      description: This is the Environment entity defined in Harness
-      title: Environment
+          service:
+            account: sample_account
+            identifier: example_environment
+            org: sample_organization
+            project: sample_project
+            name: Example_environment
+            description: This is a example environment
+            tags:
+              example-tag-1: example-tag-1-value
+              example-tag-2: example-tag-2-value
+            yaml: "service:\n  name: \"Example_environment\"\n  identifier: \"example_environment\"\n  tags: {}\n"
+          created: 1234567890
+          updated: 1234567890
+      description: Default response when a environment is returned
+      title: EnvironmentResponse
       properties:
-        account:
-          type: string
-          description: Account Identifier
-          minLength: 1
-          maxLength: 128
-        identifier:
-          type: string
-          description: Identifier of the Environment Request.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        org:
-          type: string
-          description: Organization Identifier for the Entity.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        project:
-          type: string
-          description: Project Identifier for the Entity.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        name:
-          type: string
-          description: Name of the Environment Request.
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          minLength: 1
-          maxLength: 128
-        description:
-          type: string
-          description: Description of the entity
-          maxLength: 1024
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          description: Environment tags
-          maxProperties: 128
-        harness_version:
-          type: string
-          description: version of harness yaml
-        yaml:
-          type: string
-          description: Yaml related to environment
-      required:
-      - identifier
-      - name
+        environment:
+          $ref: '#/components/schemas/Environment'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for environment.
+        updated:
+          type: integer
+          format: int64
+          description: Last modification timestamp for environment.
       x-stoplight:
-        id: t0gj2z2q9pwsn
+        id: 8wkghgenuyufw
   responses:
     EnvironmentResponse:
       description: Example response
@@ -414,117 +492,7 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-  parameters:
-    EnvironmentIdentifiers:
-      name: environment_ids
-      in: query
-      required: false
-      schema:
-        type: array
-        uniqueItems: true
-        items:
-          type: string
-      description: List of Environment Identifiers
-    SearchTerm1:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching with search term.
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    EnvironmentPathParam:
-      name: environment
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the scoped environment entity to be used for the selected operation.
-    ForceDelete:
-      name: forceDelete
-      in: query
-      schema:
-        type: boolean
-        default: false
-      description: Enable this field to force delete the entity
-    Sort1:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - name
-        - identifier
-        - created
-        - updated
-      description: Parameter on the basis of which sorting is done.
   requestBodies:
-    EnvironmentCreateRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/EnvironmentCreateRequest'
-          examples:
-            example-1:
-              value:
-                identifier: example_environment_v0
-                name: Example_Env_V0
-                description: This is a example environment v0
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                yaml: "environment:\n  name: \"Example_Env_V0\"\n  identifier: \"example_environment_v0\"\n  tags: {}\n"
-            example-2:
-              value:
-                identifier: example_environment_v1
-                name: Example_Env_V1
-                description: This is a example environment v1
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                yaml: "environment:\n  version: 1\n  kind: Environment\n"
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/EnvironmentCreateRequest'
-          examples:
-            example-1:
-              value: "identifier: example_environment_v0\nname: Example_Env_V0\ndescription: This is a example environment\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_Env_V0\"\n    identifier: \"example_environment_v0\"\n    tags: {}\n"
-      description: Update Environment request body
-      required: true
     EnvironmentUpdateRequest:
       content:
         application/json:
@@ -552,6 +520,38 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/EnvironmentUpdateRequest'
+          examples:
+            example-1:
+              value: "identifier: example_environment_v0\nname: Example_Env_V0\ndescription: This is a example environment\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_Env_V0\"\n    identifier: \"example_environment_v0\"\n    tags: {}\n"
+      description: Update Environment request body
+      required: true
+    EnvironmentCreateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvironmentCreateRequest'
+          examples:
+            example-1:
+              value:
+                identifier: example_environment_v0
+                name: Example_Env_V0
+                description: This is a example environment v0
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "environment:\n  name: \"Example_Env_V0\"\n  identifier: \"example_environment_v0\"\n  tags: {}\n"
+            example-2:
+              value:
+                identifier: example_environment_v1
+                name: Example_Env_V1
+                description: This is a example environment v1
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "environment:\n  version: 1\n  kind: Environment\n"
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/EnvironmentCreateRequest'
           examples:
             example-1:
               value: "identifier: example_environment_v0\nname: Example_Env_V0\ndescription: This is a example environment\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_Env_V0\"\n    identifier: \"example_environment_v0\"\n    tags: {}\n"

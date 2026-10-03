@@ -595,108 +595,63 @@ paths:
           content: {}
 components:
   schemas:
-    ServicesResponse:
-      type: object
-      properties:
-        response:
-          type: array
-          items:
-            $ref: '#/components/schemas/LwService'
-    SaveServiceRequest:
-      type: object
-      properties:
-        deps:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServiceDep'
-        service:
-          $ref: '#/components/schemas/LwService'
-        apply_now:
-          type: boolean
-    Proxy:
-      type: object
-      properties:
-        id:
-          type: string
-    ServiceResponseWithoutDisabled:
-      type: object
-      properties:
-        response:
-          $ref: '#/components/schemas/ServiceWithoutDisabled'
-    PortConfig:
-      type: object
-      properties:
-        protocol:
-          type: string
-        target_protocol:
-          type: string
-        port:
-          type: integer
-        target_port:
-          type: integer
-        server_name:
-          type: string
-        action:
-          type: string
-        redirect_url:
-          type: string
-        routing_rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoutingRule'
-    Opts:
-      type: object
-      properties:
-        preserve_private_ip:
-          type: boolean
-        delete_cloud_resources:
-          type: boolean
-        always_use_private_ip:
-          type: boolean
-        access_details:
-          type: object
-          properties: {}
-        hide_progress_page:
-          type: boolean
-        idle_time_for_state_sync:
-          type: boolean
-          description: If true, idle time is used for state sync instead of the default 5 minutes
-    WarmUpResponse:
+    CoolDownMetaSuccessResponse:
       type: object
       properties:
         ts:
           type: integer
-          format: int64
-          description: Response timestamp in milliseconds
+          description: Response timestamp
         success:
           type: boolean
-          description: Indicates if the operation was successful
-        errors:
+          description: Specifies if the operation is successful
+        response:
           type: array
           items:
             type: string
-          description: List of error messages, if any
-        response:
-          $ref: '#/components/schemas/ServiceStatus'
-    TargetGroupMinimal:
+          description: Name of dependant autostopping rules which will be shut down
+    LwResource:
       type: object
       properties:
         id:
           type: string
         name:
           type: string
-        port:
-          type: integer
-        protocol:
-          type: string
-        vpc:
-          type: string
-    RDSDatabase:
-      type: object
-      properties:
-        id:
-          type: string
         region:
+          type: string
+        availability_zone:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+        launch_time:
+          type: string
+        ipv4:
+          type: array
+          items:
+            type: string
+        private_ipv4:
+          type: array
+          items:
+            type: string
+        tags:
+          type: object
+          properties: {}
+          description: tag key as attribute key and tag value as attribute value
+        resource_type:
+          type: string
+        provider_name:
+          type: string
+        is_spot:
+          type: boolean
+        platform:
+          type: string
+        cloud_account_id:
+          type: number
+        metadata:
+          type: object
+          properties: {}
+        provider_type:
           type: string
     LwService:
       required:
@@ -751,83 +706,13 @@ components:
           $ref: '#/components/schemas/ServiceMetadata'
         status:
           type: string
-    ServiceDiagnosticsResponse:
+    RDSDatabase:
       type: object
       properties:
-        response:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServiceDiagnostics'
-    CumulativeSavings:
-      type: object
-      properties:
-        days:
-          type: array
-          items:
-            type: string
-        potential_cost:
-          type: array
-          items:
-            type: number
-            format: float
-        actual_cost:
-          type: array
-          items:
-            type: number
-            format: float
-        savings:
-          type: array
-          items:
-            type: number
-            format: float
-        total_savings:
-          type: number
-          format: float
-        total_potential:
-          type: number
-          format: float
-        total_cost:
-          type: number
-          format: float
-        savings_percent:
-          type: number
-          format: float
-        total_active_services:
-          type: number
-          format: int64
-    ServiceStatus:
-      type: object
-      properties:
-        state:
-          type: string
-          description: Current state of the service (e.g., warming_up, active, stopped)
-        target_url:
-          type: string
-          description: Target URL for accessing the service
-        error:
-          type: string
-          description: Error message if the operation failed
         id:
           type: string
-          description: Unique identifier for cache invalidation
-    SaveServiceRequestWithoutDisabled:
-      type: object
-      properties:
-        deps:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServiceDep'
-        service:
-          $ref: '#/components/schemas/ServiceWithoutDisabled'
-        apply_now:
-          type: boolean
-    InstanceBasedRoutingData:
-      type: object
-      properties:
-        filter_text:
+        region:
           type: string
-        scale_group:
-          $ref: '#/components/schemas/ASGMinimal'
     RoutingData:
       type: object
       properties:
@@ -873,17 +758,22 @@ components:
           description: Specifies warm up as force action to override schedules
           required: true
           default: true
-    CoolDownMetaFailureResponse:
+    CoolDownOption:
       type: object
       properties:
-        ts:
-          type: integer
-          description: Response timestamp
-        errors:
+        propagate:
+          type: boolean
+          description: Specifies if we need to propagate cool down to dependant rules
+        force:
+          type: boolean
+          description: Specifies if the cool down is by force
+    ServicesResponse:
+      type: object
+      properties:
+        response:
           type: array
           items:
-            type: string
-          description: Errors
+            $ref: '#/components/schemas/LwService'
     ServiceHealthResponse:
       type: object
       properties:
@@ -913,15 +803,273 @@ components:
             id:
               type: string
               description: Unique identifier for the health check result
-    CoolDownOption:
+    ContainerSvc:
       type: object
       properties:
-        propagate:
+        cluster:
+          type: string
+        service:
+          type: string
+        region:
+          type: string
+        task_count:
+          type: number
+    InstanceBasedRoutingData:
+      type: object
+      properties:
+        filter_text:
+          type: string
+        scale_group:
+          $ref: '#/components/schemas/ASGMinimal'
+    PortConfig:
+      type: object
+      properties:
+        protocol:
+          type: string
+        target_protocol:
+          type: string
+        port:
+          type: integer
+        target_port:
+          type: integer
+        server_name:
+          type: string
+        action:
+          type: string
+        redirect_url:
+          type: string
+        routing_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingRule'
+    TargetGroupMinimal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        port:
+          type: integer
+        protocol:
+          type: string
+        vpc:
+          type: string
+    HTTPProxy:
+      required:
+      - proxy
+      - ports
+      type: object
+      properties:
+        proxy:
+          $ref: '#/components/schemas/Proxy'
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortConfig'
+    LwServiceResponse:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/LwService'
+    ServiceDiagnosticsResponse:
+      type: object
+      properties:
+        response:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDiagnostics'
+    CumulativeSavings:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            type: string
+        potential_cost:
+          type: array
+          items:
+            type: number
+            format: float
+        actual_cost:
+          type: array
+          items:
+            type: number
+            format: float
+        savings:
+          type: array
+          items:
+            type: number
+            format: float
+        total_savings:
+          type: number
+          format: float
+        total_potential:
+          type: number
+          format: float
+        total_cost:
+          type: number
+          format: float
+        savings_percent:
+          type: number
+          format: float
+        total_active_services:
+          type: number
+          format: int64
+    WarmUpResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          format: int64
+          description: Response timestamp in milliseconds
+        success:
           type: boolean
-          description: Specifies if we need to propagate cool down to dependant rules
-        force:
+          description: Indicates if the operation was successful
+        errors:
+          type: array
+          items:
+            type: string
+          description: List of error messages, if any
+        response:
+          $ref: '#/components/schemas/ServiceStatus'
+    ServiceStatus:
+      type: object
+      properties:
+        state:
+          type: string
+          description: Current state of the service (e.g., warming_up, active, stopped)
+        target_url:
+          type: string
+          description: Target URL for accessing the service
+        error:
+          type: string
+          description: Error message if the operation failed
+        id:
+          type: string
+          description: Unique identifier for cache invalidation
+    Opts:
+      type: object
+      properties:
+        preserve_private_ip:
           type: boolean
-          description: Specifies if the cool down is by force
+        delete_cloud_resources:
+          type: boolean
+        always_use_private_ip:
+          type: boolean
+        access_details:
+          type: object
+          properties: {}
+        hide_progress_page:
+          type: boolean
+        idle_time_for_state_sync:
+          type: boolean
+          description: If true, idle time is used for state sync instead of the default 5 minutes
+    SaveServiceRequest:
+      type: object
+      properties:
+        deps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDep'
+        service:
+          $ref: '#/components/schemas/LwService'
+        apply_now:
+          type: boolean
+    ASGMinimal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        desired:
+          type: integer
+        min:
+          type: integer
+        max:
+          type: integer
+        on_demand:
+          type: integer
+        spot:
+          type: integer
+        mixed_instance:
+          type: boolean
+        cloud_account_id:
+          type: string
+        provider_name:
+          type: string
+        target_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetGroupMinimal'
+        region:
+          type: string
+        availability_zones:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        meta:
+          type: object
+          properties: {}
+    RoutingRule:
+      type: object
+      properties:
+        path_match:
+          type: string
+    ServiceMetadata:
+      type: object
+      properties:
+        cloud_provider_details:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+        target_group_details:
+          type: object
+          properties: {}
+        service_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceError'
+        kubernetes_connector_id:
+          type: string
+        autostopping_proxy_config:
+          type: object
+          properties:
+            http:
+              $ref: '#/components/schemas/HTTPProxy'
+            tcp:
+              $ref: '#/components/schemas/HTTPProxy'
+    CoolDownMetaFailureResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        errors:
+          type: array
+          items:
+            type: string
+          description: Errors
+    ServiceDiagnostics:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message if success were to be false
+        name:
+          type: string
+          description: Name of the check
+        success:
+          type: boolean
+          description: Flag which specifies if a diagnostic check is successful
+        type:
+          type: string
     ServiceWithoutDisabled:
       required:
       - cloud_account_id
@@ -973,93 +1121,36 @@ components:
           $ref: '#/components/schemas/ServiceMetadata'
         status:
           type: string
-    LwResource:
+    Proxy:
       type: object
       properties:
         id:
           type: string
-        name:
-          type: string
-        region:
-          type: string
-        availability_zone:
-          type: string
-        status:
-          type: string
-        type:
-          type: string
-        launch_time:
-          type: string
-        ipv4:
-          type: array
-          items:
-            type: string
-        private_ipv4:
-          type: array
-          items:
-            type: string
-        tags:
-          type: object
-          properties: {}
-          description: tag key as attribute key and tag value as attribute value
-        resource_type:
-          type: string
-        provider_name:
-          type: string
-        is_spot:
-          type: boolean
-        platform:
-          type: string
-        cloud_account_id:
-          type: number
-        metadata:
-          type: object
-          properties: {}
-        provider_type:
-          type: string
-    RoutingRule:
+    ServiceError:
       type: object
       properties:
-        path_match:
+        error:
           type: string
-    ASGMinimal:
+        action:
+          type: string
+    SaveServiceRequestWithoutDisabled:
       type: object
       properties:
-        id:
-          type: string
-        name:
-          type: string
-        desired:
-          type: integer
-        min:
-          type: integer
-        max:
-          type: integer
-        on_demand:
-          type: integer
-        spot:
-          type: integer
-        mixed_instance:
+        deps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDep'
+        service:
+          $ref: '#/components/schemas/ServiceWithoutDisabled'
+        apply_now:
           type: boolean
-        cloud_account_id:
-          type: string
-        provider_name:
-          type: string
-        target_groups:
-          type: array
-          items:
-            $ref: '#/components/schemas/TargetGroupMinimal'
-        region:
-          type: string
-        availability_zones:
-          type: array
-          items:
-            type: string
-        status:
-          type: string
-        meta:
-          type: object
-          properties: {}
+    ServiceResponseWithoutDisabled:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/ServiceWithoutDisabled'
+    ServiceDep:
+      type: object
     CumulativeSavingsResponse:
       type: object
       properties:
@@ -1072,97 +1163,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LwResource'
-    CoolDownMetaSuccessResponse:
-      type: object
-      properties:
-        ts:
-          type: integer
-          description: Response timestamp
-        success:
-          type: boolean
-          description: Specifies if the operation is successful
-        response:
-          type: array
-          items:
-            type: string
-          description: Name of dependant autostopping rules which will be shut down
-    ServiceError:
-      type: object
-      properties:
-        error:
-          type: string
-        action:
-          type: string
-    ServiceMetadata:
-      type: object
-      properties:
-        cloud_provider_details:
-          type: object
-          properties:
-            name:
-              type: string
-            type:
-              type: string
-        target_group_details:
-          type: object
-          properties: {}
-        service_errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServiceError'
-        kubernetes_connector_id:
-          type: string
-        autostopping_proxy_config:
-          type: object
-          properties:
-            http:
-              $ref: '#/components/schemas/HTTPProxy'
-            tcp:
-              $ref: '#/components/schemas/HTTPProxy'
-    ServiceDiagnostics:
-      type: object
-      properties:
-        message:
-          type: string
-          description: Error message if success were to be false
-        name:
-          type: string
-          description: Name of the check
-        success:
-          type: boolean
-          description: Flag which specifies if a diagnostic check is successful
-        type:
-          type: string
-    HTTPProxy:
-      required:
-      - proxy
-      - ports
-      type: object
-      properties:
-        proxy:
-          $ref: '#/components/schemas/Proxy'
-        ports:
-          type: array
-          items:
-            $ref: '#/components/schemas/PortConfig'
-    ServiceDep:
-      type: object
-    ContainerSvc:
-      type: object
-      properties:
-        cluster:
-          type: string
-        service:
-          type: string
-        region:
-          type: string
-        task_count:
-          type: number
-    LwServiceResponse:
-      type: object
-      properties:
-        response:
-          $ref: '#/components/schemas/LwService'
   securitySchemes:
     x-api-key:
       name: x-api-key

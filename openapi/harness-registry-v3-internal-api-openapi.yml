@@ -127,9 +127,9 @@ paths:
       x-internal: true
 components:
   schemas:
-    CompletedAtMsV3:
-      description: Unix timestamp in milliseconds when the operation completed. Null while still in flight.
-      example: 1736360000456
+    StartedAtMsV3:
+      description: Unix timestamp in milliseconds when the operation started
+      example: 1736360000123
       format: int64
       type:
       - integer
@@ -163,6 +163,45 @@ components:
       - startedAt
       - completedAt
       type: object
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
+    BackfillTriggerDataV3:
+      description: Response payload returned when a backfill is successfully triggered.
+      properties:
+        jobId:
+          description: Numeric identifier of the CDC job row created for this backfill.
+          type: integer
+      required:
+      - jobId
+      type: object
+    CompletedAtMsV3:
+      description: Unix timestamp in milliseconds when the operation completed. Null while still in flight.
+      example: 1736360000456
+      format: int64
+      type:
+      - integer
+      - 'null'
+    BackfillStateDataV3:
+      description: Aggregated backfill state for an account across all entity types.
+      properties:
+        accountIdentifier:
+          description: Account identifier the state belongs to.
+          type: string
+        entities:
+          additionalProperties:
+            $ref: '#/components/schemas/BackfillEntityStateV3'
+          description: Map of entity type to its current backfill state.
+          type: object
+      required:
+      - accountIdentifier
+      - entities
+      type: object
     BackfillTaskStatusDataV3:
       description: Status of a single backfill job (CDC outbox row).
       properties:
@@ -193,6 +232,13 @@ components:
       - jobType
       - attempts
       type: object
+    CreatedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was created
+      example: 1736360000123
+      format: int64
+      type:
+      - integer
+      - 'null'
     BackfillTriggerRequestInputV3:
       description: Request body for triggering an ES search backfill.
       properties:
@@ -212,52 +258,6 @@ components:
           type: boolean
       required:
       - entityTypes
-      type: object
-    BackfillTriggerDataV3:
-      description: Response payload returned when a backfill is successfully triggered.
-      properties:
-        jobId:
-          description: Numeric identifier of the CDC job row created for this backfill.
-          type: integer
-      required:
-      - jobId
-      type: object
-    StartedAtMsV3:
-      description: Unix timestamp in milliseconds when the operation started
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    ErrorV3:
-      description: An error response
-      properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
-      required:
-      - error
-      type: object
-    CreatedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was created
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    BackfillStateDataV3:
-      description: Aggregated backfill state for an account across all entity types.
-      properties:
-        accountIdentifier:
-          description: Account identifier the state belongs to.
-          type: string
-        entities:
-          additionalProperties:
-            $ref: '#/components/schemas/BackfillEntityStateV3'
-          description: Map of entity type to its current backfill state.
-          type: object
-      required:
-      - accountIdentifier
-      - entities
       type: object
     ApiErrorsV3:
       properties:
@@ -285,6 +285,14 @@ components:
       - type
       title: APIErrors
       type: object
+  requestBodies:
+    BackfillTriggerRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BackfillTriggerRequestInputV3'
+      description: Request to trigger an ES search backfill for an account.
+      required: true
   parameters:
     AccountIdentifierV3:
       description: 'Unique identifier for the Harness account.
@@ -295,14 +303,6 @@ components:
       required: true
       schema:
         type: string
-  requestBodies:
-    BackfillTriggerRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BackfillTriggerRequestInputV3'
-      description: Request to trigger an ES search backfill for an account.
-      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

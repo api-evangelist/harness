@@ -48,80 +48,6 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/FilterResourceGroupRequest'
 components:
-  requestBodies:
-    FilterResourceGroupRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ResourceGroupFilterRequestBody'
-          examples:
-            example-filter:
-              value:
-                account: example_account
-                org: example_organization
-                project: example_project
-                search_term: search
-                identifier_filter:
-                - example_resource_group
-                resource_selector_filter:
-                - resource_type: RESOURCE
-                  resource_identifier: example_resource
-                managed_filter: NO_FILTER
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/ResourceGroupFilterRequestBody'
-          examples:
-            example-filter:
-              value: "account: example_account\norg: example_organization\nproject: example_project\nsearch_term: search\nidentifier_filter:\n  - example_resource_group\nresource_selector_filter:\n  - resource_type: RESOURCE\n    resource_identifier: example_resource\nmanaged_filter: NO_FILTER\n"
-      description: Filter Resource Group request body
-      required: true
-  parameters:
-    PageIndex:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-    AccountHeader2:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    Limit:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 30
-        maximum: 100
-      description: 'Pagination: Number of items to return.'
-    Sort:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - identifier
-        - name
-        - created
-        - updated
-      description: Parameter on the basis of which sorting is done.
   schemas:
     ResourceGroupsResponse:
       title: Resource Groups Response
@@ -219,44 +145,42 @@ components:
       required:
       - identifier
       - name
-    ResourceGroupScope:
-      title: Resource Group Scope
+    ResourceFilter:
+      title: Resource Filter
       x-stoplight:
-        id: w8j3bc9323bxb
+        id: m5qhp13hm6o1z
       type: object
-      description: Included scopes for the Resources belonging to the Resource Group
+      description: Specifies resources in Resource Group.
       x-examples:
-        example-1:
-          filter: EXCLUDING_CHILD_SCOPES
-          account: sample_account
-          org: sample_organization
-          project: sample_project
+        example-resource-filter:
+          resource_type: resource
+          identifiers:
+          - example_resource
+          attribute_name: resource_attribute
+          attribute_values:
+          - example_resource_attribute
       properties:
-        filter:
+        resource_type:
           type: string
-          enum:
-          - EXCLUDING_CHILD_SCOPES
-          - INCLUDING_CHILD_SCOPES
-          description: Including or Excluding Child scopes.
-        account:
+          description: Specifies the type of Resource.
+        identifiers:
+          type: array
+          description: Identifiers for the Resource Type.
+          items:
+            type: string
+            pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+            minLength: 1
+            maxLength: 128
+        attribute_name:
           type: string
-          description: Account identifier
-          minLength: 1
-          maxLength: 128
-        org:
-          type: string
-          description: Organization identifier
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        project:
-          type: string
-          description: Project identifier
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
+          description: Attribute name on the basis of which filtering will be done.
+        attribute_values:
+          type: array
+          description: Attribute values selected.
+          items:
+            type: string
       required:
-      - filter
+      - resource_type
     ResourceGroupFilterRequestBody:
       title: Resource Group Filter Request Body
       x-stoplight:
@@ -318,42 +242,44 @@ components:
           - NO_FILTER
           - ONLY_MANAGED
           - ONLY_CUSTOM
-    ResourceFilter:
-      title: Resource Filter
+    ResourceGroupScope:
+      title: Resource Group Scope
       x-stoplight:
-        id: m5qhp13hm6o1z
+        id: w8j3bc9323bxb
       type: object
-      description: Specifies resources in Resource Group.
+      description: Included scopes for the Resources belonging to the Resource Group
       x-examples:
-        example-resource-filter:
-          resource_type: resource
-          identifiers:
-          - example_resource
-          attribute_name: resource_attribute
-          attribute_values:
-          - example_resource_attribute
+        example-1:
+          filter: EXCLUDING_CHILD_SCOPES
+          account: sample_account
+          org: sample_organization
+          project: sample_project
       properties:
-        resource_type:
+        filter:
           type: string
-          description: Specifies the type of Resource.
-        identifiers:
-          type: array
-          description: Identifiers for the Resource Type.
-          items:
-            type: string
-            pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-            minLength: 1
-            maxLength: 128
-        attribute_name:
+          enum:
+          - EXCLUDING_CHILD_SCOPES
+          - INCLUDING_CHILD_SCOPES
+          description: Including or Excluding Child scopes.
+        account:
           type: string
-          description: Attribute name on the basis of which filtering will be done.
-        attribute_values:
-          type: array
-          description: Attribute values selected.
-          items:
-            type: string
+          description: Account identifier
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          description: Organization identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        project:
+          type: string
+          description: Project identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
       required:
-      - resource_type
+      - filter
     ResourceSelectorFilter:
       title: Resource Selector Filter
       x-stoplight:
@@ -376,6 +302,53 @@ components:
           maxLength: 128
       required:
       - resource_type
+  parameters:
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - identifier
+        - name
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    AccountHeader2:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    PageIndex:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+        maximum: 100
+      description: 'Pagination: Number of items to return.'
   responses:
     ResourceGroupsListResponse:
       description: Resource Groups List response body
@@ -436,6 +409,33 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
+  requestBodies:
+    FilterResourceGroupRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResourceGroupFilterRequestBody'
+          examples:
+            example-filter:
+              value:
+                account: example_account
+                org: example_organization
+                project: example_project
+                search_term: search
+                identifier_filter:
+                - example_resource_group
+                resource_selector_filter:
+                - resource_type: RESOURCE
+                  resource_identifier: example_resource
+                managed_filter: NO_FILTER
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ResourceGroupFilterRequestBody'
+          examples:
+            example-filter:
+              value: "account: example_account\norg: example_organization\nproject: example_project\nsearch_term: search\nidentifier_filter:\n  - example_resource_group\nresource_selector_filter:\n  - resource_type: RESOURCE\n    resource_identifier: example_resource\nmanaged_filter: NO_FILTER\n"
+      description: Filter Resource Group request body
+      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

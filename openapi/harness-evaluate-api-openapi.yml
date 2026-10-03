@@ -175,56 +175,91 @@ paths:
       x-summary-source: derived
 components:
   schemas:
-    CacheResponse:
+    EvaluatedPolicy:
       type: object
       properties:
-        cache_state:
-          type: string
-          description: Cache state (UNKNOWN_STATE, VALID_CACHE, STALE_CACHE)
-          example: STALE_CACHE
-        is_sync_enabled:
-          type: boolean
-          description: Whether sync is enabled for this resource
-          example: true
-        last_updated_at:
-          type: integer
-          description: Timestamp (millis) when cache was last updated
-          example: 1773917288158
-          format: int64
-        ttl_left:
-          type: integer
-          description: Remaining time-to-live in milliseconds
-          example: 258234442
-          format: int64
-      description: Cache metadata from GitX getFile RPC
-      example:
-        cache_state: STALE_CACHE
-        is_sync_enabled: true
-        last_updated_at: 1773917288158
-        ttl_left: 258234442
-    EvaluateRequestBody:
-      type: object
-      properties:
-        input:
-          description: Input to evaluate
+        deny_messages:
+          type: array
+          items:
+            type: string
+            example: Iste et dolores repellat atque est.
+          description: The values of any `deny` rego rules as returned by the rego engine
           example:
-            message: everyone
-        rego:
+          - deployment stage 'example-stage' does not have a HarnessApproval step
+          - deployment stage 'example-stage' has step 'run-script' that is forbidden type 'ShellScript'
+        error:
           type: string
-          description: Arbitrary rego to be evaluated
-          example: 'package test
-
-            deny["should say hello world"] {input.message != "world"}'
-          minLength: 1
+          description: Any errors returned by the rego engine when this policy was evaluated
+          example: 'policy.rego:25: rego_parse_error: non-terminated string m == "test'
+        output:
+          description: The output returned by the rego engine when this policy was evaluated
+          example: "{\n    \"deny\": [\n        \"deployment stage 'deploy' does not have a HarnessApproval step\"\n    ],\n    \"stages_with_approval\": []\n}"
+        policy:
+          $ref: '#/components/schemas/PolicyManagementPolicy'
+        policy_severity:
+          type: string
+          description: The severity of the policy that was selected while creating the policyset
+          example: Warn & Continue
+          enum:
+          - Warn & Continue
+          - Error & Exit
+        status:
+          type: string
+          description: The overall status for this individual policy indicating whether it passed
+          example: error
+          enum:
+          - error
+          - warning
+          - pass
+          - pending
       example:
-        input:
-          message: everyone
-        rego: 'package test
-
-          deny["should say hello world"] {input.message != "world"}'
+        deny_messages:
+        - deployment stage 'example-stage' does not have a HarnessApproval step
+        - deployment stage 'example-stage' has step 'run-script' that is forbidden type 'ShellScript'
+        error: 'policy.rego:25: rego_parse_error: non-terminated string m == "test'
+        output: "{\n    \"deny\": [\n        \"deployment stage 'deploy' does not have a HarnessApproval step\"\n    ],\n    \"stages_with_approval\": []\n}"
+        policy:
+          account_id: eBqAoNchMLKigC_qZ5EdC
+          cache_response:
+            cache_state: STALE_CACHE
+            is_sync_enabled: true
+            last_updated_at: 1773917288158
+            ttl_left: 258234442
+          created: 1636669297674
+          git_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+          git_connector_ref: .
+          git_default_branch: main
+          git_default_branch_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+          git_default_branch_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+          git_default_branch_file_url: ''
+          git_default_branch_update_error:
+            explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
+            hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+            message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
+          git_default_branch_updated: 1636669297674
+          git_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
+          git_file_url: ''
+          git_path: .harness/policy.rego
+          git_repo: github.com/org/repo,omitempty
+          identifier: policy-1
+          name: Pipeline Approval
+          org_id: test-org
+          parent_unique_id: Aliquam est.
+          polciy_size_in_bytes: 4204212102816286000
+          policy_package_name: Aspernatur in molestias recusandae odit quia.
+          policy_set_count: 3
+          project_id: test-project
+          rego: ''
+          unique_id: Ex consequuntur saepe.
+          updated: 1636669297674
+        policy_severity: Warn & Continue
+        status: error
       required:
-      - rego
-      - input
+      - status
+      - policy
+      - output
+      - deny_messages
+      - error
     PolicyManagementPolicy:
       type: object
       properties:
@@ -382,6 +417,56 @@ components:
       - account_id
       - org_id
       - project_id
+    CacheResponse:
+      type: object
+      properties:
+        cache_state:
+          type: string
+          description: Cache state (UNKNOWN_STATE, VALID_CACHE, STALE_CACHE)
+          example: STALE_CACHE
+        is_sync_enabled:
+          type: boolean
+          description: Whether sync is enabled for this resource
+          example: true
+        last_updated_at:
+          type: integer
+          description: Timestamp (millis) when cache was last updated
+          example: 1773917288158
+          format: int64
+        ttl_left:
+          type: integer
+          description: Remaining time-to-live in milliseconds
+          example: 258234442
+          format: int64
+      description: Cache metadata from GitX getFile RPC
+      example:
+        cache_state: STALE_CACHE
+        is_sync_enabled: true
+        last_updated_at: 1773917288158
+        ttl_left: 258234442
+    EvaluateRequestBody:
+      type: object
+      properties:
+        input:
+          description: Input to evaluate
+          example:
+            message: everyone
+        rego:
+          type: string
+          description: Arbitrary rego to be evaluated
+          example: 'package test
+
+            deny["should say hello world"] {input.message != "world"}'
+          minLength: 1
+      example:
+        input:
+          message: everyone
+        rego: 'package test
+
+          deny["should say hello world"] {input.message != "world"}'
+      required:
+      - rego
+      - input
     PolicyManagementError:
       type: object
       properties:
@@ -423,91 +508,6 @@ components:
       - temporary
       - timeout
       - fault
-    EvaluatedPolicy:
-      type: object
-      properties:
-        deny_messages:
-          type: array
-          items:
-            type: string
-            example: Iste et dolores repellat atque est.
-          description: The values of any `deny` rego rules as returned by the rego engine
-          example:
-          - deployment stage 'example-stage' does not have a HarnessApproval step
-          - deployment stage 'example-stage' has step 'run-script' that is forbidden type 'ShellScript'
-        error:
-          type: string
-          description: Any errors returned by the rego engine when this policy was evaluated
-          example: 'policy.rego:25: rego_parse_error: non-terminated string m == "test'
-        output:
-          description: The output returned by the rego engine when this policy was evaluated
-          example: "{\n    \"deny\": [\n        \"deployment stage 'deploy' does not have a HarnessApproval step\"\n    ],\n    \"stages_with_approval\": []\n}"
-        policy:
-          $ref: '#/components/schemas/PolicyManagementPolicy'
-        policy_severity:
-          type: string
-          description: The severity of the policy that was selected while creating the policyset
-          example: Warn & Continue
-          enum:
-          - Warn & Continue
-          - Error & Exit
-        status:
-          type: string
-          description: The overall status for this individual policy indicating whether it passed
-          example: error
-          enum:
-          - error
-          - warning
-          - pass
-          - pending
-      example:
-        deny_messages:
-        - deployment stage 'example-stage' does not have a HarnessApproval step
-        - deployment stage 'example-stage' has step 'run-script' that is forbidden type 'ShellScript'
-        error: 'policy.rego:25: rego_parse_error: non-terminated string m == "test'
-        output: "{\n    \"deny\": [\n        \"deployment stage 'deploy' does not have a HarnessApproval step\"\n    ],\n    \"stages_with_approval\": []\n}"
-        policy:
-          account_id: eBqAoNchMLKigC_qZ5EdC
-          cache_response:
-            cache_state: STALE_CACHE
-            is_sync_enabled: true
-            last_updated_at: 1773917288158
-            ttl_left: 258234442
-          created: 1636669297674
-          git_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-          git_connector_ref: .
-          git_default_branch: main
-          git_default_branch_commit_sha: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-          git_default_branch_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-          git_default_branch_file_url: ''
-          git_default_branch_update_error:
-            explanation: File with given filepath [file.rego] already exists in Github, thus couldn't create a new file
-            hint: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-            message: Please check if there's already a file [file.rego] in Github repository [rego-demo] for the given filepath and branch [main].
-          git_default_branch_updated: 1636669297674
-          git_file_id: 1369b45c20fc685113adcfd1a08a914180ff3c0d
-          git_file_url: ''
-          git_path: .harness/policy.rego
-          git_repo: github.com/org/repo,omitempty
-          identifier: policy-1
-          name: Pipeline Approval
-          org_id: test-org
-          parent_unique_id: Aliquam est.
-          polciy_size_in_bytes: 4204212102816286000
-          policy_package_name: Aspernatur in molestias recusandae odit quia.
-          policy_set_count: 3
-          project_id: test-project
-          rego: ''
-          unique_id: Ex consequuntur saepe.
-          updated: 1636669297674
-        policy_severity: Warn & Continue
-        status: error
-      required:
-      - status
-      - policy
-      - output
-      - deny_messages
-      - error
     GitErrorResult:
       type: object
       properties:

@@ -147,50 +147,128 @@ paths:
       - $ref: '#/components/parameters/AccountHeader5'
       - $ref: '#/components/parameters/CatalogKind'
 components:
+  parameters:
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    CatalogKind:
+      name: kind
+      in: query
+      required: true
+      schema:
+        type: string
+      description: This is used to filter backstage catalog entity facets by kind
+    ScorecardIdentifier:
+      name: scorecard-id
+      in: path
+      description: Scorecard Identifier
+      required: true
+      schema:
+        type: string
+  responses:
+    DefaultSaveResponse:
+      description: Default response for Save/Edit operations
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultSaveResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/DefaultSaveResponse'
+    ScorecardDetailsResponse:
+      description: Response for scorecard details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardDetailsResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ScorecardDetailsResponse'
+    ScorecardStatsResponse:
+      description: Response for scorecard stats
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardStatsResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ScorecardStatsResponse'
+    ScorecardResponseList:
+      description: Response for all scorecards available
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ScorecardResponse'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ScorecardResponse'
+    FacetsResponse:
+      description: Response for entity facets
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Facets'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/Facets'
   schemas:
-    Facets:
-      title: Facets
+    Scorecard:
+      title: Scorecard
       x-stoplight:
-        id: 0yxeh06749fxw
+        id: ck1klmib92a8q
       type: object
       properties:
-        type:
+        name:
+          type: string
+          x-stoplight:
+            id: 0036s8sh4ovml
+        identifier:
+          type: string
+          x-stoplight:
+            id: vy3cv7a0ja9km
+        description:
+          type: string
+          x-stoplight:
+            id: 9ec2odnrqvkcm
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+        published:
+          type: boolean
+          x-stoplight:
+            id: 5z7snnygtkcme
+        checks_missing:
           type: array
           x-stoplight:
-            id: 8zjtnynlcnjjn
+            id: 69qa1yprs1y5z
           items:
             x-stoplight:
-              id: bi0jhb6t58jfk
+              id: 4mdevxdftzonf
             type: string
-        owners:
-          type: array
+        components:
+          type: integer
           x-stoplight:
-            id: ttni8vwtfjy37
-          items:
-            x-stoplight:
-              id: nv9qgpkbxeyx6
-            type: string
-        tags:
-          type: array
+            id: 9ec2oenrqokcm
+        percentage:
+          type: number
           x-stoplight:
-            id: 35250e4csgeng
-          items:
-            x-stoplight:
-              id: gaxccdx1p5nq5
-            type: string
-        lifecycle:
-          type: array
-          x-stoplight:
-            id: pm47xtp6sjdm9
-          items:
-            x-stoplight:
-              id: r76ps8dcmup2d
-            type: string
+            id: iyqzo3vjc6kto
+          format: double
+          minimum: 0
+          maximum: 100
       required:
-      - type
-      - owners
-      - tags
-      - lifecycle
+      - name
+      - identifier
+      - checks
     ScorecardChecks:
       title: ScorecardChecks
       x-stoplight:
@@ -213,6 +291,61 @@ components:
       required:
       - identifier
       - custom
+    ScorecardDetailsResponse:
+      title: ScorecardDetailsResponse
+      x-stoplight:
+        id: 7z732csnjjs8z
+      type: object
+      properties:
+        scorecard:
+          $ref: '#/components/schemas/ScorecardDetails'
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScorecardChecksDetails'
+      required:
+      - scorecard
+      - checks
+    ScorecardFilter:
+      title: ScorecardFilter
+      x-stoplight:
+        id: xwnr2xalsb1fv
+      type: object
+      properties:
+        kind:
+          type: string
+          x-stoplight:
+            id: ni2n6gaelw2sh
+        type:
+          type: string
+          x-stoplight:
+            id: pit0to8ng7rtl
+        owners:
+          type: array
+          x-stoplight:
+            id: ibe4axxxrnwpl
+          items:
+            x-stoplight:
+              id: kde7prhuw2ww2
+            type: string
+        tags:
+          type: array
+          x-stoplight:
+            id: 9sqie0nb3f08d
+          items:
+            x-stoplight:
+              id: 8sko0og6lpbyh
+            type: string
+        lifecycle:
+          type: array
+          x-stoplight:
+            id: 9rtf97h3uu9z3
+          items:
+            x-stoplight:
+              id: etzt6sp88w5iz
+            type: string
+      required:
+      - kind
     Check:
       title: Check
       x-stoplight:
@@ -253,6 +386,14 @@ components:
       - name
       - custom
       x-internal: false
+    ScorecardResponse:
+      title: ScorecardResponse
+      x-stoplight:
+        id: c9gm3c9wg18qw
+      type: object
+      properties:
+        scorecard:
+          $ref: '#/components/schemas/Scorecard'
     ScorecardDetailsRequest:
       title: ScorecardDetailsRequest
       x-stoplight:
@@ -290,29 +431,6 @@ components:
               id: jlr6zyb75u9bt
         required:
         - name
-    ScorecardResponse:
-      title: ScorecardResponse
-      x-stoplight:
-        id: c9gm3c9wg18qw
-      type: object
-      properties:
-        scorecard:
-          $ref: '#/components/schemas/Scorecard'
-    ScorecardDetailsResponse:
-      title: ScorecardDetailsResponse
-      x-stoplight:
-        id: 7z732csnjjs8z
-      type: object
-      properties:
-        scorecard:
-          $ref: '#/components/schemas/ScorecardDetails'
-        checks:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScorecardChecksDetails'
-      required:
-      - scorecard
-      - checks
     ScorecardStatsResponse:
       title: ScorecardStatsResponse
       x-stoplight:
@@ -338,19 +456,50 @@ components:
       required:
       - name
       - stats
-    DefaultSaveResponse:
-      title: DefaultSaveResponse
+    ScorecardStats:
+      title: ScorecardStats
       x-stoplight:
-        id: 4dbdqgfzqv8nz
+        id: mfzfyuj9dxi9v
       type: object
-      description: 'Default response for Save/Edit operations '
+      description: ScorecardStats
+      x-internal: false
       properties:
-        status:
+        name:
           type: string
           x-stoplight:
-            id: cskevfqvaydbn
+            id: skt0gj9ivt90s
+        namespace:
+          type: string
+          x-stoplight:
+            id: oklu13i7o6ebd
+        owner:
+          type: string
+          x-stoplight:
+            id: uiiw13t7o6uda
+        system:
+          type: string
+          x-stoplight:
+            id: up1h022u2v98y
+        kind:
+          type: string
+          x-stoplight:
+            id: azw80jiyldmxq
+        type:
+          type: string
+          x-stoplight:
+            id: oijvwg17eyejq
+        score:
+          type: integer
+          x-stoplight:
+            id: ehz071o8ft8bg
       required:
-      - status
+      - name
+      - namespace
+      - owner
+      - system
+      - kind
+      - type
+      - score
     ScorecardDetails:
       title: ScorecardDetails
       x-stoplight:
@@ -401,211 +550,62 @@ components:
       - identifier
       - filter
       - published
-    ScorecardStats:
-      title: ScorecardStats
+    Facets:
+      title: Facets
       x-stoplight:
-        id: mfzfyuj9dxi9v
-      type: object
-      description: ScorecardStats
-      x-internal: false
-      properties:
-        name:
-          type: string
-          x-stoplight:
-            id: skt0gj9ivt90s
-        namespace:
-          type: string
-          x-stoplight:
-            id: oklu13i7o6ebd
-        owner:
-          type: string
-          x-stoplight:
-            id: uiiw13t7o6uda
-        system:
-          type: string
-          x-stoplight:
-            id: up1h022u2v98y
-        kind:
-          type: string
-          x-stoplight:
-            id: azw80jiyldmxq
-        type:
-          type: string
-          x-stoplight:
-            id: oijvwg17eyejq
-        score:
-          type: integer
-          x-stoplight:
-            id: ehz071o8ft8bg
-      required:
-      - name
-      - namespace
-      - owner
-      - system
-      - kind
-      - type
-      - score
-    ScorecardFilter:
-      title: ScorecardFilter
-      x-stoplight:
-        id: xwnr2xalsb1fv
+        id: 0yxeh06749fxw
       type: object
       properties:
-        kind:
-          type: string
-          x-stoplight:
-            id: ni2n6gaelw2sh
         type:
-          type: string
+          type: array
           x-stoplight:
-            id: pit0to8ng7rtl
+            id: 8zjtnynlcnjjn
+          items:
+            x-stoplight:
+              id: bi0jhb6t58jfk
+            type: string
         owners:
           type: array
           x-stoplight:
-            id: ibe4axxxrnwpl
+            id: ttni8vwtfjy37
           items:
             x-stoplight:
-              id: kde7prhuw2ww2
+              id: nv9qgpkbxeyx6
             type: string
         tags:
           type: array
           x-stoplight:
-            id: 9sqie0nb3f08d
+            id: 35250e4csgeng
           items:
             x-stoplight:
-              id: 8sko0og6lpbyh
+              id: gaxccdx1p5nq5
             type: string
         lifecycle:
           type: array
           x-stoplight:
-            id: 9rtf97h3uu9z3
+            id: pm47xtp6sjdm9
           items:
             x-stoplight:
-              id: etzt6sp88w5iz
+              id: r76ps8dcmup2d
             type: string
       required:
-      - kind
-    Scorecard:
-      title: Scorecard
-      x-stoplight:
-        id: ck1klmib92a8q
-      type: object
-      properties:
-        name:
-          type: string
-          x-stoplight:
-            id: 0036s8sh4ovml
-        identifier:
-          type: string
-          x-stoplight:
-            id: vy3cv7a0ja9km
-        description:
-          type: string
-          x-stoplight:
-            id: 9ec2odnrqvkcm
-        checks:
-          type: array
-          items:
-            $ref: '#/components/schemas/Check'
-        published:
-          type: boolean
-          x-stoplight:
-            id: 5z7snnygtkcme
-        checks_missing:
-          type: array
-          x-stoplight:
-            id: 69qa1yprs1y5z
-          items:
-            x-stoplight:
-              id: 4mdevxdftzonf
-            type: string
-        components:
-          type: integer
-          x-stoplight:
-            id: 9ec2oenrqokcm
-        percentage:
-          type: number
-          x-stoplight:
-            id: iyqzo3vjc6kto
-          format: double
-          minimum: 0
-          maximum: 100
-      required:
-      - name
-      - identifier
-      - checks
-  responses:
-    ScorecardDetailsResponse:
-      description: Response for scorecard details
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ScorecardDetailsResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/ScorecardDetailsResponse'
-    ScorecardStatsResponse:
-      description: Response for scorecard stats
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ScorecardStatsResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/ScorecardStatsResponse'
+      - type
+      - owners
+      - tags
+      - lifecycle
     DefaultSaveResponse:
-      description: Default response for Save/Edit operations
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DefaultSaveResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/DefaultSaveResponse'
-    FacetsResponse:
-      description: Response for entity facets
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Facets'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/Facets'
-    ScorecardResponseList:
-      description: Response for all scorecards available
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ScorecardResponse'
-        application/yaml:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ScorecardResponse'
-  parameters:
-    ScorecardIdentifier:
-      name: scorecard-id
-      in: path
-      description: Scorecard Identifier
-      required: true
-      schema:
-        type: string
-    CatalogKind:
-      name: kind
-      in: query
-      required: true
-      schema:
-        type: string
-      description: This is used to filter backstage catalog entity facets by kind
-    AccountHeader5:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
+      title: DefaultSaveResponse
+      x-stoplight:
+        id: 4dbdqgfzqv8nz
+      type: object
+      description: 'Default response for Save/Edit operations '
+      properties:
+        status:
+          type: string
+          x-stoplight:
+            id: cskevfqvaydbn
+      required:
+      - status
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -143,79 +143,78 @@ paths:
         '200':
           description: Computation triggered successfully
 components:
-  responses:
-    AggregationSelectionReviewResponse:
-      description: Response for aggregation selection review
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AggregationSelectionReviewResponse'
-    AggregationRuleResponseList:
-      description: Response for all aggregation rules available
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/AggregationRuleResponse'
-        application/yaml:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/AggregationRuleResponse'
-      headers:
-        X-Total-Elements:
-          schema:
-            type: integer
-          description: Total number of elements returned in Paginated response.
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Page number in Paginated response.
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum page size in Paginated response.
-    DefaultSaveResponse:
-      description: Default response for Save/Edit operations
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DefaultSaveResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/DefaultSaveResponse'
-    AggregationRuleDetailsResponse:
-      description: Response for aggregation rule details
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AggregationRuleDetailsResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/AggregationRuleDetailsResponse'
   schemas:
+    AggregationAccountSelection:
+      title: AggregationAccountSelection
+      type: object
+      required:
+      - include
+      - orgs
+      properties:
+        include:
+          type: boolean
+        orgs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationOrgSelection'
+        include_all_children:
+          type: string
+          x-stoplight:
+            id: gjhte9git7v9f
+          enum:
+          - ORGANIZATIONS
+          - PROJECTS
+          - ORGANIZATIONS_AND_PROJECTS
+    AggFormula:
+      title: AggFormula
+      type: string
+      enum:
+      - SUM
+      - AVG
+      - COUNT
+      - MAX
+      - MIN
+      - MEDIAN
     AggregationRuleDetailsRequest:
       title: AggregationRuleDetailsRequest
       type: object
       properties:
         aggregation_rule:
           $ref: '#/components/schemas/AggregationRuleDetails'
-    AggregationRuleResponse:
-      title: AggregationRuleResponse
+    AggregationRuleDetails:
+      title: AggregationRuleDetails
       type: object
+      required:
+      - identifier
+      - name
+      - field_for_agg
+      - agg_formula
+      - scopes_to_aggregate_at
       properties:
-        aggregation_rule:
-          $ref: '#/components/schemas/AggregationRule'
-    AggregationScopeLevel:
-      title: AggregationScopeLevel
-      type: string
-      enum:
-      - ACCOUNT
-      - ORGANIZATION
-      - PROJECT
-      - SYSTEM
-      - TEAM
+        identifier:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        field_for_agg:
+          type: string
+          description: Field to aggregate
+        agg_formula:
+          $ref: '#/components/schemas/AggFormula'
+        scopes_to_aggregate_at:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationScopeLevel'
+        entity_selection_criteria:
+          $ref: '#/components/schemas/AggregationEntitySelectionCriteria'
+        last_computed_status:
+          $ref: '#/components/schemas/AggregationComputeStatus'
+        last_computed_at:
+          type: integer
+          format: int64
+        last_error_message:
+          type: string
     AggregationSelectionReviewRequest:
       title: AggregationSelectionReviewRequest
       type: object
@@ -233,13 +232,6 @@ components:
           items:
             $ref: '#/components/schemas/AggregationScopeLevel'
           description: Levels at which to aggregate and return platform entities
-    AggregationComputeStatus:
-      title: AggregationComputeStatus
-      type: string
-      enum:
-      - CALCULATING
-      - ERROR
-      - SUCCESS
     AggregationSelectionReviewResponse:
       title: AggregationSelectionReviewResponse
       type: object
@@ -284,6 +276,40 @@ components:
           - e_ref_1
           - e_ref_2
           - e_ref_3
+    AggregationRuleResponse:
+      title: AggregationRuleResponse
+      type: object
+      properties:
+        aggregation_rule:
+          $ref: '#/components/schemas/AggregationRule'
+    AggregationOrgSelection:
+      title: AggregationOrgSelection
+      type: object
+      required:
+      - identifier
+      - include
+      - projects
+      properties:
+        identifier:
+          type: string
+        include:
+          type: boolean
+        projects:
+          type: array
+          items:
+            type: string
+        include_all_projects:
+          type: boolean
+          x-stoplight:
+            id: h39blmgk2qgdj
+    AggregationPlatformSelection:
+      title: AggregationPlatformSelection
+      type: object
+      required:
+      - account
+      properties:
+        account:
+          $ref: '#/components/schemas/AggregationAccountSelection'
     AggregationRule:
       title: AggregationRule
       x-stoplight:
@@ -318,120 +344,15 @@ components:
           format: int64
         last_error_message:
           type: string
-    AggregationRuleDetailsResponse:
-      title: AggregationRuleDetailsResponse
-      type: object
-      properties:
-        aggregation_rule:
-          $ref: '#/components/schemas/AggregationRuleDetails'
-      required:
-      - aggregation_rule
-    AggFormula:
-      title: AggFormula
+    AggregationScopeLevel:
+      title: AggregationScopeLevel
       type: string
       enum:
-      - SUM
-      - AVG
-      - COUNT
-      - MAX
-      - MIN
-      - MEDIAN
-    AggregationAccountSelection:
-      title: AggregationAccountSelection
-      type: object
-      required:
-      - include
-      - orgs
-      properties:
-        include:
-          type: boolean
-        orgs:
-          type: array
-          items:
-            $ref: '#/components/schemas/AggregationOrgSelection'
-        include_all_children:
-          type: string
-          x-stoplight:
-            id: gjhte9git7v9f
-          enum:
-          - ORGANIZATIONS
-          - PROJECTS
-          - ORGANIZATIONS_AND_PROJECTS
-    AggregationRuleDetails:
-      title: AggregationRuleDetails
-      type: object
-      required:
-      - identifier
-      - name
-      - field_for_agg
-      - agg_formula
-      - scopes_to_aggregate_at
-      properties:
-        identifier:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        field_for_agg:
-          type: string
-          description: Field to aggregate
-        agg_formula:
-          $ref: '#/components/schemas/AggFormula'
-        scopes_to_aggregate_at:
-          type: array
-          items:
-            $ref: '#/components/schemas/AggregationScopeLevel'
-        entity_selection_criteria:
-          $ref: '#/components/schemas/AggregationEntitySelectionCriteria'
-        last_computed_status:
-          $ref: '#/components/schemas/AggregationComputeStatus'
-        last_computed_at:
-          type: integer
-          format: int64
-        last_error_message:
-          type: string
-    AggregationOrgSelection:
-      title: AggregationOrgSelection
-      type: object
-      required:
-      - identifier
-      - include
-      - projects
-      properties:
-        identifier:
-          type: string
-        include:
-          type: boolean
-        projects:
-          type: array
-          items:
-            type: string
-        include_all_projects:
-          type: boolean
-          x-stoplight:
-            id: h39blmgk2qgdj
-    AggregationPlatformSelection:
-      title: AggregationPlatformSelection
-      type: object
-      required:
-      - account
-      properties:
-        account:
-          $ref: '#/components/schemas/AggregationAccountSelection'
-    DefaultSaveResponse:
-      title: DefaultSaveResponse
-      x-stoplight:
-        id: 4dbdqgfzqv8nz
-      type: object
-      description: 'Default response for Save/Edit operations '
-      properties:
-        status:
-          type: string
-          x-stoplight:
-            id: cskevfqvaydbn
-      required:
-      - status
+      - ACCOUNT
+      - ORGANIZATION
+      - PROJECT
+      - SYSTEM
+      - TEAM
     AggregationEntitySelectionCriteria:
       title: AggregationEntitySelectionCriteria
       type: object
@@ -457,15 +378,42 @@ components:
           type: array
           items:
             type: string
+    AggregationComputeStatus:
+      title: AggregationComputeStatus
+      type: string
+      enum:
+      - CALCULATING
+      - ERROR
+      - SUCCESS
+    AggregationRuleDetailsResponse:
+      title: AggregationRuleDetailsResponse
+      type: object
+      properties:
+        aggregation_rule:
+          $ref: '#/components/schemas/AggregationRuleDetails'
+      required:
+      - aggregation_rule
+    DefaultSaveResponse:
+      title: DefaultSaveResponse
+      x-stoplight:
+        id: 4dbdqgfzqv8nz
+      type: object
+      description: 'Default response for Save/Edit operations '
+      properties:
+        status:
+          type: string
+          x-stoplight:
+            id: cskevfqvaydbn
+      required:
+      - status
   parameters:
-    Limit5:
-      name: limit
-      in: query
+    AccountHeader5:
+      name: Harness-Account
+      in: header
       required: false
       schema:
-        default: null
-        type: integer
-      description: 'Pagination: Number of items to return'
+        type: string
+      description: Identifier field of the account the resource is scoped to.
     Page1:
       name: page
       in: query
@@ -474,13 +422,6 @@ components:
         type: integer
         default: null
       description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    AggregationRuleIdentifier:
-      name: aggregation-rule-id
-      in: path
-      description: Aggregation Rule Identifier
-      required: true
-      schema:
-        type: string
     SearchTerm5:
       name: search_term
       in: query
@@ -497,13 +438,6 @@ components:
         type: boolean
         default: false
       description: This is used if an entity need to be force deleted
-    AccountHeader5:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
     Sort6:
       name: sort
       in: query
@@ -512,6 +446,72 @@ components:
         type: string
         default: null
       description: Parameter on the basis of which sorting is done.
+    Limit5:
+      name: limit
+      in: query
+      required: false
+      schema:
+        default: null
+        type: integer
+      description: 'Pagination: Number of items to return'
+    AggregationRuleIdentifier:
+      name: aggregation-rule-id
+      in: path
+      description: Aggregation Rule Identifier
+      required: true
+      schema:
+        type: string
+  responses:
+    AggregationSelectionReviewResponse:
+      description: Response for aggregation selection review
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AggregationSelectionReviewResponse'
+    DefaultSaveResponse:
+      description: Default response for Save/Edit operations
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultSaveResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/DefaultSaveResponse'
+    AggregationRuleResponseList:
+      description: Response for all aggregation rules available
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AggregationRuleResponse'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AggregationRuleResponse'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+    AggregationRuleDetailsResponse:
+      description: Response for aggregation rule details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AggregationRuleDetailsResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/AggregationRuleDetailsResponse'
   securitySchemes:
     x-api-key:
       name: x-api-key

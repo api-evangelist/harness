@@ -108,63 +108,52 @@ paths:
       x-stoplight:
         id: freeze-details-get
 components:
+  parameters:
+    RmProjectParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Project Identifier
+    AccountParam:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Account Identifier
+    RmOrgParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Organisation Identifier
   schemas:
-    FreezeListItemDTO:
+    RmError:
+      title: Error Response
+      x-stoplight:
+        id: d53gtsgvwyk44
       type: object
-      description: Basic freeze information for list view
+      description: Error Response
       required:
-      - name
-      - expectedStartTs
-      - expectedEndTs
-      - orgIdentifier
-      - projectIdentifier
-      - identifier
+      - message
       properties:
-        name:
+        message:
           type: string
-          description: Freeze name
-        expectedStartTs:
-          type: integer
-          format: int64
-          description: Expected start timestamp
-        expectedEndTs:
-          type: integer
-          format: int64
-          description: Expected end timestamp
-        orgIdentifier:
+          x-stoplight:
+            id: 5n8vetciod7k8
+          description: error message detail
+        code:
           type: string
-          description: Organization identifier
-        projectIdentifier:
-          type: string
-          description: Project identifier
-        identifier:
-          type: string
-          description: Freeze identifier
-    NextRequest:
-      type: object
-      properties:
-        cursor:
-          type: string
-        limit:
-          type: integer
-    FreezeListResponseDTO:
-      type: object
-      description: Paginated response containing freeze list items
-      required:
-      - freezes
-      - nextRequest
-      - last
-      properties:
-        freezes:
-          type: array
-          items:
-            $ref: '#/components/schemas/FreezeListItemDTO'
-          description: List of freeze items
-        nextRequest:
-          $ref: '#/components/schemas/NextRequest'
-        last:
-          type: boolean
-          description: Whether this is the last page of results
+          description: canonical error code name
+          enum:
+          - BAD_REQUEST
+          - UNAUTHORIZED
+          - FORBIDDEN
+          - NOT_FOUND
+          - INTERNAL_SERVER_ERROR
     FreezeDetailsDTO:
       type: object
       description: Detailed freeze information with entity extraction
@@ -208,29 +197,13 @@ components:
           type: integer
           format: int64
           description: Expected end timestamp
-    RmError:
-      title: Error Response
-      x-stoplight:
-        id: d53gtsgvwyk44
+    NextRequest:
       type: object
-      description: Error Response
-      required:
-      - message
       properties:
-        message:
+        cursor:
           type: string
-          x-stoplight:
-            id: 5n8vetciod7k8
-          description: error message detail
-        code:
-          type: string
-          description: canonical error code name
-          enum:
-          - BAD_REQUEST
-          - UNAUTHORIZED
-          - FORBIDDEN
-          - NOT_FOUND
-          - INTERNAL_SERVER_ERROR
+        limit:
+          type: integer
     FreezeEntitiesDTO:
       type: object
       description: Entity information extracted from freeze YAML configuration
@@ -272,13 +245,56 @@ components:
           items:
             type: string
           description: Pipeline identifiers extracted from YAML. Contains "__ALL__" marker if all pipelines are frozen (filterType="All").
+    FreezeListItemDTO:
+      type: object
+      description: Basic freeze information for list view
+      required:
+      - name
+      - expectedStartTs
+      - expectedEndTs
+      - orgIdentifier
+      - projectIdentifier
+      - identifier
+      properties:
+        name:
+          type: string
+          description: Freeze name
+        expectedStartTs:
+          type: integer
+          format: int64
+          description: Expected start timestamp
+        expectedEndTs:
+          type: integer
+          format: int64
+          description: Expected end timestamp
+        orgIdentifier:
+          type: string
+          description: Organization identifier
+        projectIdentifier:
+          type: string
+          description: Project identifier
+        identifier:
+          type: string
+          description: Freeze identifier
+    FreezeListResponseDTO:
+      type: object
+      description: Paginated response containing freeze list items
+      required:
+      - freezes
+      - nextRequest
+      - last
+      properties:
+        freezes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreezeListItemDTO'
+          description: List of freeze items
+        nextRequest:
+          $ref: '#/components/schemas/NextRequest'
+        last:
+          type: boolean
+          description: Whether this is the last page of results
   responses:
-    FreezeDetailsResponse:
-      description: Detailed freeze information with entity extraction
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/FreezeDetailsDTO'
     RmErrorResponse:
       description: Error Response body
       content:
@@ -291,28 +307,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/FreezeListResponseDTO'
-  parameters:
-    RmOrgParam:
-      name: orgIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Organisation Identifier
-    RmProjectParam:
-      name: projectIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Project Identifier
-    AccountParam:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Account Identifier
+    FreezeDetailsResponse:
+      description: Detailed freeze information with entity extraction
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FreezeDetailsDTO'
   securitySchemes:
     x-api-key:
       name: x-api-key

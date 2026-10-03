@@ -260,39 +260,7 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOHealthSourceRuntimeInputs'
 components:
   schemas:
-    HealthSourceRuntimeInputs:
-      type: object
-      properties:
-        hasRuntimeInputs:
-          type: boolean
-          description: True when the HealthSource has at least one <+input> field
-        runtimeInputYaml:
-          type: string
-          description: 'YAML snippet to embed directly as healthSourceInputs: in the AI Verify step YAML. Null when hasRuntimeInputs is false.'
-        runtimeInputs:
-          $ref: '#/components/schemas/CvJsonNode'
-      description: Fields on the HealthSource that require runtime input values (<+input> marked). Embed runtimeInputYaml directly as healthSourceInputs in the AI Verify step.
-    CvNGVariable:
-      type: object
-      properties:
-        name:
-          type: string
-        type:
-          type: string
-          enum:
-          - String
-          - Number
-          - Secret
-        description:
-          type: string
-        required:
-          type: boolean
-        metadata:
-          type: string
-      description: Variables that can be substituted into queries using <+healthSourceVariables.name>
-      discriminator:
-        propertyName: type
-    ResponseDTOOptionalHealthSourceResponse:
+    ResponseDTOListHealthSourceResponse:
       type: object
       properties:
         status:
@@ -302,69 +270,13 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/HealthSourceResponse'
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthSourceResponse'
         metaData:
           type: object
         correlationId:
           type: string
-    HealthSource:
-      required:
-      - connectorRef
-      - dataSourceType
-      - identifier
-      - name
-      - queryDefinitions
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: Identifier of the Health Source
-        name:
-          type: string
-          description: Name of the Health Source
-        connectorRef:
-          type: string
-          description: Connector reference for the data source
-        mcpRef:
-          type: string
-          description: MCP reference for AI/ML capabilities
-        dataSourceType:
-          type: string
-          description: Type of data source
-          enum:
-          - DatadogMetrics
-          - DynatraceGrailLogs
-          - DynatraceGrailMetrics
-          - PrometheusMetrics
-        queryDefinitions:
-          $ref: '#/components/schemas/QueryDefinitionsWrapper'
-        healthSourceParams:
-          type: object
-          additionalProperties:
-            type: string
-            description: Additional parameters for the health source
-          description: Additional parameters for the health source
-        variables:
-          type: array
-          description: Variables that can be substituted into queries using <+healthSourceVariables.name>
-          items:
-            $ref: '#/components/schemas/CvNGVariable'
-      description: This contains details of the Health Source configuration
-    QueryDefinitionsWrapper:
-      required:
-      - spec
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-          description: Type of verification - METRICS or LOGS
-          enum:
-          - Metrics
-          - Logs
-        spec:
-          $ref: '#/components/schemas/QueryDefinitionsDTO'
-      description: Wrapper for query definitions containing type and spec
     CvJsonNode:
       type: object
       description: Same data in JSON form for typed UI rendering. Null when hasRuntimeInputs is false.
@@ -379,21 +291,6 @@ components:
           - ERROR
         data:
           type: boolean
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ResponseDTOHealthSourceRuntimeInputs:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/HealthSourceRuntimeInputs'
         metaData:
           type: object
         correlationId:
@@ -452,23 +349,71 @@ components:
           description: Last updated timestamp
           format: int64
       description: Response containing Health Source details
-    ResponseDTOListHealthSourceResponse:
+    HealthSource:
+      required:
+      - connectorRef
+      - dataSourceType
+      - identifier
+      - name
+      - queryDefinitions
       type: object
       properties:
-        status:
+        identifier:
           type: string
+          description: Identifier of the Health Source
+        name:
+          type: string
+          description: Name of the Health Source
+        connectorRef:
+          type: string
+          description: Connector reference for the data source
+        mcpRef:
+          type: string
+          description: MCP reference for AI/ML capabilities
+        dataSourceType:
+          type: string
+          description: Type of data source
           enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/HealthSourceResponse'
-        metaData:
+          - DatadogMetrics
+          - DynatraceGrailLogs
+          - DynatraceGrailMetrics
+          - PrometheusMetrics
+        queryDefinitions:
+          $ref: '#/components/schemas/QueryDefinitionsWrapper'
+        healthSourceParams:
           type: object
-        correlationId:
+          additionalProperties:
+            type: string
+            description: Additional parameters for the health source
+          description: Additional parameters for the health source
+        variables:
+          type: array
+          description: Variables that can be substituted into queries using <+healthSourceVariables.name>
+          items:
+            $ref: '#/components/schemas/CvNGVariable'
+      description: This contains details of the Health Source configuration
+    HealthSourceRuntimeInputs:
+      type: object
+      properties:
+        hasRuntimeInputs:
+          type: boolean
+          description: True when the HealthSource has at least one <+input> field
+        runtimeInputYaml:
           type: string
+          description: 'YAML snippet to embed directly as healthSourceInputs: in the AI Verify step YAML. Null when hasRuntimeInputs is false.'
+        runtimeInputs:
+          $ref: '#/components/schemas/CvJsonNode'
+      description: Fields on the HealthSource that require runtime input values (<+input> marked). Embed runtimeInputYaml directly as healthSourceInputs in the AI Verify step.
+    QueryDefinitionsDTO:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+      description: Query definitions specification
+      discriminator:
+        propertyName: type
     ResponseDTOHealthSourceResponse:
       type: object
       properties:
@@ -484,14 +429,69 @@ components:
           type: object
         correlationId:
           type: string
-    QueryDefinitionsDTO:
+    ResponseDTOHealthSourceRuntimeInputs:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/HealthSourceRuntimeInputs'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    QueryDefinitionsWrapper:
       required:
+      - spec
       - type
       type: object
       properties:
         type:
           type: string
-      description: Query definitions specification
+          description: Type of verification - METRICS or LOGS
+          enum:
+          - Metrics
+          - Logs
+        spec:
+          $ref: '#/components/schemas/QueryDefinitionsDTO'
+      description: Wrapper for query definitions containing type and spec
+    ResponseDTOOptionalHealthSourceResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/HealthSourceResponse'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    CvNGVariable:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - String
+          - Number
+          - Secret
+        description:
+          type: string
+        required:
+          type: boolean
+        metadata:
+          type: string
+      description: Variables that can be substituted into queries using <+healthSourceVariables.name>
       discriminator:
         propertyName: type
   securitySchemes:

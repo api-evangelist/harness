@@ -2496,66 +2496,18 @@ paths:
       - Repositories
 components:
   schemas:
-    repositoriesDirectoryAppSpec:
-      type: object
-      title: DirectoryAppSpec contains directory
-    applicationsHelmFileParameter:
+    repositoriesRefs:
       type: object
       properties:
-        name:
-          type: string
-          title: Name is the name of the Helm parameter
-        path:
-          type: string
-          title: Path is the path to the file containing the values for the Helm parameter
-      title: HelmFileParameter is a file parameter that's passed to helm template during manifest generation
-    v1OCIRepoType:
-      type: object
-      properties:
-        repoURL:
-          type: string
-          description: OCI Repository URL.
-    repositoriesGCRWorkloadIdentity:
-      type: object
-      properties:
-        serviceAccountRef:
-          $ref: '#/components/schemas/repositoriesServiceAccountSelector'
-        clusterLocation:
-          type: string
-        clusterName:
-          type: string
-        clusterProjectID:
-          type: string
-    repositoriesRepoAppDetailsResponse:
-      type: object
-      properties:
-        type:
-          type: string
-        ksonnet:
-          $ref: '#/components/schemas/repositoriesKsonnetAppSpec'
-        helm:
-          $ref: '#/components/schemas/repositoriesHelmAppSpec'
-        kustomize:
-          $ref: '#/components/schemas/repositoriesKustomizeAppSpec'
-        directory:
-          $ref: '#/components/schemas/repositoriesDirectoryAppSpec'
-      title: RepoAppDetailsResponse application details
-    NotFound:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Not Found
-        status:
-          type: integer
-          default: 404
-          example: 404
-          format: int64
-      example:
-        message: Not Found
-        status: 404
-      required:
-      - message
+        branches:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+      title: A subset of the repository's named refs
     repositoriesRepoCreateRequest:
       type: object
       properties:
@@ -2577,13 +2529,179 @@ components:
           type: string
           description: refreshInterval in format 1s, 1m, 1h...
       title: RepoCreateRequest is a request for creating repository config
-    repositoriesESOGeneratorType:
+    repositoriesGCRWorkloadIdentity:
+      type: object
+      properties:
+        serviceAccountRef:
+          $ref: '#/components/schemas/repositoriesServiceAccountSelector'
+        clusterLocation:
+          type: string
+        clusterName:
+          type: string
+        clusterProjectID:
+          type: string
+    StoPagination:
+      type: object
+      properties:
+        link:
+          type: string
+          description: Link-based paging
+          example: ''
+        page:
+          type: integer
+          description: Page number (starting from 0)
+          example: 4
+          format: int64
+        pageSize:
+          type: integer
+          description: Requested page size
+          example: 20
+          format: int64
+        totalItems:
+          type: integer
+          description: Total results available
+          example: 230
+          format: int64
+        totalPages:
+          type: integer
+          description: Total pages available
+          example: 12
+          format: int64
+      example:
+        link: ''
+        page: 4
+        pageSize: 20
+        totalItems: 230
+        totalPages: 12
+      required:
+      - page
+      - pageSize
+      - totalPages
+      - totalItems
+    repositoriesAWSSecretRef:
+      type: object
+      properties:
+        awsAccessKeyID:
+          type: string
+        awsSecretAccessKey:
+          type: string
+        awsSessionToken:
+          type: string
+    v1Repositorylist:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/servicev1Repository'
+        totalPages:
+          type: integer
+          format: int32
+        totalItems:
+          type: integer
+          format: int32
+        pageItemCount:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        pageIndex:
+          type: integer
+          format: int32
+        empty:
+          type: boolean
+    v1OCIRepoTypeResponse:
+      type: object
+      properties:
+        ociRepoType:
+          $ref: '#/components/schemas/OCIRepoTypeResponseOCIRepoTypeEnum'
+    TargetVariant:
+      type: object
+      properties:
+        created:
+          type: integer
+          description: Unix timestamp at which the resource was created
+          example: 1651578240
+          format: int64
+        hash:
+          type: string
+          description: Git Commit or Container Image hash
+          example: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+          maxLength: 64
+        id:
+          type: string
+          description: Resource identifier
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        lastModified:
+          type: integer
+          description: Unix timestamp at which the resource was most recently modified
+          example: 1651578240
+          format: int64
+        parameters:
+          type: object
+          description: Parameters for this Variant, as a JSON-encoded string
+          example:
+            branch: main
+          additionalProperties:
+            type: string
+            example: Rerum qui aliquid laboriosam atque eligendi.
+        targetId:
+          type: string
+          description: Associated Target ID
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+      description: Information about a Scan Target Variant
+      example:
+        created: 1651578240
+        hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+        id: abcdef1234567890ghijkl
+        lastModified: 1651578240
+        parameters:
+          branch: main
+        targetId: abcdef1234567890ghijkl
+      required:
+      - targetId
+      - parameters
+      - id
+      - created
+      - lastModified
+    RepoListReqRepoSortByOptions:
       type: string
       enum:
-      - UNSET
-      - AWS_ECR
-      - GOOGLE_GCR
-      default: UNSET
+      - SORT_BY_NOT_SET
+      - NAME
+      - CONNECTIVITY_STATUS
+      - TYPE
+      - REPOSITORY
+      default: SORT_BY_NOT_SET
+    commonsConnectionState:
+      type: object
+      properties:
+        status:
+          type: string
+          title: Status contains the current status indicator for the connection
+        message:
+          type: string
+          title: Message contains human readable information about the connection status
+        attemptedAt:
+          $ref: '#/components/schemas/v1Time'
+        attemptedAtTs:
+          type: string
+          format: date-time
+          title: attemptedAtTs is the google timestamp variation of attemptedAt
+      title: ConnectionState contains information about remote resource connection state, currently used for clusters and repositories
+    applicationsKsonnetParameter:
+      type: object
+      properties:
+        component:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+      title: KsonnetParameter is a ksonnet component parameter
     repositoriesRepoAccessQuery:
       type: object
       properties:
@@ -2643,46 +2761,39 @@ components:
         updateMask:
           $ref: '#/components/schemas/protobufFieldMask'
       title: RepoAccessQuery is a query for checking access to a repo
-    v1SortOrderOptions:
-      type: string
-      enum:
-      - SORT_ORDER_NOT_SET
-      - ASC
-      - DESC
-      default: SORT_ORDER_NOT_SET
-    protobufFieldMask:
+    v1OCIRepoType:
       type: object
       properties:
-        paths:
+        repoURL:
+          type: string
+          description: OCI Repository URL.
+    repositoriesKsonnetEnvironment:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name is the user defined name of an environment
+        k8sVersion:
+          type: string
+          description: KubernetesVersion is the kubernetes version the targeted cluster is running on.
+        destination:
+          $ref: '#/components/schemas/repositoriesKsonnetEnvironmentDestination'
+    repositoriesKsonnetAppSpec:
+      type: object
+      properties:
+        name:
+          type: string
+        environments:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/repositoriesKsonnetEnvironment'
+        parameters:
           type: array
           items:
-            type: string
-          description: The set of field mask paths.
-      description: "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nNote that libraries which implement FieldMask resolution have various\ndifferent behaviors in the face of empty masks or the special \"*\" mask.\nWhen implementing a service you should confirm these cases have the\nappropriate behavior in the underlying FieldMask library that you desire,\nand you may need to special case those cases in your application code if\nthe underlying field mask library behavior differs from your intended\nservice semantics.\n\nUpdate methods implementing https://google.aip.dev/134\n- MUST support the special value * meaning \"full replace\"\n- MUST treat an omitted field mask as \"replace fields which are present\".\n\nOther methods implementing https://google.aip.dev/157\n- SHOULD support the special value \"*\" to mean \"get all\".\n- MUST treat an omitted field mask to mean \"get all\", unless otherwise\ndocumented.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"sub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable."
-      title: '`FieldMask` represents a set of symbolic field paths, for example:'
-    gatewayruntimeError:
-      type: object
-      properties:
-        error:
-          type: string
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-        details:
-          type: array
-          items:
-            $ref: '#/components/schemas/protobufAny'
-    repositoriesGCRAccessTokenGenerator:
-      type: object
-      properties:
-        projectID:
-          type: string
-        accessKey:
-          type: string
-        workloadIdentity:
-          $ref: '#/components/schemas/repositoriesGCRWorkloadIdentity'
+            $ref: '#/components/schemas/applicationsKsonnetParameter'
+      title: 'KsonnetAppSpec contains Ksonnet app response
+
+        This roughly reflects: ksonnet/ksonnet/metadata/app/schema.go'
     repositoriesRepository:
       type: object
       properties:
@@ -2801,202 +2912,6 @@ components:
           type: boolean
         repositoryCredentialsId:
           type: string
-    RepositorySourceBreakdownItem:
-      type: object
-      properties:
-        count:
-          type: integer
-          description: Number of repositories with this source
-          example: 42
-          format: int64
-          minimum: 0
-        source:
-          type: string
-          description: Source value as stored in target_summary (e.g. Github, Gitlab, Harness)
-          example: Github
-      description: Repository count for a single source (one GROUP BY source bucket).
-      example:
-        count: 42
-        source: Github
-      required:
-      - source
-      - count
-    repositoriesAppInfo:
-      type: object
-      properties:
-        type:
-          type: string
-        path:
-          type: string
-      title: AppInfo contains application type and app file path
-    repositoriesRepositoryList:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/v1ListMeta'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/repositoriesRepository'
-      description: RepositoryList is a collection of Repositories.
-    repositoriesCheckESOResponse:
-      type: object
-      properties:
-        esoPresent:
-          type: boolean
-    repositoriesAWSSecretRef:
-      type: object
-      properties:
-        awsAccessKeyID:
-          type: string
-        awsSecretAccessKey:
-          type: string
-        awsSessionToken:
-          type: string
-    repositoriesHelmChart:
-      type: object
-      properties:
-        name:
-          type: string
-        versions:
-          type: array
-          items:
-            type: string
-    repositoriesKustomizeAppSpec:
-      type: object
-      properties:
-        images:
-          type: array
-          items:
-            type: string
-          description: images is a list of available images.
-      title: KustomizeAppSpec contains kustomize images
-    v1Time:
-      type: object
-      properties:
-        seconds:
-          type: string
-          format: int64
-          description: 'Represents seconds of UTC time since Unix epoch
-
-            1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
-
-            9999-12-31T23:59:59Z inclusive.'
-        nanos:
-          type: integer
-          format: int32
-          description: 'Non-negative fractions of a second at nanosecond resolution. Negative
-
-            second values with fractions must still have non-negative nanos values
-
-            that count forward in time. Must be from 0 to 999,999,999
-
-            inclusive. This field may be limited in precision depending on context.'
-      description: 'Time is a wrapper around time.Time which supports correct
-
-        marshaling to YAML and JSON.  Wrappers are provided for many
-
-        of the factory methods that the time package offers.
-
-
-        +protobuf.options.marshal=false
-
-        +protobuf.as=Timestamp
-
-        +protobuf.options.(gogoproto.goproto_stringer)=false'
-    applicationsHelmParameter:
-      type: object
-      properties:
-        name:
-          type: string
-          title: Name is the name of the Helm parameter
-        value:
-          type: string
-          title: Value is the value for the Helm parameter
-        forceString:
-          type: boolean
-          title: ForceString determines whether to tell Helm to interpret booleans and numbers as strings
-      title: HelmParameter is a parameter that's passed to helm template during manifest generation
-    repositoriesHelmAppSpec:
-      type: object
-      properties:
-        name:
-          type: string
-        valueFiles:
-          type: array
-          items:
-            type: string
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsHelmParameter'
-          title: the output of `helm inspect values`
-        values:
-          type: string
-          title: the contents of values.yaml
-        fileParameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsHelmFileParameter'
-          title: helm file parameters
-      title: HelmAppSpec contains helm app name  in source repo
-    RepositorySeverityDeltas:
-      type: object
-      properties:
-        critical:
-          type: integer
-          description: Change in critical count
-          example: -2
-          format: int64
-        high:
-          type: integer
-          description: Change in high count
-          example: 1
-          format: int64
-        info:
-          type: integer
-          description: Change in info count
-          example: 0
-          format: int64
-        low:
-          type: integer
-          description: Change in low count
-          example: -5
-          format: int64
-        medium:
-          type: integer
-          description: Change in medium count
-          example: 0
-          format: int64
-        unassigned:
-          type: integer
-          description: Change in unassigned count
-          example: 0
-          format: int64
-      description: Change in counts by severity since the last UTC 12:00 AM snapshot. Positive means increased, negative means decreased.
-      example:
-        critical: -2
-        high: 1
-        info: 0
-        low: -5
-        medium: 0
-        unassigned: 0
-      required:
-      - critical
-      - high
-      - medium
-      - low
-      - info
-      - unassigned
-    repositoriesKsonnetEnvironmentDestination:
-      type: object
-      properties:
-        server:
-          type: string
-          description: Server is the Kubernetes server that the cluster is running on.
-        namespace:
-          type: string
-          title: Namespace is the namespace of the Kubernetes server that targets should be deployed to
     RepositorySeverityCounts:
       type: object
       properties:
@@ -3051,394 +2966,16 @@ components:
       - low
       - info
       - unassigned
-    TargetVariant:
+    repositoriesRepositoryList:
       type: object
       properties:
-        created:
-          type: integer
-          description: Unix timestamp at which the resource was created
-          example: 1651578240
-          format: int64
-        hash:
-          type: string
-          description: Git Commit or Container Image hash
-          example: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-          maxLength: 64
-        id:
-          type: string
-          description: Resource identifier
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-        lastModified:
-          type: integer
-          description: Unix timestamp at which the resource was most recently modified
-          example: 1651578240
-          format: int64
-        parameters:
-          type: object
-          description: Parameters for this Variant, as a JSON-encoded string
-          example:
-            branch: main
-          additionalProperties:
-            type: string
-            example: Rerum qui aliquid laboriosam atque eligendi.
-        targetId:
-          type: string
-          description: Associated Target ID
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-      description: Information about a Scan Target Variant
-      example:
-        created: 1651578240
-        hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-        id: abcdef1234567890ghijkl
-        lastModified: 1651578240
-        parameters:
-          branch: main
-        targetId: abcdef1234567890ghijkl
-      required:
-      - targetId
-      - parameters
-      - id
-      - created
-      - lastModified
-    repositoriesECRAuthorizationTokenGenerator:
-      type: object
-      properties:
-        region:
-          type: string
-        secretRef:
-          $ref: '#/components/schemas/repositoriesAWSSecretRef'
-        jwtAuth:
-          $ref: '#/components/schemas/repositoriesServiceAccountSelector'
-        role:
-          type: string
-      description: ECRAuthorizationTokenSpec represents externalSecret for ECR External Secret Operator generator.
-    repositoriesRepoResponse:
-      type: object
-    v1RepoListReq:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        agentIdentifier:
-          type: string
-          description: Agent identifier for entity.
-        searchTerm:
-          type: string
-        pageSize:
-          type: integer
-          format: int32
-        pageIndex:
-          type: integer
-          format: int32
-        filter:
-          type: object
-          description: 'Filters for Repositories. Eg. "identifier": { "$in": ["id1", "id2"]'
-        sortBy:
-          $ref: '#/components/schemas/RepoListReqRepoSortByOptions'
-        sortOrder:
-          $ref: '#/components/schemas/v1SortOrderOptions'
-        inheritedCreds:
-          type: boolean
-        includeChildScopes:
-          type: boolean
-    repositoriesRepoUpdateRequest:
-      type: object
-      properties:
-        repo:
-          $ref: '#/components/schemas/repositoriesRepository'
-        updateMask:
-          $ref: '#/components/schemas/protobufFieldMask'
-        genType:
-          $ref: '#/components/schemas/repositoriesESOGeneratorType'
-        ecrGen:
-          $ref: '#/components/schemas/repositoriesECRAuthorizationTokenGenerator'
-        gcrGen:
-          $ref: '#/components/schemas/repositoriesGCRAccessTokenGenerator'
-        refreshInterval:
-          type: string
-          description: refreshInterval in format 1s, 1m, 1h...
-    StoPagination:
-      type: object
-      properties:
-        link:
-          type: string
-          description: Link-based paging
-          example: ''
-        page:
-          type: integer
-          description: Page number (starting from 0)
-          example: 4
-          format: int64
-        pageSize:
-          type: integer
-          description: Requested page size
-          example: 20
-          format: int64
-        totalItems:
-          type: integer
-          description: Total results available
-          example: 230
-          format: int64
-        totalPages:
-          type: integer
-          description: Total pages available
-          example: 12
-          format: int64
-      example:
-        link: ''
-        page: 4
-        pageSize: 20
-        totalItems: 230
-        totalPages: 12
-      required:
-      - page
-      - pageSize
-      - totalPages
-      - totalItems
-    v1Repositorylist:
-      type: object
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/servicev1Repository'
-        totalPages:
-          type: integer
-          format: int32
-        totalItems:
-          type: integer
-          format: int32
-        pageItemCount:
-          type: integer
-          format: int32
-        pageSize:
-          type: integer
-          format: int32
-        pageIndex:
-          type: integer
-          format: int32
-        empty:
-          type: boolean
-    repositoriesHelmChartsResponse:
-      type: object
-      properties:
+        metadata:
+          $ref: '#/components/schemas/v1ListMeta'
         items:
           type: array
           items:
-            $ref: '#/components/schemas/repositoriesHelmChart'
-    repositoriesRepoAppsResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/repositoriesAppInfo'
-      title: RepoAppsResponse contains applications of specified repository
-    repositoriesServiceAccountSelector:
-      type: object
-      properties:
-        name:
-          type: string
-        namespace:
-          type: string
-        audiences:
-          type: array
-          items:
-            type: string
-    RepositoriesOverviewResult:
-      type: object
-      properties:
-        baselineSet:
-          type: integer
-          description: COUNT(*) FILTER (WHERE is_baseline) — repositories that have a baseline variant set
-          example: 90
-          format: int64
-          minimum: 0
-        issueSeverityDeltas:
-          $ref: '#/components/schemas/RepositorySeverityDeltas'
-        issueSeverityTotals:
-          $ref: '#/components/schemas/RepositorySeverityCounts'
-        occurrenceSeverityDeltas:
-          $ref: '#/components/schemas/RepositorySeverityDeltas'
-        occurrenceSeverityTotals:
-          $ref: '#/components/schemas/RepositorySeverityCounts'
-        sourceBreakdown:
-          type: array
-          items:
-            $ref: '#/components/schemas/RepositorySourceBreakdownItem'
-          description: Repository counts grouped by source
-          example:
-          - count: 42
-            source: Github
-          - count: 42
-            source: Github
-        totalRepositories:
-          type: integer
-          description: COUNT(*) of repositories in scope
-          example: 128
-          format: int64
-          minimum: 0
-      description: Aggregate widgets for the Target Code Repositories page (UI 3.0).
-      example:
-        baselineSet: 90
-        issueSeverityDeltas:
-          critical: -2
-          high: 1
-          info: 0
-          low: -5
-          medium: 0
-          unassigned: 0
-        issueSeverityTotals:
-          critical: 3
-          high: 4
-          info: 1
-          low: 2
-          medium: 5
-          unassigned: 0
-        occurrenceSeverityDeltas:
-          critical: -2
-          high: 1
-          info: 0
-          low: -5
-          medium: 0
-          unassigned: 0
-        occurrenceSeverityTotals:
-          critical: 3
-          high: 4
-          info: 1
-          low: 2
-          medium: 5
-          unassigned: 0
-        sourceBreakdown:
-        - count: 42
-          source: Github
-        - count: 42
-          source: Github
-        totalRepositories: 128
-      required:
-      - totalRepositories
-      - sourceBreakdown
-      - baselineSet
-      - occurrenceSeverityTotals
-      - issueSeverityTotals
-    repositoriesRefs:
-      type: object
-      properties:
-        branches:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-      title: A subset of the repository's named refs
-    StoRepository:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Target id
-          example: abcdef1234567890ghijkl
-        isBaseline:
-          type: boolean
-          description: Whether this variant is the repository's baseline (target_summary.is_baseline).
-          example: true
-        issueSeverityCounts:
-          $ref: '#/components/schemas/RepositorySeverityCounts'
-        lastScanAt:
-          type: integer
-          description: Timestamp of the most recent scan, in milliseconds since Unix epoch (no server-side formatting; the UI formats it). Sortable. Null when the repository has never been scanned.
-          example: 1751793300000
-          format: int64
-        name:
-          type: string
-          description: Repository (target) name
-          example: NodeGoat
-        occurrenceSeverityCounts:
-          $ref: '#/components/schemas/RepositorySeverityCounts'
-        scanType:
-          type: object
-          description: 'Scan types present for this repository mapped to the scanners that produced them, from target_summary.scan_type_scanners (e.g. {"SAST": ["bandit"], "SCA": ["snyk"]}). Keys are the distinct scan types; the UI derives the scan-type count and any display label from them.'
-          example:
-            SAST:
-            - bandit
-            SCA:
-            - snyk
-            - twistlock
-          additionalProperties:
-            type: array
-            items:
-              type: string
-              example: Eveniet sequi rerum.
-            example:
-            - Eos quia sit recusandae porro.
-            - Sit sequi debitis similique.
-            - Quis qui rerum voluptate.
-            - Molestiae vero.
-        source:
-          type: string
-          description: Origin/source of the repository (e.g. the SCM integration). Filterable via the source filter. Stored and returned with UI casing (e.g. Github, Gitlab, Harness). Null when target_summary.source is not set.
-          example: Github
-          maxLength: 256
-        targetName:
-          type: string
-          description: Variant name — target_summary.variant_name for this row (e.g. branch name). Null when not set.
-          example: main
-        targetVariantId:
-          type: string
-          description: Target variant id — target_summary.variant_id for this row. Null when not set.
-          example: abcdef1234567890ghijkl
-        url:
-          type: string
-          description: Repository URL (the git clone/browse URL). Sourced from the chosen variant's last scan's git_metadata.RepositoryHTTP when available (the URL the scanner actually cloned), falling back to target.url. Null when neither is set. target_summary does not store it, so it is joined in from target/scan.
-          example: https://github.com/example/repo
-          maxLength: 1024
-      description: A code repository target as shown on the Target Code Repositories page (UI 3.0).
-      example:
-        id: abcdef1234567890ghijkl
-        isBaseline: true
-        issueSeverityCounts:
-          critical: 3
-          high: 4
-          info: 1
-          low: 2
-          medium: 5
-          unassigned: 0
-        lastScanAt: 1751793300000
-        name: NodeGoat
-        occurrenceSeverityCounts:
-          critical: 3
-          high: 4
-          info: 1
-          low: 2
-          medium: 5
-          unassigned: 0
-        scanType:
-          SAST:
-          - bandit
-          SCA:
-          - snyk
-          - twistlock
-        source: Github
-        targetName: main
-        targetVariantId: abcdef1234567890ghijkl
-        url: https://github.com/example/repo
-      required:
-      - id
-      - name
-      - scanType
-      - occurrenceSeverityCounts
-      - issueSeverityCounts
+            $ref: '#/components/schemas/repositoriesRepository'
+      description: RepositoryList is a collection of Repositories.
     RepositoriesListRepositoriesResponseBody:
       type: object
       properties:
@@ -3600,128 +3137,27 @@ components:
       required:
       - results
       - pagination
-    repositoriesKsonnetAppSpec:
-      type: object
-      properties:
-        name:
-          type: string
-        environments:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/repositoriesKsonnetEnvironment'
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsKsonnetParameter'
-      title: 'KsonnetAppSpec contains Ksonnet app response
-
-        This roughly reflects: ksonnet/ksonnet/metadata/app/schema.go'
-    v1RepoByUrlRespList:
-      type: object
-      properties:
-        repository:
-          type: array
-          items:
-            $ref: '#/components/schemas/servicev1Repository'
-    OCIRepoTypeResponseOCIRepoTypeEnum:
+    v1SortOrderOptions:
       type: string
       enum:
-      - UNSET
-      - AWS
-      - GOOGLE
-      - GITHUB
-      - DOCKERHUB
-      default: UNSET
-    commonsConnectionState:
+      - SORT_ORDER_NOT_SET
+      - ASC
+      - DESC
+      default: SORT_ORDER_NOT_SET
+    gatewayruntimeError:
       type: object
       properties:
-        status:
+        error:
           type: string
-          title: Status contains the current status indicator for the connection
+        code:
+          type: integer
+          format: int32
         message:
           type: string
-          title: Message contains human readable information about the connection status
-        attemptedAt:
-          $ref: '#/components/schemas/v1Time'
-        attemptedAtTs:
-          type: string
-          format: date-time
-          title: attemptedAtTs is the google timestamp variation of attemptedAt
-      title: ConnectionState contains information about remote resource connection state, currently used for clusters and repositories
-    RepositoriesListRepositoryVariantsResponseBody:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/StoPagination'
-        results:
+        details:
           type: array
           items:
-            $ref: '#/components/schemas/TargetVariant'
-          example:
-          - created: 1651578240
-            hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-            id: abcdef1234567890ghijkl
-            lastModified: 1651578240
-            parameters:
-              branch: main
-            targetId: abcdef1234567890ghijkl
-          - created: 1651578240
-            hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-            id: abcdef1234567890ghijkl
-            lastModified: 1651578240
-            parameters:
-              branch: main
-            targetId: abcdef1234567890ghijkl
-          - created: 1651578240
-            hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-            id: abcdef1234567890ghijkl
-            lastModified: 1651578240
-            parameters:
-              branch: main
-            targetId: abcdef1234567890ghijkl
-          - created: 1651578240
-            hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-            id: abcdef1234567890ghijkl
-            lastModified: 1651578240
-            parameters:
-              branch: main
-            targetId: abcdef1234567890ghijkl
-      example:
-        pagination:
-          link: ''
-          page: 4
-          pageSize: 20
-          totalItems: 230
-          totalPages: 12
-        results:
-        - created: 1651578240
-          hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-          id: abcdef1234567890ghijkl
-          lastModified: 1651578240
-          parameters:
-            branch: main
-          targetId: abcdef1234567890ghijkl
-        - created: 1651578240
-          hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
-          id: abcdef1234567890ghijkl
-          lastModified: 1651578240
-          parameters:
-            branch: main
-          targetId: abcdef1234567890ghijkl
-      required:
-      - results
-      - pagination
-    repositoriesKsonnetEnvironment:
-      type: object
-      properties:
-        name:
-          type: string
-          title: Name is the user defined name of an environment
-        k8sVersion:
-          type: string
-          description: KubernetesVersion is the kubernetes version the targeted cluster is running on.
-        destination:
-          $ref: '#/components/schemas/repositoriesKsonnetEnvironmentDestination'
+            $ref: '#/components/schemas/protobufAny'
     protobufAny:
       type: object
       properties:
@@ -3796,11 +3232,337 @@ components:
       description: 'ListMeta describes metadata that synthetic resources must have, including lists and
 
         various status objects. A resource may have only one of {ObjectMeta, ListMeta}.'
-    v1OCIRepoTypeResponse:
+    protobufFieldMask:
       type: object
       properties:
-        ociRepoType:
-          $ref: '#/components/schemas/OCIRepoTypeResponseOCIRepoTypeEnum'
+        paths:
+          type: array
+          items:
+            type: string
+          description: The set of field mask paths.
+      description: "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nNote that libraries which implement FieldMask resolution have various\ndifferent behaviors in the face of empty masks or the special \"*\" mask.\nWhen implementing a service you should confirm these cases have the\nappropriate behavior in the underlying FieldMask library that you desire,\nand you may need to special case those cases in your application code if\nthe underlying field mask library behavior differs from your intended\nservice semantics.\n\nUpdate methods implementing https://google.aip.dev/134\n- MUST support the special value * meaning \"full replace\"\n- MUST treat an omitted field mask as \"replace fields which are present\".\n\nOther methods implementing https://google.aip.dev/157\n- SHOULD support the special value \"*\" to mean \"get all\".\n- MUST treat an omitted field mask to mean \"get all\", unless otherwise\ndocumented.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"sub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable."
+      title: '`FieldMask` represents a set of symbolic field paths, for example:'
+    repositoriesHelmChart:
+      type: object
+      properties:
+        name:
+          type: string
+        versions:
+          type: array
+          items:
+            type: string
+    repositoriesServiceAccountSelector:
+      type: object
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
+        audiences:
+          type: array
+          items:
+            type: string
+    NotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          default: 404
+          example: 404
+          format: int64
+      example:
+        message: Not Found
+        status: 404
+      required:
+      - message
+    repositoriesCheckESOResponse:
+      type: object
+      properties:
+        esoPresent:
+          type: boolean
+    applicationsHelmParameter:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name is the name of the Helm parameter
+        value:
+          type: string
+          title: Value is the value for the Helm parameter
+        forceString:
+          type: boolean
+          title: ForceString determines whether to tell Helm to interpret booleans and numbers as strings
+      title: HelmParameter is a parameter that's passed to helm template during manifest generation
+    repositoriesKustomizeAppSpec:
+      type: object
+      properties:
+        images:
+          type: array
+          items:
+            type: string
+          description: images is a list of available images.
+      title: KustomizeAppSpec contains kustomize images
+    RepositoriesListRepositoryVariantsResponseBody:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/StoPagination'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetVariant'
+          example:
+          - created: 1651578240
+            hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+            id: abcdef1234567890ghijkl
+            lastModified: 1651578240
+            parameters:
+              branch: main
+            targetId: abcdef1234567890ghijkl
+          - created: 1651578240
+            hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+            id: abcdef1234567890ghijkl
+            lastModified: 1651578240
+            parameters:
+              branch: main
+            targetId: abcdef1234567890ghijkl
+          - created: 1651578240
+            hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+            id: abcdef1234567890ghijkl
+            lastModified: 1651578240
+            parameters:
+              branch: main
+            targetId: abcdef1234567890ghijkl
+          - created: 1651578240
+            hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+            id: abcdef1234567890ghijkl
+            lastModified: 1651578240
+            parameters:
+              branch: main
+            targetId: abcdef1234567890ghijkl
+      example:
+        pagination:
+          link: ''
+          page: 4
+          pageSize: 20
+          totalItems: 230
+          totalPages: 12
+        results:
+        - created: 1651578240
+          hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+          id: abcdef1234567890ghijkl
+          lastModified: 1651578240
+          parameters:
+            branch: main
+          targetId: abcdef1234567890ghijkl
+        - created: 1651578240
+          hash: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+          id: abcdef1234567890ghijkl
+          lastModified: 1651578240
+          parameters:
+            branch: main
+          targetId: abcdef1234567890ghijkl
+      required:
+      - results
+      - pagination
+    applicationsHelmFileParameter:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name is the name of the Helm parameter
+        path:
+          type: string
+          title: Path is the path to the file containing the values for the Helm parameter
+      title: HelmFileParameter is a file parameter that's passed to helm template during manifest generation
+    repositoriesKsonnetEnvironmentDestination:
+      type: object
+      properties:
+        server:
+          type: string
+          description: Server is the Kubernetes server that the cluster is running on.
+        namespace:
+          type: string
+          title: Namespace is the namespace of the Kubernetes server that targets should be deployed to
+    RepositoriesOverviewResult:
+      type: object
+      properties:
+        baselineSet:
+          type: integer
+          description: COUNT(*) FILTER (WHERE is_baseline) — repositories that have a baseline variant set
+          example: 90
+          format: int64
+          minimum: 0
+        issueSeverityDeltas:
+          $ref: '#/components/schemas/RepositorySeverityDeltas'
+        issueSeverityTotals:
+          $ref: '#/components/schemas/RepositorySeverityCounts'
+        occurrenceSeverityDeltas:
+          $ref: '#/components/schemas/RepositorySeverityDeltas'
+        occurrenceSeverityTotals:
+          $ref: '#/components/schemas/RepositorySeverityCounts'
+        sourceBreakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositorySourceBreakdownItem'
+          description: Repository counts grouped by source
+          example:
+          - count: 42
+            source: Github
+          - count: 42
+            source: Github
+        totalRepositories:
+          type: integer
+          description: COUNT(*) of repositories in scope
+          example: 128
+          format: int64
+          minimum: 0
+      description: Aggregate widgets for the Target Code Repositories page (UI 3.0).
+      example:
+        baselineSet: 90
+        issueSeverityDeltas:
+          critical: -2
+          high: 1
+          info: 0
+          low: -5
+          medium: 0
+          unassigned: 0
+        issueSeverityTotals:
+          critical: 3
+          high: 4
+          info: 1
+          low: 2
+          medium: 5
+          unassigned: 0
+        occurrenceSeverityDeltas:
+          critical: -2
+          high: 1
+          info: 0
+          low: -5
+          medium: 0
+          unassigned: 0
+        occurrenceSeverityTotals:
+          critical: 3
+          high: 4
+          info: 1
+          low: 2
+          medium: 5
+          unassigned: 0
+        sourceBreakdown:
+        - count: 42
+          source: Github
+        - count: 42
+          source: Github
+        totalRepositories: 128
+      required:
+      - totalRepositories
+      - sourceBreakdown
+      - baselineSet
+      - occurrenceSeverityTotals
+      - issueSeverityTotals
+    repositoriesESOGeneratorType:
+      type: string
+      enum:
+      - UNSET
+      - AWS_ECR
+      - GOOGLE_GCR
+      default: UNSET
+    repositoriesHelmChartsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/repositoriesHelmChart'
+    OCIRepoTypeResponseOCIRepoTypeEnum:
+      type: string
+      enum:
+      - UNSET
+      - AWS
+      - GOOGLE
+      - GITHUB
+      - DOCKERHUB
+      default: UNSET
+    repositoriesAppInfo:
+      type: object
+      properties:
+        type:
+          type: string
+        path:
+          type: string
+      title: AppInfo contains application type and app file path
+    repositoriesRepoAppDetailsResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        ksonnet:
+          $ref: '#/components/schemas/repositoriesKsonnetAppSpec'
+        helm:
+          $ref: '#/components/schemas/repositoriesHelmAppSpec'
+        kustomize:
+          $ref: '#/components/schemas/repositoriesKustomizeAppSpec'
+        directory:
+          $ref: '#/components/schemas/repositoriesDirectoryAppSpec'
+      title: RepoAppDetailsResponse application details
+    repositoriesGCRAccessTokenGenerator:
+      type: object
+      properties:
+        projectID:
+          type: string
+        accessKey:
+          type: string
+        workloadIdentity:
+          $ref: '#/components/schemas/repositoriesGCRWorkloadIdentity'
+    v1RepoByUrlRespList:
+      type: object
+      properties:
+        repository:
+          type: array
+          items:
+            $ref: '#/components/schemas/servicev1Repository'
+    repositoriesRepoResponse:
+      type: object
+    v1RepoListReq:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        agentIdentifier:
+          type: string
+          description: Agent identifier for entity.
+        searchTerm:
+          type: string
+        pageSize:
+          type: integer
+          format: int32
+        pageIndex:
+          type: integer
+          format: int32
+        filter:
+          type: object
+          description: 'Filters for Repositories. Eg. "identifier": { "$in": ["id1", "id2"]'
+        sortBy:
+          $ref: '#/components/schemas/RepoListReqRepoSortByOptions'
+        sortOrder:
+          $ref: '#/components/schemas/v1SortOrderOptions'
+        inheritedCreds:
+          type: boolean
+        includeChildScopes:
+          type: boolean
+    repositoriesDirectoryAppSpec:
+      type: object
+      title: DirectoryAppSpec contains directory
     repositoriesESOGeneratorResponse:
       type: object
       properties:
@@ -3810,25 +3572,263 @@ components:
           $ref: '#/components/schemas/repositoriesECRAuthorizationTokenGenerator'
         gcrGen:
           $ref: '#/components/schemas/repositoriesGCRAccessTokenGenerator'
-    applicationsKsonnetParameter:
+    RepositorySeverityDeltas:
       type: object
       properties:
-        component:
-          type: string
+        critical:
+          type: integer
+          description: Change in critical count
+          example: -2
+          format: int64
+        high:
+          type: integer
+          description: Change in high count
+          example: 1
+          format: int64
+        info:
+          type: integer
+          description: Change in info count
+          example: 0
+          format: int64
+        low:
+          type: integer
+          description: Change in low count
+          example: -5
+          format: int64
+        medium:
+          type: integer
+          description: Change in medium count
+          example: 0
+          format: int64
+        unassigned:
+          type: integer
+          description: Change in unassigned count
+          example: 0
+          format: int64
+      description: Change in counts by severity since the last UTC 12:00 AM snapshot. Positive means increased, negative means decreased.
+      example:
+        critical: -2
+        high: 1
+        info: 0
+        low: -5
+        medium: 0
+        unassigned: 0
+      required:
+      - critical
+      - high
+      - medium
+      - low
+      - info
+      - unassigned
+    repositoriesHelmAppSpec:
+      type: object
+      properties:
         name:
           type: string
-        value:
+        valueFiles:
+          type: array
+          items:
+            type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsHelmParameter'
+          title: the output of `helm inspect values`
+        values:
           type: string
-      title: KsonnetParameter is a ksonnet component parameter
-    RepoListReqRepoSortByOptions:
-      type: string
-      enum:
-      - SORT_BY_NOT_SET
-      - NAME
-      - CONNECTIVITY_STATUS
-      - TYPE
-      - REPOSITORY
-      default: SORT_BY_NOT_SET
+          title: the contents of values.yaml
+        fileParameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsHelmFileParameter'
+          title: helm file parameters
+      title: HelmAppSpec contains helm app name  in source repo
+    repositoriesECRAuthorizationTokenGenerator:
+      type: object
+      properties:
+        region:
+          type: string
+        secretRef:
+          $ref: '#/components/schemas/repositoriesAWSSecretRef'
+        jwtAuth:
+          $ref: '#/components/schemas/repositoriesServiceAccountSelector'
+        role:
+          type: string
+      description: ECRAuthorizationTokenSpec represents externalSecret for ECR External Secret Operator generator.
+    StoRepository:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Target id
+          example: abcdef1234567890ghijkl
+        isBaseline:
+          type: boolean
+          description: Whether this variant is the repository's baseline (target_summary.is_baseline).
+          example: true
+        issueSeverityCounts:
+          $ref: '#/components/schemas/RepositorySeverityCounts'
+        lastScanAt:
+          type: integer
+          description: Timestamp of the most recent scan, in milliseconds since Unix epoch (no server-side formatting; the UI formats it). Sortable. Null when the repository has never been scanned.
+          example: 1751793300000
+          format: int64
+        name:
+          type: string
+          description: Repository (target) name
+          example: NodeGoat
+        occurrenceSeverityCounts:
+          $ref: '#/components/schemas/RepositorySeverityCounts'
+        scanType:
+          type: object
+          description: 'Scan types present for this repository mapped to the scanners that produced them, from target_summary.scan_type_scanners (e.g. {"SAST": ["bandit"], "SCA": ["snyk"]}). Keys are the distinct scan types; the UI derives the scan-type count and any display label from them.'
+          example:
+            SAST:
+            - bandit
+            SCA:
+            - snyk
+            - twistlock
+          additionalProperties:
+            type: array
+            items:
+              type: string
+              example: Eveniet sequi rerum.
+            example:
+            - Eos quia sit recusandae porro.
+            - Sit sequi debitis similique.
+            - Quis qui rerum voluptate.
+            - Molestiae vero.
+        source:
+          type: string
+          description: Origin/source of the repository (e.g. the SCM integration). Filterable via the source filter. Stored and returned with UI casing (e.g. Github, Gitlab, Harness). Null when target_summary.source is not set.
+          example: Github
+          maxLength: 256
+        targetName:
+          type: string
+          description: Variant name — target_summary.variant_name for this row (e.g. branch name). Null when not set.
+          example: main
+        targetVariantId:
+          type: string
+          description: Target variant id — target_summary.variant_id for this row. Null when not set.
+          example: abcdef1234567890ghijkl
+        url:
+          type: string
+          description: Repository URL (the git clone/browse URL). Sourced from the chosen variant's last scan's git_metadata.RepositoryHTTP when available (the URL the scanner actually cloned), falling back to target.url. Null when neither is set. target_summary does not store it, so it is joined in from target/scan.
+          example: https://github.com/example/repo
+          maxLength: 1024
+      description: A code repository target as shown on the Target Code Repositories page (UI 3.0).
+      example:
+        id: abcdef1234567890ghijkl
+        isBaseline: true
+        issueSeverityCounts:
+          critical: 3
+          high: 4
+          info: 1
+          low: 2
+          medium: 5
+          unassigned: 0
+        lastScanAt: 1751793300000
+        name: NodeGoat
+        occurrenceSeverityCounts:
+          critical: 3
+          high: 4
+          info: 1
+          low: 2
+          medium: 5
+          unassigned: 0
+        scanType:
+          SAST:
+          - bandit
+          SCA:
+          - snyk
+          - twistlock
+        source: Github
+        targetName: main
+        targetVariantId: abcdef1234567890ghijkl
+        url: https://github.com/example/repo
+      required:
+      - id
+      - name
+      - scanType
+      - occurrenceSeverityCounts
+      - issueSeverityCounts
+    repositoriesRepoAppsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/repositoriesAppInfo'
+      title: RepoAppsResponse contains applications of specified repository
+    v1Time:
+      type: object
+      properties:
+        seconds:
+          type: string
+          format: int64
+          description: 'Represents seconds of UTC time since Unix epoch
+
+            1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+
+            9999-12-31T23:59:59Z inclusive.'
+        nanos:
+          type: integer
+          format: int32
+          description: 'Non-negative fractions of a second at nanosecond resolution. Negative
+
+            second values with fractions must still have non-negative nanos values
+
+            that count forward in time. Must be from 0 to 999,999,999
+
+            inclusive. This field may be limited in precision depending on context.'
+      description: 'Time is a wrapper around time.Time which supports correct
+
+        marshaling to YAML and JSON.  Wrappers are provided for many
+
+        of the factory methods that the time package offers.
+
+
+        +protobuf.options.marshal=false
+
+        +protobuf.as=Timestamp
+
+        +protobuf.options.(gogoproto.goproto_stringer)=false'
+    repositoriesRepoUpdateRequest:
+      type: object
+      properties:
+        repo:
+          $ref: '#/components/schemas/repositoriesRepository'
+        updateMask:
+          $ref: '#/components/schemas/protobufFieldMask'
+        genType:
+          $ref: '#/components/schemas/repositoriesESOGeneratorType'
+        ecrGen:
+          $ref: '#/components/schemas/repositoriesECRAuthorizationTokenGenerator'
+        gcrGen:
+          $ref: '#/components/schemas/repositoriesGCRAccessTokenGenerator'
+        refreshInterval:
+          type: string
+          description: refreshInterval in format 1s, 1m, 1h...
+    RepositorySourceBreakdownItem:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Number of repositories with this source
+          example: 42
+          format: int64
+          minimum: 0
+        source:
+          type: string
+          description: Source value as stored in target_summary (e.g. Github, Gitlab, Harness)
+          example: Github
+      description: Repository count for a single source (one GROUP BY source bucket).
+      example:
+        count: 42
+        source: Github
+      required:
+      - source
+      - count
   securitySchemes:
     x-api-key:
       name: x-api-key

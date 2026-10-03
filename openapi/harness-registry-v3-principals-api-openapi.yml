@@ -51,6 +51,38 @@ paths:
       x-internal: false
 components:
   parameters:
+    PageSizeV3:
+      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        maximum: 100
+        minimum: 1
+        type: integer
+    ProjectIdentifierV3:
+      description: 'Unique identifier for the project within the organization.
+
+
+        Example: `my_project` or `frontend_services`
+
+        '
+      in: query
+      name: project_identifier
+      schema:
+        type: string
+    OrgIdentifierV3:
+      description: 'Unique identifier for the organization within the account.
+
+
+        Example: `default` or `engineering_org`
+
+        '
+      in: query
+      name: org_identifier
+      schema:
+        type: string
     PrincipalTypeFilterParamV3:
       description: filter by principal type
       in: query
@@ -77,47 +109,6 @@ components:
         default: 0
         format: int64
         type: integer
-    PageSizeV3:
-      description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        maximum: 100
-        minimum: 1
-        type: integer
-    ProjectIdentifierV3:
-      description: 'Unique identifier for the project within the organization.
-
-
-        Example: `my_project` or `frontend_services`
-
-        '
-      in: query
-      name: project_identifier
-      schema:
-        type: string
-    AccountIdentifierV3:
-      description: 'Unique identifier for the Harness account.
-
-        '
-      in: query
-      name: account_identifier
-      required: true
-      schema:
-        type: string
-    OrgIdentifierV3:
-      description: 'Unique identifier for the organization within the account.
-
-
-        Example: `default` or `engineering_org`
-
-        '
-      in: query
-      name: org_identifier
-      schema:
-        type: string
     SearchTermV3:
       description: 'Search term for filtering results.
 
@@ -129,6 +120,15 @@ components:
       name: search_term
       schema:
         type: string
+    AccountIdentifierV3:
+      description: 'Unique identifier for the Harness account.
+
+        '
+      in: query
+      name: account_identifier
+      required: true
+      schema:
+        type: string
   schemas:
     ErrorV3:
       description: An error response
@@ -138,25 +138,6 @@ components:
       required:
       - error
       type: object
-    ListPrincipalsResponseBodyV3:
-      allOf:
-      - $ref: '#/components/schemas/PageInfoV3'
-      - properties:
-          items:
-            items:
-              $ref: '#/components/schemas/PrincipalV3'
-            type: array
-        required:
-        - items
-        type: object
-    PrincipalTypeV3:
-      description: 'Principal type. Known values include: USER.
-
-        '
-      enum:
-      - USER
-      example: USER
-      type: string
     PrincipalV3:
       description: Principal information (user or service account)
       properties:
@@ -183,6 +164,32 @@ components:
       - uid
       - createdAt
       - updatedAt
+    ApiErrorsV3:
+      properties:
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
+      required:
+      - type
+      title: APIErrors
+      type: object
     PageInfoV3:
       description: 'Pagination metadata.
 
@@ -213,6 +220,14 @@ components:
       - size
       - hasMore
       type: object
+    PrincipalTypeV3:
+      description: 'Principal type. Known values include: USER.
+
+        '
+      enum:
+      - USER
+      example: USER
+      type: string
     ModifiedAtMsV3:
       description: Unix timestamp in milliseconds when the resource was last modified
       example: 1736360000123
@@ -220,32 +235,17 @@ components:
       type:
       - integer
       - 'null'
-    ApiErrorsV3:
-      properties:
-        code:
-          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
-          maxLength: 5000
-          type: string
-        message:
-          description: A human-readable message providing more details about the error. These messages can be shown to users.
-          maxLength: 40000
-          type: string
-        param:
-          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
-          maxLength: 5000
-          type: string
-        type:
-          description: The type of error returned.
-          enum:
-          - INVALID_REQUEST_ERROR
-          - AUTHENTICATION_ERROR
-          - PERMISSION_ERROR
-          - API_ERROR
-          type: string
-      required:
-      - type
-      title: APIErrors
-      type: object
+    ListPrincipalsResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          items:
+            items:
+              $ref: '#/components/schemas/PrincipalV3'
+            type: array
+        required:
+        - items
+        type: object
   responses:
     ListPrincipalsResponseV3:
       content:

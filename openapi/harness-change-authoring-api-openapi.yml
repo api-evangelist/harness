@@ -110,6 +110,13 @@ paths:
       x-internal: true
 components:
   requestBodies:
+    ChangeSetExistenceRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChangeSetExistenceIn'
+      description: Request body for checking changeset existence for a schema
+      required: true
     ChangeAuthoringEventRequest:
       content:
         application/json:
@@ -124,99 +131,7 @@ components:
             $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineRequestBody'
       description: Request body for v1-execute-llm-authoring-pipeline
       required: true
-    ChangeSetExistenceRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ChangeSetExistenceIn'
-      description: Request body for checking changeset existence for a schema
-      required: true
   schemas:
-    ChangeSetIdInput:
-      properties:
-        id:
-          description: Liquibase changeset id (identifier only; fileName and author are ignored)
-          minLength: 1
-          type: string
-      required:
-      - id
-      title: ChangeSetIdInput
-      type: object
-    ChangeSetExistenceIn:
-      properties:
-        changeSets:
-          items:
-            $ref: '#/components/schemas/ChangeSetIdInput'
-          maxItems: 100
-          minItems: 1
-          type: array
-      required:
-      - changeSets
-      title: ChangeSetExistenceIn
-      type: object
-    ExecuteLlmAuthoringPipelineResponseBody:
-      properties:
-        executionId:
-          description: Pipeline execution id returned by pipeline-service.
-          type: string
-        openInHarness:
-          description: Deep link to the live execution in the Harness UI.
-          type: string
-        pipelineIdentifier:
-          description: 'Identifier of the pipeline that was actually executed (the value of
-
-            the `pipelineIdentifier` request field, or the default identifier
-
-            when `useDefaultPipeline=true`).
-
-            '
-          type: string
-      required:
-      - executionId
-      - pipelineIdentifier
-      type: object
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
-    ChangeAuthoringEventIn:
-      description: Request body for creating a change authoring execution event
-      properties:
-        conversationId:
-          description: Unique chat conversation ID from the LLM change authoring interaction
-          type: string
-          x-oapi-codegen-extra-tags:
-            validate: required
-        pipelineExecutionId:
-          description: Unique pipeline execution ID
-          type: string
-          x-oapi-codegen-extra-tags:
-            validate: required
-        pipelineIdentifier:
-          description: Pipeline identifier that was executed
-          type: string
-          x-oapi-codegen-extra-tags:
-            validate: required
-        schemaIdentifier:
-          description: Database schema identifier
-          type: string
-          x-oapi-codegen-extra-tags:
-            validate: required
-      required:
-      - schemaIdentifier
-      - conversationId
-      - pipelineIdentifier
-      - pipelineExecutionId
-      title: Change Authoring Event Request
-      type: object
     ChangeSetExistenceOut:
       properties:
         existence:
@@ -285,34 +200,120 @@ components:
       - instanceId
       - changeset
       type: object
+    ChangeSetExistenceIn:
+      properties:
+        changeSets:
+          items:
+            $ref: '#/components/schemas/ChangeSetIdInput'
+          maxItems: 100
+          minItems: 1
+          type: array
+      required:
+      - changeSets
+      title: ChangeSetExistenceIn
+      type: object
+    ExecuteLlmAuthoringPipelineResponseBody:
+      properties:
+        executionId:
+          description: Pipeline execution id returned by pipeline-service.
+          type: string
+        openInHarness:
+          description: Deep link to the live execution in the Harness UI.
+          type: string
+        pipelineIdentifier:
+          description: 'Identifier of the pipeline that was actually executed (the value of
+
+            the `pipelineIdentifier` request field, or the default identifier
+
+            when `useDefaultPipeline=true`).
+
+            '
+          type: string
+      required:
+      - executionId
+      - pipelineIdentifier
+      type: object
+    ChangeAuthoringEventIn:
+      description: Request body for creating a change authoring execution event
+      properties:
+        conversationId:
+          description: Unique chat conversation ID from the LLM change authoring interaction
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: required
+        pipelineExecutionId:
+          description: Unique pipeline execution ID
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: required
+        pipelineIdentifier:
+          description: Pipeline identifier that was executed
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: required
+        schemaIdentifier:
+          description: Database schema identifier
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: required
+      required:
+      - schemaIdentifier
+      - conversationId
+      - pipelineIdentifier
+      - pipelineExecutionId
+      title: Change Authoring Event Request
+      type: object
+    ChangeSetIdInput:
+      properties:
+        id:
+          description: Liquibase changeset id (identifier only; fileName and author are ignored)
+          minLength: 1
+          type: string
+      required:
+      - id
+      title: ChangeSetIdInput
+      type: object
+    DbOpsError:
+      description: Error Response
+      properties:
+        message:
+          description: error message detail
+          type: string
+      required:
+      - message
+      title: Error Response
+      type: object
+      x-stoplight:
+        id: 61cwtgnps2mpt
   responses:
-    ExecuteLlmAuthoringPipelineResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineResponseBody'
-      description: Pipeline execution triggered and event persisted.
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
-    ChangeAuthoringEventResponse:
-      description: Change authoring execution event created successfully
     ChangeSetExistenceResponse:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ChangeSetExistenceOut'
       description: Response body for changeset existence check
+    ExecuteLlmAuthoringPipelineResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineResponseBody'
+      description: Pipeline execution triggered and event persisted.
+    ChangeAuthoringEventResponse:
+      description: Change authoring execution event created successfully
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
   parameters:
-    OrgParam:
-      description: Organization identifier
+    DBSchemaParam:
+      description: Identifier of the database schema
       in: path
-      name: org
+      name: dbschema
       required: true
       schema:
+        maxLength: 128
         type: string
     ProjectParam:
       description: Project identifier
@@ -327,13 +328,12 @@ components:
       name: Harness-Account
       schema:
         type: string
-    DBSchemaParam:
-      description: Identifier of the database schema
+    OrgParam:
+      description: Organization identifier
       in: path
-      name: dbschema
+      name: org
       required: true
       schema:
-        maxLength: 128
         type: string
   securitySchemes:
     x-api-key:

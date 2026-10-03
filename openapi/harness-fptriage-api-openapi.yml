@@ -435,6 +435,57 @@ paths:
         - sto_internal_use_only
 components:
   schemas:
+    BatchUpsertVerdictsRequestBody:
+      type: object
+      properties:
+        verdicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FpVerdictPayload'
+          description: Verdicts to upsert. ON CONFLICT (account_id, workflow_type, issue_id, occurrence_internal_id) DO UPDATE — re-runs overwrite previous output.
+          example:
+          - confidence: 0.87
+            issueId: abcdef1234567890ghijkl
+            modelName: anthropic.claude-3-5-sonnet-20241022
+            occurrenceInternalId: 67890
+            promptVersion: v1.3.0
+            reasoning: The argument to path.join is __dirname, a constant, not user input.
+            targetId: xyz987zyx654wvu321tsr9
+            verdict: FALSE_POSITIVE
+            workflowExecutionId: wf-exec-2026-05-21-payment-service-247
+            workflowType: FP_TRIAGE
+          minItems: 1
+          maxItems: 10000
+      example:
+        verdicts:
+        - confidence: 0.87
+          issueId: abcdef1234567890ghijkl
+          modelName: anthropic.claude-3-5-sonnet-20241022
+          occurrenceInternalId: 67890
+          promptVersion: v1.3.0
+          reasoning: The argument to path.join is __dirname, a constant, not user input.
+          targetId: xyz987zyx654wvu321tsr9
+          verdict: FALSE_POSITIVE
+          workflowExecutionId: wf-exec-2026-05-21-payment-service-247
+          workflowType: FP_TRIAGE
+      required:
+      - verdicts
+    NotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          default: 404
+          example: 404
+          format: int64
+      example:
+        message: Not Found
+        status: 404
+      required:
+      - message
     FpOccurrenceRef:
       type: object
       properties:
@@ -573,34 +624,6 @@ components:
           targetName: payment-service
       required:
       - results
-    NotFound:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Not Found
-        status:
-          type: integer
-          default: 404
-          example: 404
-          format: int64
-      example:
-        message: Not Found
-        status: 404
-      required:
-      - message
-    BatchUpsertVerdictsResponseBody:
-      type: object
-      properties:
-        written:
-          type: integer
-          description: Number of verdict rows written (inserted or updated).
-          example: 42
-          format: int64
-      example:
-        written: 42
-      required:
-      - written
     FpVerdictPayload:
       type: object
       properties:
@@ -677,41 +700,18 @@ components:
       - confidence
       - modelName
       - promptVersion
-    BatchUpsertVerdictsRequestBody:
+    BatchUpsertVerdictsResponseBody:
       type: object
       properties:
-        verdicts:
-          type: array
-          items:
-            $ref: '#/components/schemas/FpVerdictPayload'
-          description: Verdicts to upsert. ON CONFLICT (account_id, workflow_type, issue_id, occurrence_internal_id) DO UPDATE — re-runs overwrite previous output.
-          example:
-          - confidence: 0.87
-            issueId: abcdef1234567890ghijkl
-            modelName: anthropic.claude-3-5-sonnet-20241022
-            occurrenceInternalId: 67890
-            promptVersion: v1.3.0
-            reasoning: The argument to path.join is __dirname, a constant, not user input.
-            targetId: xyz987zyx654wvu321tsr9
-            verdict: FALSE_POSITIVE
-            workflowExecutionId: wf-exec-2026-05-21-payment-service-247
-            workflowType: FP_TRIAGE
-          minItems: 1
-          maxItems: 10000
+        written:
+          type: integer
+          description: Number of verdict rows written (inserted or updated).
+          example: 42
+          format: int64
       example:
-        verdicts:
-        - confidence: 0.87
-          issueId: abcdef1234567890ghijkl
-          modelName: anthropic.claude-3-5-sonnet-20241022
-          occurrenceInternalId: 67890
-          promptVersion: v1.3.0
-          reasoning: The argument to path.join is __dirname, a constant, not user input.
-          targetId: xyz987zyx654wvu321tsr9
-          verdict: FALSE_POSITIVE
-          workflowExecutionId: wf-exec-2026-05-21-payment-service-247
-          workflowType: FP_TRIAGE
+        written: 42
       required:
-      - verdicts
+      - written
   securitySchemes:
     x-api-key:
       name: x-api-key

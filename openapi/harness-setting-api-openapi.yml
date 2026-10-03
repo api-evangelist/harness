@@ -248,34 +248,6 @@ components:
           type: integer
           description: Time when the Setting was last modified.
           format: int64
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    SettingUpdateResponseDTO:
-      required:
-      - identifier
-      - setting
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: Identifier of the Setting.
-        setting:
-          $ref: '#/components/schemas/SettingDTO'
-        lastModifiedAt:
-          type: integer
-          description: Time when the Setting was last modified.
-          format: int64
-        updateStatus:
-          type: boolean
-          description: Request status for the corresponding item in batch request
-        errorMessage:
-          type: string
-          description: Error message
     Error1:
       type: object
       properties:
@@ -699,45 +671,112 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    ResponseDTOListSettingResponseDTO:
+    ErrorMetadata2:
       type: object
       properties:
-        status:
+        type:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/SettingResponseDTO'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    SettingRequestDTO:
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    SettingDTO:
       required:
       - allowOverrides
+      - allowedScopes
+      - category
+      - groupIdentifier
       - identifier
-      - updateType
+      - isSettingEditable
+      - name
+      - valueType
       type: object
       properties:
         identifier:
           type: string
           description: Identifier of the Setting.
-        value:
+        name:
           type: string
-          description: Value of the setting
+          description: Name of the Setting.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        category:
+          type: string
+          description: Category of the Setting.
+          enum:
+          - CD
+          - CI
+          - CE
+          - CV
+          - CF
+          - STO
+          - CORE
+          - PMS
+          - TEMPLATESERVICE
+          - GOVERNANCE
+          - CHAOS
+          - SCIM
+          - GIT_EXPERIENCE
+          - CONNECTORS
+          - EULA
+          - NOTIFICATIONS
+          - SUPPLY_CHAIN_ASSURANCE
+          - USER
+          - MODULES_VISIBILITY
+          - DBOPS
+          - IR
+          - AR
+        groupIdentifier:
+          type: string
+          description: Group Id of the setting
+        valueType:
+          type: string
+          description: Type of Value of the Setting.
+          enum:
+          - String
+          - Boolean
+          - Number
+        allowedValues:
+          uniqueItems: true
+          type: array
+          description: Set of Values allowed for the Setting.
+          items:
+            type: string
+            description: Set of Values allowed for the Setting.
         allowOverrides:
           type: boolean
           description: Allow override of the Setting in sub-scopes.
-        updateType:
+        value:
           type: string
-          description: Type of the update operation. When update type is RESTORE, field [value] is ignored
+          description: Value of the setting
+        defaultValue:
+          type: string
+          description: Default Value of the Setting.
+        settingSource:
+          type: string
+          description: Source of the setting value
           enum:
-          - UPDATE
-          - RESTORE
+          - ACCOUNT
+          - ORG
+          - PROJECT
+          - DEFAULT
+        isSettingEditable:
+          type: boolean
+          description: Is the setting editable at the current scope
+        allowedScopes:
+          uniqueItems: true
+          type: array
+          description: List of scopes where the setting is available
+          items:
+            type: string
+            description: List of scopes where the setting is available
+            enum:
+            - ACCOUNT
+            - ORGANIZATION
+            - PROJECT
     ResponseMessage:
       type: object
       properties:
@@ -1328,120 +1367,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    SettingValueResponseDTO:
-      required:
-      - value
-      - valueType
-      type: object
-      properties:
-        valueType:
-          type: string
-          description: Type of Value of the Setting.
-          enum:
-          - String
-          - Boolean
-          - Number
-        value:
-          type: string
-          description: Value of the setting
-    SettingDTO:
-      required:
-      - allowOverrides
-      - allowedScopes
-      - category
-      - groupIdentifier
-      - identifier
-      - isSettingEditable
-      - name
-      - valueType
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: Identifier of the Setting.
-        name:
-          type: string
-          description: Name of the Setting.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        category:
-          type: string
-          description: Category of the Setting.
-          enum:
-          - CD
-          - CI
-          - CE
-          - CV
-          - CF
-          - STO
-          - CORE
-          - PMS
-          - TEMPLATESERVICE
-          - GOVERNANCE
-          - CHAOS
-          - SCIM
-          - GIT_EXPERIENCE
-          - CONNECTORS
-          - EULA
-          - NOTIFICATIONS
-          - SUPPLY_CHAIN_ASSURANCE
-          - USER
-          - MODULES_VISIBILITY
-          - DBOPS
-          - IR
-          - AR
-        groupIdentifier:
-          type: string
-          description: Group Id of the setting
-        valueType:
-          type: string
-          description: Type of Value of the Setting.
-          enum:
-          - String
-          - Boolean
-          - Number
-        allowedValues:
-          uniqueItems: true
-          type: array
-          description: Set of Values allowed for the Setting.
-          items:
-            type: string
-            description: Set of Values allowed for the Setting.
-        allowOverrides:
-          type: boolean
-          description: Allow override of the Setting in sub-scopes.
-        value:
-          type: string
-          description: Value of the setting
-        defaultValue:
-          type: string
-          description: Default Value of the Setting.
-        settingSource:
-          type: string
-          description: Source of the setting value
-          enum:
-          - ACCOUNT
-          - ORG
-          - PROJECT
-          - DEFAULT
-        isSettingEditable:
-          type: boolean
-          description: Is the setting editable at the current scope
-        allowedScopes:
-          uniqueItems: true
-          type: array
-          description: List of scopes where the setting is available
-          items:
-            type: string
-            description: List of scopes where the setting is available
-            enum:
-            - ACCOUNT
-            - ORGANIZATION
-            - PROJECT
     Failure:
       type: object
       properties:
@@ -1878,14 +1803,60 @@ components:
           type: object
         correlationId:
           type: string
-    ErrorMetadata2:
+    SettingUpdateResponseDTO:
+      required:
+      - identifier
+      - setting
       type: object
       properties:
-        type:
+        identifier:
           type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
+          description: Identifier of the Setting.
+        setting:
+          $ref: '#/components/schemas/SettingDTO'
+        lastModifiedAt:
+          type: integer
+          description: Time when the Setting was last modified.
+          format: int64
+        updateStatus:
+          type: boolean
+          description: Request status for the corresponding item in batch request
+        errorMessage:
+          type: string
+          description: Error message
+    SettingValueResponseDTO:
+      required:
+      - value
+      - valueType
+      type: object
+      properties:
+        valueType:
+          type: string
+          description: Type of Value of the Setting.
+          enum:
+          - String
+          - Boolean
+          - Number
+        value:
+          type: string
+          description: Value of the setting
+    ResponseDTOListSettingResponseDTO:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettingResponseDTO'
+        metaData:
+          type: object
+        correlationId:
+          type: string
     ResponseDTOSettingValueResponseDTO:
       type: object
       properties:
@@ -1901,6 +1872,35 @@ components:
           type: object
         correlationId:
           type: string
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    SettingRequestDTO:
+      required:
+      - allowOverrides
+      - identifier
+      - updateType
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Identifier of the Setting.
+        value:
+          type: string
+          description: Value of the setting
+        allowOverrides:
+          type: boolean
+          description: Allow override of the Setting in sub-scopes.
+        updateType:
+          type: string
+          description: Type of the update operation. When update type is RESTORE, field [value] is ignored
+          enum:
+          - UPDATE
+          - RESTORE
   securitySchemes:
     x-api-key:
       name: x-api-key

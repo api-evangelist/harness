@@ -121,6 +121,247 @@ paths:
       tags:
       - Org Project
 components:
+  parameters:
+    ProjectsQueryParam:
+      name: project
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      description: Identifier field of the projects the resource is scoped to
+    ProjectPathParam:
+      name: project
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the project the resource is scoped to
+    SearchTerm1:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching with search term.
+    Sort1:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - name
+        - identifier
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    OrgPathParam:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the organization the resource is scoped to
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    onlyFavorites:
+      name: only_favorites
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: Enable this field to fetch only the entities that are marked as favorites.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+  schemas:
+    CreateProjectRequest:
+      description: Create project request
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/ProjectRequest'
+      required:
+      - project
+    ProjectResponse:
+      description: Project response model
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for the project
+        updated:
+          type: integer
+          format: int64
+          description: Updated timestamp for the project
+        isFavorite:
+          type: boolean
+          description: True if its your favorite project
+    UpdateProjectRequest:
+      description: Update project request
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/ProjectRequest'
+      required:
+      - project
+    Project:
+      description: Project model
+      type: object
+      x-examples:
+        example-1:
+          identifier: example_project_identifier
+          name: example-project-name
+          org: example_org_identifier
+          color: '#0063F7'
+          modules:
+          - CD
+          description: This is a example project
+          tags:
+            property1: value1
+            property2: value2
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          description: Project identifier
+          maxLength: 128
+        name:
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          description: Project name
+          maxLength: 128
+        org:
+          type: string
+          description: Organization identifier for the project
+        color:
+          type: string
+          description: Project color
+        modules:
+          type: array
+          maxItems: 1024
+          description: List of modules for project
+          items:
+            $ref: '#/components/schemas/ModuleType'
+        description:
+          type: string
+          maxLength: 1024
+          description: Project description
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Project tags
+      required:
+      - identifier
+      - name
+    ModuleType:
+      type: string
+      description: Type of Modules
+      enum:
+      - CD
+      - CI
+      - CV
+      - CF
+      - CE
+      - STO
+      - CORE
+      - PMS
+      - TEMPLATESERVICE
+      - GOVERNANCE
+      - CHAOS
+      - CET
+      - IDP
+      - SSCA
+      - SEI
+      - CODE
+      - HAR
+    ProjectRequest:
+      description: Project model
+      type: object
+      x-examples:
+        example-1:
+          identifier: example_project_identifier
+          name: example-project-name
+          color: '#0063F7'
+          modules:
+          - CD
+          description: This is a example project
+          tags:
+            property1: value1
+            property2: value2
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          description: Project identifier
+          maxLength: 128
+        name:
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          description: Project name
+          maxLength: 128
+        color:
+          type: string
+          description: Project color
+        modules:
+          type: array
+          maxItems: 1024
+          description: List of modules for project
+          items:
+            $ref: '#/components/schemas/ModuleType'
+        description:
+          type: string
+          maxLength: 1024
+          description: Project description
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Project tags
+      required:
+      - identifier
+      - name
   requestBodies:
     UpdateProjectRequest:
       content:
@@ -250,247 +491,6 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-  parameters:
-    ProjectPathParam:
-      name: project
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the project the resource is scoped to
-    ProjectsQueryParam:
-      name: project
-      in: query
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
-      description: Identifier field of the projects the resource is scoped to
-    OrgPathParam:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the organization the resource is scoped to
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    onlyFavorites:
-      name: only_favorites
-      in: query
-      required: false
-      schema:
-        type: boolean
-      description: Enable this field to fetch only the entities that are marked as favorites.
-    Sort1:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - name
-        - identifier
-        - created
-        - updated
-      description: Parameter on the basis of which sorting is done.
-    SearchTerm1:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching with search term.
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-  schemas:
-    ProjectResponse:
-      description: Project response model
-      type: object
-      properties:
-        project:
-          $ref: '#/components/schemas/Project'
-        created:
-          type: integer
-          format: int64
-          description: Creation timestamp for the project
-        updated:
-          type: integer
-          format: int64
-          description: Updated timestamp for the project
-        isFavorite:
-          type: boolean
-          description: True if its your favorite project
-    ProjectRequest:
-      description: Project model
-      type: object
-      x-examples:
-        example-1:
-          identifier: example_project_identifier
-          name: example-project-name
-          color: '#0063F7'
-          modules:
-          - CD
-          description: This is a example project
-          tags:
-            property1: value1
-            property2: value2
-      properties:
-        identifier:
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          description: Project identifier
-          maxLength: 128
-        name:
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          description: Project name
-          maxLength: 128
-        color:
-          type: string
-          description: Project color
-        modules:
-          type: array
-          maxItems: 1024
-          description: List of modules for project
-          items:
-            $ref: '#/components/schemas/ModuleType'
-        description:
-          type: string
-          maxLength: 1024
-          description: Project description
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          maxProperties: 128
-          description: Project tags
-      required:
-      - identifier
-      - name
-    UpdateProjectRequest:
-      description: Update project request
-      type: object
-      properties:
-        project:
-          $ref: '#/components/schemas/ProjectRequest'
-      required:
-      - project
-    CreateProjectRequest:
-      description: Create project request
-      type: object
-      properties:
-        project:
-          $ref: '#/components/schemas/ProjectRequest'
-      required:
-      - project
-    Project:
-      description: Project model
-      type: object
-      x-examples:
-        example-1:
-          identifier: example_project_identifier
-          name: example-project-name
-          org: example_org_identifier
-          color: '#0063F7'
-          modules:
-          - CD
-          description: This is a example project
-          tags:
-            property1: value1
-            property2: value2
-      properties:
-        identifier:
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          description: Project identifier
-          maxLength: 128
-        name:
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          description: Project name
-          maxLength: 128
-        org:
-          type: string
-          description: Organization identifier for the project
-        color:
-          type: string
-          description: Project color
-        modules:
-          type: array
-          maxItems: 1024
-          description: List of modules for project
-          items:
-            $ref: '#/components/schemas/ModuleType'
-        description:
-          type: string
-          maxLength: 1024
-          description: Project description
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          maxProperties: 128
-          description: Project tags
-      required:
-      - identifier
-      - name
-    ModuleType:
-      type: string
-      description: Type of Modules
-      enum:
-      - CD
-      - CI
-      - CV
-      - CF
-      - CE
-      - STO
-      - CORE
-      - PMS
-      - TEMPLATESERVICE
-      - GOVERNANCE
-      - CHAOS
-      - CET
-      - IDP
-      - SSCA
-      - SEI
-      - CODE
-      - HAR
   securitySchemes:
     x-api-key:
       name: x-api-key

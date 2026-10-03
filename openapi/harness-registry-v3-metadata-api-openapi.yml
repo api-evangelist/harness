@@ -96,47 +96,6 @@ paths:
       x-internal: false
 components:
   parameters:
-    AccountIdentifierV3:
-      description: 'Unique identifier for the Harness account.
-
-        '
-      in: query
-      name: account_identifier
-      required: true
-      schema:
-        type: string
-    KeyParamV3:
-      description: 'The metadata key for which to retrieve all possible values.
-
-        This parameter is used to filter metadata values by a specific key name.
-
-
-        Examples: `environment`, `team`, `version_type`, `build_number`
-
-        '
-      in: query
-      name: key
-      required: true
-      schema:
-        type: string
-    PageNumberV3:
-      description: 'The page number for pagination (0-indexed).
-
-
-        Used to navigate through large result sets. Combined with `size` parameter
-
-        to control which subset of results to return.
-
-
-        Example: `page=0` returns the first page, `page=1` returns the second page
-
-        '
-      in: query
-      name: page
-      schema:
-        default: 0
-        format: int64
-        type: integer
     PageSizeV3:
       description: "The number of items to return per page.\n\nControls the page size for paginated results. \n\nExample: `size=50` returns up to 50 items per page\n"
       in: query
@@ -158,6 +117,20 @@ components:
       name: project_identifier
       schema:
         type: string
+    KeyParamV3:
+      description: 'The metadata key for which to retrieve all possible values.
+
+        This parameter is used to filter metadata values by a specific key name.
+
+
+        Examples: `environment`, `team`, `version_type`, `build_number`
+
+        '
+      in: query
+      name: key
+      required: true
+      schema:
+        type: string
     OrgIdentifierV3:
       description: 'Unique identifier for the organization within the account.
 
@@ -167,6 +140,33 @@ components:
         '
       in: query
       name: org_identifier
+      schema:
+        type: string
+    PageNumberV3:
+      description: 'The page number for pagination (0-indexed).
+
+
+        Used to navigate through large result sets. Combined with `size` parameter
+
+        to control which subset of results to return.
+
+
+        Example: `page=0` returns the first page, `page=1` returns the second page
+
+        '
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
+    AccountIdentifierV3:
+      description: 'Unique identifier for the Harness account.
+
+        '
+      in: query
+      name: account_identifier
+      required: true
       schema:
         type: string
     SearchTermV3:
@@ -186,19 +186,6 @@ components:
       required: true
       schema:
         type: string
-  responses:
-    MetadataKeysResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListMetadataKeysResponseBodyV3'
-      description: Response contains metadata keys
-    MetadataValuesResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListMetadataValuesResponseBodyV3'
-      description: Response containing all possible values for a specific metadata key
   schemas:
     ListMetadataKeysResponseBodyV3:
       allOf:
@@ -212,6 +199,14 @@ components:
         required:
         - items
         type: object
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
     ListMetadataValuesResponseBodyV3:
       allOf:
       - $ref: '#/components/schemas/PageInfoV3'
@@ -224,13 +219,31 @@ components:
         required:
         - items
         type: object
-    ErrorV3:
-      description: An error response
+    ApiErrorsV3:
       properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
       required:
-      - error
+      - type
+      title: APIErrors
       type: object
     PageInfoV3:
       description: 'Pagination metadata.
@@ -262,32 +275,19 @@ components:
       - size
       - hasMore
       type: object
-    ApiErrorsV3:
-      properties:
-        code:
-          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
-          maxLength: 5000
-          type: string
-        message:
-          description: A human-readable message providing more details about the error. These messages can be shown to users.
-          maxLength: 40000
-          type: string
-        param:
-          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
-          maxLength: 5000
-          type: string
-        type:
-          description: The type of error returned.
-          enum:
-          - INVALID_REQUEST_ERROR
-          - AUTHENTICATION_ERROR
-          - PERMISSION_ERROR
-          - API_ERROR
-          type: string
-      required:
-      - type
-      title: APIErrors
-      type: object
+  responses:
+    MetadataValuesResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListMetadataValuesResponseBodyV3'
+      description: Response containing all possible values for a specific metadata key
+    MetadataKeysResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListMetadataKeysResponseBodyV3'
+      description: Response contains metadata keys
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -576,88 +576,42 @@ components:
         repo_name:
           type: string
           description: Name of the repository.
-    PipelineYamlInputMetadataDTO:
-      title: PipelineYamlInputMetadataDTO
+    GovernanceMetadata1:
+      title: Governance Metadata
       x-stoplight:
-        id: w72v0p3hxgsqk
+        id: nivk63hm54yt5
       type: object
-      x-internal: true
+      description: Information about the governance metadata
       properties:
-        field_properties:
-          x-stoplight:
-            id: oi2cc5afutjom
-          type: array
-          items:
-            $ref: '#/components/schemas/InputDetailsPerFieldDTO'
-        dependencies:
-          $ref: '#/components/schemas/YamlInputDependencyDetailsDTO'
-    PipelineUpdateRequestBody:
-      title: Pipeline Update Request Body
-      x-stoplight:
-        id: lrglwjl8trc3q
-      type: object
-      description: 'Pipeline request body object '
-      x-examples:
-        example-pipeline:
-          pipeline_yaml: "pipeline:\n  identifier: example_pipeline\n  name: ExamplePipeline\n  allowStageExecutions: false\n  stages:\n    - stage:\n        name: Example Build Stage\n        identifier: example_build_stage\n        description: ''\n        type: Approval\n        spec:\n          execution:\n            steps:\n              - step:\n                  name: Approval Step\n                  identifier: Approval_Step\n                  type: HarnessApproval\n                  timeout: 1d\n                  spec:\n                    approvalMessage: |-\n                      Please review the following information\n                      and approve the pipeline progression\n                    includePipelineExecutionHistory: true\n                    approvers:\n                      minimumCount: 1\n                      disallowPipelineExecutor: false\n                      userGroups: <+input>\n                    approverInputs: []\n              - step:\n                  type: ShellScript\n                  name: ShellScript Step\n                  identifier: ShellScript_Step\n                  spec:\n                    shell: Bash\n                    onDelegate: true\n                    source:\n                      type: Inline\n                      spec:\n                        script: <+input>\n                    environmentVariables: []\n                    outputVariables: []\n                    executionTarget: {}\n                  timeout: 10m\n        tags: {}\n    - stage:\n        name: Example Deploy Stage\n        identifier: example_deploy_stage\n        description: ''\n        type: Deployment\n        spec:\n          serviceConfig:\n            serviceRef: <+input>\n            serviceDefinition:\n              spec:\n                variables: []\n              type: Kubernetes\n          infrastructure:\n            environmentRef: <+input>\n            infrastructureDefinition:\n              type: KubernetesDirect\n              spec:\n                connectorRef: <+input>\n                namespace: <+input>\n                releaseName: release-<+INFRA_KEY>\n            allowSimultaneousDeployments: false\n          execution:\n            steps:\n              - step:\n                  name: Rollout Deployment\n                  identifier: rolloutDeployment\n                  type: K8sRollingDeploy\n                  timeout: 10m\n                  spec:\n                    skipDryRun: false\n            rollbackSteps:\n              - step:\n                  name: Rollback Rollout Deployment\n                  identifier: rollbackRolloutDeployment\n                  type: K8sRollingRollback\n                  timeout: 10m\n                  spec: {}\n        tags: {}\n        failureStrategies:\n          - onFailure:\n              errors:\n                - AllErrors\n              action:\n                type: StageRollback\n"
-          identifier: example_pipeline
-          name: ExamplePipeline
-          description: Pipeline Description
-          tags:
-            example-tag-1: example-tag-1-value
-            example-tag-2: example-tag-2-value
-          git_details:
-            branch_name: branch
-            commit_message: Added Harness Git Experience
-            last_object_id: abcdXYZ
-            base_branch: old_branch
-            last_commit_id: abcdXYZ
-            connector_ref: git_connector
-            store_type: REMOTE
-            repo_name: example_repository
-      properties:
-        pipeline_yaml:
-          type: string
-          description: Pipeline YAML (to be passed as a String).
         identifier:
           type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Pipeline identifier
-        name:
+        deny:
+          type: boolean
+        policy_set_metadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicySetMetadata'
+        message:
           type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Pipeline name
-        description:
+        time_stamp:
+          type: integer
+        status:
           type: string
-          maxLength: 1024
-          description: Pipeline description
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          maxProperties: 128
-          description: Pipeline tags
-        git_details:
-          $ref: '#/components/schemas/GitUpdateDetails'
-      required:
-      - pipeline_yaml
-      - identifier
-      - name
-    PipelineYamlInputDetailsDTO:
-      title: PipelineYamlInputDetailsDTO
-      x-stoplight:
-        id: npt13s20sr6db
-      type: object
-      properties:
-        details:
-          $ref: '#/components/schemas/PipelineYamlInputDTO'
-        metadata:
-          $ref: '#/components/schemas/PipelineYamlInputMetadataDTO'
-      x-internal: true
+        account_identifier:
+          type: string
+        org_identifier:
+          type: string
+        project_identifier:
+          type: string
+        entity:
+          type: string
+        type:
+          type: string
+        action:
+          type: string
+        created:
+          type: integer
+          format: int64
     YamlInputDependencyDetailsDTO:
       title: YamlInputDependencyDetailsDTO
       x-stoplight:
@@ -677,6 +631,62 @@ components:
             id: z4034kxnx5cqk
           items:
             $ref: '#/components/schemas/FixedValueFieldDependencyDetailsDTO'
+    PipelineYamlInputDetailsDTO:
+      title: PipelineYamlInputDetailsDTO
+      x-stoplight:
+        id: npt13s20sr6db
+      type: object
+      properties:
+        details:
+          $ref: '#/components/schemas/PipelineYamlInputDTO'
+        metadata:
+          $ref: '#/components/schemas/PipelineYamlInputMetadataDTO'
+      x-internal: true
+    PipelineImportRequestBody:
+      title: PipelineImportRequestBody
+      x-stoplight:
+        id: foro6hf58ib55
+      type: object
+      description: Pipeline import request body
+      properties:
+        git_import_info:
+          $ref: '#/components/schemas/GitImportInfo'
+        pipeline_import_request:
+          $ref: '#/components/schemas/PipelineImportRequestDTO'
+    PipelineYamlInputDTO:
+      title: PipelineYamlInputDTO
+      x-stoplight:
+        id: b76ha2p8ngn3m
+      type: object
+      x-internal: true
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: 23dnmvd66you2
+        type:
+          $ref: '#/components/schemas/YamlInputType'
+        desc:
+          type: string
+          x-stoplight:
+            id: klcxkypd8p8aj
+        required:
+          type: boolean
+          x-stoplight:
+            id: gnxq3c3xxjc9c
+        execution:
+          type: boolean
+        default:
+          type: object
+          x-stoplight:
+            id: pvsan66570urp
+        allowed_values:
+          type: array
+          x-stoplight:
+            id: bk45vjio3fdhb
+          items: {}
+        regex:
+          type: string
     PipelineValidationUUIDResponseBody:
       title: Pipeline Validation UUID Response Body
       description: Contains the UUID of the Pipeline Validation Event that's started
@@ -691,6 +701,30 @@ components:
       x-internal: true
       x-stoplight:
         id: i0wgk0i3p6fvv
+    InputDetailsPerFieldDTO:
+      title: InputDetailsPerFieldDTO
+      x-stoplight:
+        id: fh76c2nnwli3w
+      type: object
+      x-internal: true
+      properties:
+        input_type:
+          type: string
+          x-stoplight:
+            id: d92j86p84m1t5
+        internal_type:
+          type: string
+          x-stoplight:
+            id: l3u49jd2dmz9o
+    PipelineMoveConfigResponseBody:
+      title: PipelineMoveConfigResponseBody
+      x-stoplight:
+        id: c6sgrvhrg1e8c
+      type: object
+      description: Response body for configuration to move a pipeline
+      properties:
+        pipeline_identifier:
+          type: string
     PolicyMetadata:
       title: Policy Metadata
       x-stoplight:
@@ -726,26 +760,22 @@ components:
           format: int64
         error:
           type: string
-    TemplateValidationResponseBody:
-      title: TemplateValidationResponseBody
+    PipelineCreateResponseBody:
+      title: Pipeline Create Response Body
       x-stoplight:
-        id: 8pk30x8n20zyg
+        id: 6k4p5yturlcz5
       type: object
-      description: Has Template Resolution Response.
+      description: Pipeline response body
+      x-examples:
+        example-pipeline:
+          identifier: example_pipeline
       properties:
-        valid_yaml:
-          type: boolean
-        exception_message:
+        identifier:
           type: string
-    PipelineMoveConfigResponseBody:
-      title: PipelineMoveConfigResponseBody
-      x-stoplight:
-        id: c6sgrvhrg1e8c
-      type: object
-      description: Response body for configuration to move a pipeline
-      properties:
-        pipeline_identifier:
-          type: string
+          description: Pipeline identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
     ExecutorInfo:
       title: Executor Information
       x-stoplight:
@@ -773,61 +803,6 @@ components:
           trigger_type: NOOP
           username: harness_user
           email: noreply@harness.io
-    PipelineCreateRequestBody:
-      title: Pipeline Create Request Body
-      x-stoplight:
-        id: jx4tb85rac1m5
-      type: object
-      description: 'Pipeline request body object '
-      x-examples:
-        example-pipeline:
-          pipeline_yaml: "pipeline:\n  identifier: example_pipeline\n  name: ExamplePipeline\n  allowStageExecutions: false\n  stages:\n    - stage:\n        name: Example Build Stage\n        identifier: example_build_stage\n        description: ''\n        type: Approval\n        spec:\n          execution:\n            steps:\n              - step:\n                  name: Approval Step\n                  identifier: Approval_Step\n                  type: HarnessApproval\n                  timeout: 1d\n                  spec:\n                    approvalMessage: |-\n                      Please review the following information\n                      and approve the pipeline progression\n                    includePipelineExecutionHistory: true\n                    approvers:\n                      minimumCount: 1\n                      disallowPipelineExecutor: false\n                      userGroups: <+input>\n                    approverInputs: []\n              - step:\n                  type: ShellScript\n                  name: ShellScript Step\n                  identifier: ShellScript_Step\n                  spec:\n                    shell: Bash\n                    onDelegate: true\n                    source:\n                      type: Inline\n                      spec:\n                        script: <+input>\n                    environmentVariables: []\n                    outputVariables: []\n                    executionTarget: {}\n                  timeout: 10m\n        tags: {}\n    - stage:\n        name: Example Deploy Stage\n        identifier: example_deploy_stage\n        description: ''\n        type: Deployment\n        spec:\n          serviceConfig:\n            serviceRef: <+input>\n            serviceDefinition:\n              spec:\n                variables: []\n              type: Kubernetes\n          infrastructure:\n            environmentRef: <+input>\n            infrastructureDefinition:\n              type: KubernetesDirect\n              spec:\n                connectorRef: <+input>\n                namespace: <+input>\n                releaseName: release-<+INFRA_KEY>\n            allowSimultaneousDeployments: false\n          execution:\n            steps:\n              - step:\n                  name: Rollout Deployment\n                  identifier: rolloutDeployment\n                  type: K8sRollingDeploy\n                  timeout: 10m\n                  spec:\n                    skipDryRun: false\n            rollbackSteps:\n              - step:\n                  name: Rollback Rollout Deployment\n                  identifier: rollbackRolloutDeployment\n                  type: K8sRollingRollback\n                  timeout: 10m\n                  spec: {}\n        tags: {}\n        failureStrategies:\n          - onFailure:\n              errors:\n                - AllErrors\n              action:\n                type: StageRollback\n"
-          identifier: example_pipeline
-          name: ExamplePipeline
-          description: Pipeline Description
-          tags:
-            example-tag-1: example-tag-1-value
-            example-tag-2: example-tag-2-value
-          git_details:
-            branch_name: branch
-            file_path: /folder/file.json
-            commit_message: Added Harness Git Experience
-            base_branch: old_branch
-            connector_ref: git_connector
-            store_type: REMOTE
-            repo_name: example_repository
-      properties:
-        pipeline_yaml:
-          type: string
-          description: Pipeline YAML (to be passed as a String).
-        identifier:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Pipeline identifier
-        name:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Pipeline name
-        description:
-          type: string
-          maxLength: 1024
-          description: Pipeline description
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          maxProperties: 128
-          description: Pipeline tags
-        git_details:
-          $ref: '#/components/schemas/GitCreateDetails'
-      required:
-      - pipeline_yaml
-      - identifier
-      - name
     CacheResponseMetadataDTO:
       title: CacheResponseMetadataDTO
       x-stoplight:
@@ -856,53 +831,6 @@ components:
           description: Time when the cache was last updated at.
         is_sync_enabled:
           type: boolean
-    GitUpdateDetails:
-      title: Update Git Details
-      x-stoplight:
-        id: rhs8tu7186l69
-      type: object
-      description: Contains parameters related to updating an Entity for Git Experience.
-      x-examples:
-        example-update-git:
-          branch_name: branch
-          commit_message: Added Harness Git Experience
-          last_object_id: abcdXYZ
-          base_branch: old_branch
-          last_commit_id: abcdXYZ
-          connector_ref: git_connector
-          store_type: REMOTE
-          repo_name: example_repository
-          file_path: /folder/file.json
-      properties:
-        branch_name:
-          type: string
-          description: Name of the branch.
-        commit_message:
-          type: string
-          description: Commit message used for the merge commit.
-        last_object_id:
-          type: string
-          description: Last object identifier (for Github only).
-        base_branch:
-          type: string
-          description: Name of the default branch (this checks out a new branch titled by branch_name).
-        last_commit_id:
-          type: string
-          description: Last commit identifier.
-        connector_ref:
-          type: string
-          description: Identifier of the Harness Connector used for CRUD operations on the Entity.
-        store_type:
-          type: string
-          enum:
-          - INLINE
-          - REMOTE
-          description: Specifies whether the Entity is to be stored in Git or not.
-        repo_name:
-          type: string
-          description: Name of the repository.
-        file_path:
-          type: string
     PipelineGetResponseBody:
       title: Pipeline Get Response Body
       x-stoplight:
@@ -1023,23 +951,149 @@ components:
         validation_uuid:
           type: string
           description: UUID of the asynchronous validation event started, if any
-    GitImportInfo:
-      title: Import Git Information
+    RecentExecutionInfo:
+      title: Recent Execution Information
       x-stoplight:
-        id: 4r6psagtvh768
+        id: da5de92572lcb
+      type: object
+      description: Recent Execution information of the Pipeline.
+      properties:
+        executor_info:
+          $ref: '#/components/schemas/ExecutorInfo'
+        execution_id:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Execution identifier
+        execution_status:
+          type: string
+          description: Last Execution status of the Pipeline.
+          enum:
+          - Running
+          - AsyncWaiting
+          - TaskWaiting
+          - TimedWaiting
+          - Failed
+          - Errored
+          - IgnoreFailed
+          - NotStarted
+          - Expired
+          - Aborted
+          - Discontinuing
+          - Queued
+          - Paused
+          - ResourceWaiting
+          - InterventionWaiting
+          - ApprovalWaiting
+          - Success
+          - Suspended
+          - Skipped
+          - Pausing
+          - ApprovalRejected
+          - InputWaiting
+          - NOT_STARTED
+          - INTERVENTION_WAITING
+          - APPROVAL_WAITING
+          - APPROVAL_REJECTED
+          - Waiting
+        started:
+          type: integer
+          format: int64
+          description: Start timestamp of Execution
+        ended:
+          type: integer
+          format: int64
+          description: End timestamp of Execution
+        run_number:
+          type: integer
+          format: int32
+          description: The Execution number of this Pipeline.
+          example: 0
+        parent_stage_info:
+          $ref: '#/components/schemas/ParentStageInfo'
+      x-examples:
+        example-recent:
+          executor_info:
+            trigger_type: NOOP
+            username: harness_user
+            email: noreply@harness.io
+          execution_id: example_execution_identifier
+          execution_status: Running
+          started: 1234567890
+          ended: 1234567890
+          run_number: 5
+    PipelineImportRequestDTO:
+      title: Pipeline Import Request DTO
+      x-stoplight:
+        id: aadgrtv4u40df
+      type: object
+      description: Information of Pipeline import request DTO
+      properties:
+        pipeline_name:
+          type: string
+        pipeline_description:
+          type: string
+    ParentStageInfo:
+      title: ParentStageInfo
+      x-stoplight:
+        id: tp7dtd5ejnalr
+      type: object
+      description: 'Information about parent pipeline '
+      properties:
+        has_parent_pipeline:
+          type: boolean
+          description: boolean to describe whether or not this was executed through pipeline chaining
+        execution_id:
+          type: string
+          description: planExecutionId of parent pipeline execution
+        identifier:
+          type: string
+          description: pipeline identifier of parent pipeline
+        project_id:
+          type: string
+          description: project identifier
+        org_id:
+          type: string
+          description: org identifier
+        run_sequence:
+          type: integer
+          description: run sequence of parent pipeline execution
+          format: int32
+        stage_node_id:
+          type: string
+          description: node id of parent pipeline stage
+    PipelineSaveResponseBody:
+      title: Pipeline Save Response Body
+      x-stoplight:
+        id: v68h3jaccx83a
       type: object
       properties:
-        connector_ref:
+        identifier:
           type: string
-        repo_name:
-          type: string
-        branch_name:
-          type: string
-        file_path:
-          type: string
-        is_force_import:
+        governance_metadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/GovernanceMetadata1'
+      description: Response body for pipeline save.
+    TemplateValidationResponseBody:
+      title: TemplateValidationResponseBody
+      x-stoplight:
+        id: 8pk30x8n20zyg
+      type: object
+      description: Has Template Resolution Response.
+      properties:
+        valid_yaml:
           type: boolean
-      description: Parameters related to importing an entity for Git.
+        exception_message:
+          type: string
+    MoveConfigOperationType:
+      type: string
+      enum:
+      - INLINE_TO_REMOTE
+      description: Operation type to move the configuration
+      x-stoplight:
+        id: 4g4asyvl1x30z
     YAMLSchemaErrorWrapper:
       title: YAML Schema Error Wrapper
       x-stoplight:
@@ -1081,17 +1135,438 @@ components:
             fqn: pipeline.steps.step
           fqn: pipeline.name
           hint_message: try changing something
-    PipelineImportRequestBody:
-      title: PipelineImportRequestBody
+    PipelineMoveConfigRequestBody:
+      title: PipelineMoveConfigRequestBody
       x-stoplight:
-        id: foro6hf58ib55
+        id: e2bs9nw5hspxz
       type: object
-      description: Pipeline import request body
+      description: Request body for moving a pipeline configuration
       properties:
-        git_import_info:
-          $ref: '#/components/schemas/GitImportInfo'
-        pipeline_import_request:
-          $ref: '#/components/schemas/PipelineImportRequestDTO'
+        git_details:
+          $ref: '#/components/schemas/GitMoveDetails'
+        pipeline_identifier:
+          type: string
+        move_config_operation_type:
+          $ref: '#/components/schemas/MoveConfigOperationType'
+    YamlInputType:
+      title: YamlInputType
+      x-stoplight:
+        id: 9acp39t6wcuqk
+      enum:
+      - string
+      - integer
+      - boolean
+      - object
+      - array
+      x-internal: true
+      description: ''
+    PipelinePatchRequestBody:
+      title: PipelinePatchRequestBody
+      x-stoplight:
+        id: 3utb53wrarno2
+      type: object
+      x-examples:
+        Example 1:
+          pipeline_yaml: "pipeline:\n  identifier: example_pipeline\n  name: ExamplePipeline\n  allowStageExecutions: false\n  stages:\n    - stage:\n        name: Example Build Stage\n        identifier: example_build_stage\n        description: ''\n        type: Approval\n        spec:\n          execution:\n            steps:\n              - step:\n                  name: Approval Step\n                  identifier: Approval_Step\n                  type: HarnessApproval\n                  timeout: 1d\n                  spec:\n                    approvalMessage: |-\n                      Please review the following information\n                      and approve the pipeline progression\n                    includePipelineExecutionHistory: true\n                    approvers:\n                      minimumCount: 1\n                      disallowPipelineExecutor: false\n                      userGroups: <+input>\n                    approverInputs: []\n              - step:\n                  type: ShellScript\n                  name: ShellScript Step\n                  identifier: ShellScript_Step\n                  spec:\n                    shell: Bash\n                    onDelegate: true\n                    source:\n                      type: Inline\n                      spec:\n                        script: <+input>\n                    environmentVariables: []\n                    outputVariables: []\n                    executionTarget: {}\n                  timeout: 10m\n        tags: {}\n    - stage:\n        name: Example Deploy Stage\n        identifier: example_deploy_stage\n        description: ''\n        type: Deployment\n        spec:\n          serviceConfig:\n            serviceRef: <+input>\n            serviceDefinition:\n              spec:\n                variables: []\n              type: Kubernetes\n          infrastructure:\n            environmentRef: <+input>\n            infrastructureDefinition:\n              type: KubernetesDirect\n              spec:\n                connectorRef: <+input>\n                namespace: <+input>\n                releaseName: release-<+INFRA_KEY>\n            allowSimultaneousDeployments: false\n          execution:\n            steps:\n              - step:\n                  name: Rollout Deployment\n                  identifier: rolloutDeployment\n                  type: K8sRollingDeploy\n                  timeout: 10m\n                  spec:\n                    skipDryRun: false\n            rollbackSteps:\n              - step:\n                  name: Rollback Rollout Deployment\n                  identifier: rollbackRolloutDeployment\n                  type: K8sRollingRollback\n                  timeout: 10m\n                  spec: {}\n        tags: {}\n        failureStrategies:\n          - onFailure:\n              errors:\n                - AllErrors\n              action:\n                type: StageRollback\n"
+          name: ExamplePipeline
+          desc: Pipeline Description
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          git_details:
+            branch_name: branch
+            commit_message: Added Harness Git Experience
+            last_object_id: abcdXYZ
+            base_branch: old_branch
+            last_commit_id: abcdXYZ
+            connector_ref: git_connector
+            store_type: REMOTE
+            repo_name: example_repository
+      description: Pipeline Patch Request body (All the non empty values in this request body will be updated).
+      properties:
+        pipeline_yaml:
+          type: string
+          description: Pipeline YAML (to be passed as a String).
+        name:
+          type: string
+          description: Pipeline Name.
+        desc:
+          type: string
+          description: Pipeline Description.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Pipeline Tags.
+        git_details:
+          $ref: '#/components/schemas/GitUpdateDetails'
+        version:
+          type: string
+          description: Version of pipeline yaml, should be one of "0" or "1"
+    PipelineCreateRequestBody:
+      title: Pipeline Create Request Body
+      x-stoplight:
+        id: jx4tb85rac1m5
+      type: object
+      description: 'Pipeline request body object '
+      x-examples:
+        example-pipeline:
+          pipeline_yaml: "pipeline:\n  identifier: example_pipeline\n  name: ExamplePipeline\n  allowStageExecutions: false\n  stages:\n    - stage:\n        name: Example Build Stage\n        identifier: example_build_stage\n        description: ''\n        type: Approval\n        spec:\n          execution:\n            steps:\n              - step:\n                  name: Approval Step\n                  identifier: Approval_Step\n                  type: HarnessApproval\n                  timeout: 1d\n                  spec:\n                    approvalMessage: |-\n                      Please review the following information\n                      and approve the pipeline progression\n                    includePipelineExecutionHistory: true\n                    approvers:\n                      minimumCount: 1\n                      disallowPipelineExecutor: false\n                      userGroups: <+input>\n                    approverInputs: []\n              - step:\n                  type: ShellScript\n                  name: ShellScript Step\n                  identifier: ShellScript_Step\n                  spec:\n                    shell: Bash\n                    onDelegate: true\n                    source:\n                      type: Inline\n                      spec:\n                        script: <+input>\n                    environmentVariables: []\n                    outputVariables: []\n                    executionTarget: {}\n                  timeout: 10m\n        tags: {}\n    - stage:\n        name: Example Deploy Stage\n        identifier: example_deploy_stage\n        description: ''\n        type: Deployment\n        spec:\n          serviceConfig:\n            serviceRef: <+input>\n            serviceDefinition:\n              spec:\n                variables: []\n              type: Kubernetes\n          infrastructure:\n            environmentRef: <+input>\n            infrastructureDefinition:\n              type: KubernetesDirect\n              spec:\n                connectorRef: <+input>\n                namespace: <+input>\n                releaseName: release-<+INFRA_KEY>\n            allowSimultaneousDeployments: false\n          execution:\n            steps:\n              - step:\n                  name: Rollout Deployment\n                  identifier: rolloutDeployment\n                  type: K8sRollingDeploy\n                  timeout: 10m\n                  spec:\n                    skipDryRun: false\n            rollbackSteps:\n              - step:\n                  name: Rollback Rollout Deployment\n                  identifier: rollbackRolloutDeployment\n                  type: K8sRollingRollback\n                  timeout: 10m\n                  spec: {}\n        tags: {}\n        failureStrategies:\n          - onFailure:\n              errors:\n                - AllErrors\n              action:\n                type: StageRollback\n"
+          identifier: example_pipeline
+          name: ExamplePipeline
+          description: Pipeline Description
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          git_details:
+            branch_name: branch
+            file_path: /folder/file.json
+            commit_message: Added Harness Git Experience
+            base_branch: old_branch
+            connector_ref: git_connector
+            store_type: REMOTE
+            repo_name: example_repository
+      properties:
+        pipeline_yaml:
+          type: string
+          description: Pipeline YAML (to be passed as a String).
+        identifier:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Pipeline identifier
+        name:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Pipeline name
+        description:
+          type: string
+          maxLength: 1024
+          description: Pipeline description
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Pipeline tags
+        git_details:
+          $ref: '#/components/schemas/GitCreateDetails'
+      required:
+      - pipeline_yaml
+      - identifier
+      - name
+    PolicySetMetadata:
+      title: Policy Set Metadata
+      x-stoplight:
+        id: 6rt2j8zojvs75
+      type: object
+      properties:
+        policy_set_identifier:
+          type: string
+        deny:
+          type: boolean
+        policy_metadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyMetadata'
+        policy_set:
+          type: string
+        status:
+          type: string
+        identifier:
+          type: string
+        created:
+          type: integer
+          format: int64
+        account_identifier:
+          type: string
+        org_identifier:
+          type: string
+        project_identifier:
+          type: string
+      description: Information about the policy set metadata
+    GitDetails:
+      title: Git Response Details
+      x-stoplight:
+        id: f37z1efdf6zuu
+      type: object
+      description: Git Experience related details of the Entity.
+      x-examples:
+        example-git:
+          object_id: example_object
+          branch_name: branch
+          file_path: /folder/file.json
+          repo_name: example_repository
+          commit_id: abcd123
+          file_url: www.repo/folder/file.com
+          repo_url: www.repo.com
+      properties:
+        object_id:
+          type: string
+          description: Object identifier / blob id
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        branch_name:
+          type: string
+          description: Name of the branch.
+        file_path:
+          type: string
+          description: File path of the Entity in the repository.
+        repo_name:
+          type: string
+          description: Name of the repository.
+        commit_id:
+          type: string
+          description: Latest commit identifier.
+        file_url:
+          type: string
+          description: File URL of the Entity.
+        repo_url:
+          type: string
+          description: Repository URL of the Entity.
+    PipelineUpdateRequestBody:
+      title: Pipeline Update Request Body
+      x-stoplight:
+        id: lrglwjl8trc3q
+      type: object
+      description: 'Pipeline request body object '
+      x-examples:
+        example-pipeline:
+          pipeline_yaml: "pipeline:\n  identifier: example_pipeline\n  name: ExamplePipeline\n  allowStageExecutions: false\n  stages:\n    - stage:\n        name: Example Build Stage\n        identifier: example_build_stage\n        description: ''\n        type: Approval\n        spec:\n          execution:\n            steps:\n              - step:\n                  name: Approval Step\n                  identifier: Approval_Step\n                  type: HarnessApproval\n                  timeout: 1d\n                  spec:\n                    approvalMessage: |-\n                      Please review the following information\n                      and approve the pipeline progression\n                    includePipelineExecutionHistory: true\n                    approvers:\n                      minimumCount: 1\n                      disallowPipelineExecutor: false\n                      userGroups: <+input>\n                    approverInputs: []\n              - step:\n                  type: ShellScript\n                  name: ShellScript Step\n                  identifier: ShellScript_Step\n                  spec:\n                    shell: Bash\n                    onDelegate: true\n                    source:\n                      type: Inline\n                      spec:\n                        script: <+input>\n                    environmentVariables: []\n                    outputVariables: []\n                    executionTarget: {}\n                  timeout: 10m\n        tags: {}\n    - stage:\n        name: Example Deploy Stage\n        identifier: example_deploy_stage\n        description: ''\n        type: Deployment\n        spec:\n          serviceConfig:\n            serviceRef: <+input>\n            serviceDefinition:\n              spec:\n                variables: []\n              type: Kubernetes\n          infrastructure:\n            environmentRef: <+input>\n            infrastructureDefinition:\n              type: KubernetesDirect\n              spec:\n                connectorRef: <+input>\n                namespace: <+input>\n                releaseName: release-<+INFRA_KEY>\n            allowSimultaneousDeployments: false\n          execution:\n            steps:\n              - step:\n                  name: Rollout Deployment\n                  identifier: rolloutDeployment\n                  type: K8sRollingDeploy\n                  timeout: 10m\n                  spec:\n                    skipDryRun: false\n            rollbackSteps:\n              - step:\n                  name: Rollback Rollout Deployment\n                  identifier: rollbackRolloutDeployment\n                  type: K8sRollingRollback\n                  timeout: 10m\n                  spec: {}\n        tags: {}\n        failureStrategies:\n          - onFailure:\n              errors:\n                - AllErrors\n              action:\n                type: StageRollback\n"
+          identifier: example_pipeline
+          name: ExamplePipeline
+          description: Pipeline Description
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          git_details:
+            branch_name: branch
+            commit_message: Added Harness Git Experience
+            last_object_id: abcdXYZ
+            base_branch: old_branch
+            last_commit_id: abcdXYZ
+            connector_ref: git_connector
+            store_type: REMOTE
+            repo_name: example_repository
+      properties:
+        pipeline_yaml:
+          type: string
+          description: Pipeline YAML (to be passed as a String).
+        identifier:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Pipeline identifier
+        name:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Pipeline name
+        description:
+          type: string
+          maxLength: 1024
+          description: Pipeline description
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 128
+          description: Pipeline tags
+        git_details:
+          $ref: '#/components/schemas/GitUpdateDetails'
+      required:
+      - pipeline_yaml
+      - identifier
+      - name
+    PipelineValidationResponseBody:
+      title: Pipeline Validation Response Body
+      description: Pipeline Validation Response Body
+      x-examples:
+        example-get:
+          status: IN_PROGRESS
+      type: object
+      x-stoplight:
+        id: loreulur8mcil
+      x-internal: true
+      properties:
+        status:
+          type: string
+          description: Status of the Pipeline Validation Event
+        policy_eval:
+          type: object
+          description: Result of Policy Evaluations on the Pipeline
+        start_ts:
+          type: integer
+          format: int64
+          description: Start time of the Evaluation
+        end_ts:
+          type: integer
+          format: int64
+          description: End time of the Evaluation
+        template_validation_response:
+          $ref: '#/components/schemas/TemplateValidationResponseBody'
+    GitUpdateDetails:
+      title: Update Git Details
+      x-stoplight:
+        id: rhs8tu7186l69
+      type: object
+      description: Contains parameters related to updating an Entity for Git Experience.
+      x-examples:
+        example-update-git:
+          branch_name: branch
+          commit_message: Added Harness Git Experience
+          last_object_id: abcdXYZ
+          base_branch: old_branch
+          last_commit_id: abcdXYZ
+          connector_ref: git_connector
+          store_type: REMOTE
+          repo_name: example_repository
+          file_path: /folder/file.json
+      properties:
+        branch_name:
+          type: string
+          description: Name of the branch.
+        commit_message:
+          type: string
+          description: Commit message used for the merge commit.
+        last_object_id:
+          type: string
+          description: Last object identifier (for Github only).
+        base_branch:
+          type: string
+          description: Name of the default branch (this checks out a new branch titled by branch_name).
+        last_commit_id:
+          type: string
+          description: Last commit identifier.
+        connector_ref:
+          type: string
+          description: Identifier of the Harness Connector used for CRUD operations on the Entity.
+        store_type:
+          type: string
+          enum:
+          - INLINE
+          - REMOTE
+          description: Specifies whether the Entity is to be stored in Git or not.
+        repo_name:
+          type: string
+          description: Name of the repository.
+        file_path:
+          type: string
+    PipelineInputSchemaDetailsResponseBody:
+      title: PipelineInputSchemaDetailsResponseBody
+      x-stoplight:
+        id: 0tkmah5p4lgcr
+      type: object
+      properties:
+        inputs:
+          type: array
+          x-stoplight:
+            id: 9ujy24moia7go
+          items:
+            $ref: '#/components/schemas/PipelineYamlInputDetailsDTO'
+      x-internal: true
+    GitMetadataUpdateResponseBody:
+      title: GitMetadataUpdateResponseBody
+      x-stoplight:
+        id: cnycqmk3by4zk
+      type: object
+      properties:
+        entity_identifier:
+          type: string
+          description: identifier of updated entity
+    GitMetadataUpdateRequestBody:
+      title: GitMetadataUpdateRequestBody
+      x-stoplight:
+        id: 5dgkx1gdp5ht4
+      type: object
+      properties:
+        connector_ref:
+          type: string
+          description: Harness connector id used for entity CRUD operations
+        repo_name:
+          type: string
+          description: Name of the repository.
+        file_path:
+          type: string
+          description: File path of the entity in the repository.
+    NodeInfo:
+      title: Entity Details
+      x-stoplight:
+        id: ep3p8793dh95u
+      type: object
+      description: Entity details
+      x-examples:
+        example-node-info:
+          identifier: example_stage
+          type: stage
+          name: name
+          fqn: pipeline.stages.stage1.name
+      properties:
+        identifier:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Entity identifier
+        type:
+          type: string
+          description: Type of Entity
+        name:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Name of Entity
+        fqn:
+          type: string
+          description: Fully Qualified Name
+    GitCreateDetails:
+      title: Create Git Details
+      x-stoplight:
+        id: ksk60vtpcl9b2
+      type: object
+      description: Contains parameters related to creating an Entity for Git Experience.
+      x-examples:
+        example-create-git:
+          branch_name: branch
+          file_path: /folder/file.json
+          commit_message: Added Harness Git Experience
+          base_branch: old_branch
+          connector_ref: git_connector
+          store_type: REMOTE
+          repo_name: example_repository
+      properties:
+        branch_name:
+          type: string
+          description: Name of the branch.
+        file_path:
+          type: string
+          description: File path of the Entity in the repository.
+        commit_message:
+          type: string
+          description: Commit message used for the merge commit.
+        base_branch:
+          type: string
+          description: Name of the default branch (this checks out a new branch titled by branch_name).
+        connector_ref:
+          type: string
+          description: Identifier of the Harness Connector used for CRUD operations on the Entity.
+        store_type:
+          type: string
+          description: Specifies whether the Entity is to be stored in Git or not.
+          enum:
+          - INLINE
+          - REMOTE
+        repo_name:
+          type: string
+          description: Name of the repository.
     PipelineListResponseBody:
       title: Pipeline List Response Body
       x-stoplight:
@@ -1190,199 +1665,6 @@ components:
           type: string
           x-stoplight:
             id: 61n7epvs4bu1u
-    GovernanceMetadata1:
-      title: Governance Metadata
-      x-stoplight:
-        id: nivk63hm54yt5
-      type: object
-      description: Information about the governance metadata
-      properties:
-        identifier:
-          type: string
-        deny:
-          type: boolean
-        policy_set_metadata:
-          type: array
-          items:
-            $ref: '#/components/schemas/PolicySetMetadata'
-        message:
-          type: string
-        time_stamp:
-          type: integer
-        status:
-          type: string
-        account_identifier:
-          type: string
-        org_identifier:
-          type: string
-        project_identifier:
-          type: string
-        entity:
-          type: string
-        type:
-          type: string
-        action:
-          type: string
-        created:
-          type: integer
-          format: int64
-    PolicySetMetadata:
-      title: Policy Set Metadata
-      x-stoplight:
-        id: 6rt2j8zojvs75
-      type: object
-      properties:
-        policy_set_identifier:
-          type: string
-        deny:
-          type: boolean
-        policy_metadata:
-          type: array
-          items:
-            $ref: '#/components/schemas/PolicyMetadata'
-        policy_set:
-          type: string
-        status:
-          type: string
-        identifier:
-          type: string
-        created:
-          type: integer
-          format: int64
-        account_identifier:
-          type: string
-        org_identifier:
-          type: string
-        project_identifier:
-          type: string
-      description: Information about the policy set metadata
-    PipelineMoveConfigRequestBody:
-      title: PipelineMoveConfigRequestBody
-      x-stoplight:
-        id: e2bs9nw5hspxz
-      type: object
-      description: Request body for moving a pipeline configuration
-      properties:
-        git_details:
-          $ref: '#/components/schemas/GitMoveDetails'
-        pipeline_identifier:
-          type: string
-        move_config_operation_type:
-          $ref: '#/components/schemas/MoveConfigOperationType'
-    PipelineValidationResponseBody:
-      title: Pipeline Validation Response Body
-      description: Pipeline Validation Response Body
-      x-examples:
-        example-get:
-          status: IN_PROGRESS
-      type: object
-      x-stoplight:
-        id: loreulur8mcil
-      x-internal: true
-      properties:
-        status:
-          type: string
-          description: Status of the Pipeline Validation Event
-        policy_eval:
-          type: object
-          description: Result of Policy Evaluations on the Pipeline
-        start_ts:
-          type: integer
-          format: int64
-          description: Start time of the Evaluation
-        end_ts:
-          type: integer
-          format: int64
-          description: End time of the Evaluation
-        template_validation_response:
-          $ref: '#/components/schemas/TemplateValidationResponseBody'
-    GitMetadataUpdateRequestBody:
-      title: GitMetadataUpdateRequestBody
-      x-stoplight:
-        id: 5dgkx1gdp5ht4
-      type: object
-      properties:
-        connector_ref:
-          type: string
-          description: Harness connector id used for entity CRUD operations
-        repo_name:
-          type: string
-          description: Name of the repository.
-        file_path:
-          type: string
-          description: File path of the entity in the repository.
-    PipelineInputSchemaDetailsResponseBody:
-      title: PipelineInputSchemaDetailsResponseBody
-      x-stoplight:
-        id: 0tkmah5p4lgcr
-      type: object
-      properties:
-        inputs:
-          type: array
-          x-stoplight:
-            id: 9ujy24moia7go
-          items:
-            $ref: '#/components/schemas/PipelineYamlInputDetailsDTO'
-      x-internal: true
-    YamlInputType:
-      title: YamlInputType
-      x-stoplight:
-        id: 9acp39t6wcuqk
-      enum:
-      - string
-      - integer
-      - boolean
-      - object
-      - array
-      x-internal: true
-      description: ''
-    NodeInfo:
-      title: Entity Details
-      x-stoplight:
-        id: ep3p8793dh95u
-      type: object
-      description: Entity details
-      x-examples:
-        example-node-info:
-          identifier: example_stage
-          type: stage
-          name: name
-          fqn: pipeline.stages.stage1.name
-      properties:
-        identifier:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Entity identifier
-        type:
-          type: string
-          description: Type of Entity
-        name:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Name of Entity
-        fqn:
-          type: string
-          description: Fully Qualified Name
-    GitMetadataUpdateResponseBody:
-      title: GitMetadataUpdateResponseBody
-      x-stoplight:
-        id: cnycqmk3by4zk
-      type: object
-      properties:
-        entity_identifier:
-          type: string
-          description: identifier of updated entity
-    MoveConfigOperationType:
-      type: string
-      enum:
-      - INLINE_TO_REMOTE
-      description: Operation type to move the configuration
-      x-stoplight:
-        id: 4g4asyvl1x30z
     FixedValueFieldDependencyDetailsDTO:
       title: FixedValueFieldDependencyDetailsDTO
       x-stoplight:
@@ -1402,6 +1684,38 @@ components:
           type: object
           x-stoplight:
             id: gdbrt5uxk44lh
+    GitImportInfo:
+      title: Import Git Information
+      x-stoplight:
+        id: 4r6psagtvh768
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        repo_name:
+          type: string
+        branch_name:
+          type: string
+        file_path:
+          type: string
+        is_force_import:
+          type: boolean
+      description: Parameters related to importing an entity for Git.
+    PipelineYamlInputMetadataDTO:
+      title: PipelineYamlInputMetadataDTO
+      x-stoplight:
+        id: w72v0p3hxgsqk
+      type: object
+      x-internal: true
+      properties:
+        field_properties:
+          x-stoplight:
+            id: oi2cc5afutjom
+          type: array
+          items:
+            $ref: '#/components/schemas/InputDetailsPerFieldDTO'
+        dependencies:
+          $ref: '#/components/schemas/YamlInputDependencyDetailsDTO'
     RuntimeInputDependencyDetailsDTO:
       title: RuntimeInputDependencyDetailsDTO
       x-stoplight:
@@ -1417,320 +1731,22 @@ components:
           type: string
           x-stoplight:
             id: 9bsov65akownz
-    RecentExecutionInfo:
-      title: Recent Execution Information
-      x-stoplight:
-        id: da5de92572lcb
+    PipelineList:
       type: object
-      description: Recent Execution information of the Pipeline.
       properties:
-        executor_info:
-          $ref: '#/components/schemas/ExecutorInfo'
-        execution_id:
+        status:
           type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Execution identifier
-        execution_status:
-          type: string
-          description: Last Execution status of the Pipeline.
-          enum:
-          - Running
-          - AsyncWaiting
-          - TaskWaiting
-          - TimedWaiting
-          - Failed
-          - Errored
-          - IgnoreFailed
-          - NotStarted
-          - Expired
-          - Aborted
-          - Discontinuing
-          - Queued
-          - Paused
-          - ResourceWaiting
-          - InterventionWaiting
-          - ApprovalWaiting
-          - Success
-          - Suspended
-          - Skipped
-          - Pausing
-          - ApprovalRejected
-          - InputWaiting
-          - NOT_STARTED
-          - INTERVENTION_WAITING
-          - APPROVAL_WAITING
-          - APPROVAL_REJECTED
-          - Waiting
-        started:
-          type: integer
-          format: int64
-          description: Start timestamp of Execution
-        ended:
-          type: integer
-          format: int64
-          description: End timestamp of Execution
-        run_number:
-          type: integer
-          format: int32
-          description: The Execution number of this Pipeline.
-          example: 0
-        parent_stage_info:
-          $ref: '#/components/schemas/ParentStageInfo'
-      x-examples:
-        example-recent:
-          executor_info:
-            trigger_type: NOOP
-            username: harness_user
-            email: noreply@harness.io
-          execution_id: example_execution_identifier
-          execution_status: Running
-          started: 1234567890
-          ended: 1234567890
-          run_number: 5
-    PipelineImportRequestDTO:
-      title: Pipeline Import Request DTO
-      x-stoplight:
-        id: aadgrtv4u40df
-      type: object
-      description: Information of Pipeline import request DTO
-      properties:
-        pipeline_name:
-          type: string
-        pipeline_description:
-          type: string
-    PipelineYamlInputDTO:
-      title: PipelineYamlInputDTO
-      x-stoplight:
-        id: b76ha2p8ngn3m
-      type: object
-      x-internal: true
-      properties:
-        name:
-          type: string
-          x-stoplight:
-            id: 23dnmvd66you2
-        type:
-          $ref: '#/components/schemas/YamlInputType'
-        desc:
-          type: string
-          x-stoplight:
-            id: klcxkypd8p8aj
-        required:
-          type: boolean
-          x-stoplight:
-            id: gnxq3c3xxjc9c
-        execution:
-          type: boolean
-        default:
+        data:
           type: object
-          x-stoplight:
-            id: pvsan66570urp
-        allowed_values:
-          type: array
-          x-stoplight:
-            id: bk45vjio3fdhb
-          items: {}
-        regex:
-          type: string
-    PipelineCreateResponseBody:
-      title: Pipeline Create Response Body
-      x-stoplight:
-        id: 6k4p5yturlcz5
-      type: object
-      description: Pipeline response body
-      x-examples:
-        example-pipeline:
-          identifier: example_pipeline
-      properties:
-        identifier:
-          type: string
-          description: Pipeline identifier
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-    GitDetails:
-      title: Git Response Details
-      x-stoplight:
-        id: f37z1efdf6zuu
-      type: object
-      description: Git Experience related details of the Entity.
-      x-examples:
-        example-git:
-          object_id: example_object
-          branch_name: branch
-          file_path: /folder/file.json
-          repo_name: example_repository
-          commit_id: abcd123
-          file_url: www.repo/folder/file.com
-          repo_url: www.repo.com
-      properties:
-        object_id:
-          type: string
-          description: Object identifier / blob id
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        branch_name:
-          type: string
-          description: Name of the branch.
-        file_path:
-          type: string
-          description: File path of the Entity in the repository.
-        repo_name:
-          type: string
-          description: Name of the repository.
-        commit_id:
-          type: string
-          description: Latest commit identifier.
-        file_url:
-          type: string
-          description: File URL of the Entity.
-        repo_url:
-          type: string
-          description: Repository URL of the Entity.
-    GitCreateDetails:
-      title: Create Git Details
-      x-stoplight:
-        id: ksk60vtpcl9b2
-      type: object
-      description: Contains parameters related to creating an Entity for Git Experience.
-      x-examples:
-        example-create-git:
-          branch_name: branch
-          file_path: /folder/file.json
-          commit_message: Added Harness Git Experience
-          base_branch: old_branch
-          connector_ref: git_connector
-          store_type: REMOTE
-          repo_name: example_repository
-      properties:
-        branch_name:
-          type: string
-          description: Name of the branch.
-        file_path:
-          type: string
-          description: File path of the Entity in the repository.
-        commit_message:
-          type: string
-          description: Commit message used for the merge commit.
-        base_branch:
-          type: string
-          description: Name of the default branch (this checks out a new branch titled by branch_name).
-        connector_ref:
-          type: string
-          description: Identifier of the Harness Connector used for CRUD operations on the Entity.
-        store_type:
-          type: string
-          description: Specifies whether the Entity is to be stored in Git or not.
-          enum:
-          - INLINE
-          - REMOTE
-        repo_name:
-          type: string
-          description: Name of the repository.
-    ParentStageInfo:
-      title: ParentStageInfo
-      x-stoplight:
-        id: tp7dtd5ejnalr
-      type: object
-      description: 'Information about parent pipeline '
-      properties:
-        has_parent_pipeline:
-          type: boolean
-          description: boolean to describe whether or not this was executed through pipeline chaining
-        execution_id:
-          type: string
-          description: planExecutionId of parent pipeline execution
-        identifier:
-          type: string
-          description: pipeline identifier of parent pipeline
-        project_id:
-          type: string
-          description: project identifier
-        org_id:
-          type: string
-          description: org identifier
-        run_sequence:
-          type: integer
-          description: run sequence of parent pipeline execution
-          format: int32
-        stage_node_id:
-          type: string
-          description: node id of parent pipeline stage
-    PipelineSaveResponseBody:
-      title: Pipeline Save Response Body
-      x-stoplight:
-        id: v68h3jaccx83a
-      type: object
-      properties:
-        identifier:
-          type: string
-        governance_metadata:
-          type: array
-          items:
-            $ref: '#/components/schemas/GovernanceMetadata1'
-      description: Response body for pipeline save.
-    PipelinePatchRequestBody:
-      title: PipelinePatchRequestBody
-      x-stoplight:
-        id: 3utb53wrarno2
-      type: object
-      x-examples:
-        Example 1:
-          pipeline_yaml: "pipeline:\n  identifier: example_pipeline\n  name: ExamplePipeline\n  allowStageExecutions: false\n  stages:\n    - stage:\n        name: Example Build Stage\n        identifier: example_build_stage\n        description: ''\n        type: Approval\n        spec:\n          execution:\n            steps:\n              - step:\n                  name: Approval Step\n                  identifier: Approval_Step\n                  type: HarnessApproval\n                  timeout: 1d\n                  spec:\n                    approvalMessage: |-\n                      Please review the following information\n                      and approve the pipeline progression\n                    includePipelineExecutionHistory: true\n                    approvers:\n                      minimumCount: 1\n                      disallowPipelineExecutor: false\n                      userGroups: <+input>\n                    approverInputs: []\n              - step:\n                  type: ShellScript\n                  name: ShellScript Step\n                  identifier: ShellScript_Step\n                  spec:\n                    shell: Bash\n                    onDelegate: true\n                    source:\n                      type: Inline\n                      spec:\n                        script: <+input>\n                    environmentVariables: []\n                    outputVariables: []\n                    executionTarget: {}\n                  timeout: 10m\n        tags: {}\n    - stage:\n        name: Example Deploy Stage\n        identifier: example_deploy_stage\n        description: ''\n        type: Deployment\n        spec:\n          serviceConfig:\n            serviceRef: <+input>\n            serviceDefinition:\n              spec:\n                variables: []\n              type: Kubernetes\n          infrastructure:\n            environmentRef: <+input>\n            infrastructureDefinition:\n              type: KubernetesDirect\n              spec:\n                connectorRef: <+input>\n                namespace: <+input>\n                releaseName: release-<+INFRA_KEY>\n            allowSimultaneousDeployments: false\n          execution:\n            steps:\n              - step:\n                  name: Rollout Deployment\n                  identifier: rolloutDeployment\n                  type: K8sRollingDeploy\n                  timeout: 10m\n                  spec:\n                    skipDryRun: false\n            rollbackSteps:\n              - step:\n                  name: Rollback Rollout Deployment\n                  identifier: rollbackRolloutDeployment\n                  type: K8sRollingRollback\n                  timeout: 10m\n                  spec: {}\n        tags: {}\n        failureStrategies:\n          - onFailure:\n              errors:\n                - AllErrors\n              action:\n                type: StageRollback\n"
-          name: ExamplePipeline
-          desc: Pipeline Description
-          tags:
-            example-tag-1: example-tag-1-value
-            example-tag-2: example-tag-2-value
-          git_details:
-            branch_name: branch
-            commit_message: Added Harness Git Experience
-            last_object_id: abcdXYZ
-            base_branch: old_branch
-            last_commit_id: abcdXYZ
-            connector_ref: git_connector
-            store_type: REMOTE
-            repo_name: example_repository
-      description: Pipeline Patch Request body (All the non empty values in this request body will be updated).
-      properties:
-        pipeline_yaml:
-          type: string
-          description: Pipeline YAML (to be passed as a String).
-        name:
-          type: string
-          description: Pipeline Name.
-        desc:
-          type: string
-          description: Pipeline Description.
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          maxProperties: 128
-          description: Pipeline Tags.
-        git_details:
-          $ref: '#/components/schemas/GitUpdateDetails'
-        version:
-          type: string
-          description: Version of pipeline yaml, should be one of "0" or "1"
-    InputDetailsPerFieldDTO:
-      title: InputDetailsPerFieldDTO
-      x-stoplight:
-        id: fh76c2nnwli3w
-      type: object
-      x-internal: true
-      properties:
-        input_type:
-          type: string
-          x-stoplight:
-            id: d92j86p84m1t5
-        internal_type:
-          type: string
-          x-stoplight:
-            id: l3u49jd2dmz9o
+          properties:
+            totalPages:
+              type: integer
+            totalItems:
+              type: integer
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Pipeline'
     Pipeline:
       type: object
       description: A Harness pipeline.
@@ -1748,44 +1764,19 @@ components:
           type: object
           additionalProperties:
             type: string
-    PipelineList:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          type: object
-          properties:
-            totalPages:
-              type: integer
-            totalItems:
-              type: integer
-            content:
-              type: array
-              items:
-                $ref: '#/components/schemas/Pipeline'
   responses:
-    PipelineValidationUUIDResponseBody:
-      description: Contains the UUID of the Pipeline Validation Event that's started
+    PipelineSaveResponseBody:
+      description: Response body for pipeline save.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/PipelineValidationUUIDResponseBody'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/PipelineValidationUUIDResponseBody'
+            $ref: '#/components/schemas/PipelineSaveResponseBody'
     PipelineMoveConfigResponseBody:
       description: Response body for moving a pipeline configuration.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/PipelineMoveConfigResponseBody'
-    PipelineInputSchemaDetailsResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/PipelineInputSchemaDetailsResponseBody'
     PipelineValidationResponseBody:
       description: Pipeline Validation response body
       content:
@@ -1795,6 +1786,21 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/PipelineValidationResponseBody'
+    PipelineValidationUUIDResponseBody:
+      description: Contains the UUID of the Pipeline Validation Event that's started
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PipelineValidationUUIDResponseBody'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/PipelineValidationUUIDResponseBody'
+    PipelineInputSchemaDetailsResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PipelineInputSchemaDetailsResponseBody'
     PipelineCreateResponseBody:
       description: Pipeline response body
       content:
@@ -1813,12 +1819,12 @@ components:
               value: 'identifier: example_pipeline
 
                 '
-    PipelineSaveResponseBody:
-      description: Response body for pipeline save.
+    GitMetadataUpdateResponseBody:
+      description: Example response
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/PipelineSaveResponseBody'
+            $ref: '#/components/schemas/GitMetadataUpdateResponseBody'
     PipelineListResponseBody:
       description: Response body for List Pipelines.
       content:
@@ -1892,12 +1898,6 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-    GitMetadataUpdateResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GitMetadataUpdateResponseBody'
     PipelineGetResponseBody:
       description: Pipeline response body
       content:
@@ -1956,13 +1956,6 @@ components:
             example-response:
               value: "pipeline_yaml: example_yaml_text\ntemplate_applied_pipeline_yaml: example_yaml_text_with_template\nidentifier: example_pipeline\nname: ExamplePipeline\norg: example_org\nproject: example_project\ndescription: Pipeline Description\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nmodules:\n  - cd\ngit_details:\n  object_id: example_object\n  branch_name: branch\n  file_path: /folder/file.json\n  repo_name: example_repository\n  commit_id: abcd123\n  file_url: www.repo/folder/file.com\n  repo_url: www.repo.com\nvalid: true\nyaml_error_wrapper:\n  message: something is incorrect\n  message_fqn: something is incorrect at pipeline.name\n  stage_info:\n    identifier: example_stage\n    type: stage\n    name: Example Stage\n    fqn: pipeline.stages.stage\n  step_info:\n    identifier: example_step\n    type: string\n    name: string\n    fqn: pipeline.steps.step\n  fqn: pipeline.name\n  hint_message: try changing something\ncache_response_metadata:\n  cache_state: VALID_CACHE\n  ttl_left: 9223372036854776000\n  last_updated_at: 9223372036854776000\ncreated: 1234567890\nupdated: 1234567890\n"
   parameters:
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
     SearchTerm:
       name: search_term
       in: query
@@ -1970,27 +1963,28 @@ components:
       schema:
         type: string
       description: This would be used to filter resources having attributes matching the search term.
-    PipelineParam:
-      name: pipeline
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Pipeline identifier
-    AccountHeader4:
-      name: Harness-Account
-      in: header
+    PageIndex:
+      name: page
+      in: query
       required: false
       schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    ProjectParam:
-      description: Project identifier
+        type: integer
+        default: 0
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+    OrgParam:
+      description: Organization identifier
       in: path
-      name: project
+      name: org
       required: true
       schema:
         type: string
+    UuidParam:
+      name: uuid
+      in: path
+      required: true
+      schema:
+        type: string
+      description: UUID
     Order:
       name: order
       in: query
@@ -2001,13 +1995,20 @@ components:
         - ASC
         - DESC
       description: Order on the basis of which sorting is done.
-    UuidParam:
-      name: uuid
+    PipelineParam:
+      name: pipeline
       in: path
       required: true
       schema:
         type: string
-      description: UUID
+      description: Pipeline identifier
+    Branch:
+      name: branch_name
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Name of the branch (for Git Experience).
     Limit:
       name: limit
       in: query
@@ -2017,21 +2018,13 @@ components:
         default: 30
         maximum: 100
       description: 'Pagination: Number of items to return.'
-    PageIndex:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-    Branch:
-      name: branch_name
-      in: query
+    AccountHeader4:
+      name: Harness-Account
+      in: header
       required: false
       schema:
         type: string
-      description: Name of the branch (for Git Experience).
+      description: Identifier field of the account the resource is scoped to.
     Sort4:
       name: sort
       in: query
@@ -2042,12 +2035,14 @@ components:
         - name
         - updated
       description: Parameter on the basis of which sorting is done.
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
   requestBodies:
-    PipelinePatchRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/PipelinePatchRequestBody'
     PipelineCreateRequestBody:
       content:
         application/json:
@@ -2122,6 +2117,11 @@ components:
           schema:
             $ref: '#/components/schemas/PipelineImportRequestBody'
       description: Pipeline import request body
+    PipelinePatchRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PipelinePatchRequestBody'
     PipelineMoveConfigRequestBody:
       content:
         application/json:

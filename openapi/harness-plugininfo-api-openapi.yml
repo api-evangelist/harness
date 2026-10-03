@@ -156,56 +156,240 @@ paths:
       - $ref: '#/components/parameters/Page1'
       - $ref: '#/components/parameters/Limit5'
 components:
+  parameters:
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Page1:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: null
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Meta:
+      name: meta
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: Custom plugin metadata
+    PluginName:
+      name: plugin_name
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: 'Plugin name for filtering '
+    PluginId:
+      name: plugin-id
+      in: path
+      description: Plugin Identifier
+      required: true
+      schema:
+        type: string
+    Limit5:
+      name: limit
+      in: query
+      required: false
+      schema:
+        default: null
+        type: integer
+      description: 'Pagination: Number of items to return'
+  requestBodies:
+    CustomPluginCreateRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+    RequestPluginRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RequestPlugin'
+      description: Details of the plugin being requested
+    CustomPluginInfoRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomPluginInfoRequest'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/CustomPluginInfoRequest'
   schemas:
-    PluginInfoResponse:
-      title: PluginInfoResponse
+    RequestPlugin:
       x-stoplight:
-        id: bzim96q2jdydq
+        id: r5zm7ltki4p8f
+      type: object
+      title: RequestPluginRequest
+      description: Details of the plugin being requested
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: 56azi08e1q53b
+        creator:
+          type: string
+          x-stoplight:
+            id: 595gabner523j
+        package_link:
+          type: string
+          x-stoplight:
+            id: 92ietipnvu0ta
+        doc_link:
+          type: string
+          x-stoplight:
+            id: pgttm4b0sqx6l
+      required:
+      - name
+      - creator
+      - package_link
+      - doc_link
+    ExportDetails:
+      title: ExportDetails
+      x-stoplight:
+        id: lh3kww6at9n87
+      type: object
+      properties:
+        type:
+          type: string
+          x-stoplight:
+            id: 69io5n1al727m
+        name:
+          type: string
+          x-stoplight:
+            id: rk3j3ohhxfadq
+        add_by_default:
+          type: boolean
+          x-stoplight:
+            id: yv6e7c9c2eyv6
+        default_route:
+          type: string
+          x-stoplight:
+            id: lg3iy2r2zvqhb
+        layout_schema_specs:
+          type: object
+          x-stoplight:
+            id: kqd59lko12kls
+      required:
+      - type
+      - name
+    ProxyHostDetail:
+      title: ProxyHostDetail
+      x-stoplight:
+        id: agl6s9vai35qw
+      type: object
+      description: Proxy Host Detail
+      properties:
+        host:
+          type: string
+          x-stoplight:
+            id: oudzqrxaqnkjy
+        proxy:
+          type: boolean
+          x-stoplight:
+            id: 3h03au3y87lyv
+        selectors:
+          type: array
+          x-stoplight:
+            id: jdgn49nqlp49k
+          items:
+            x-stoplight:
+              id: zvnhr2daor8lr
+            type: string
+        identifier:
+          type: string
+          x-stoplight:
+            id: soyi91ysmnt8u
+        pluginId:
+          type: string
+          x-stoplight:
+            id: 7we0dzf0ap7v7
+      required:
+      - host
+      - proxy
+    PluginDetailedInfo:
+      title: PluginDetailedInfo
+      x-stoplight:
+        id: 4mgb2xlg0qmuz
+      allOf:
+      - $ref: '#/components/schemas/PluginDetails'
+      - type: object
+        properties:
+          env_variables:
+            x-stoplight:
+              id: dbvndzvgirvhx
+            type: array
+            items:
+              $ref: '#/components/schemas/BackstageEnvSecretVariable'
+          saved:
+            type: boolean
+            x-stoplight:
+              id: zc7gzaskute7h
+          proxy:
+            x-stoplight:
+              id: iihf5kiywsyft
+            type: array
+            items:
+              $ref: '#/components/schemas/ProxyHostDetail'
+        required:
+        - env_variables
+        - saved
+    PluginDetailedInfoResponse:
+      title: PluginDetailedInfoResponse
+      x-stoplight:
+        id: yga377lrqvzo3
       type: object
       properties:
         plugin:
-          $ref: '#/components/schemas/PluginInfo'
+          $ref: '#/components/schemas/PluginDetailedInfo'
           x-stoplight:
-            id: b8e9wv7c3q2hb
+            id: bge1kvlvygjky
       required:
       - plugin
-    PluginDetails:
-      title: PluginDetails
+    BackstageEnvSecretVariable:
+      title: BackstageEnvSecretVariable
       x-stoplight:
-        id: 560styu7fppwf
-      type: object
-      properties:
-        plugin_details:
-          $ref: '#/components/schemas/PluginInfo'
-          x-stoplight:
-            id: ar7hkpjerml0u
-        config:
-          type: string
-          x-stoplight:
-            id: 4yr6y6r9zxzdi
-        exports:
-          $ref: '#/components/schemas/Exports'
-          x-stoplight:
-            id: 43cv9jhplzytw
-      required:
-      - plugin_details
-    CustomPluginDetailedInfo:
-      title: CustomPluginDetailedInfo
-      x-stoplight:
-        id: 7d5vhhxgcinuj
-      description: Metadata for custom plugin
+        id: 3h8ht8pko3bgz
+      x-discriminator-value: Secret
       allOf:
-      - $ref: '#/components/schemas/PluginDetailedInfo'
-      - type: object
+      - $ref: '#/components/schemas/BackstageEnvVariable'
         x-stoplight:
-          id: a3azbqof3qaa4
+          id: qv79339cmwg5d
+      - type: object
         properties:
-          artifact:
-            $ref: '#/components/schemas/Artifact'
-          package_name:
+          type:
+            type: string
+            enum:
+            - Secret
+          harness_secret_identifier:
             type: string
             x-stoplight:
-              id: 6tclf6gflwbnm
+              id: ah15yig0jo9yb
+          is_deleted:
+            type: boolean
+            x-stoplight:
+              id: uvmj7ylwufxzc
+            default: false
+        required:
+        - type
+        - harness_secret_identifier
+      x-examples: {}
+    CustomPluginInfoResponse:
+      title: CustomPluginInfoResponse
+      x-stoplight:
+        id: r9u1gb8tlw8jm
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/CustomPluginDetailedInfo'
     Exports:
       title: Exports
       x-stoplight:
@@ -249,18 +433,76 @@ components:
       - cards
       - default_entity_types
       - export_details
-    PluginDetailedInfoResponse:
-      title: PluginDetailedInfoResponse
+    CustomPluginInfoRequest:
+      title: CustomPluginInfoRequest
       x-stoplight:
-        id: yga377lrqvzo3
+        id: szco1w9ni5gg2
       type: object
       properties:
-        plugin:
-          $ref: '#/components/schemas/PluginDetailedInfo'
+        info:
+          $ref: '#/components/schemas/CustomPluginDetailedInfo'
+    PluginDetails:
+      title: PluginDetails
+      x-stoplight:
+        id: 560styu7fppwf
+      type: object
+      properties:
+        plugin_details:
+          $ref: '#/components/schemas/PluginInfo'
           x-stoplight:
-            id: bge1kvlvygjky
+            id: ar7hkpjerml0u
+        config:
+          type: string
+          x-stoplight:
+            id: 4yr6y6r9zxzdi
+        exports:
+          $ref: '#/components/schemas/Exports'
+          x-stoplight:
+            id: 43cv9jhplzytw
       required:
-      - plugin
+      - plugin_details
+    BackstageEnvVariable:
+      title: BackstageEnvVariable
+      x-stoplight:
+        id: nxqrkraenk753
+      type: object
+      description: Backstage Env Variable
+      discriminator:
+        propertyName: type
+        mapping:
+          Config: '#/components/schemas/BackstageEnvConfigVariable'
+          Secret: '#/components/schemas/BackstageEnvSecretVariable'
+      x-examples: {}
+      properties:
+        identifier:
+          type: string
+          x-stoplight:
+            id: qcqog9dhfhhtn
+        env_name:
+          type: string
+          x-stoplight:
+            id: 0br1k8e9y4vds
+        created:
+          type: integer
+          x-stoplight:
+            id: jnkz49ajqu2ep
+          format: int64
+        updated:
+          type: integer
+          x-stoplight:
+            id: f7vn66lecbehz
+          format: int64
+        type:
+          type: string
+          x-stoplight:
+            id: bkpapdothjik6
+          description: This specifies the type of backstage env variable
+          enum:
+          - Config
+          - Secret
+      required:
+      - env_name
+      - type
     Artifact:
       title: Artifact
       x-stoplight:
@@ -282,132 +524,18 @@ components:
       required:
       - type
       - url
-    ProxyHostDetail:
-      title: ProxyHostDetail
+    PluginInfoResponse:
+      title: PluginInfoResponse
       x-stoplight:
-        id: agl6s9vai35qw
+        id: bzim96q2jdydq
       type: object
-      description: Proxy Host Detail
       properties:
-        host:
-          type: string
+        plugin:
+          $ref: '#/components/schemas/PluginInfo'
           x-stoplight:
-            id: oudzqrxaqnkjy
-        proxy:
-          type: boolean
-          x-stoplight:
-            id: 3h03au3y87lyv
-        selectors:
-          type: array
-          x-stoplight:
-            id: jdgn49nqlp49k
-          items:
-            x-stoplight:
-              id: zvnhr2daor8lr
-            type: string
-        identifier:
-          type: string
-          x-stoplight:
-            id: soyi91ysmnt8u
-        pluginId:
-          type: string
-          x-stoplight:
-            id: 7we0dzf0ap7v7
+            id: b8e9wv7c3q2hb
       required:
-      - host
-      - proxy
-    ExportDetails:
-      title: ExportDetails
-      x-stoplight:
-        id: lh3kww6at9n87
-      type: object
-      properties:
-        type:
-          type: string
-          x-stoplight:
-            id: 69io5n1al727m
-        name:
-          type: string
-          x-stoplight:
-            id: rk3j3ohhxfadq
-        add_by_default:
-          type: boolean
-          x-stoplight:
-            id: yv6e7c9c2eyv6
-        default_route:
-          type: string
-          x-stoplight:
-            id: lg3iy2r2zvqhb
-        layout_schema_specs:
-          type: object
-          x-stoplight:
-            id: kqd59lko12kls
-      required:
-      - type
-      - name
-    BackstageEnvSecretVariable:
-      title: BackstageEnvSecretVariable
-      x-stoplight:
-        id: 3h8ht8pko3bgz
-      x-discriminator-value: Secret
-      allOf:
-      - $ref: '#/components/schemas/BackstageEnvVariable'
-        x-stoplight:
-          id: qv79339cmwg5d
-      - type: object
-        properties:
-          type:
-            type: string
-            enum:
-            - Secret
-          harness_secret_identifier:
-            type: string
-            x-stoplight:
-              id: ah15yig0jo9yb
-          is_deleted:
-            type: boolean
-            x-stoplight:
-              id: uvmj7ylwufxzc
-            default: false
-        required:
-        - type
-        - harness_secret_identifier
-      x-examples: {}
-    PluginDetailedInfo:
-      title: PluginDetailedInfo
-      x-stoplight:
-        id: 4mgb2xlg0qmuz
-      allOf:
-      - $ref: '#/components/schemas/PluginDetails'
-      - type: object
-        properties:
-          env_variables:
-            x-stoplight:
-              id: dbvndzvgirvhx
-            type: array
-            items:
-              $ref: '#/components/schemas/BackstageEnvSecretVariable'
-          saved:
-            type: boolean
-            x-stoplight:
-              id: zc7gzaskute7h
-          proxy:
-            x-stoplight:
-              id: iihf5kiywsyft
-            type: array
-            items:
-              $ref: '#/components/schemas/ProxyHostDetail'
-        required:
-        - env_variables
-        - saved
-    CustomPluginInfoRequest:
-      title: CustomPluginInfoRequest
-      x-stoplight:
-        id: szco1w9ni5gg2
-      type: object
-      properties:
-        info:
-          $ref: '#/components/schemas/CustomPluginDetailedInfo'
+      - plugin
     PluginInfo:
       title: PluginInfo
       x-stoplight:
@@ -473,34 +601,23 @@ components:
           - CUSTOM
       required:
       - id
-    RequestPlugin:
+    CustomPluginDetailedInfo:
+      title: CustomPluginDetailedInfo
       x-stoplight:
-        id: r5zm7ltki4p8f
-      type: object
-      title: RequestPluginRequest
-      description: Details of the plugin being requested
-      properties:
-        name:
-          type: string
-          x-stoplight:
-            id: 56azi08e1q53b
-        creator:
-          type: string
-          x-stoplight:
-            id: 595gabner523j
-        package_link:
-          type: string
-          x-stoplight:
-            id: 92ietipnvu0ta
-        doc_link:
-          type: string
-          x-stoplight:
-            id: pgttm4b0sqx6l
-      required:
-      - name
-      - creator
-      - package_link
-      - doc_link
+        id: 7d5vhhxgcinuj
+      description: Metadata for custom plugin
+      allOf:
+      - $ref: '#/components/schemas/PluginDetailedInfo'
+      - type: object
+        x-stoplight:
+          id: a3azbqof3qaa4
+        properties:
+          artifact:
+            $ref: '#/components/schemas/Artifact'
+          package_name:
+            type: string
+            x-stoplight:
+              id: 6tclf6gflwbnm
     PluginRequestResponseList:
       title: PluginRequestResponseList
       x-stoplight:
@@ -518,56 +635,6 @@ components:
       required:
       - plugin_requests
       description: Returns all plugin requests for an account
-    CustomPluginInfoResponse:
-      title: CustomPluginInfoResponse
-      x-stoplight:
-        id: r9u1gb8tlw8jm
-      type: object
-      properties:
-        info:
-          $ref: '#/components/schemas/CustomPluginDetailedInfo'
-    BackstageEnvVariable:
-      title: BackstageEnvVariable
-      x-stoplight:
-        id: nxqrkraenk753
-      type: object
-      description: Backstage Env Variable
-      discriminator:
-        propertyName: type
-        mapping:
-          Config: '#/components/schemas/BackstageEnvConfigVariable'
-          Secret: '#/components/schemas/BackstageEnvSecretVariable'
-      x-examples: {}
-      properties:
-        identifier:
-          type: string
-          x-stoplight:
-            id: qcqog9dhfhhtn
-        env_name:
-          type: string
-          x-stoplight:
-            id: 0br1k8e9y4vds
-        created:
-          type: integer
-          x-stoplight:
-            id: jnkz49ajqu2ep
-          format: int64
-        updated:
-          type: integer
-          x-stoplight:
-            id: f7vn66lecbehz
-          format: int64
-        type:
-          type: string
-          x-stoplight:
-            id: bkpapdothjik6
-          description: This specifies the type of backstage env variable
-          enum:
-          - Config
-          - Secret
-      required:
-      - env_name
-      - type
   responses:
     PluginInfoResponseList:
       description: Example response
@@ -591,15 +658,6 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/CustomPluginInfoResponse'
-    PluginDetailedInfoResponse:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/PluginDetailedInfoResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/PluginDetailedInfoResponse'
     PluginRequestResponseList:
       description: Returns all plugin requests for an account
       content:
@@ -619,73 +677,15 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-  parameters:
-    Limit5:
-      name: limit
-      in: query
-      required: false
-      schema:
-        default: null
-        type: integer
-      description: 'Pagination: Number of items to return'
-    Page1:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: null
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Meta:
-      name: meta
-      in: query
-      required: false
-      schema:
-        type: boolean
-        default: false
-      description: Custom plugin metadata
-    PluginName:
-      name: plugin_name
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: 'Plugin name for filtering '
-    PluginId:
-      name: plugin-id
-      in: path
-      description: Plugin Identifier
-      required: true
-      schema:
-        type: string
-    AccountHeader5:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-  requestBodies:
-    RequestPluginRequest:
+    PluginDetailedInfoResponse:
+      description: Example response
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/RequestPlugin'
-      description: Details of the plugin being requested
-    CustomPluginCreateRequest:
-      content:
-        application/json:
-          schema:
-            type: object
-    CustomPluginInfoRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CustomPluginInfoRequest'
+            $ref: '#/components/schemas/PluginDetailedInfoResponse'
         application/yaml:
           schema:
-            $ref: '#/components/schemas/CustomPluginInfoRequest'
+            $ref: '#/components/schemas/PluginDetailedInfoResponse'
   securitySchemes:
     x-api-key:
       name: x-api-key

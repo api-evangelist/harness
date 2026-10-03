@@ -89,19 +89,6 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOYamlDiffResponse'
 components:
   schemas:
-    JsonNode:
-      type: object
-      description: RFC 6902 JSON Patch array representing field-level changes. Each entry has op (add/remove/replace), path, value, and fromValue (for replace/remove).
-    YamlDiffRecord:
-      type: object
-      properties:
-        oldYaml:
-          type: string
-          description: Previous YAML version
-        newYaml:
-          type: string
-          description: Current YAML version
-      description: This has the YAML Difference of the record.
     ResponseDTOYamlDiffResponse:
       type: object
       properties:
@@ -117,6 +104,35 @@ components:
           type: object
         correlationId:
           type: string
+    YamlDiffRequest:
+      required:
+      - auditEventIds
+      type: object
+      properties:
+        auditEventIds:
+          maxItems: 20
+          minItems: 0
+          type: array
+          description: List of audit event IDs to compute YAML diffs for. Maximum 20 per request.
+          items:
+            type: string
+            description: List of audit event IDs to compute YAML diffs for. Maximum 20 per request.
+      description: Request body for computing YAML diffs for audit events.
+    JsonNode:
+      type: object
+      description: RFC 6902 JSON Patch array representing field-level changes. Each entry has op (add/remove/replace), path, value, and fromValue (for replace/remove).
+    AuditEventYamlDiff:
+      type: object
+      properties:
+        auditEventId:
+          type: string
+          description: The audit event ID this diff corresponds to.
+        diff:
+          $ref: '#/components/schemas/JsonNode'
+        error:
+          type: string
+          description: Error code if the diff could not be computed for this event.
+      description: Computed YAML diff for a single audit event in RFC 6902 JSON Patch format.
     YamlDiffResponse:
       type: object
       properties:
@@ -144,32 +160,16 @@ components:
           type: object
         correlationId:
           type: string
-    YamlDiffRequest:
-      required:
-      - auditEventIds
+    YamlDiffRecord:
       type: object
       properties:
-        auditEventIds:
-          maxItems: 20
-          minItems: 0
-          type: array
-          description: List of audit event IDs to compute YAML diffs for. Maximum 20 per request.
-          items:
-            type: string
-            description: List of audit event IDs to compute YAML diffs for. Maximum 20 per request.
-      description: Request body for computing YAML diffs for audit events.
-    AuditEventYamlDiff:
-      type: object
-      properties:
-        auditEventId:
+        oldYaml:
           type: string
-          description: The audit event ID this diff corresponds to.
-        diff:
-          $ref: '#/components/schemas/JsonNode'
-        error:
+          description: Previous YAML version
+        newYaml:
           type: string
-          description: Error code if the diff could not be computed for this event.
-      description: Computed YAML diff for a single audit event in RFC 6902 JSON Patch format.
+          description: Current YAML version
+      description: This has the YAML Difference of the record.
   securitySchemes:
     x-api-key:
       name: x-api-key

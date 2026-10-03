@@ -871,6 +871,223 @@ paths:
                 $ref: '#/components/schemas/ResponseDTONGTriggerResponse'
 components:
   schemas:
+    NGTriggerResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        identifier:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+          - Webhook
+          - Artifact
+          - Manifest
+          - Scheduled
+          - MultiRegionArtifact
+          - SystemEvent
+        accountIdentifier:
+          type: string
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        targetIdentifier:
+          type: string
+        yaml:
+          type: string
+        enabled:
+          type: boolean
+        errors:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+        errorResponse:
+          type: boolean
+        stagesToExecute:
+          $ref: '#/components/schemas/ParameterFieldListString'
+        yamlVersion:
+          type: string
+        webhookUrl:
+          type: string
+        executorInfo:
+          $ref: '#/components/schemas/TriggerExecutor'
+      description: This contains the trigger details
+    ResponseDTOPageResponseNGTriggerDetailsResponseDTO:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseNGTriggerDetailsResponseDTO'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    NGTriggerYamlRequest:
+      required:
+      - yaml
+      type: object
+      properties:
+        yaml:
+          type: string
+          description: Trigger definition YAML
+        executorInfo:
+          $ref: '#/components/schemas/TriggerExecutor'
+      description: Trigger YAML and optional executor identity for create/update
+    PipelineErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    ValidationStatus:
+      type: object
+      properties:
+        statusResult:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILED
+          - UNKNOWN
+          - PENDING
+        detailedMessage:
+          type: string
+    TriggerSource:
+      title: Trigger Source
+      type: object
+      properties:
+        poll_interval:
+          type: string
+          pattern: (((([1-9])+\d*[mh])+(\s/?\d+[mh])*)|(^$)|(0))$
+        type:
+          type: string
+          description: This specifies the type of the trigger
+          enum:
+          - Webhook
+          - Artifact
+          - Manifest
+          - Scheduled
+          - MultiRegionArtifact
+        webhook_id:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          Scheduled: '#/components/schemas/ScheduledTriggerSource'
+          Webhook: '#/components/schemas/WebhookTriggerSource'
+          Manifest: '#/components/schemas/ManifestTriggerSource'
+          Artifact: '#/components/schemas/ArtifactTriggerSource'
+          MultiRegionArtifact: '#/components/schemas/MultiRegionArtifactTriggerSource'
+      required:
+      - type
+      - spec
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    TriggerGetResponseBody:
+      title: Trigger Get Response Body
+      description: Trigger response body.
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Trigger identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Trigger name
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Organization identifier
+        project:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Project identifier
+        pipeline:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+          description: Pipeline identifier
+        description:
+          type: string
+          maxLength: 1024
+          description: Trigger description
+        trigger:
+          $ref: '#/components/schemas/TriggerBody'
+    ParameterFieldListString:
+      type: object
+      properties:
+        expressionValue:
+          type: string
+        expression:
+          type: boolean
+        value:
+          type: array
+          items:
+            type: string
+        defaultValue:
+          type: array
+          items:
+            type: string
+        typeString:
+          type: boolean
+        inputSetValidator:
+          $ref: '#/components/schemas/InputSetValidator'
+        jsonResponseField:
+          type: boolean
+        responseField:
+          type: string
+        executionInput:
+          type: boolean
+    PollingSubscriptionStatus:
+      type: object
+      properties:
+        statusResult:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILED
+          - UNKNOWN
+          - PENDING
+        detailedMessage:
+          type: string
+        lastPolled:
+          type: array
+          items:
+            type: string
+        lastPollingUpdate:
+          type: integer
+          format: int64
+        errorStatusValidUntil:
+          type: integer
+          format: int64
     Sort:
       type: object
       properties:
@@ -879,51 +1096,6 @@ components:
         sorted:
           type: boolean
         unsorted:
-          type: boolean
-    WebhookAutoRegistrationStatus:
-      type: object
-      properties:
-        registrationResult:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILED
-          - ERROR
-          - TIMEOUT
-          - UNAVAILABLE
-        detailedMessage:
-          type: string
-    PageNGTriggerEventHistoryDTO:
-      type: object
-      properties:
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/NGTriggerEventHistoryDTO'
-        number:
-          type: integer
-          format: int32
-        sort:
-          $ref: '#/components/schemas/Sort'
-        first:
-          type: boolean
-        pageable:
-          $ref: '#/components/schemas/Pageable'
-        numberOfElements:
-          type: integer
-          format: int32
-        last:
-          type: boolean
-        empty:
           type: boolean
     PipelineError:
       type: object
@@ -1348,22 +1520,256 @@ components:
         metadata:
           $ref: '#/components/schemas/PipelineErrorMetadata'
       description: This is Error entity as defined in Harness
-    BuildDetails:
+    WebhookDetails:
       type: object
       properties:
-        buildType:
+        webhookSecret:
           type: string
-    TriggerCatalogResponse:
+        webhookSourceRepo:
+          type: string
+    TriggerRequestBody:
+      title: Trigger Request Body
+      type: object
+      description: 'Trigger request body object '
+      properties:
+        description:
+          type: string
+        enabled:
+          type: boolean
+        encrypted_webhook_secret_identifier:
+          type: string
+        identifier:
+          type: string
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_]{0,127}$
+        input_set_refs:
+          type: array
+          items:
+            type: string
+        inputs:
+          type: string
+          description: input yaml to be used in the pipeline
+        name:
+          type: string
+          pattern: ^[a-zA-Z_0-9-.][-0-9a-zA-Z_\s.]{0,127}$
+        pipeline_branch_name:
+          type: string
+        source:
+          $ref: '#/components/schemas/TriggerSource'
+        stages_to_execute:
+          type: array
+          items:
+            type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
       required:
-      - catalog
+      - type
+      - identifier
+      - name
+      - source
+    TriggerExecutor:
+      required:
+      - type
+      - uuid
       type: object
       properties:
-        catalog:
+        uuid:
+          type: string
+          description: Unique identifier of the executor (user UUID or service account identifier)
+        name:
+          type: string
+          description: Display name of the executor (auto-populated from user/service-account service on save)
+        email:
+          type: string
+          description: Email address (auto-populated from user/service-account service on save)
+        accountIdentifier:
+          type: string
+          description: Account identifier of the service account's defining scope. Required in request for SERVICE_ACCOUNT. Not used for USER executors.
+        orgIdentifier:
+          type: string
+          description: Org identifier of the service account's defining scope. Required in request for SERVICE_ACCOUNT (null for account-level service accounts). Not used for USER executors.
+        projectIdentifier:
+          type: string
+          description: Project identifier of the service account's defining scope. Required in request for SERVICE_ACCOUNT (null for account- or org-level service accounts). Not used for USER executors.
+        type:
+          type: string
+          description: Type of executor - USER or SERVICE_ACCOUNT
+          enum:
+          - USER
+          - SERVICE_ACCOUNT
+      description: Details of a user or service account eligible to execute a trigger. For create/update requests, 'uuid' and 'type' are required. For SERVICE_ACCOUNT executors, accountIdentifier, orgIdentifier, and projectIdentifier are required and must match the service account's defining scope (from listManageableServiceAccounts). Name and email are fetched from user/service-account services. For responses, all fields are populated.
+    NGTriggerEventInfo:
+      type: object
+    TriggerEventStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILED
+          - SKIPPED
+        message:
+          type: string
+    Pageable:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/Sort'
+        pageSize:
+          type: integer
+          format: int32
+        pageNumber:
+          type: integer
+          format: int32
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+    WebhookInfo:
+      type: object
+      properties:
+        webhookId:
+          type: string
+    TriggerBody:
+      title: Trigger Body
+      type: object
+      description: 'Trigger object '
+      properties:
+        enabled:
+          type: boolean
+        encrypted_webhook_secret_identifier:
+          type: string
+        input_set_refs:
           type: array
-          description: List of Trigger category and Trigger types corresponding to a specific category.
           items:
-            $ref: '#/components/schemas/TriggerCatalogItem'
-      description: This has details of the retrieved Trigger Catalog.
+            type: string
+        inputs:
+          type: string
+          description: input yaml to be used in the pipeline
+        pipeline_branch_name:
+          type: string
+        source:
+          $ref: '#/components/schemas/TriggerSource'
+        stages_to_execute:
+          type: array
+          items:
+            type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+      - identifier
+      - name
+      - source
+    NGTriggerEventHistoryDTO:
+      type: object
+      properties:
+        triggerIdentifier:
+          type: string
+        accountId:
+          type: string
+        eventCorrelationId:
+          type: string
+        payload:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        eventCreatedAt:
+          type: integer
+          format: int64
+        finalStatus:
+          type: string
+          enum:
+          - SCM_SERVICE_CONNECTION_FAILED
+          - INVALID_PAYLOAD
+          - TRIGGER_DID_NOT_MATCH_EVENT_CONDITION
+          - TRIGGER_DID_NOT_MATCH_METADATA_CONDITION
+          - TRIGGER_DID_NOT_MATCH_ARTIFACT_JEXL_CONDITION
+          - NO_MATCHING_TRIGGER_FOR_REPO
+          - NO_MATCHING_TRIGGER_FOR_EVENT_ACTION
+          - NO_MATCHING_TRIGGER_FOR_METADATA_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_PAYLOAD_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_JEXL_CONDITIONS
+          - NO_MATCHING_TRIGGER_FOR_HEADER_CONDITIONS
+          - INVALID_RUNTIME_INPUT_YAML
+          - TARGET_DID_NOT_EXECUTE
+          - TARGET_EXECUTION_REQUESTED
+          - NO_ENABLED_CUSTOM_TRIGGER_FOUND
+          - NO_ENABLED_CUSTOM_TRIGGER_FOUND_FOR_ACCOUNT
+          - NO_ENABLED_TRIGGER_FOR_PROJECT
+          - NO_ENABLED_TRIGGER_FOR_ACCOUNT
+          - NO_ENABLED_TRIGGER_FOR_SOURCEREPO_TYPE
+          - NO_ENABLED_TRIGGER_FOR_ACCOUNT_SOURCE_REPO
+          - NO_MATCHING_TRIGGER_FOR_FILEPATH_CONDITIONS
+          - FAILED_TO_FETCH_PR_DETAILS
+          - FAILED_TO_FETCH_PR_COMMITS
+          - EXCEPTION_WHILE_PROCESSING
+          - TRIGGER_CONFIRMATION_SUCCESSFUL
+          - TRIGGER_CONFIRMATION_FAILED
+          - TRIGGER_AUTHENTICATION_FAILED
+          - VALIDATION_FAILED_FOR_TRIGGER
+          - ALL_MAPPED_TRIGGER_FAILED_VALIDATION_FOR_POLLING_EVENT
+          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_SIGNATURES
+          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_CONDITION
+          - POLLING_EVENT_WITH_NO_VERSIONS
+          - NEW_ARTIFACT_EVENT_PROCESSED
+          - NEW_MANIFEST_EVENT_PROCESSED
+          - SKIPPED
+          - QUEUED
+          - INVALID_HARNESS_ARTIFACT_REGISTRY_TRIGGER_ACTION
+          - NO_TRIGGERS_FOUND_FOR_HARNESS_ARTIFACT_REGISTRY_WEBHOOK
+          - HARNESS_ARTIFACT_REGISTRY_WEBHOOK_NOT_EXECUTED
+        message:
+          type: string
+        exceptionOccurred:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
+        triggerEventStatus:
+          $ref: '#/components/schemas/TriggerEventStatus'
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        targetIdentifier:
+          type: string
+        targetExecutionSummary:
+          $ref: '#/components/schemas/TargetExecutionSummary'
+        type:
+          type: string
+          enum:
+          - Webhook
+          - Artifact
+          - Manifest
+          - Scheduled
+          - MultiRegionArtifact
+          - SystemEvent
+        ngTriggerEventInfo:
+          $ref: '#/components/schemas/NGTriggerEventInfo'
+    ResponseDTOBoolean:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: boolean
+        metaData:
+          type: object
+        correlationId:
+          type: string
     Failure:
       type: object
       properties:
@@ -1783,6 +2189,22 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
+    TriggerResponseBody:
+      title: Trigger Response Body
+      type: object
+      description: Pipeline response body
+      properties:
+        identifier:
+          type: string
+          description: Trigger identifier
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+    BuildDetails:
+      type: object
+      properties:
+        buildType:
+          type: string
     TargetExecutionSummary:
       type: object
       properties:
@@ -1802,96 +2224,6 @@ components:
         startTs:
           type: integer
           format: int64
-    LastTriggerExecutionDetails:
-      type: object
-      properties:
-        lastExecutionTime:
-          type: integer
-          format: int64
-        lastExecutionSuccessful:
-          type: boolean
-        lastExecutionStatus:
-          type: string
-        planExecutionId:
-          type: string
-        message:
-          type: string
-    ResponseDTONGTriggerResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/NGTriggerResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    TriggerBody:
-      title: Trigger Body
-      type: object
-      description: 'Trigger object '
-      properties:
-        enabled:
-          type: boolean
-        encrypted_webhook_secret_identifier:
-          type: string
-        input_set_refs:
-          type: array
-          items:
-            type: string
-        inputs:
-          type: string
-          description: input yaml to be used in the pipeline
-        pipeline_branch_name:
-          type: string
-        source:
-          $ref: '#/components/schemas/TriggerSource'
-        stages_to_execute:
-          type: array
-          items:
-            type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-      required:
-      - identifier
-      - name
-      - source
-    TriggerStatus:
-      type: object
-      properties:
-        pollingSubscriptionStatus:
-          $ref: '#/components/schemas/PollingSubscriptionStatus'
-        validationStatus:
-          $ref: '#/components/schemas/ValidationStatus'
-        webhookAutoRegistrationStatus:
-          $ref: '#/components/schemas/WebhookAutoRegistrationStatus'
-        webhookInfo:
-          $ref: '#/components/schemas/WebhookInfo'
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILED
-          - UNKNOWN
-          - PENDING
-        detailMessages:
-          type: array
-          items:
-            type: string
-        lastPollingUpdate:
-          type: integer
-          format: int64
-        lastPolled:
-          type: array
-          items:
-            type: string
     ResponseDTOTriggerCatalogResponse:
       type: object
       properties:
@@ -1907,12 +2239,7 @@ components:
           type: object
         correlationId:
           type: string
-    WebhookInfo:
-      type: object
-      properties:
-        webhookId:
-          type: string
-    ResponseDTOPageNGTriggerEventHistoryDTO:
+    ResponseDTONGTriggerDetailsResponseDTO:
       type: object
       properties:
         status:
@@ -1922,10 +2249,149 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/PageNGTriggerEventHistoryDTO'
+          $ref: '#/components/schemas/NGTriggerDetailsResponseDTO'
         metaData:
           type: object
         correlationId:
+          type: string
+    PageResponseNGTriggerDetailsResponseDTO:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/NGTriggerDetailsResponseDTO'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    TriggerCatalogItem:
+      required:
+      - category
+      - triggerCatalogType
+      type: object
+      properties:
+        category:
+          type: string
+          description: Category of this Trigger.
+          enum:
+          - Webhook
+          - Artifact
+          - Manifest
+          - Scheduled
+          - MultiRegionArtifact
+          - SystemEvent
+        triggerCatalogType:
+          type: array
+          description: List of Trigger types corresponding to a specific category.
+          items:
+            type: string
+            description: List of Trigger types corresponding to a specific category.
+            enum:
+            - Github
+            - Gitlab
+            - Harness
+            - Bitbucket
+            - AzureRepo
+            - Custom
+            - EventRelay
+            - HarnessArtifactRegistry
+            - SystemEvents
+            - Gcr
+            - Ecr
+            - DockerRegistry
+            - ArtifactoryRegistry
+            - Acr
+            - AmazonS3
+            - GoogleArtifactRegistry
+            - CustomArtifact
+            - GithubPackageRegistry
+            - Jenkins
+            - Nexus3Registry
+            - Nexus2Registry
+            - AzureArtifacts
+            - AmazonMachineImage
+            - GceImage
+            - Bamboo
+            - GoogleCloudStorage
+            - HelmChart
+            - Cron
+      description: This has details of the Trigger Catalog.
+    PageNGTriggerEventHistoryDTO:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/NGTriggerEventHistoryDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        pageable:
+          $ref: '#/components/schemas/Pageable'
+        numberOfElements:
+          type: integer
+          format: int32
+        last:
+          type: boolean
+        empty:
+          type: boolean
+    ResponseDTONGTriggerResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/NGTriggerResponse'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    LastTriggerExecutionDetails:
+      type: object
+      properties:
+        lastExecutionTime:
+          type: integer
+          format: int64
+        lastExecutionSuccessful:
+          type: boolean
+        lastExecutionStatus:
+          type: string
+        planExecutionId:
+          type: string
+        message:
           type: string
     ResponseMessage:
       type: object
@@ -2517,353 +2983,74 @@ components:
           type: object
           additionalProperties:
             type: string
-    ValidationStatus:
+    WebhookAutoRegistrationStatus:
       type: object
       properties:
-        statusResult:
+        registrationResult:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILED
+          - ERROR
+          - TIMEOUT
+          - UNAVAILABLE
+        detailedMessage:
+          type: string
+    TriggerStatus:
+      type: object
+      properties:
+        pollingSubscriptionStatus:
+          $ref: '#/components/schemas/PollingSubscriptionStatus'
+        validationStatus:
+          $ref: '#/components/schemas/ValidationStatus'
+        webhookAutoRegistrationStatus:
+          $ref: '#/components/schemas/WebhookAutoRegistrationStatus'
+        webhookInfo:
+          $ref: '#/components/schemas/WebhookInfo'
+        status:
           type: string
           enum:
           - SUCCESS
           - FAILED
           - UNKNOWN
           - PENDING
-        detailedMessage:
-          type: string
-    TriggerGetResponseBody:
-      title: Trigger Get Response Body
-      description: Trigger response body.
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: Trigger identifier
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        name:
-          type: string
-          description: Trigger name
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          minLength: 1
-          maxLength: 128
-        org:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Organization identifier
-        project:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Project identifier
-        pipeline:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-          description: Pipeline identifier
-        description:
-          type: string
-          maxLength: 1024
-          description: Trigger description
-        trigger:
-          $ref: '#/components/schemas/TriggerBody'
-    NGTriggerYamlRequest:
-      required:
-      - yaml
-      type: object
-      properties:
-        yaml:
-          type: string
-          description: Trigger definition YAML
-        executorInfo:
-          $ref: '#/components/schemas/TriggerExecutor'
-      description: Trigger YAML and optional executor identity for create/update
-    TriggerSource:
-      title: Trigger Source
-      type: object
-      properties:
-        poll_interval:
-          type: string
-          pattern: (((([1-9])+\d*[mh])+(\s/?\d+[mh])*)|(^$)|(0))$
-        type:
-          type: string
-          description: This specifies the type of the trigger
-          enum:
-          - Webhook
-          - Artifact
-          - Manifest
-          - Scheduled
-          - MultiRegionArtifact
-        webhook_id:
-          type: string
-      discriminator:
-        propertyName: type
-        mapping:
-          Scheduled: '#/components/schemas/ScheduledTriggerSource'
-          Webhook: '#/components/schemas/WebhookTriggerSource'
-          Manifest: '#/components/schemas/ManifestTriggerSource'
-          Artifact: '#/components/schemas/ArtifactTriggerSource'
-          MultiRegionArtifact: '#/components/schemas/MultiRegionArtifactTriggerSource'
-      required:
-      - type
-      - spec
-    TriggerResponseBody:
-      title: Trigger Response Body
-      type: object
-      description: Pipeline response body
-      properties:
-        identifier:
-          type: string
-          description: Trigger identifier
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-    NGTriggerResponse:
-      type: object
-      properties:
-        name:
-          type: string
-        identifier:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-          - Webhook
-          - Artifact
-          - Manifest
-          - Scheduled
-          - MultiRegionArtifact
-          - SystemEvent
-        accountIdentifier:
-          type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        targetIdentifier:
-          type: string
-        yaml:
-          type: string
-        enabled:
-          type: boolean
-        errors:
-          type: object
-          additionalProperties:
-            type: object
-            additionalProperties:
-              type: string
-        errorResponse:
-          type: boolean
-        stagesToExecute:
-          $ref: '#/components/schemas/ParameterFieldListString'
-        yamlVersion:
-          type: string
-        webhookUrl:
-          type: string
-        executorInfo:
-          $ref: '#/components/schemas/TriggerExecutor'
-      description: This contains the trigger details
-    TriggerEventStatus:
+        detailMessages:
+          type: array
+          items:
+            type: string
+        lastPollingUpdate:
+          type: integer
+          format: int64
+        lastPolled:
+          type: array
+          items:
+            type: string
+    ResponseDTOPageNGTriggerEventHistoryDTO:
       type: object
       properties:
         status:
           type: string
           enum:
           - SUCCESS
-          - FAILED
-          - SKIPPED
-        message:
-          type: string
-    TriggerRequestBody:
-      title: Trigger Request Body
-      type: object
-      description: 'Trigger request body object '
-      properties:
-        description:
-          type: string
-        enabled:
-          type: boolean
-        encrypted_webhook_secret_identifier:
-          type: string
-        identifier:
-          type: string
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_]{0,127}$
-        input_set_refs:
-          type: array
-          items:
-            type: string
-        inputs:
-          type: string
-          description: input yaml to be used in the pipeline
-        name:
-          type: string
-          pattern: ^[a-zA-Z_0-9-.][-0-9a-zA-Z_\s.]{0,127}$
-        pipeline_branch_name:
-          type: string
-        source:
-          $ref: '#/components/schemas/TriggerSource'
-        stages_to_execute:
-          type: array
-          items:
-            type: string
-        tags:
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageNGTriggerEventHistoryDTO'
+        metaData:
           type: object
-          additionalProperties:
-            type: string
+        correlationId:
+          type: string
+    TriggerCatalogResponse:
       required:
-      - type
-      - identifier
-      - name
-      - source
-    Pageable:
+      - catalog
       type: object
       properties:
-        offset:
-          type: integer
-          format: int64
-        sort:
-          $ref: '#/components/schemas/Sort'
-        pageSize:
-          type: integer
-          format: int32
-        pageNumber:
-          type: integer
-          format: int32
-        paged:
-          type: boolean
-        unpaged:
-          type: boolean
-    NGTriggerEventHistoryDTO:
-      type: object
-      properties:
-        triggerIdentifier:
-          type: string
-        accountId:
-          type: string
-        eventCorrelationId:
-          type: string
-        payload:
-          type: string
-        headers:
-          type: object
-          additionalProperties:
-            type: string
-        eventCreatedAt:
-          type: integer
-          format: int64
-        finalStatus:
-          type: string
-          enum:
-          - SCM_SERVICE_CONNECTION_FAILED
-          - INVALID_PAYLOAD
-          - TRIGGER_DID_NOT_MATCH_EVENT_CONDITION
-          - TRIGGER_DID_NOT_MATCH_METADATA_CONDITION
-          - TRIGGER_DID_NOT_MATCH_ARTIFACT_JEXL_CONDITION
-          - NO_MATCHING_TRIGGER_FOR_REPO
-          - NO_MATCHING_TRIGGER_FOR_EVENT_ACTION
-          - NO_MATCHING_TRIGGER_FOR_METADATA_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_PAYLOAD_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_JEXL_CONDITIONS
-          - NO_MATCHING_TRIGGER_FOR_HEADER_CONDITIONS
-          - INVALID_RUNTIME_INPUT_YAML
-          - TARGET_DID_NOT_EXECUTE
-          - TARGET_EXECUTION_REQUESTED
-          - NO_ENABLED_CUSTOM_TRIGGER_FOUND
-          - NO_ENABLED_CUSTOM_TRIGGER_FOUND_FOR_ACCOUNT
-          - NO_ENABLED_TRIGGER_FOR_PROJECT
-          - NO_ENABLED_TRIGGER_FOR_ACCOUNT
-          - NO_ENABLED_TRIGGER_FOR_SOURCEREPO_TYPE
-          - NO_ENABLED_TRIGGER_FOR_ACCOUNT_SOURCE_REPO
-          - NO_MATCHING_TRIGGER_FOR_FILEPATH_CONDITIONS
-          - FAILED_TO_FETCH_PR_DETAILS
-          - FAILED_TO_FETCH_PR_COMMITS
-          - EXCEPTION_WHILE_PROCESSING
-          - TRIGGER_CONFIRMATION_SUCCESSFUL
-          - TRIGGER_CONFIRMATION_FAILED
-          - TRIGGER_AUTHENTICATION_FAILED
-          - VALIDATION_FAILED_FOR_TRIGGER
-          - ALL_MAPPED_TRIGGER_FAILED_VALIDATION_FOR_POLLING_EVENT
-          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_SIGNATURES
-          - NO_MATCHING_TRIGGER_FOR_FOR_EVENT_CONDITION
-          - POLLING_EVENT_WITH_NO_VERSIONS
-          - NEW_ARTIFACT_EVENT_PROCESSED
-          - NEW_MANIFEST_EVENT_PROCESSED
-          - SKIPPED
-          - QUEUED
-          - INVALID_HARNESS_ARTIFACT_REGISTRY_TRIGGER_ACTION
-          - NO_TRIGGERS_FOUND_FOR_HARNESS_ARTIFACT_REGISTRY_WEBHOOK
-          - HARNESS_ARTIFACT_REGISTRY_WEBHOOK_NOT_EXECUTED
-        message:
-          type: string
-        exceptionOccurred:
-          type: boolean
-        createdAt:
-          type: integer
-          format: int64
-        triggerEventStatus:
-          $ref: '#/components/schemas/TriggerEventStatus'
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        targetIdentifier:
-          type: string
-        targetExecutionSummary:
-          $ref: '#/components/schemas/TargetExecutionSummary'
-        type:
-          type: string
-          enum:
-          - Webhook
-          - Artifact
-          - Manifest
-          - Scheduled
-          - MultiRegionArtifact
-          - SystemEvent
-        ngTriggerEventInfo:
-          $ref: '#/components/schemas/NGTriggerEventInfo'
-    PageResponseNGTriggerDetailsResponseDTO:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
+        catalog:
           type: array
+          description: List of Trigger category and Trigger types corresponding to a specific category.
           items:
-            $ref: '#/components/schemas/NGTriggerDetailsResponseDTO'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
-          type: string
-    InputSetValidator:
-      type: object
-      properties:
-        validatorType:
-          type: string
-          enum:
-          - ALLOWED_VALUES
-          - REGEX
-          - SELECT_ONE_FROM
-          - SELECT_MANY_FROM
-        parameters:
-          type: string
+            $ref: '#/components/schemas/TriggerCatalogItem'
+      description: This has details of the retrieved Trigger Catalog.
     TriggerFilterProperties:
       required:
       - filterType
@@ -2932,46 +3119,6 @@ components:
           - Service
           - QueuedPipeline
       description: This contains details of the Trigger Filter
-    ParameterFieldListString:
-      type: object
-      properties:
-        expressionValue:
-          type: string
-        expression:
-          type: boolean
-        value:
-          type: array
-          items:
-            type: string
-        defaultValue:
-          type: array
-          items:
-            type: string
-        typeString:
-          type: boolean
-        inputSetValidator:
-          $ref: '#/components/schemas/InputSetValidator'
-        jsonResponseField:
-          type: boolean
-        responseField:
-          type: string
-        executionInput:
-          type: boolean
-    ResponseDTOBoolean:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: boolean
-        metaData:
-          type: object
-        correlationId:
-          type: string
     NGTriggerDetailsResponseDTO:
       type: object
       properties:
@@ -3032,184 +3179,25 @@ components:
           $ref: '#/components/schemas/TriggerExecutor'
         pipelineInputOutdated:
           type: boolean
-    PollingSubscriptionStatus:
+    InputSetValidator:
       type: object
       properties:
-        statusResult:
+        validatorType:
           type: string
           enum:
-          - SUCCESS
-          - FAILED
-          - UNKNOWN
-          - PENDING
-        detailedMessage:
+          - ALLOWED_VALUES
+          - REGEX
+          - SELECT_ONE_FROM
+          - SELECT_MANY_FROM
+        parameters:
           type: string
-        lastPolled:
-          type: array
-          items:
-            type: string
-        lastPollingUpdate:
-          type: integer
-          format: int64
-        errorStatusValidUntil:
-          type: integer
-          format: int64
-    NGTriggerEventInfo:
-      type: object
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    PipelineErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    TriggerCatalogItem:
-      required:
-      - category
-      - triggerCatalogType
-      type: object
-      properties:
-        category:
-          type: string
-          description: Category of this Trigger.
-          enum:
-          - Webhook
-          - Artifact
-          - Manifest
-          - Scheduled
-          - MultiRegionArtifact
-          - SystemEvent
-        triggerCatalogType:
-          type: array
-          description: List of Trigger types corresponding to a specific category.
-          items:
-            type: string
-            description: List of Trigger types corresponding to a specific category.
-            enum:
-            - Github
-            - Gitlab
-            - Harness
-            - Bitbucket
-            - AzureRepo
-            - Custom
-            - EventRelay
-            - HarnessArtifactRegistry
-            - SystemEvents
-            - Gcr
-            - Ecr
-            - DockerRegistry
-            - ArtifactoryRegistry
-            - Acr
-            - AmazonS3
-            - GoogleArtifactRegistry
-            - CustomArtifact
-            - GithubPackageRegistry
-            - Jenkins
-            - Nexus3Registry
-            - Nexus2Registry
-            - AzureArtifacts
-            - AmazonMachineImage
-            - GceImage
-            - Bamboo
-            - GoogleCloudStorage
-            - HelmChart
-            - Cron
-      description: This has details of the Trigger Catalog.
-    WebhookDetails:
-      type: object
-      properties:
-        webhookSecret:
-          type: string
-        webhookSourceRepo:
-          type: string
-    TriggerExecutor:
-      required:
-      - type
-      - uuid
-      type: object
-      properties:
-        uuid:
-          type: string
-          description: Unique identifier of the executor (user UUID or service account identifier)
-        name:
-          type: string
-          description: Display name of the executor (auto-populated from user/service-account service on save)
-        email:
-          type: string
-          description: Email address (auto-populated from user/service-account service on save)
-        accountIdentifier:
-          type: string
-          description: Account identifier of the service account's defining scope. Required in request for SERVICE_ACCOUNT. Not used for USER executors.
-        orgIdentifier:
-          type: string
-          description: Org identifier of the service account's defining scope. Required in request for SERVICE_ACCOUNT (null for account-level service accounts). Not used for USER executors.
-        projectIdentifier:
-          type: string
-          description: Project identifier of the service account's defining scope. Required in request for SERVICE_ACCOUNT (null for account- or org-level service accounts). Not used for USER executors.
-        type:
-          type: string
-          description: Type of executor - USER or SERVICE_ACCOUNT
-          enum:
-          - USER
-          - SERVICE_ACCOUNT
-      description: Details of a user or service account eligible to execute a trigger. For create/update requests, 'uuid' and 'type' are required. For SERVICE_ACCOUNT executors, accountIdentifier, orgIdentifier, and projectIdentifier are required and must match the service account's defining scope (from listManageableServiceAccounts). Name and email are fetched from user/service-account services. For responses, all fields are populated.
-    ResponseDTOPageResponseNGTriggerDetailsResponseDTO:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseNGTriggerDetailsResponseDTO'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ResponseDTONGTriggerDetailsResponseDTO:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/NGTriggerDetailsResponseDTO'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-  requestBodies:
-    TriggerRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/TriggerRequestBody'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/TriggerRequestBody'
-      description: Trigger request body
-      required: true
   parameters:
-    OrgParam:
-      description: Organization identifier
+    IgnoreError:
+      name: ignoreError
       in: path
-      name: org
-      required: true
+      required: false
       schema:
-        type: string
+        type: boolean
     TriggerParam:
       name: trigger
       in: path
@@ -3217,6 +3205,13 @@ components:
       schema:
         type: string
       description: Trigger identifier
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
     PipelineParam:
       name: pipeline
       in: path
@@ -3238,12 +3233,6 @@ components:
       required: true
       schema:
         type: string
-    IgnoreError:
-      name: ignoreError
-      in: path
-      required: false
-      schema:
-        type: boolean
   responses:
     TriggerResponseBody:
       description: Trigger response body
@@ -3263,6 +3252,17 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/TriggerGetResponseBody'
+  requestBodies:
+    TriggerRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TriggerRequestBody'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/TriggerRequestBody'
+      description: Trigger request body
+      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

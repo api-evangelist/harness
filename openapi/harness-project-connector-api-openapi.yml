@@ -145,248 +145,6 @@ paths:
       security:
       - x-api-key: []
 components:
-  schemas:
-    ConnectorTestConnectionResponse:
-      title: ConnectorTestConnectionResponse
-      type: object
-      description: This has test connection details for the Connector defined in Harness.
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - PARTIAL
-          - FAILURE
-          - UNKNOWN
-          description: Connectivity status of a Connector
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/ConnectorTestConnectionErrorDetail'
-        error_summary:
-          type: string
-          description: Summary of errors
-        tested_at:
-          type: integer
-          format: int64
-          description: Time at which Test Connection was completed
-        delegate_id:
-          type: string
-          description: ID of Delegate on which Test Connection is executed
-    ConnectorSpec:
-      title: ConnectorSpec
-      type: object
-      description: Details of the connector defined in Harness
-      required:
-      - type
-      discriminator:
-        propertyName: type
-        mapping:
-          GitHttp: '#/components/schemas/GitHttpConnectorSpec'
-          GitHttpEncrypted: '#/components/schemas/GitHttpEncryptedConnectorSpec'
-          GitSsh: '#/components/schemas/GitSshConnectorSpec'
-          Appdynamics: '#/components/schemas/AppdynamicsConnectorSpec'
-          AppdynamicsClientId: '#/components/schemas/AppdynamicsClientIdConnectorSpec'
-          Artifactory: '#/components/schemas/ArtifactoryConnectorSpec'
-          ArtifactoryEncrypted: '#/components/schemas/ArtifactoryEncryptedConnectorSpec'
-          ArtifactoryAnonymous: '#/components/schemas/ArtifactoryAnonymousConnectorSpec'
-          AzureClientSecretKey: '#/components/schemas/AzureClientSecretKeyConnectorSpec'
-          AzureClientCertificate: '#/components/schemas/AzureClientCertificateConnectorSpec'
-          AzureInheritFromDelegateUserAssignedManagedIdentity: '#/components/schemas/AzureInheritFromDelegateUserAssignedManagedIdentityConnectorSpec'
-          AzureInheritFromDelegateSystemAssignedManagedIdentity: '#/components/schemas/AzureInheritFromDelegateSystemAssignedManagedIdentityConnectorSpec'
-      properties:
-        type:
-          type: string
-          enum:
-          - GitHttp
-          - GitHttpEncrypted
-          - GitSsh
-          - Appdynamics
-          - AppdynamicsClientId
-          - Artifactory
-          - ArtifactoryEncrypted
-          - ArtifactoryAnonymous
-          - AzureClientSecretKey
-          - AzureClientCertificate
-          - AzureInheritFromDelegateUserAssignedManagedIdentity
-          - AzureInheritFromDelegateSystemAssignedManagedIdentity
-          description: This specifies the type of connector
-    ConnectorResponse:
-      title: ConnectorResponse
-      type: object
-      description: Connector response model
-      properties:
-        connector:
-          $ref: '#/components/schemas/Connector'
-        created:
-          type: integer
-          format: int64
-          description: Creation timestamp for the connector
-        updated:
-          type: integer
-          format: int64
-          description: Updated timestamp for the connector
-        status:
-          $ref: '#/components/schemas/ConnectorConnectivityDetail'
-        harness_managed:
-          type: boolean
-          description: This indicates if this Connector is managed by Harness or not. If True, Harness can manage and modify this Connector.
-        governance_metadata:
-          type: object
-          description: Governance metadata information
-    Connector:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Connector name
-          pattern: ^[0-9a-zA-Z-_ ]{0,127}$
-        identifier:
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          description: Connector identifier
-          maxLength: 128
-        description:
-          type: string
-          description: Connector description
-        org:
-          type: string
-          description: Organization identifier for connector
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-        project:
-          type: string
-          description: Project identifier for connector
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          description: Connector tags
-        spec:
-          $ref: '#/components/schemas/ConnectorSpec'
-      required:
-      - name
-      - identifier
-      - spec
-    ConnectorConnectivityDetail:
-      title: ConnectorConnectivityDetail
-      type: object
-      description: This has details of the connectivity status of the Connector.
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - PARTIAL
-          - FAILURE
-          - UNKNOWN
-          description: Connectivity status of a Connector
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/ConnectorTestConnectionErrorDetail'
-          description: List of errors and their details
-        error_summary:
-          type: string
-          description: Summary of errors
-        tested_at:
-          type: integer
-          format: int64
-          description: Time at which Test Connection was completed
-        connected_at:
-          type: integer
-          format: int64
-          description: This is the last time at which the Connector was successfully connected
-    ConnectorTestConnectionErrorDetail:
-      title: ConnectorTestConnectionErrorDetail
-      type: object
-      description: Connector test connection errors and their details.
-      properties:
-        reason:
-          type: string
-          description: Reason of test connection error
-        message:
-          type: string
-          description: Test connection error message
-        code:
-          type: integer
-          description: Test connection error code
-    ConnectorRequest:
-      type: object
-      properties:
-        connector:
-          $ref: '#/components/schemas/Connector'
-      required:
-      - connector
-  parameters:
-    Limit2:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 30
-        maximum: 1000
-      description: Number of items to return per page.
-    ProjectPathParam:
-      name: project
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the project the resource is scoped to
-    OrgPathParam:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the organization the resource is scoped to
-    SearchTerm2:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching with search term.
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    AccountHeader1:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    Sort2:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - name
-        - identifier
-        - created
-        - updated
-      description: Parameter on the basis of which sorting is done.
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
   responses:
     ConnectorResponse:
       description: Connector response
@@ -420,6 +178,15 @@ components:
           examples:
             example-connector-response-yaml:
               value: "connector:\n  name: example_connector\n  identifier: example_connector\n  org: default\n  project: example_project\n  tags:\n    property1: example_connector\n  description: example_connector\n  spec:\n      type: GitHttp\n      url: 'https://github.com/example/example-repo.git'\n      branch: example_branch\n      connection_type: Repo\n      username: git-http-user\n      password_ref: account.git-http-password\ncreated: 1234567890\nupdated: 1234567890\n"
+    ConnectorTestConnectionResponse:
+      description: This has test connection details for the Connector defined in Harness.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConnectorTestConnectionResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ConnectorTestConnectionResponse'
     ConnectorListResponse:
       description: Connector list response
       content:
@@ -467,15 +234,6 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-    ConnectorTestConnectionResponse:
-      description: This has test connection details for the Connector defined in Harness.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ConnectorTestConnectionResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/ConnectorTestConnectionResponse'
   requestBodies:
     ConnectorRequest:
       content:
@@ -739,6 +497,248 @@ components:
             example-aws-code-commit-connector-request-yaml:
               value: "connector:\n  name: example_connector\n  identifier: example_connector\n  description: example_connector\n  org: default\n  project: example_project\n  tags:\n    property1: example_connector\n  spec:\n    type: AwsCodeCommit\n    url: 'https://git-codecommit.us-east-2.amazonaws.com/v1/repos/MyDemoRepo'\n    url_type: Repo\n    access_key_ref: account.aws-access-key\n    secret_key_ref: account.aws-secret-key\n"
       required: true
+  parameters:
+    ProjectPathParam:
+      name: project
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the project the resource is scoped to
+    SearchTerm2:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching with search term.
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    OrgPathParam:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the organization the resource is scoped to
+    Limit2:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+        maximum: 1000
+      description: Number of items to return per page.
+    Sort2:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - name
+        - identifier
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    AccountHeader1:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+  schemas:
+    ConnectorResponse:
+      title: ConnectorResponse
+      type: object
+      description: Connector response model
+      properties:
+        connector:
+          $ref: '#/components/schemas/Connector'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for the connector
+        updated:
+          type: integer
+          format: int64
+          description: Updated timestamp for the connector
+        status:
+          $ref: '#/components/schemas/ConnectorConnectivityDetail'
+        harness_managed:
+          type: boolean
+          description: This indicates if this Connector is managed by Harness or not. If True, Harness can manage and modify this Connector.
+        governance_metadata:
+          type: object
+          description: Governance metadata information
+    ConnectorSpec:
+      title: ConnectorSpec
+      type: object
+      description: Details of the connector defined in Harness
+      required:
+      - type
+      discriminator:
+        propertyName: type
+        mapping:
+          GitHttp: '#/components/schemas/GitHttpConnectorSpec'
+          GitHttpEncrypted: '#/components/schemas/GitHttpEncryptedConnectorSpec'
+          GitSsh: '#/components/schemas/GitSshConnectorSpec'
+          Appdynamics: '#/components/schemas/AppdynamicsConnectorSpec'
+          AppdynamicsClientId: '#/components/schemas/AppdynamicsClientIdConnectorSpec'
+          Artifactory: '#/components/schemas/ArtifactoryConnectorSpec'
+          ArtifactoryEncrypted: '#/components/schemas/ArtifactoryEncryptedConnectorSpec'
+          ArtifactoryAnonymous: '#/components/schemas/ArtifactoryAnonymousConnectorSpec'
+          AzureClientSecretKey: '#/components/schemas/AzureClientSecretKeyConnectorSpec'
+          AzureClientCertificate: '#/components/schemas/AzureClientCertificateConnectorSpec'
+          AzureInheritFromDelegateUserAssignedManagedIdentity: '#/components/schemas/AzureInheritFromDelegateUserAssignedManagedIdentityConnectorSpec'
+          AzureInheritFromDelegateSystemAssignedManagedIdentity: '#/components/schemas/AzureInheritFromDelegateSystemAssignedManagedIdentityConnectorSpec'
+      properties:
+        type:
+          type: string
+          enum:
+          - GitHttp
+          - GitHttpEncrypted
+          - GitSsh
+          - Appdynamics
+          - AppdynamicsClientId
+          - Artifactory
+          - ArtifactoryEncrypted
+          - ArtifactoryAnonymous
+          - AzureClientSecretKey
+          - AzureClientCertificate
+          - AzureInheritFromDelegateUserAssignedManagedIdentity
+          - AzureInheritFromDelegateSystemAssignedManagedIdentity
+          description: This specifies the type of connector
+    Connector:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Connector name
+          pattern: ^[0-9a-zA-Z-_ ]{0,127}$
+        identifier:
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          description: Connector identifier
+          maxLength: 128
+        description:
+          type: string
+          description: Connector description
+        org:
+          type: string
+          description: Organization identifier for connector
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+        project:
+          type: string
+          description: Project identifier for connector
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Connector tags
+        spec:
+          $ref: '#/components/schemas/ConnectorSpec'
+      required:
+      - name
+      - identifier
+      - spec
+    ConnectorRequest:
+      type: object
+      properties:
+        connector:
+          $ref: '#/components/schemas/Connector'
+      required:
+      - connector
+    ConnectorConnectivityDetail:
+      title: ConnectorConnectivityDetail
+      type: object
+      description: This has details of the connectivity status of the Connector.
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - PARTIAL
+          - FAILURE
+          - UNKNOWN
+          description: Connectivity status of a Connector
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectorTestConnectionErrorDetail'
+          description: List of errors and their details
+        error_summary:
+          type: string
+          description: Summary of errors
+        tested_at:
+          type: integer
+          format: int64
+          description: Time at which Test Connection was completed
+        connected_at:
+          type: integer
+          format: int64
+          description: This is the last time at which the Connector was successfully connected
+    ConnectorTestConnectionErrorDetail:
+      title: ConnectorTestConnectionErrorDetail
+      type: object
+      description: Connector test connection errors and their details.
+      properties:
+        reason:
+          type: string
+          description: Reason of test connection error
+        message:
+          type: string
+          description: Test connection error message
+        code:
+          type: integer
+          description: Test connection error code
+    ConnectorTestConnectionResponse:
+      title: ConnectorTestConnectionResponse
+      type: object
+      description: This has test connection details for the Connector defined in Harness.
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - PARTIAL
+          - FAILURE
+          - UNKNOWN
+          description: Connectivity status of a Connector
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectorTestConnectionErrorDetail'
+        error_summary:
+          type: string
+          description: Summary of errors
+        tested_at:
+          type: integer
+          format: int64
+          description: Time at which Test Connection was completed
+        delegate_id:
+          type: string
+          description: ID of Delegate on which Test Connection is executed
   securitySchemes:
     x-api-key:
       name: x-api-key

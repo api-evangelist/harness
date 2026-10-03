@@ -232,56 +232,6 @@ paths:
       - x-api-key: []
 components:
   schemas:
-    EntityOverrides:
-      type: object
-      properties:
-        config:
-          type: object
-          description: Configuration overrides for the entity
-          additionalProperties: true
-        targetState:
-          $ref: '#/components/schemas/State'
-      required:
-      - config
-      additionalProperties: false
-    Implementation:
-      type: object
-      properties:
-        backend:
-          type: string
-        steps:
-          $ref: '#/components/schemas/Steps'
-        values:
-          type: object
-          additionalProperties: true
-      required:
-      - backend
-      - steps
-      additionalProperties: false
-    CompileError:
-      type: object
-      properties:
-        message:
-          type: string
-      required:
-      - message
-    InterfaceInput:
-      type: object
-      properties:
-        default: {}
-        type:
-          type: string
-          enum:
-          - string
-          - integer
-          - number
-          - object
-          - boolean
-          - array
-        value: {}
-      required:
-      - type
-      additionalProperties: false
     EnvironmentOverrides:
       type: object
       properties:
@@ -308,38 +258,75 @@ components:
           type: string
           description: Project is the project identifier.
       description: Scope for the request, including account, org and project.
-    CompileResponseBody:
+    InterfaceInput:
       type: object
       properties:
-        combinedOverrides:
-          $ref: '#/components/schemas/EnvironmentOverrides'
-        configOptions:
-          $ref: '#/components/schemas/EnvironmentConfigOptions'
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompileError'
-        infrastructure:
-          $ref: '#/components/schemas/Infrastructure1'
-      required:
-      - configOptions
-      - errors
-    Error:
-      type: object
-      properties:
-        code:
+        default: {}
+        type:
           type: string
-        details:
+          enum:
+          - string
+          - integer
+          - number
+          - object
+          - boolean
+          - array
+        value: {}
+      required:
+      - type
+      additionalProperties: false
+    EntityConfigOptions:
+      type: object
+      properties:
+        inputs:
           type: object
           additionalProperties:
-            type: string
+            $ref: '#/components/schemas/InterfaceInput'
+        targetState:
+          $ref: '#/components/schemas/State'
+      required:
+      - inputs
+    Infrastructure1:
+      type: object
+      properties:
+        identifier:
+          type: string
+        instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/InfraInstance'
+        metadata:
+          type: object
+          additionalProperties: true
+        outputs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Output'
+        targetState:
+          $ref: '#/components/schemas/State'
+      required:
+      - identifier
+      - targetState
+      additionalProperties: false
+    CompileError:
+      type: object
+      properties:
         message:
           type: string
-        name:
-          type: string
       required:
-      - name
       - message
+    EntityOverrides:
+      type: object
+      properties:
+        config:
+          type: object
+          description: Configuration overrides for the entity
+          additionalProperties: true
+        targetState:
+          $ref: '#/components/schemas/State'
+      required:
+      - config
+      additionalProperties: false
     EnvironmentProxyUpdateRequest:
       title: EnvironmentProxyUpdateRequest
       x-stoplight:
@@ -374,6 +361,94 @@ components:
           description: Inputs for the environment as YAML/JSON string (e.g., ttl, resources)
           x-stoplight:
             id: env_inputs_update
+    InfraInstance:
+      type: object
+      properties:
+        dependencies:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Dependency'
+        identifier:
+          type: string
+        implementation:
+          $ref: '#/components/schemas/Implementation'
+        metadata:
+          type: object
+          additionalProperties: true
+        outputs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Output'
+        targetState:
+          $ref: '#/components/schemas/State'
+      required:
+      - identifier
+      additionalProperties: false
+    Dependency:
+      type: object
+      properties:
+        identifier:
+          type: string
+        optional:
+          type: boolean
+      required:
+      - identifier
+      additionalProperties: false
+    EnvironmentConfigOptions:
+      type: object
+      properties:
+        entities:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EntityConfigOptions'
+        inputs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/InterfaceInput'
+      required:
+      - inputs
+      - entities
+    Steps:
+      type: object
+      properties:
+        apply:
+          type: object
+          additionalProperties: true
+        create:
+          type: object
+          additionalProperties: true
+        delete:
+          type: object
+          additionalProperties: true
+        destroy:
+          type: object
+          additionalProperties: true
+        pause:
+          type: object
+          additionalProperties: true
+        resume:
+          type: object
+          additionalProperties: true
+      required:
+      - apply
+      - destroy
+      additionalProperties: false
+    CompileResponseBody:
+      type: object
+      properties:
+        combinedOverrides:
+          $ref: '#/components/schemas/EnvironmentOverrides'
+        configOptions:
+          $ref: '#/components/schemas/EnvironmentConfigOptions'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompileError'
+        infrastructure:
+          $ref: '#/components/schemas/Infrastructure1'
+      required:
+      - configOptions
+      - errors
     EnvironmentProxyCreateRequest:
       title: EnvironmentProxyCreateRequest
       description: Information Environment to be created in catalog - environment name, identifier, owner, blueprint identifier, overrides
@@ -455,74 +530,22 @@ components:
           description: Description
           x-stoplight:
             id: ojutyvaelfa6y
-    SchemasResponseBody:
+    Error:
       type: object
       properties:
-        environmentBlueprintSchema:
+        code:
           type: string
-          description: Environment blueprint schema
-        environmentSchema:
-          type: string
-          description: Environment schema
-      required:
-      - environmentBlueprintSchema
-      - environmentSchema
-    InfraInstance:
-      type: object
-      properties:
-        dependencies:
+        details:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Dependency'
-        identifier:
+            type: string
+        message:
           type: string
-        implementation:
-          $ref: '#/components/schemas/Implementation'
-        metadata:
-          type: object
-          additionalProperties: true
-        outputs:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Output'
-        targetState:
-          $ref: '#/components/schemas/State'
-      required:
-      - identifier
-      additionalProperties: false
-    EntityConfigOptions:
-      type: object
-      properties:
-        inputs:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/InterfaceInput'
-        targetState:
-          $ref: '#/components/schemas/State'
-      required:
-      - inputs
-    Infrastructure1:
-      type: object
-      properties:
-        identifier:
+        name:
           type: string
-        instances:
-          type: array
-          items:
-            $ref: '#/components/schemas/InfraInstance'
-        metadata:
-          type: object
-          additionalProperties: true
-        outputs:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Output'
-        targetState:
-          $ref: '#/components/schemas/State'
       required:
-      - identifier
-      - targetState
-      additionalProperties: false
+      - name
+      - message
     State:
       type: object
       properties:
@@ -536,30 +559,6 @@ components:
           - paused
       required:
       - state
-    Dependency:
-      type: object
-      properties:
-        identifier:
-          type: string
-        optional:
-          type: boolean
-      required:
-      - identifier
-      additionalProperties: false
-    EnvironmentConfigOptions:
-      type: object
-      properties:
-        entities:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/EntityConfigOptions'
-        inputs:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/InterfaceInput'
-      required:
-      - inputs
-      - entities
     Output:
       type: object
       properties:
@@ -578,30 +577,31 @@ components:
       required:
       - value
       additionalProperties: false
-    Steps:
+    SchemasResponseBody:
       type: object
       properties:
-        apply:
-          type: object
-          additionalProperties: true
-        create:
-          type: object
-          additionalProperties: true
-        delete:
-          type: object
-          additionalProperties: true
-        destroy:
-          type: object
-          additionalProperties: true
-        pause:
-          type: object
-          additionalProperties: true
-        resume:
+        environmentBlueprintSchema:
+          type: string
+          description: Environment blueprint schema
+        environmentSchema:
+          type: string
+          description: Environment schema
+      required:
+      - environmentBlueprintSchema
+      - environmentSchema
+    Implementation:
+      type: object
+      properties:
+        backend:
+          type: string
+        steps:
+          $ref: '#/components/schemas/Steps'
+        values:
           type: object
           additionalProperties: true
       required:
-      - apply
-      - destroy
+      - backend
+      - steps
       additionalProperties: false
     CompileRequestBody:
       type: object
@@ -622,14 +622,13 @@ components:
       - environmentYaml
       - targetState
   parameters:
-    ProjectIdentifierQueryParam:
-      name: projectIdentifier
-      in: query
+    AccountHeader5:
+      name: Harness-Account
+      in: header
       required: false
       schema:
         type: string
-        default: null
-      description: Unique identifier of the project within the organization
+      description: Identifier field of the account the resource is scoped to.
     OrgIdentifierQueryParam:
       name: orgIdentifier
       in: query
@@ -638,13 +637,14 @@ components:
         type: string
         default: null
       description: Unique identifier of the organization within the account
-    AccountHeader5:
-      name: Harness-Account
-      in: header
+    ProjectIdentifierQueryParam:
+      name: projectIdentifier
+      in: query
       required: false
       schema:
         type: string
-      description: Identifier field of the account the resource is scoped to.
+        default: null
+      description: Unique identifier of the project within the organization
   securitySchemes:
     x-api-key:
       name: x-api-key

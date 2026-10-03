@@ -349,19 +349,22 @@ paths:
       description: Harness SaaS Production
 components:
   schemas:
-    appprojectsApplicationDestinationServiceAccount:
+    appprojectsAppProjectStatus:
       type: object
       properties:
-        server:
+        jwtTokensByRole:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/appprojectsJWTTokens'
+          title: JWTTokensByRole contains a list of JWT tokens issued for a given role
+      title: AppProjectStatus contains status information for AppProject CRs
+    appprojectsSignatureKey:
+      type: object
+      properties:
+        keyID:
           type: string
-          description: Server specifies the URL of the target cluster's Kubernetes control plane API.
-        namespace:
-          type: string
-          description: Namespace specifies the target namespace for the application's resources.
-        defaultServiceAccount:
-          type: string
-          title: DefaultServiceAccount to be used for impersonation during the sync operation
-      description: ApplicationDestinationServiceAccount holds information about the service account to be impersonated for the application sync operation.
+          title: The ID of the key in hexadecimal notation
+      title: SignatureKey is the specification of a key required to verify commit signatures with
     appprojectsClusterResourceRestrictionItem:
       type: object
       properties:
@@ -375,6 +378,11 @@ components:
 
             Unlike the group and kind fields, if no name is specified, all resources of the specified group/kind are matched.'
       title: ClusterResourceRestrictionItem is a cluster resource that is restricted by the project's whitelist or blacklist
+    projectsProjectUpdateRequest:
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/appprojectsAppProject'
     v1FieldsV1:
       type: object
       properties:
@@ -403,23 +411,107 @@ components:
         The exact format is defined in sigs.k8s.io/structured-merge-diff
 
         +protobuf.options.(gogoproto.goproto_stringer)=false'
-    projectsProjectUpdateRequest:
+    appprojectsJWTTokens:
       type: object
       properties:
-        project:
-          $ref: '#/components/schemas/appprojectsAppProject'
-    appprojectsAppProjectList:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/v1ListMeta'
         items:
           type: array
           items:
-            $ref: '#/components/schemas/appprojectsAppProject'
-      title: 'AppProjectList is list of AppProject resources
+            $ref: '#/components/schemas/appprojectsJWTToken'
+      title: JWTTokens represents a list of JWT tokens
+    appprojectsAppProjectSpec:
+      type: object
+      properties:
+        sourceRepos:
+          type: array
+          items:
+            type: string
+          title: SourceRepos contains list of repository URLs which can be used for deployment
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsApplicationDestination'
+          title: Destinations contains list of destinations available for deployment
+        description:
+          type: string
+          title: Description contains optional project description
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsProjectRole'
+          title: Roles are user defined RBAC roles associated with this project
+        clusterResourceWhitelist:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsClusterResourceRestrictionItem'
+          title: ClusterResourceWhitelist contains list of whitelisted cluster level resources
+        namespaceResourceBlacklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1GroupKind'
+          title: NamespaceResourceBlacklist contains list of blacklisted namespace level resources
+        orphanedResources:
+          $ref: '#/components/schemas/appprojectsOrphanedResourcesMonitorSettings'
+        syncWindows:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsSyncWindow'
+          title: SyncWindows controls when syncs can be run for apps in this project
+        namespaceResourceWhitelist:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1GroupKind'
+          title: NamespaceResourceWhitelist contains list of whitelisted namespace level resources
+        signatureKeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsSignatureKey'
+          title: SignatureKeys contains a list of PGP key IDs that commits in Git must be signed with in order to be allowed for sync
+        clusterResourceBlacklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsClusterResourceRestrictionItem'
+          title: ClusterResourceBlacklist contains list of blacklisted cluster level resources
+        sourceNamespaces:
+          type: array
+          items:
+            type: string
+          title: SourceNamespaces defines the namespaces application resources are allowed to be created in
+        permitOnlyProjectScopedClusters:
+          type: boolean
+          title: PermitOnlyProjectScopedClusters determines whether destinations can only reference clusters which are project-scoped
+        destinationServiceAccounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsApplicationDestinationServiceAccount'
+          description: DestinationServiceAccounts holds information about the service accounts to be impersonated for the application sync operation for each destination.
+      title: AppProjectSpec is the specification of an AppProject
+    v1GroupKind:
+      type: object
+      properties:
+        group:
+          type: string
+        kind:
+          type: string
+      description: +protobuf.options.(gogoproto.goproto_stringer)=false
+      title: 'GroupKind specifies a Group and a Kind, but does not force a version.  This is useful for identifying
 
-        +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object'
+        concepts during lookup stages without having partially valid types'
+    appprojectsApplicationDestination:
+      type: object
+      properties:
+        server:
+          type: string
+          title: Server specifies the URL of the target cluster and must be set to the Kubernetes control plane API
+        namespace:
+          type: string
+          title: 'Namespace specifies the target namespace for the application''s resources.
+
+            The namespace will only be set for namespace-scoped resources that have not set a value for .metadata.namespace'
+        name:
+          type: string
+          title: Name is an alternate way of specifying the target cluster by its symbolic name
+      title: ApplicationDestination holds information about the application's destination
     v1ObjectMeta:
       type: object
       properties:
@@ -655,113 +747,6 @@ components:
       description: 'ObjectMeta is metadata that all persisted resources must have, which includes all objects
 
         users must create.'
-    appprojectsJWTToken:
-      type: object
-      properties:
-        iat:
-          type: string
-          format: int64
-        exp:
-          type: string
-          format: int64
-        id:
-          type: string
-      title: JWTToken holds the issuedAt and expiresAt values of a token
-    gatewayruntimeError:
-      type: object
-      properties:
-        error:
-          type: string
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-        details:
-          type: array
-          items:
-            $ref: '#/components/schemas/protobufAny'
-    appprojectsOrphanedResourceKey:
-      type: object
-      properties:
-        group:
-          type: string
-        kind:
-          type: string
-        name:
-          type: string
-      title: OrphanedResourceKey is a reference to a resource to be ignored from
-    v1GroupKind:
-      type: object
-      properties:
-        group:
-          type: string
-        kind:
-          type: string
-      description: +protobuf.options.(gogoproto.goproto_stringer)=false
-      title: 'GroupKind specifies a Group and a Kind, but does not force a version.  This is useful for identifying
-
-        concepts during lookup stages without having partially valid types'
-    appprojectsJWTTokens:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsJWTToken'
-      title: JWTTokens represents a list of JWT tokens
-    appprojectsOrphanedResourcesMonitorSettings:
-      type: object
-      properties:
-        warn:
-          type: boolean
-          title: Warn indicates if warning condition should be created for apps which have orphaned resources
-        ignore:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsOrphanedResourceKey'
-          title: Ignore contains a list of resources that are to be excluded from orphaned resources monitoring
-      title: OrphanedResourcesMonitorSettings holds settings of orphaned resources monitoring
-    v1Time:
-      type: object
-      properties:
-        seconds:
-          type: string
-          format: int64
-          description: 'Represents seconds of UTC time since Unix epoch
-
-            1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
-
-            9999-12-31T23:59:59Z inclusive.'
-        nanos:
-          type: integer
-          format: int32
-          description: 'Non-negative fractions of a second at nanosecond resolution. Negative
-
-            second values with fractions must still have non-negative nanos values
-
-            that count forward in time. Must be from 0 to 999,999,999
-
-            inclusive. This field may be limited in precision depending on context.'
-      description: 'Time is a wrapper around time.Time which supports correct
-
-        marshaling to YAML and JSON.  Wrappers are provided for many
-
-        of the factory methods that the time package offers.
-
-
-        +protobuf.options.marshal=false
-
-        +protobuf.as=Timestamp
-
-        +protobuf.options.(gogoproto.goproto_stringer)=false'
-    appprojectsSignatureKey:
-      type: object
-      properties:
-        keyID:
-          type: string
-          title: The ID of the key in hexadecimal notation
-      title: SignatureKey is the specification of a key required to verify commit signatures with
     appprojectsAppProject:
       type: object
       properties:
@@ -790,21 +775,6 @@ components:
         +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
         +kubebuilder:resource:path=appprojects,shortName=appproj;appprojs'
-    appprojectsApplicationDestination:
-      type: object
-      properties:
-        server:
-          type: string
-          title: Server specifies the URL of the target cluster and must be set to the Kubernetes control plane API
-        namespace:
-          type: string
-          title: 'Namespace specifies the target namespace for the application''s resources.
-
-            The namespace will only be set for namespace-scoped resources that have not set a value for .metadata.namespace'
-        name:
-          type: string
-          title: Name is an alternate way of specifying the target cluster by its symbolic name
-      title: ApplicationDestination holds information about the application's destination
     appprojectsProjectRole:
       type: object
       properties:
@@ -830,152 +800,44 @@ components:
             type: string
           title: Groups are a list of OIDC group claims bound to this role
       title: ProjectRole represents a role that has access to a project
-    appprojectsSyncWindow:
+    appprojectsOrphanedResourcesMonitorSettings:
       type: object
       properties:
+        warn:
+          type: boolean
+          title: Warn indicates if warning condition should be created for apps which have orphaned resources
+        ignore:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsOrphanedResourceKey'
+          title: Ignore contains a list of resources that are to be excluded from orphaned resources monitoring
+      title: OrphanedResourcesMonitorSettings holds settings of orphaned resources monitoring
+    appprojectsOrphanedResourceKey:
+      type: object
+      properties:
+        group:
+          type: string
         kind:
           type: string
-          title: Kind defines if the window allows or blocks syncs
-        schedule:
-          type: string
-          title: Schedule is the time the window will begin, specified in cron format
-        duration:
-          type: string
-          title: Duration is the amount of time the sync window will be open
-        applications:
-          type: array
-          items:
-            type: string
-          title: Applications contains a list of applications that the window will apply to
-        namespaces:
-          type: array
-          items:
-            type: string
-          title: Namespaces contains a list of namespaces that the window will apply to
-        clusters:
-          type: array
-          items:
-            type: string
-          title: Clusters contains a list of clusters that the window will apply to
-        manualSync:
-          type: boolean
-          title: ManualSync enables manual syncs when they would otherwise be blocked
-        timeZone:
-          type: string
-          title: TimeZone of the sync that will be applied to the schedule
-        project:
-          type: string
-          title: 'Project this sync window belongs to
-
-            this will be deprecated in future'
-      title: SyncWindow contains the kind, time, duration and attributes that are used to assign the syncWindows to apps
-    v1ManagedFieldsEntry:
-      type: object
-      properties:
-        manager:
-          type: string
-          description: Manager is an identifier of the workflow managing these fields.
-        operation:
-          type: string
-          description: 'Operation is the type of operation which lead to this ManagedFieldsEntry being created.
-
-            The only valid values for this field are ''Apply'' and ''Update''.'
-        apiVersion:
-          type: string
-          description: 'APIVersion defines the version of this resource that this field set
-
-            applies to. The format is "group/version" just like the top-level
-
-            APIVersion field. It is necessary to track the version of a field
-
-            set because it cannot be automatically converted.'
-        time:
-          $ref: '#/components/schemas/v1Time'
-        fieldsType:
-          type: string
-          title: 'FieldsType is the discriminator for the different fields format and version.
-
-            There is currently only one possible value: "FieldsV1"'
-        fieldsV1:
-          $ref: '#/components/schemas/v1FieldsV1'
-        subresource:
-          type: string
-          description: 'Subresource is the name of the subresource used to update that object, or
-
-            empty string if the object was updated through the main resource. The
-
-            value of this field is used to distinguish between managers, even if they
-
-            share the same name. For example, a status update will be distinct from a
-
-            regular update using the same manager name.
-
-            Note that the APIVersion field is not related to the Subresource field and
-
-            it always corresponds to the version of the main resource.'
-      description: 'ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
-
-        that the fieldset applies to.'
-    projectsProjectCreateRequest:
-      type: object
-      properties:
-        project:
-          $ref: '#/components/schemas/appprojectsAppProject'
-        upsert:
-          type: boolean
-      description: ProjectCreateRequest defines project creation parameters.
-    v1OwnerReference:
-      type: object
-      properties:
-        apiVersion:
-          type: string
-          description: API version of the referent.
-        kind:
-          type: string
-          title: 'Kind of the referent.
-
-            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
         name:
           type: string
-          title: 'Name of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names#names'
-        uid:
+      title: OrphanedResourceKey is a reference to a resource to be ignored from
+    projectsEmptyResponse:
+      type: object
+    gatewayruntimeError:
+      type: object
+      properties:
+        error:
           type: string
-          title: 'UID of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names#uids'
-        controller:
-          type: boolean
-          title: 'If true, this reference points to the managing controller.
-
-            +optional'
-        blockOwnerDeletion:
-          type: boolean
-          title: 'If true, AND if the owner has the "foregroundDeletion" finalizer, then
-
-            the owner cannot be deleted from the key-value store until this
-
-            reference is removed.
-
-            See https://kubernetes.io/docs/concepts/architecture/garbage-collection/#foreground-deletion
-
-            for how the garbage collector interacts with this field and enforces the foreground deletion.
-
-            Defaults to false.
-
-            To set this field, a user needs "delete" permission of the owner,
-
-            otherwise 422 (Unprocessable Entity) will be returned.
-
-            +optional'
-      title: 'OwnerReference contains enough information to let you identify an owning
-
-        object. An owning object must be in the same namespace as the dependent, or
-
-        be cluster-scoped, so there is no namespace field.
-
-        +structType=atomic'
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/protobufAny'
     protobufAny:
       type: object
       properties:
@@ -1050,84 +912,222 @@ components:
       description: 'ListMeta describes metadata that synthetic resources must have, including lists and
 
         various status objects. A resource may have only one of {ObjectMeta, ListMeta}.'
-    appprojectsAppProjectSpec:
+    appprojectsJWTToken:
       type: object
       properties:
-        sourceRepos:
-          type: array
-          items:
-            type: string
-          title: SourceRepos contains list of repository URLs which can be used for deployment
-        destinations:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsApplicationDestination'
-          title: Destinations contains list of destinations available for deployment
-        description:
+        iat:
           type: string
-          title: Description contains optional project description
-        roles:
+          format: int64
+        exp:
+          type: string
+          format: int64
+        id:
+          type: string
+      title: JWTToken holds the issuedAt and expiresAt values of a token
+    projectsProjectCreateRequest:
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/appprojectsAppProject'
+        upsert:
+          type: boolean
+      description: ProjectCreateRequest defines project creation parameters.
+    v1OwnerReference:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: API version of the referent.
+        kind:
+          type: string
+          title: 'Kind of the referent.
+
+            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+        name:
+          type: string
+          title: 'Name of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names#names'
+        uid:
+          type: string
+          title: 'UID of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names#uids'
+        controller:
+          type: boolean
+          title: 'If true, this reference points to the managing controller.
+
+            +optional'
+        blockOwnerDeletion:
+          type: boolean
+          title: 'If true, AND if the owner has the "foregroundDeletion" finalizer, then
+
+            the owner cannot be deleted from the key-value store until this
+
+            reference is removed.
+
+            See https://kubernetes.io/docs/concepts/architecture/garbage-collection/#foreground-deletion
+
+            for how the garbage collector interacts with this field and enforces the foreground deletion.
+
+            Defaults to false.
+
+            To set this field, a user needs "delete" permission of the owner,
+
+            otherwise 422 (Unprocessable Entity) will be returned.
+
+            +optional'
+      title: 'OwnerReference contains enough information to let you identify an owning
+
+        object. An owning object must be in the same namespace as the dependent, or
+
+        be cluster-scoped, so there is no namespace field.
+
+        +structType=atomic'
+    appprojectsAppProjectList:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/v1ListMeta'
+        items:
           type: array
           items:
-            $ref: '#/components/schemas/appprojectsProjectRole'
-          title: Roles are user defined RBAC roles associated with this project
-        clusterResourceWhitelist:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsClusterResourceRestrictionItem'
-          title: ClusterResourceWhitelist contains list of whitelisted cluster level resources
-        namespaceResourceBlacklist:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1GroupKind'
-          title: NamespaceResourceBlacklist contains list of blacklisted namespace level resources
-        orphanedResources:
-          $ref: '#/components/schemas/appprojectsOrphanedResourcesMonitorSettings'
-        syncWindows:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsSyncWindow'
-          title: SyncWindows controls when syncs can be run for apps in this project
-        namespaceResourceWhitelist:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1GroupKind'
-          title: NamespaceResourceWhitelist contains list of whitelisted namespace level resources
-        signatureKeys:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsSignatureKey'
-          title: SignatureKeys contains a list of PGP key IDs that commits in Git must be signed with in order to be allowed for sync
-        clusterResourceBlacklist:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsClusterResourceRestrictionItem'
-          title: ClusterResourceBlacklist contains list of blacklisted cluster level resources
-        sourceNamespaces:
+            $ref: '#/components/schemas/appprojectsAppProject'
+      title: 'AppProjectList is list of AppProject resources
+
+        +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object'
+    appprojectsSyncWindow:
+      type: object
+      properties:
+        kind:
+          type: string
+          title: Kind defines if the window allows or blocks syncs
+        schedule:
+          type: string
+          title: Schedule is the time the window will begin, specified in cron format
+        duration:
+          type: string
+          title: Duration is the amount of time the sync window will be open
+        applications:
           type: array
           items:
             type: string
-          title: SourceNamespaces defines the namespaces application resources are allowed to be created in
-        permitOnlyProjectScopedClusters:
-          type: boolean
-          title: PermitOnlyProjectScopedClusters determines whether destinations can only reference clusters which are project-scoped
-        destinationServiceAccounts:
+          title: Applications contains a list of applications that the window will apply to
+        namespaces:
           type: array
           items:
-            $ref: '#/components/schemas/appprojectsApplicationDestinationServiceAccount'
-          description: DestinationServiceAccounts holds information about the service accounts to be impersonated for the application sync operation for each destination.
-      title: AppProjectSpec is the specification of an AppProject
-    projectsEmptyResponse:
-      type: object
-    appprojectsAppProjectStatus:
+            type: string
+          title: Namespaces contains a list of namespaces that the window will apply to
+        clusters:
+          type: array
+          items:
+            type: string
+          title: Clusters contains a list of clusters that the window will apply to
+        manualSync:
+          type: boolean
+          title: ManualSync enables manual syncs when they would otherwise be blocked
+        timeZone:
+          type: string
+          title: TimeZone of the sync that will be applied to the schedule
+        project:
+          type: string
+          title: 'Project this sync window belongs to
+
+            this will be deprecated in future'
+      title: SyncWindow contains the kind, time, duration and attributes that are used to assign the syncWindows to apps
+    appprojectsApplicationDestinationServiceAccount:
       type: object
       properties:
-        jwtTokensByRole:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/appprojectsJWTTokens'
-          title: JWTTokensByRole contains a list of JWT tokens issued for a given role
-      title: AppProjectStatus contains status information for AppProject CRs
+        server:
+          type: string
+          description: Server specifies the URL of the target cluster's Kubernetes control plane API.
+        namespace:
+          type: string
+          description: Namespace specifies the target namespace for the application's resources.
+        defaultServiceAccount:
+          type: string
+          title: DefaultServiceAccount to be used for impersonation during the sync operation
+      description: ApplicationDestinationServiceAccount holds information about the service account to be impersonated for the application sync operation.
+    v1Time:
+      type: object
+      properties:
+        seconds:
+          type: string
+          format: int64
+          description: 'Represents seconds of UTC time since Unix epoch
+
+            1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+
+            9999-12-31T23:59:59Z inclusive.'
+        nanos:
+          type: integer
+          format: int32
+          description: 'Non-negative fractions of a second at nanosecond resolution. Negative
+
+            second values with fractions must still have non-negative nanos values
+
+            that count forward in time. Must be from 0 to 999,999,999
+
+            inclusive. This field may be limited in precision depending on context.'
+      description: 'Time is a wrapper around time.Time which supports correct
+
+        marshaling to YAML and JSON.  Wrappers are provided for many
+
+        of the factory methods that the time package offers.
+
+
+        +protobuf.options.marshal=false
+
+        +protobuf.as=Timestamp
+
+        +protobuf.options.(gogoproto.goproto_stringer)=false'
+    v1ManagedFieldsEntry:
+      type: object
+      properties:
+        manager:
+          type: string
+          description: Manager is an identifier of the workflow managing these fields.
+        operation:
+          type: string
+          description: 'Operation is the type of operation which lead to this ManagedFieldsEntry being created.
+
+            The only valid values for this field are ''Apply'' and ''Update''.'
+        apiVersion:
+          type: string
+          description: 'APIVersion defines the version of this resource that this field set
+
+            applies to. The format is "group/version" just like the top-level
+
+            APIVersion field. It is necessary to track the version of a field
+
+            set because it cannot be automatically converted.'
+        time:
+          $ref: '#/components/schemas/v1Time'
+        fieldsType:
+          type: string
+          title: 'FieldsType is the discriminator for the different fields format and version.
+
+            There is currently only one possible value: "FieldsV1"'
+        fieldsV1:
+          $ref: '#/components/schemas/v1FieldsV1'
+        subresource:
+          type: string
+          description: 'Subresource is the name of the subresource used to update that object, or
+
+            empty string if the object was updated through the main resource. The
+
+            value of this field is used to distinguish between managers, even if they
+
+            share the same name. For example, a status update will be distinct from a
+
+            regular update using the same manager name.
+
+            Note that the APIVersion field is not related to the Subresource field and
+
+            it always corresponds to the version of the main resource.'
+      description: 'ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
+
+        that the fieldset applies to.'
     ProjectList:
       type: object
       properties:
@@ -1165,17 +1165,17 @@ components:
           type: string
           example: '#0063F7'
   requestBodies:
-    projectsProjectUpdateRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/projectsProjectUpdateRequest'
-      required: true
     projectsProjectCreateRequest:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/projectsProjectCreateRequest'
+      required: true
+    projectsProjectUpdateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/projectsProjectUpdateRequest'
       required: true
   securitySchemes:
     x-api-key:

@@ -100,29 +100,29 @@ paths:
       x-internal: false
 components:
   schemas:
-    ListFilterOptionsResponseBodyV3:
-      description: 'Response body for `GET /filters/options`. Returns the set of
+    FilterOptionV3:
+      description: One selectable value for a filter with `supportsOptions=true`.
+      properties:
+        label:
+          description: Human-readable label for the value.
+          type: string
+        value:
+          description: Value to send back when applying the filter.
+          type: string
+      required:
+      - value
+      - label
+      type: object
+    FilterResourceTypeV3:
+      description: 'Resource type whose filter definitions are requested by
 
-        selectable values for a single filter. The list is bounded
-
-        server-side; `search_term` narrows it in place of pagination.
+        `GET /filters?resource_type=...`.
 
         '
-      properties:
-        options:
-          description: Selectable values for the requested filter.
-          items:
-            $ref: '#/components/schemas/FilterOptionV3'
-          type: array
-      required:
-      - options
-      type: object
-    FilterDataTypeV3:
-      description: Data type of a filter field.
       enum:
-      - string
-      - number
-      - boolean
+      - REGISTRY
+      - PACKAGE
+      - VERSION
       type: string
     FilterDefinitionV3:
       description: Definition of a filter that can be applied when listing a resource.
@@ -157,15 +157,6 @@ components:
       - conditions
       - supportsOptions
       type: object
-    FilterInputTypeV3:
-      description: UI input control used to render a filter field.
-      enum:
-      - text
-      - number
-      - checkbox
-      - singleSelect
-      - multiSelect
-      type: string
     ListFiltersResponseBodyV3:
       description: 'Response body for a list filters query. Contains a single merged
 
@@ -197,6 +188,31 @@ components:
       required:
       - filters
       type: object
+    ListFilterOptionsResponseBodyV3:
+      description: 'Response body for `GET /filters/options`. Returns the set of
+
+        selectable values for a single filter. The list is bounded
+
+        server-side; `search_term` narrows it in place of pagination.
+
+        '
+      properties:
+        options:
+          description: Selectable values for the requested filter.
+          items:
+            $ref: '#/components/schemas/FilterOptionV3'
+          type: array
+      required:
+      - options
+      type: object
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
     ApiErrorsV3:
       properties:
         code:
@@ -223,16 +239,14 @@ components:
       - type
       title: APIErrors
       type: object
-    FilterResourceTypeV3:
-      description: 'Resource type whose filter definitions are requested by
-
-        `GET /filters?resource_type=...`.
-
-        '
+    FilterInputTypeV3:
+      description: UI input control used to render a filter field.
       enum:
-      - REGISTRY
-      - PACKAGE
-      - VERSION
+      - text
+      - number
+      - checkbox
+      - singleSelect
+      - multiSelect
       type: string
     FilterConditionV3:
       description: Supported comparison condition for a filter.
@@ -247,37 +261,27 @@ components:
       - IN
       - NOT_IN
       type: string
-    FilterOptionV3:
-      description: One selectable value for a filter with `supportsOptions=true`.
-      properties:
-        label:
-          description: Human-readable label for the value.
-          type: string
-        value:
-          description: Value to send back when applying the filter.
-          type: string
-      required:
-      - value
-      - label
-      type: object
-    ErrorV3:
-      description: An error response
-      properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
-      required:
-      - error
-      type: object
+    FilterDataTypeV3:
+      description: Data type of a filter field.
+      enum:
+      - string
+      - number
+      - boolean
+      type: string
+  responses:
+    ListFiltersResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListFiltersResponseBodyV3'
+      description: response for list filters
+    ListFilterOptionsResponseV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListFilterOptionsResponseBodyV3'
+      description: response for list filter options
   parameters:
-    FilterResourceTypeParamV3:
-      description: 'Resource type whose filter definitions should be returned.
-
-        '
-      in: query
-      name: resource_type
-      required: true
-      schema:
-        $ref: '#/components/schemas/FilterResourceTypeV3'
     OptionValuesParamV3:
       description: 'Optional list of option values. When provided, returns only the
 
@@ -291,43 +295,6 @@ components:
           type: string
         type: array
       style: form
-    ProjectIdentifierV3:
-      description: 'Unique identifier for the project within the organization.
-
-
-        Example: `my_project` or `frontend_services`
-
-        '
-      in: query
-      name: project_identifier
-      schema:
-        type: string
-    AccountIdentifierV3:
-      description: 'Unique identifier for the Harness account.
-
-        '
-      in: query
-      name: account_identifier
-      required: true
-      schema:
-        type: string
-    SearchTermV3:
-      description: 'Search term for filtering results.
-
-
-        Example: `search_term=prod` might match keys like "production", "prod-env", etc.
-
-        '
-      in: query
-      name: search_term
-      schema:
-        type: string
-    PackageTypeFilterParamV3:
-      description: Filter by package type
-      in: query
-      name: package_type
-      schema:
-        type: string
     FilterIdParamV3:
       description: 'Identifier of the filter whose selectable options should be
 
@@ -343,6 +310,17 @@ components:
       required: true
       schema:
         type: string
+    ProjectIdentifierV3:
+      description: 'Unique identifier for the project within the organization.
+
+
+        Example: `my_project` or `frontend_services`
+
+        '
+      in: query
+      name: project_identifier
+      schema:
+        type: string
     OrgIdentifierV3:
       description: 'Unique identifier for the organization within the account.
 
@@ -352,6 +330,32 @@ components:
         '
       in: query
       name: org_identifier
+      schema:
+        type: string
+    PackageTypeFilterParamV3:
+      description: Filter by package type
+      in: query
+      name: package_type
+      schema:
+        type: string
+    SearchTermV3:
+      description: 'Search term for filtering results.
+
+
+        Example: `search_term=prod` might match keys like "production", "prod-env", etc.
+
+        '
+      in: query
+      name: search_term
+      schema:
+        type: string
+    AccountIdentifierV3:
+      description: 'Unique identifier for the Harness account.
+
+        '
+      in: query
+      name: account_identifier
+      required: true
       schema:
         type: string
     FilterIdOptionalParamV3:
@@ -364,19 +368,15 @@ components:
       name: filter_id
       schema:
         type: string
-  responses:
-    ListFiltersResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListFiltersResponseBodyV3'
-      description: response for list filters
-    ListFilterOptionsResponseV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ListFilterOptionsResponseBodyV3'
-      description: response for list filter options
+    FilterResourceTypeParamV3:
+      description: 'Resource type whose filter definitions should be returned.
+
+        '
+      in: query
+      name: resource_type
+      required: true
+      schema:
+        $ref: '#/components/schemas/FilterResourceTypeV3'
   securitySchemes:
     x-api-key:
       name: x-api-key

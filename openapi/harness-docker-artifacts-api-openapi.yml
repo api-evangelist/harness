@@ -153,120 +153,56 @@ paths:
       tags:
       - Docker Artifacts
 components:
-  responses:
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    DockerArtifactManifestResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/DockerArtifactManifest'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get docker artifact manifest
-    DockerLayersResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/DockerLayersSummary'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get artifact layers
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
-    DockerManifestsResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/DockerManifests'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get artifact layers
-    DockerArtifactDetailIntegrationResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/DockerArtifactIntegrationDetail'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get docker artifact integration detail
-    RegistryUnauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Authentication failed or missing credentials
-    DockerArtifactDetailResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/DockerArtifactDetail'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get docker artifact detail
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
   schemas:
-    DeploymentDetails:
+    DockerArtifactIntegrationDetail:
+      description: Docker Artifact Detail
       properties:
-        nonProdDeployment:
+        buildDetails:
+          $ref: '#/components/schemas/RegistryBuildDetails'
+        deploymentsDetails:
+          $ref: '#/components/schemas/DeploymentDetails'
+        sbomDetails:
+          $ref: '#/components/schemas/SBOMDetails'
+        slsaDetails:
+          $ref: '#/components/schemas/SLSADetails'
+        stoDetails:
+          $ref: '#/components/schemas/STODetails'
+      type: object
+    SLSADetails:
+      properties:
+        provenanceId:
+          type: string
+        status:
+          type: string
+      type: object
+    DockerManifestDetails:
+      description: Harness Artifact Layers
+      properties:
+        createdAt:
+          type: string
+        digest:
+          type: string
+        downloadsCount:
+          format: int64
           type: integer
-        prodDeployment:
-          type: integer
-        totalDeployment:
-          type: integer
+        isQuarantined:
+          type: boolean
+        osArch:
+          type: string
+        quarantineReason:
+          type: string
+        size:
+          type: string
+        stoDetails:
+          $ref: '#/components/schemas/STODetails'
+        stoExecutionId:
+          type: string
+        stoPipelineId:
+          type: string
       required:
-      - prodDeployment
-      - nonProdDeployment
-      - totalDeployment
+      - digest
+      - layers
+      - osArch
       type: object
     STODetails:
       properties:
@@ -290,6 +226,69 @@ components:
           type: string
         total:
           type: integer
+      type: object
+    SBOMDetails:
+      properties:
+        allowListViolations:
+          type: integer
+        artifactId:
+          type: string
+        artifactSourceId:
+          type: string
+        avgScore:
+          type: string
+        componentsCount:
+          type: integer
+        denyListViolations:
+          type: integer
+        maxScore:
+          type: string
+        orchestrationId:
+          type: string
+        orgId:
+          type: string
+        projectId:
+          type: string
+      type: object
+    DockerLayersSummary:
+      description: Harness Layers Summary
+      properties:
+        digest:
+          type: string
+        layers:
+          items:
+            $ref: '#/components/schemas/DockerLayerEntry'
+          type: array
+        osArch:
+          type: string
+      required:
+      - digest
+      type: object
+    RegistryError:
+      description: Standard error response with code, message and optional details
+      properties:
+        code:
+          description: The HTTP error code
+          example: '404'
+          type: string
+        details:
+          description: 'Additional context and details about the error.
+
+            May include field-specific validation errors or debugging information.
+
+            '
+          example:
+            field: registry_identifier
+            reason: Registry does not exist in the specified project
+            value: invalid-registry
+          type: object
+        message:
+          description: Human-readable error message explaining what went wrong
+          example: Registry not found
+          type: string
+      required:
+      - code
+      - message
       type: object
     PackageType:
       description: refers to package
@@ -318,6 +317,35 @@ components:
       - CONAN
       - TERRAFORM
       type: string
+    DockerLayerEntry:
+      description: Harness Artifact Layers
+      properties:
+        command:
+          type: string
+        size:
+          type: string
+      required:
+      - command
+      type: object
+    ArtifactEntityMetadata:
+      additionalProperties: true
+      description: Artifact Entity Metadata
+      type: object
+    DockerManifests:
+      description: Harness Manifests
+      properties:
+        imageName:
+          type: string
+        manifests:
+          items:
+            $ref: '#/components/schemas/DockerManifestDetails'
+          type: array
+        version:
+          type: string
+      required:
+      - imageName
+      - version
+      type: object
     RegistryBuildDetails:
       properties:
         orgIdentifier:
@@ -376,12 +404,26 @@ components:
       - url
       - packageType
       type: object
-    SLSADetails:
+    DeploymentDetails:
       properties:
-        provenanceId:
+        nonProdDeployment:
+          type: integer
+        prodDeployment:
+          type: integer
+        totalDeployment:
+          type: integer
+      required:
+      - prodDeployment
+      - nonProdDeployment
+      - totalDeployment
+      type: object
+    DockerArtifactManifest:
+      description: Docker Artifact Manifest
+      properties:
+        manifest:
           type: string
-        status:
-          type: string
+      required:
+      - manifest
       type: object
     RegistryUserInfo:
       description: Structured user information for a principal
@@ -399,42 +441,6 @@ components:
           description: Principal unique identifier (username)
           type: string
       type: object
-    DockerArtifactManifest:
-      description: Docker Artifact Manifest
-      properties:
-        manifest:
-          type: string
-      required:
-      - manifest
-      type: object
-    DockerLayersSummary:
-      description: Harness Layers Summary
-      properties:
-        digest:
-          type: string
-        layers:
-          items:
-            $ref: '#/components/schemas/DockerLayerEntry'
-          type: array
-        osArch:
-          type: string
-      required:
-      - digest
-      type: object
-    DockerArtifactIntegrationDetail:
-      description: Docker Artifact Detail
-      properties:
-        buildDetails:
-          $ref: '#/components/schemas/RegistryBuildDetails'
-        deploymentsDetails:
-          $ref: '#/components/schemas/DeploymentDetails'
-        sbomDetails:
-          $ref: '#/components/schemas/SBOMDetails'
-        slsaDetails:
-          $ref: '#/components/schemas/SLSADetails'
-        stoDetails:
-          $ref: '#/components/schemas/STODetails'
-      type: object
     RegistryStatus:
       description: Request processing status indicator
       enum:
@@ -442,128 +448,108 @@ components:
       - FAILURE
       - ERROR
       type: string
-    DockerLayerEntry:
-      description: Harness Artifact Layers
-      properties:
-        command:
-          type: string
-        size:
-          type: string
-      required:
-      - command
-      type: object
-    ArtifactEntityMetadata:
-      additionalProperties: true
-      description: Artifact Entity Metadata
-      type: object
-    RegistryError:
-      description: Standard error response with code, message and optional details
-      properties:
-        code:
-          description: The HTTP error code
-          example: '404'
-          type: string
-        details:
-          description: 'Additional context and details about the error.
-
-            May include field-specific validation errors or debugging information.
-
-            '
-          example:
-            field: registry_identifier
-            reason: Registry does not exist in the specified project
-            value: invalid-registry
-          type: object
-        message:
-          description: Human-readable error message explaining what went wrong
-          example: Registry not found
-          type: string
-      required:
-      - code
-      - message
-      type: object
-    DockerManifestDetails:
-      description: Harness Artifact Layers
-      properties:
-        createdAt:
-          type: string
-        digest:
-          type: string
-        downloadsCount:
-          format: int64
-          type: integer
-        isQuarantined:
-          type: boolean
-        osArch:
-          type: string
-        quarantineReason:
-          type: string
-        size:
-          type: string
-        stoDetails:
-          $ref: '#/components/schemas/STODetails'
-        stoExecutionId:
-          type: string
-        stoPipelineId:
-          type: string
-      required:
-      - digest
-      - layers
-      - osArch
-      type: object
-    SBOMDetails:
-      properties:
-        allowListViolations:
-          type: integer
-        artifactId:
-          type: string
-        artifactSourceId:
-          type: string
-        avgScore:
-          type: string
-        componentsCount:
-          type: integer
-        denyListViolations:
-          type: integer
-        maxScore:
-          type: string
-        orchestrationId:
-          type: string
-        orgId:
-          type: string
-        projectId:
-          type: string
-      type: object
-    DockerManifests:
-      description: Harness Manifests
-      properties:
-        imageName:
-          type: string
-        manifests:
-          items:
-            $ref: '#/components/schemas/DockerManifestDetails'
-          type: array
-        version:
-          type: string
-      required:
-      - imageName
-      - version
-      type: object
+  responses:
+    DockerArtifactManifestResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/DockerArtifactManifest'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get docker artifact manifest
+    DockerManifestsResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/DockerManifests'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get artifact layers
+    DockerArtifactDetailIntegrationResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/DockerArtifactIntegrationDetail'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get docker artifact integration detail
+    DockerLayersResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/DockerLayersSummary'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get artifact layers
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
+    DockerArtifactDetailResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/DockerArtifactDetail'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get docker artifact detail
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
   parameters:
-    versionPathParam:
-      description: Name of Artifact Version.
-      in: path
-      name: version
-      required: true
-      schema:
-        type: string
-    digestParam:
-      description: Digest.
-      in: query
-      name: digest
-      required: true
-      schema:
-        type: string
     registryRefPathParam:
       description: 'Reference to the scope in which the registry exists.
 
@@ -601,6 +587,22 @@ components:
       required: true
       schema:
         type: string
+    versionPathParam:
+      description: Name of Artifact Version.
+      in: path
+      name: version
+      required: true
+      schema:
+        type: string
+    versionTypeParam:
+      description: Version Type.
+      in: query
+      name: version_type
+      schema:
+        enum:
+        - DIGEST
+        - TAG
+        type: string
     artifactPathParam:
       description: "Name of the artifact.\n\nThe value depends on whether the name contains a slash (`/`):\n\n- If the artifact name **contains `/`**, append a trailing `/+` at the end.\n  - Example: `mygroup/myartifact/+`\n- If the artifact name **does not contain `/`**, use the plain name.\n  - Example: `myartifact`\n\nThis is used internally to distinguish between namespaced and flat artifact names.\n"
       examples:
@@ -615,14 +617,12 @@ components:
       required: true
       schema:
         type: string
-    versionTypeParam:
-      description: Version Type.
+    digestParam:
+      description: Digest.
       in: query
-      name: version_type
+      name: digest
+      required: true
       schema:
-        enum:
-        - DIGEST
-        - TAG
         type: string
   securitySchemes:
     x-api-key:

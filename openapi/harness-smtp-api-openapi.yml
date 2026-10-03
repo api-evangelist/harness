@@ -296,52 +296,25 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOValidationResult'
 components:
   schemas:
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    SmtpConfig:
+    NgSmtp:
       required:
-      - host
-      - port
+      - accountId
+      - name
+      - value
       type: object
       properties:
-        host:
+        uuid:
           type: string
-          description: This is the host of the SMTP server.
-        port:
-          type: integer
-          description: This is the port of the SMTP server.
-          format: int32
-        fromAddress:
+          description: Identifier of the SMTP config.
+        accountId:
           type: string
-          description: From address of the email that needs to be send.
-        useSSL:
-          type: boolean
-          description: Specify whether or not to use SSL certificate.
-        startTLS:
-          type: boolean
-          description: Specify whether or not to use TLS.
-        username:
+          description: Account Identifier for the Entity.
+        name:
           type: string
-          description: Username credential to authenticate with SMTP server.
-        password:
-          type: array
-          description: Password credential to authenticate with SMTP server.
-          items:
-            type: string
-            description: Password credential to authenticate with SMTP server.
-        delegateSelectors:
-          uniqueItems: true
-          type: array
-          description: List of delegate selectors of delegates used by SMTP server as connectivity mode.
-          items:
-            type: string
-            description: List of delegate selectors of delegates used by SMTP server as connectivity mode.
-      description: This has the SMTP configuration details defined in Harness.
+          description: Name of the SMTP config.
+        value:
+          $ref: '#/components/schemas/SmtpConfig'
+      description: This is the view of the NgSmtp entity defined in Harness
     Error1:
       type: object
       properties:
@@ -765,55 +738,14 @@ components:
         metadata:
           $ref: '#/components/schemas/ErrorMetadata2'
       description: This is Error entity as defined in Harness
-    NgSmtp:
-      required:
-      - accountId
-      - name
-      - value
+    ErrorMetadata2:
       type: object
       properties:
-        uuid:
+        type:
           type: string
-          description: Identifier of the SMTP config.
-        accountId:
-          type: string
-          description: Account Identifier for the Entity.
-        name:
-          type: string
-          description: Name of the SMTP config.
-        value:
-          $ref: '#/components/schemas/SmtpConfig'
-      description: This is the view of the NgSmtp entity defined in Harness
-    ResponseDTOValidationResult:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/ValidationResult'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ResponseDTONgSmtp:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/NgSmtp'
-        metaData:
-          type: object
-        correlationId:
-          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -1838,6 +1770,67 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
+    ResponseDTOValidationResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/ValidationResult'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    SmtpConfig:
+      required:
+      - host
+      - port
+      type: object
+      properties:
+        host:
+          type: string
+          description: This is the host of the SMTP server.
+        port:
+          type: integer
+          description: This is the port of the SMTP server.
+          format: int32
+        fromAddress:
+          type: string
+          description: From address of the email that needs to be send.
+        useSSL:
+          type: boolean
+          description: Specify whether or not to use SSL certificate.
+        startTLS:
+          type: boolean
+          description: Specify whether or not to use TLS.
+        username:
+          type: string
+          description: Username credential to authenticate with SMTP server.
+        password:
+          type: array
+          description: Password credential to authenticate with SMTP server.
+          items:
+            type: string
+            description: Password credential to authenticate with SMTP server.
+        delegateSelectors:
+          uniqueItems: true
+          type: array
+          description: List of delegate selectors of delegates used by SMTP server as connectivity mode.
+          items:
+            type: string
+            description: List of delegate selectors of delegates used by SMTP server as connectivity mode.
+      description: This has the SMTP configuration details defined in Harness.
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
     ValidationResult:
       type: object
       properties:
@@ -1845,14 +1838,21 @@ components:
           type: boolean
         errorMessage:
           type: string
-    ErrorMetadata2:
+    ResponseDTONgSmtp:
       type: object
       properties:
-        type:
+        status:
           type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/NgSmtp'
+        metaData:
+          type: object
+        correlationId:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

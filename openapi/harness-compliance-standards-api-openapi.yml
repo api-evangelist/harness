@@ -111,6 +111,57 @@ paths:
       parameters:
       - $ref: '#/components/parameters/AccountHeader6'
 components:
+  parameters:
+    Page2:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Limit6:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    Order2:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        default: ASC
+      description: Order on the basis of which sorting is done.
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
   schemas:
     ComplianceScanType:
       title: ComplianceScanType
@@ -121,37 +172,27 @@ components:
       - REPOSITORY
       - CICD
       description: Type of scan on the source like Repository scan or Worklfow scan
-    ComplianceStandardsFilterEntity:
-      title: ComplianceStandardsFilterEntity
-      x-stoplight:
-        id: 0mc5ygoyq3h1c
-      type: object
-      x-examples:
-        Example 1:
-          scan_type: CICD
-          integrations:
-          - GITHUB
-          - HARNESS
-      description: Type of SPM support and platforms integrated
-      x-internal: false
-      required:
-      - scan_type
-      - integrations
-      properties:
-        scan_type:
-          $ref: '#/components/schemas/ComplianceScanType'
-        integrations:
-          type: array
-          items:
-            $ref: '#/components/schemas/ComplianceSourcePlatform'
-    ComplianceStandardType:
-      title: ComplianceStandardType
+    ComplianceCheckSeverity:
+      title: ComplianceCheckSeverity
       type: string
       x-stoplight:
-        id: hqwyia5x65e2x
+        id: kpbii4pjiw1ff
       enum:
-      - CIS
-      - OWASP
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
+    ComplianceCheckType:
+      title: ComplianceCheckType
+      type: string
+      x-stoplight:
+        id: 172pz2p0c2bc1
+      enum:
+      - SCM
+      - ARTIFACT
+      - BUILD
+      - DEPENDENCIES
+      description: Represents Type of Compliance Check
     ComplianceCheckEntityType:
       title: ComplianceCheckEntityType
       type: string
@@ -166,54 +207,6 @@ components:
       - DEPENDENCIES
       - All
       description: Represents entity type on which compliance check is applicable
-    ComplianceCheckType:
-      title: ComplianceCheckType
-      type: string
-      x-stoplight:
-        id: 172pz2p0c2bc1
-      enum:
-      - SCM
-      - ARTIFACT
-      - BUILD
-      - DEPENDENCIES
-      description: Represents Type of Compliance Check
-    ComplianceSourcePlatform:
-      title: ComplianceSourcePlatform
-      x-stoplight:
-        id: mu4qb4tnrii02
-      type: string
-      enum:
-      - GITHUB
-      - HARNESS
-      description: 'Source platform enum. Example: GITHUB, HARNESS'
-    ComplianceFilter:
-      title: ComplianceFilter
-      x-stoplight:
-        id: 2s5vjjncxduj6
-      type: object
-      properties:
-        standards:
-          x-stoplight:
-            id: 93rw59dvxegw7
-          type: array
-          items:
-            $ref: '#/components/schemas/ComplianceStandardType'
-        type:
-          $ref: '#/components/schemas/ComplianceCheckType'
-        entity:
-          $ref: '#/components/schemas/ComplianceCheckEntityType'
-        severity:
-          $ref: '#/components/schemas/ComplianceCheckSeverity'
-        search_term:
-          type: string
-          x-stoplight:
-            id: l10xdz7ssp9vn
-        integrations_filter:
-          type: array
-          x-stoplight:
-            id: 9vnhu1ikeqtxh
-          items:
-            $ref: '#/components/schemas/ComplianceStandardsFilterEntity'
     ComplianceCheck:
       type: object
       x-examples:
@@ -314,21 +307,75 @@ components:
           $ref: '#/components/schemas/ComplianceScanType'
       x-stoplight:
         id: vlfta3sppng1w
-    ComplianceCheckSeverity:
-      title: ComplianceCheckSeverity
+    ComplianceFilter:
+      title: ComplianceFilter
+      x-stoplight:
+        id: 2s5vjjncxduj6
+      type: object
+      properties:
+        standards:
+          x-stoplight:
+            id: 93rw59dvxegw7
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceStandardType'
+        type:
+          $ref: '#/components/schemas/ComplianceCheckType'
+        entity:
+          $ref: '#/components/schemas/ComplianceCheckEntityType'
+        severity:
+          $ref: '#/components/schemas/ComplianceCheckSeverity'
+        search_term:
+          type: string
+          x-stoplight:
+            id: l10xdz7ssp9vn
+        integrations_filter:
+          type: array
+          x-stoplight:
+            id: 9vnhu1ikeqtxh
+          items:
+            $ref: '#/components/schemas/ComplianceStandardsFilterEntity'
+    ComplianceStandardsFilterEntity:
+      title: ComplianceStandardsFilterEntity
+      x-stoplight:
+        id: 0mc5ygoyq3h1c
+      type: object
+      x-examples:
+        Example 1:
+          scan_type: CICD
+          integrations:
+          - GITHUB
+          - HARNESS
+      description: Type of SPM support and platforms integrated
+      x-internal: false
+      required:
+      - scan_type
+      - integrations
+      properties:
+        scan_type:
+          $ref: '#/components/schemas/ComplianceScanType'
+        integrations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceSourcePlatform'
+    ComplianceStandardType:
+      title: ComplianceStandardType
       type: string
       x-stoplight:
-        id: kpbii4pjiw1ff
+        id: hqwyia5x65e2x
       enum:
-      - CRITICAL
-      - HIGH
-      - MEDIUM
-      - LOW
+      - CIS
+      - OWASP
+    ComplianceSourcePlatform:
+      title: ComplianceSourcePlatform
+      x-stoplight:
+        id: mu4qb4tnrii02
+      type: string
+      enum:
+      - GITHUB
+      - HARNESS
+      description: 'Source platform enum. Example: GITHUB, HARNESS'
   headers:
-    X-Total-Elements:
-      schema:
-        type: integer
-      description: Total number of elements returned in Paginated response.
     X-Page-Size:
       schema:
         type: integer
@@ -337,70 +384,10 @@ components:
       schema:
         type: integer
       description: Page number in Paginated response.
-  parameters:
-    Page2:
-      name: page
-      in: query
-      required: false
+    X-Total-Elements:
       schema:
         type: integer
-        default: 0
-        minimum: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
-    Order2:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-        default: ASC
-      description: Order on the basis of which sorting is done.
-    Limit6:
-      name: limit
-      in: query
-      schema:
-        type: integer
-        default: 30
-        maximum: 1000
-        minimum: 1
-      description: Number of items to return per page.
-    ProjectParam1:
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness project ID
-      name: project
-    AccountHeader6:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-  requestBodies:
-    CreateComplianceStandardRequestBody:
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ComplianceCheck'
-    ComplianceStandardsRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceFilter'
+      description: Total number of elements returned in Paginated response.
   responses:
     ComplianceStandardsResponseBody:
       description: Example response
@@ -423,6 +410,19 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ComplianceCheck'
+  requestBodies:
+    CreateComplianceStandardRequestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ComplianceCheck'
+    ComplianceStandardsRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceFilter'
   securitySchemes:
     x-api-key:
       name: x-api-key

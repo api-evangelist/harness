@@ -218,74 +218,300 @@ paths:
       x-stoplight:
         id: esgkki234aa1u
 components:
-  parameters:
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
-    DbOpsPageIndex:
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-      in: query
-      name: page
-      schema:
-        default: 0
-        format: int64
-        type: integer
-    DbOpsAccountHeader:
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-      in: header
-      name: Harness-Account
-      schema:
-        type: string
-    DbOpsLimit:
-      description: 'Pagination: Number of items to return.'
-      in: query
-      name: limit
-      schema:
-        default: 10
-        maximum: 100
-        type: integer
-    DBSchemaParam:
-      description: Identifier of the database schema
-      in: path
-      name: dbschema
-      required: true
-      schema:
-        maxLength: 128
-        type: string
-    ChangeSetParam:
-      description: 'FQN of the changeSet deployed. It is the combination of fileName, changeSetId and author separated by ::'
-      in: query
-      name: changeSet
-      required: true
-      schema:
-        example: folder1/fileName.yaml::changeSet1::author1
-        type: string
-    DbOpsSearchTerm:
-      allowEmptyValue: true
-      description: This would be used to filter resources having attributes matching the search term.
-      in: query
-      name: search_term
-      schema:
-        type: string
-    DBInstanceParam:
-      description: database instance unique id
-      in: path
-      name: dbinstance
-      required: true
-      schema:
-        type: string
   schemas:
+    InstanceDetail:
+      description: Name and identifier of instance
+      properties:
+        identifier:
+          type: string
+          x-stoplight:
+            id: 31d4qf39t64hx
+        name:
+          type: string
+          x-stoplight:
+            id: zvigh51qdhg7m
+      required:
+      - identifier
+      - name
+      title: InstanceDetail
+      type: object
+      x-stoplight:
+        id: b0ge7609tlr6s
+    ChangeSetDeploymentStatus:
+      description: Status of change set deployment
+      enum:
+      - Rolled_Back
+      - Successfully_Deployed
+      - Not_Deployed
+      - Deployment_Failed
+      title: ChangeSetDeploymentStatus
+      type: string
+      x-stoplight:
+        id: f4whxki5b4cp1
+    DeployedChangesetSqlOutput:
+      description: Response Body for Fetching SQL statements
+      properties:
+        sql:
+          items:
+            type: string
+            x-stoplight:
+              id: 8r7yk67k7rcj4
+          type: array
+          x-stoplight:
+            id: frzyxa67l6mgs
+      title: DeployedChangesetSqlOutput
+      type: object
+      x-stoplight:
+        id: nazria0es5v7a
+    MigrationStateOut:
+      description: Change Set deployment info for a schema
+      properties:
+        changeSets:
+          items:
+            $ref: '#/components/schemas/MigrationStateChangeSet'
+          type: array
+          x-stoplight:
+            id: nur8lhmmq4k80
+        instances:
+          items:
+            $ref: '#/components/schemas/InstanceDetail'
+          type: array
+          x-stoplight:
+            id: c4j467g3ps0hq
+        schema:
+          description: Identifier of the Schema
+          type: string
+          x-stoplight:
+            id: c2cmn4x96fces
+      required:
+      - schema
+      title: MigrationStateOut
+      type: object
+      x-stoplight:
+        id: vvx7j4u21jjs5
+    MigrationStateIn:
+      description: Get migration state request input
+      properties:
+        instanceFilter:
+          $ref: '#/components/schemas/MigrationStateInstanceIn'
+      title: MigrationStateIn
+      type: object
+      x-stoplight:
+        id: h52h1mz8ooyrq
+    MigrationStateInstanceIn:
+      description: Get migration state request instance input
+      properties:
+        instances:
+          items:
+            type: string
+            x-stoplight:
+              id: u06e41dzptghg
+          type: array
+          x-stoplight:
+            id: xgfy8jpfw9mll
+        order:
+          $ref: '#/components/schemas/OrderInstance'
+        sort:
+          $ref: '#/components/schemas/SortInstance'
+      title: MigrationStateInstanceIn
+      type: object
+      x-stoplight:
+        id: 7mrokzsmxkufd
+    ChangeSetDeploymentYamlOutput:
+      description: ChangeSet deployment yaml info for an instance
+      properties:
+        yaml:
+          type: string
+          x-stoplight:
+            id: 7py9a7unyct0j
+      required:
+      - yaml
+      title: ChangeSetDeploymentYamlOutput
+      type: object
+      x-stoplight:
+        id: jt9d8omo9k85a
+    DbOpsError:
+      description: Error Response
+      properties:
+        message:
+          description: error message detail
+          type: string
+      required:
+      - message
+      title: Error Response
+      type: object
+      x-stoplight:
+        id: 61cwtgnps2mpt
+    SortInstance:
+      default: identifier
+      description: sort for instance entity
+      enum:
+      - name
+      - updated
+      - created
+      - identifier
+      title: SortInstance
+      type: string
+      x-stoplight:
+        id: zhl6a0ksg19p2
+    FlywayAppliedMigration:
+      description: Flyway Migration Applied across instances
+      properties:
+        deployedAt:
+          description: epoch seconds when the migration was applied
+          format: int64
+          type: integer
+          x-stoplight:
+            id: 4kri35ly1bu13
+        description:
+          description: Description from the migration script
+          type: string
+          x-stoplight:
+            id: j441zdnie8cz5
+        instances:
+          items:
+            $ref: '#/components/schemas/MigrationStateInstance'
+          type: array
+        type:
+          description: type of migration, whether baseline or actual script migration
+          type: string
+          x-stoplight:
+            id: vd1l0hxbyh1jo
+        version:
+          description: version of flyway migration script
+          type: string
+          x-stoplight:
+            id: afvsk2s9szjtg
+      required:
+      - version
+      - type
+      - instances
+      - deployedAt
+      title: FlywayAppliedMigration
+      type: object
+      x-stoplight:
+        id: bulact1cpjm6y
+    OrderInstance:
+      default: ASC
+      description: order of instance entity
+      enum:
+      - DESC
+      - ASC
+      title: OrderInstance
+      type: string
+      x-stoplight:
+        id: l0hdqldkwdms9
+    MigrationStateChangeSet:
+      description: Deployment info of Change Sets across instances
+      properties:
+        author:
+          type: string
+          x-stoplight:
+            id: mob4f4s0lovhs
+        changeSet:
+          description: Identifier of the Change Set
+          type: string
+          x-stoplight:
+            id: 44ec50vd5krrf
+        changeSetFQN:
+          description: changesetFQN is a unique identifier for database changesets in the format filename::changesetId::author
+          type: string
+          x-stoplight:
+            id: imclno1hwt5tu
+        fileName:
+          type: string
+          x-stoplight:
+            id: 31qx3sb0zigel
+        instances:
+          items:
+            $ref: '#/components/schemas/MigrationStateInstance'
+          type: array
+          x-stoplight:
+            id: k3xi8j4pkqn48
+        synced:
+          default: false
+          description: If Change Set is successfully deployed to all instances
+          type: boolean
+          x-stoplight:
+            id: fwvilhcjrnzuk
+        updated:
+          format: int64
+          type: integer
+          x-stoplight:
+            id: 3pq420g29khfg
+      required:
+      - changeSet
+      - synced
+      - instances
+      - updated
+      - author
+      - fileName
+      - changeSetFQN
+      title: MigrationStateChangeSet
+      type: object
+      x-stoplight:
+        id: lu7ke7g87jfq3
+    InstanceMigrationStateChangeSet:
+      description: Deployment info of Change Sets across instances
+      properties:
+        author:
+          type: string
+        changeSet:
+          description: Identifier of the Change Set
+          type: string
+        changeSetFQN:
+          type: string
+          x-stoplight:
+            id: 4z9kxognzb0di
+        comment:
+          description: comment defined in changeSet
+          type: string
+          x-stoplight:
+            id: 74w4qvz4i3p78
+        deployedAt:
+          format: int64
+          type: integer
+          x-stoplight:
+            id: 2agm7gbw2pq9k
+        fileName:
+          type: string
+        label:
+          description: label defined in changeSet
+          type: string
+          x-stoplight:
+            id: 15ozawdz45jq4
+        pipeline:
+          type: string
+          x-stoplight:
+            id: ow7y4tlbwll6s
+        planExecutionId:
+          type: string
+          x-stoplight:
+            id: 0r1nyz293ph4h
+        stageExecutionId:
+          type: string
+          x-stoplight:
+            id: 9nqtr1j9uiers
+        status:
+          $ref: '#/components/schemas/ChangeSetDeploymentStatus'
+        tag:
+          type: string
+          x-stoplight:
+            id: olwe8u50gytkp
+      required:
+      - changeSet
+      - deployedAt
+      - author
+      - fileName
+      - status
+      - pipeline
+      - planExecutionId
+      - stageExecutionId
+      - changeSetFQN
+      title: InstanceMigrationStateChangeSet
+      type: object
+      x-stoplight:
+        id: vfjspbwnr93bq
     FlywayInstanceMigrationState:
       description: Flyway Migration info across instances
       properties:
@@ -359,242 +585,6 @@ components:
       type: object
       x-stoplight:
         id: xgkxp7yuo88w8
-    ChangeSetDeploymentStatus:
-      description: Status of change set deployment
-      enum:
-      - Rolled_Back
-      - Successfully_Deployed
-      - Not_Deployed
-      - Deployment_Failed
-      title: ChangeSetDeploymentStatus
-      type: string
-      x-stoplight:
-        id: f4whxki5b4cp1
-    FlywayAppliedMigration:
-      description: Flyway Migration Applied across instances
-      properties:
-        deployedAt:
-          description: epoch seconds when the migration was applied
-          format: int64
-          type: integer
-          x-stoplight:
-            id: 4kri35ly1bu13
-        description:
-          description: Description from the migration script
-          type: string
-          x-stoplight:
-            id: j441zdnie8cz5
-        instances:
-          items:
-            $ref: '#/components/schemas/MigrationStateInstance'
-          type: array
-        type:
-          description: type of migration, whether baseline or actual script migration
-          type: string
-          x-stoplight:
-            id: vd1l0hxbyh1jo
-        version:
-          description: version of flyway migration script
-          type: string
-          x-stoplight:
-            id: afvsk2s9szjtg
-      required:
-      - version
-      - type
-      - instances
-      - deployedAt
-      title: FlywayAppliedMigration
-      type: object
-      x-stoplight:
-        id: bulact1cpjm6y
-    InstanceMigrationStateChangeSet:
-      description: Deployment info of Change Sets across instances
-      properties:
-        author:
-          type: string
-        changeSet:
-          description: Identifier of the Change Set
-          type: string
-        changeSetFQN:
-          type: string
-          x-stoplight:
-            id: 4z9kxognzb0di
-        comment:
-          description: comment defined in changeSet
-          type: string
-          x-stoplight:
-            id: 74w4qvz4i3p78
-        deployedAt:
-          format: int64
-          type: integer
-          x-stoplight:
-            id: 2agm7gbw2pq9k
-        fileName:
-          type: string
-        label:
-          description: label defined in changeSet
-          type: string
-          x-stoplight:
-            id: 15ozawdz45jq4
-        pipeline:
-          type: string
-          x-stoplight:
-            id: ow7y4tlbwll6s
-        planExecutionId:
-          type: string
-          x-stoplight:
-            id: 0r1nyz293ph4h
-        stageExecutionId:
-          type: string
-          x-stoplight:
-            id: 9nqtr1j9uiers
-        status:
-          $ref: '#/components/schemas/ChangeSetDeploymentStatus'
-        tag:
-          type: string
-          x-stoplight:
-            id: olwe8u50gytkp
-      required:
-      - changeSet
-      - deployedAt
-      - author
-      - fileName
-      - status
-      - pipeline
-      - planExecutionId
-      - stageExecutionId
-      - changeSetFQN
-      title: InstanceMigrationStateChangeSet
-      type: object
-      x-stoplight:
-        id: vfjspbwnr93bq
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
-    SortInstance:
-      default: identifier
-      description: sort for instance entity
-      enum:
-      - name
-      - updated
-      - created
-      - identifier
-      title: SortInstance
-      type: string
-      x-stoplight:
-        id: zhl6a0ksg19p2
-    InstanceDetail:
-      description: Name and identifier of instance
-      properties:
-        identifier:
-          type: string
-          x-stoplight:
-            id: 31d4qf39t64hx
-        name:
-          type: string
-          x-stoplight:
-            id: zvigh51qdhg7m
-      required:
-      - identifier
-      - name
-      title: InstanceDetail
-      type: object
-      x-stoplight:
-        id: b0ge7609tlr6s
-    MigrationStateChangeSet:
-      description: Deployment info of Change Sets across instances
-      properties:
-        author:
-          type: string
-          x-stoplight:
-            id: mob4f4s0lovhs
-        changeSet:
-          description: Identifier of the Change Set
-          type: string
-          x-stoplight:
-            id: 44ec50vd5krrf
-        changeSetFQN:
-          description: changesetFQN is a unique identifier for database changesets in the format filename::changesetId::author
-          type: string
-          x-stoplight:
-            id: imclno1hwt5tu
-        fileName:
-          type: string
-          x-stoplight:
-            id: 31qx3sb0zigel
-        instances:
-          items:
-            $ref: '#/components/schemas/MigrationStateInstance'
-          type: array
-          x-stoplight:
-            id: k3xi8j4pkqn48
-        synced:
-          default: false
-          description: If Change Set is successfully deployed to all instances
-          type: boolean
-          x-stoplight:
-            id: fwvilhcjrnzuk
-        updated:
-          format: int64
-          type: integer
-          x-stoplight:
-            id: 3pq420g29khfg
-      required:
-      - changeSet
-      - synced
-      - instances
-      - updated
-      - author
-      - fileName
-      - changeSetFQN
-      title: MigrationStateChangeSet
-      type: object
-      x-stoplight:
-        id: lu7ke7g87jfq3
-    MigrationStateOut:
-      description: Change Set deployment info for a schema
-      properties:
-        changeSets:
-          items:
-            $ref: '#/components/schemas/MigrationStateChangeSet'
-          type: array
-          x-stoplight:
-            id: nur8lhmmq4k80
-        instances:
-          items:
-            $ref: '#/components/schemas/InstanceDetail'
-          type: array
-          x-stoplight:
-            id: c4j467g3ps0hq
-        schema:
-          description: Identifier of the Schema
-          type: string
-          x-stoplight:
-            id: c2cmn4x96fces
-      required:
-      - schema
-      title: MigrationStateOut
-      type: object
-      x-stoplight:
-        id: vvx7j4u21jjs5
-    MigrationStateIn:
-      description: Get migration state request input
-      properties:
-        instanceFilter:
-          $ref: '#/components/schemas/MigrationStateInstanceIn'
-      title: MigrationStateIn
-      type: object
-      x-stoplight:
-        id: h52h1mz8ooyrq
     MigrationStateInstance:
       description: Change Set Deployment info of instance
       properties:
@@ -641,53 +631,6 @@ components:
       type: object
       x-stoplight:
         id: 0tdlaexf41tyg
-    ChangeSetDeploymentYamlOutput:
-      description: ChangeSet deployment yaml info for an instance
-      properties:
-        yaml:
-          type: string
-          x-stoplight:
-            id: 7py9a7unyct0j
-      required:
-      - yaml
-      title: ChangeSetDeploymentYamlOutput
-      type: object
-      x-stoplight:
-        id: jt9d8omo9k85a
-    MigrationStateInstanceIn:
-      description: Get migration state request instance input
-      properties:
-        instances:
-          items:
-            type: string
-            x-stoplight:
-              id: u06e41dzptghg
-          type: array
-          x-stoplight:
-            id: xgfy8jpfw9mll
-        order:
-          $ref: '#/components/schemas/OrderInstance'
-        sort:
-          $ref: '#/components/schemas/SortInstance'
-      title: MigrationStateInstanceIn
-      type: object
-      x-stoplight:
-        id: 7mrokzsmxkufd
-    DeployedChangesetSqlOutput:
-      description: Response Body for Fetching SQL statements
-      properties:
-        sql:
-          items:
-            type: string
-            x-stoplight:
-              id: 8r7yk67k7rcj4
-          type: array
-          x-stoplight:
-            id: frzyxa67l6mgs
-      title: DeployedChangesetSqlOutput
-      type: object
-      x-stoplight:
-        id: nazria0es5v7a
     InstanceMigrationStateOut:
       description: Change Set deployment info for a instance
       properties:
@@ -732,23 +675,19 @@ components:
       type: object
       x-stoplight:
         id: rono2ypcjrfuh
-    OrderInstance:
-      default: ASC
-      description: order of instance entity
-      enum:
-      - DESC
-      - ASC
-      title: OrderInstance
-      type: string
-      x-stoplight:
-        id: l0hdqldkwdms9
   responses:
-    MigrationStateResponse:
+    ChangeSetDeploymentYamlResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/MigrationStateOut'
-      description: Response body for migration state of a schema
+            $ref: '#/components/schemas/ChangeSetDeploymentYamlOutput'
+      description: Response body for changeSet deployment yaml for an instance
+    InstanceMigrationStateResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InstanceMigrationStateOut'
+      description: Response body for migration state of a instance
       headers:
         X-Page-Number:
           description: Page number in Paginated response.
@@ -762,12 +701,31 @@ components:
           description: Total number of elements returned in Paginated response.
           schema:
             type: integer
-    InstanceMigrationStateResponse:
+    FlywayInstanceMigrationStateResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InstanceMigrationStateOut'
-      description: Response body for migration state of a instance
+            $ref: '#/components/schemas/FlywayInstanceMigrationStateOutput'
+      description: Response body for flyway migration state of an instance
+      headers:
+        X-Page-Number:
+          description: Page number in Paginated response.
+          schema:
+            type: integer
+        X-Page-Size:
+          description: Maximum page size in Paginated response.
+          schema:
+            type: integer
+        X-Total-Elements:
+          description: Total number of elements returned in Paginated response.
+          schema:
+            type: integer
+    FetchSQLStatementResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DeployedChangesetSqlOutput'
+      description: Response Body for Fetching SQL statements
       headers:
         X-Page-Number:
           description: Page number in Paginated response.
@@ -800,43 +758,18 @@ components:
           description: Total number of elements returned in Paginated response.
           schema:
             type: integer
-    ChangeSetDeploymentYamlResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ChangeSetDeploymentYamlOutput'
-      description: Response body for changeSet deployment yaml for an instance
-    FetchSQLStatementResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DeployedChangesetSqlOutput'
-      description: Response Body for Fetching SQL statements
-      headers:
-        X-Page-Number:
-          description: Page number in Paginated response.
-          schema:
-            type: integer
-        X-Page-Size:
-          description: Maximum page size in Paginated response.
-          schema:
-            type: integer
-        X-Total-Elements:
-          description: Total number of elements returned in Paginated response.
-          schema:
-            type: integer
     ErrorResponse:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/DbOpsError'
       description: Error Response body
-    FlywayInstanceMigrationStateResponse:
+    MigrationStateResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/FlywayInstanceMigrationStateOutput'
-      description: Response body for flyway migration state of an instance
+            $ref: '#/components/schemas/MigrationStateOut'
+      description: Response body for migration state of a schema
       headers:
         X-Page-Number:
           description: Page number in Paginated response.
@@ -850,7 +783,80 @@ components:
           description: Total number of elements returned in Paginated response.
           schema:
             type: integer
+  parameters:
+    DBInstanceParam:
+      description: database instance unique id
+      in: path
+      name: dbinstance
+      required: true
+      schema:
+        type: string
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    DBSchemaParam:
+      description: Identifier of the database schema
+      in: path
+      name: dbschema
+      required: true
+      schema:
+        maxLength: 128
+        type: string
+    ChangeSetParam:
+      description: 'FQN of the changeSet deployed. It is the combination of fileName, changeSetId and author separated by ::'
+      in: query
+      name: changeSet
+      required: true
+      schema:
+        example: folder1/fileName.yaml::changeSet1::author1
+        type: string
+    DbOpsPageIndex:
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
+    DbOpsAccountHeader:
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+      in: header
+      name: Harness-Account
+      schema:
+        type: string
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    DbOpsLimit:
+      description: 'Pagination: Number of items to return.'
+      in: query
+      name: limit
+      schema:
+        default: 10
+        maximum: 100
+        type: integer
+    DbOpsSearchTerm:
+      allowEmptyValue: true
+      description: This would be used to filter resources having attributes matching the search term.
+      in: query
+      name: search_term
+      schema:
+        type: string
   requestBodies:
+    MigrationStateGetRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MigrationStateIn'
+      description: Inputs to get migration state of schema
     FetchSQLStatementRequest:
       content:
         application/json:
@@ -865,12 +871,6 @@ components:
             - changesetFQN
             type: object
       description: Request Body for Fetching SQL statements
-    MigrationStateGetRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/MigrationStateIn'
-      description: Inputs to get migration state of schema
   securitySchemes:
     x-api-key:
       name: x-api-key
