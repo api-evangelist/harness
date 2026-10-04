@@ -127,13 +127,6 @@ paths:
       x-internal: true
 components:
   schemas:
-    StartedAtMsV3:
-      description: Unix timestamp in milliseconds when the operation started
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
     BackfillEntityStateV3:
       description: Per-entity backfill progress and ES document count for an account.
       properties:
@@ -163,14 +156,6 @@ components:
       - startedAt
       - completedAt
       type: object
-    ErrorV3:
-      description: An error response
-      properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorsV3'
-      required:
-      - error
-      type: object
     BackfillTriggerDataV3:
       description: Response payload returned when a backfill is successfully triggered.
       properties:
@@ -183,6 +168,21 @@ components:
     CompletedAtMsV3:
       description: Unix timestamp in milliseconds when the operation completed. Null while still in flight.
       example: 1736360000456
+      format: int64
+      type:
+      - integer
+      - 'null'
+    ErrorV3:
+      description: An error response
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorsV3'
+      required:
+      - error
+      type: object
+    StartedAtMsV3:
+      description: Unix timestamp in milliseconds when the operation started
+      example: 1736360000123
       format: int64
       type:
       - integer
@@ -202,6 +202,59 @@ components:
       - accountIdentifier
       - entities
       type: object
+    ApiErrorsV3:
+      properties:
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
+      required:
+      - type
+      title: APIErrors
+      type: object
+    BackfillTriggerRequestInputV3:
+      description: Request body for triggering an ES search backfill.
+      properties:
+        entityTypes:
+          description: Entity types to backfill into Elasticsearch.
+          items:
+            enum:
+            - REGISTRY
+            - PACKAGE
+            - PACKAGE_VERSION
+            - FILE
+            type: string
+          type: array
+        reindexAll:
+          default: false
+          description: If true, reset progress and re-index all rows from the beginning.
+          type: boolean
+      required:
+      - entityTypes
+      type: object
+    CreatedAtMsV3:
+      description: Unix timestamp in milliseconds when the resource was created
+      example: 1736360000123
+      format: int64
+      type:
+      - integer
+      - 'null'
     BackfillTaskStatusDataV3:
       description: Status of a single backfill job (CDC outbox row).
       properties:
@@ -232,67 +285,6 @@ components:
       - jobType
       - attempts
       type: object
-    CreatedAtMsV3:
-      description: Unix timestamp in milliseconds when the resource was created
-      example: 1736360000123
-      format: int64
-      type:
-      - integer
-      - 'null'
-    BackfillTriggerRequestInputV3:
-      description: Request body for triggering an ES search backfill.
-      properties:
-        entityTypes:
-          description: Entity types to backfill into Elasticsearch.
-          items:
-            enum:
-            - REGISTRY
-            - PACKAGE
-            - PACKAGE_VERSION
-            - FILE
-            type: string
-          type: array
-        reindexAll:
-          default: false
-          description: If true, reset progress and re-index all rows from the beginning.
-          type: boolean
-      required:
-      - entityTypes
-      type: object
-    ApiErrorsV3:
-      properties:
-        code:
-          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
-          maxLength: 5000
-          type: string
-        message:
-          description: A human-readable message providing more details about the error. These messages can be shown to users.
-          maxLength: 40000
-          type: string
-        param:
-          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
-          maxLength: 5000
-          type: string
-        type:
-          description: The type of error returned.
-          enum:
-          - INVALID_REQUEST_ERROR
-          - AUTHENTICATION_ERROR
-          - PERMISSION_ERROR
-          - API_ERROR
-          type: string
-      required:
-      - type
-      title: APIErrors
-      type: object
-  requestBodies:
-    BackfillTriggerRequestV3:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BackfillTriggerRequestInputV3'
-      description: Request to trigger an ES search backfill for an account.
-      required: true
   parameters:
     AccountIdentifierV3:
       description: 'Unique identifier for the Harness account.
@@ -303,6 +295,14 @@ components:
       required: true
       schema:
         type: string
+  requestBodies:
+    BackfillTriggerRequestV3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BackfillTriggerRequestInputV3'
+      description: Request to trigger an ES search backfill for an account.
+      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

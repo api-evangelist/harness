@@ -829,390 +829,6 @@ paths:
         - sto_exemption_view
 components:
   schemas:
-    IDResult:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Resource identifier
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-      example:
-        id: abcdef1234567890ghijkl
-      required:
-      - id
-    UpdateExemptionRuleRequestBody:
-      type: object
-      properties:
-        actions:
-          type: object
-          description: 'Actions to apply when the rule matches. Today: duration only. Action handlers are pluggable; see the design doc for the planned set.'
-          example:
-            duration:
-              maxDurationDays: 3
-          additionalProperties: true
-        conditions:
-          type: object
-          description: Matcher conditions. Keys are attribute names that appear in the issue context (severity_code, type, reachability, exploitability, epss, plus anything in issue.details). Missing keys are wildcards. Each value is either an array (OR-list), an object describing a numeric range, or a scalar (equality).
-          example:
-            epss_score:
-              gte: 90
-            reachable: true
-            severity_code:
-            - Critical
-          additionalProperties: true
-        description:
-          type: string
-          description: Free-form rule description.
-          example: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-          maxLength: 1024
-        enabled:
-          type: boolean
-          description: 'Whether the rule is active. Disabled rules are retained and still listed, but are skipped during evaluation. OPTIONAL: defaults to true on create; on update, omit to keep the current state or send false/true to toggle.'
-          example: true
-        name:
-          type: string
-          description: Human-readable rule name. Must be unique within an account.
-          example: 'Critical reachable issues: 3 days max'
-          minLength: 1
-          maxLength: 256
-        priority:
-          type: integer
-          description: '0-based rank within an account. Lower fires first (first-match-wins). OPTIONAL on both create and update: if omitted on CREATE the new rule is appended at the bottom (rank = current rule count); if omitted on UPDATE the rule keeps its current rank. When supplied, send 0 to insert at the top, 1..n to insert at that rank, or any value >= rule count to land at the tail.'
-          example: 0
-          format: int64
-          minimum: 0
-        userId:
-          type: string
-          description: Harness User ID
-          example: abcdef1234567890ghijkl
-      example:
-        actions:
-          duration:
-            maxDurationDays: 3
-        conditions:
-          epss_score:
-            gte: 90
-          reachable: true
-          severity_code:
-          - Critical
-        description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-        enabled: true
-        name: 'Critical reachable issues: 3 days max'
-        priority: 0
-        userId: abcdef1234567890ghijkl
-      required:
-      - userId
-    IssueItem:
-      type: object
-      properties:
-        issueId:
-          type: string
-          description: Issue ID to evaluate.
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-        occurrences:
-          type: array
-          items:
-            type: integer
-            example: 6624826437369263000
-            format: int64
-          description: Occurrence internal IDs being exempted. When present, this item is an occurrence-level exemption (always target-scoped, `targetId` required). When omitted but `scanId` is set, all non-exempted occurrences for the issue in that scan are evaluated.
-          example:
-          - 101
-          - 102
-        pipelineId:
-          type: string
-          description: Pipeline id for this item (pipeline scope). Mutually exclusive with `targetId`. Different items may target different pipelines.
-          example: my_pipeline
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          maxLength: 128
-        scanId:
-          type: string
-          description: Harness Scan ID. When set with `targetId` and without `occurrences[]`, expands to all non-exempted occurrences for the issue in that scan (current-occurrences-only exemption). Mutually exclusive with `pipelineId`.
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-        targetId:
-          type: string
-          description: Target id for this item (target scope). Required when `occurrences[]` is set. Mutually exclusive with `pipelineId`.
-          example: abcdef1234567890ghijkl
-          pattern: ^[a-zA-Z0-9_-]{22}$
-      example:
-        issueId: abcdef1234567890ghijkl
-        occurrences:
-        - 101
-        - 102
-        pipelineId: my_pipeline
-        scanId: abcdef1234567890ghijkl
-        targetId: abcdef1234567890ghijkl
-      required:
-      - issueId
-    ExemptionRulesListExemptionRulesResponseBody:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/StoPagination'
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExemptionRule'
-          example:
-          - actions:
-              duration:
-                maxDurationDays: 3
-            conditions:
-              epss_score:
-                gte: 90
-              reachable: true
-              severity_code:
-              - Critical
-            created: 1651578240
-            createdBy: user111111111111111111
-            description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-            enabled: true
-            id: abcdef1234567890ghijkl
-            lastModified: 1651578240
-            lastModifiedBy: user111111111111111111
-            name: 'Critical reachable issues: 3 days max'
-            priority: 0
-          - actions:
-              duration:
-                maxDurationDays: 3
-            conditions:
-              epss_score:
-                gte: 90
-              reachable: true
-              severity_code:
-              - Critical
-            created: 1651578240
-            createdBy: user111111111111111111
-            description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-            enabled: true
-            id: abcdef1234567890ghijkl
-            lastModified: 1651578240
-            lastModifiedBy: user111111111111111111
-            name: 'Critical reachable issues: 3 days max'
-            priority: 0
-          - actions:
-              duration:
-                maxDurationDays: 3
-            conditions:
-              epss_score:
-                gte: 90
-              reachable: true
-              severity_code:
-              - Critical
-            created: 1651578240
-            createdBy: user111111111111111111
-            description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-            enabled: true
-            id: abcdef1234567890ghijkl
-            lastModified: 1651578240
-            lastModifiedBy: user111111111111111111
-            name: 'Critical reachable issues: 3 days max'
-            priority: 0
-      example:
-        pagination:
-          link: ''
-          page: 4
-          pageSize: 20
-          totalItems: 230
-          totalPages: 12
-        results:
-        - actions:
-            duration:
-              maxDurationDays: 3
-          conditions:
-            epss_score:
-              gte: 90
-            reachable: true
-            severity_code:
-            - Critical
-          created: 1651578240
-          createdBy: user111111111111111111
-          description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-          enabled: true
-          id: abcdef1234567890ghijkl
-          lastModified: 1651578240
-          lastModifiedBy: user111111111111111111
-          name: 'Critical reachable issues: 3 days max'
-          priority: 0
-        - actions:
-            duration:
-              maxDurationDays: 3
-          conditions:
-            epss_score:
-              gte: 90
-            reachable: true
-            severity_code:
-            - Critical
-          created: 1651578240
-          createdBy: user111111111111111111
-          description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-          enabled: true
-          id: abcdef1234567890ghijkl
-          lastModified: 1651578240
-          lastModifiedBy: user111111111111111111
-          name: 'Critical reachable issues: 3 days max'
-          priority: 0
-        - actions:
-            duration:
-              maxDurationDays: 3
-          conditions:
-            epss_score:
-              gte: 90
-            reachable: true
-            severity_code:
-            - Critical
-          created: 1651578240
-          createdBy: user111111111111111111
-          description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
-          enabled: true
-          id: abcdef1234567890ghijkl
-          lastModified: 1651578240
-          lastModifiedBy: user111111111111111111
-          name: 'Critical reachable issues: 3 days max'
-          priority: 0
-      required:
-      - results
-      - pagination
-    GetExemptionConstraintsRequestBody:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/IssueItem'
-          description: Evaluation entries (max 100). Each item self-describes its scope (`targetId` / `pipelineId` / neither) and kind (`occurrences[]` present ⇒ occurrence-level). A single exemption is a one-element list. Items may mix scopes and kinds.
-          example:
-          - issueId: abcdef1234567890ghijkl
-            occurrences:
-            - 101
-            - 102
-            pipelineId: my_pipeline
-            scanId: abcdef1234567890ghijkl
-            targetId: abcdef1234567890ghijkl
-          - issueId: abcdef1234567890ghijkl
-            occurrences:
-            - 101
-            - 102
-            pipelineId: my_pipeline
-            scanId: abcdef1234567890ghijkl
-            targetId: abcdef1234567890ghijkl
-          - issueId: abcdef1234567890ghijkl
-            occurrences:
-            - 101
-            - 102
-            pipelineId: my_pipeline
-            scanId: abcdef1234567890ghijkl
-            targetId: abcdef1234567890ghijkl
-          maxItems: 100
-        orgId:
-          type: string
-          description: 'Harness Organization id this exemption request is scoped to. Required: the backend resolves the project hierarchy (parent_unique_id) from `orgId`/`projectId` to scope attribute resolution for project- and pipeline-level evaluation, and rules conditioned on `org_id` evaluate correctly.'
-          example: default
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          maxLength: 128
-        projectId:
-          type: string
-          description: 'Harness Project id this exemption request is scoped to. Required: the backend resolves the project hierarchy (parent_unique_id) from `orgId`/`projectId` to scope attribute resolution for project- and pipeline-level evaluation, and rules conditioned on `project_id` evaluate correctly.'
-          example: my_project
-          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
-          maxLength: 128
-        type:
-          type: string
-          description: Value of the FE's "Reason" dropdown — i.e. the same enum sent as `type` on POST /exemptions ("False Positive", "Acceptable Risk", "Compensating Controls", "Acceptable Use", "Fix Unavailable", "Other"). When set, it is merged into every issue's context so rules with `reason` conditions evaluate correctly. Omit if the user has not picked from the dropdown yet — rules with reason conditions will be skipped in that case. Named `type` here for parity with POST /exemptions.type; internally the rule engine surfaces it as the `reason` axis (which matches the FE dropdown label customers see).
-          example: False Positive
-          enum:
-          - Compensating Controls
-          - Acceptable Use
-          - Acceptable Risk
-          - False Positive
-          - Fix Unavailable
-          - Other
-      example:
-        items:
-        - issueId: abcdef1234567890ghijkl
-          occurrences:
-          - 101
-          - 102
-          pipelineId: my_pipeline
-          scanId: abcdef1234567890ghijkl
-          targetId: abcdef1234567890ghijkl
-        - issueId: abcdef1234567890ghijkl
-          occurrences:
-          - 101
-          - 102
-          pipelineId: my_pipeline
-          scanId: abcdef1234567890ghijkl
-          targetId: abcdef1234567890ghijkl
-        - issueId: abcdef1234567890ghijkl
-          occurrences:
-          - 101
-          - 102
-          pipelineId: my_pipeline
-          scanId: abcdef1234567890ghijkl
-          targetId: abcdef1234567890ghijkl
-        orgId: default
-        projectId: my_project
-        type: False Positive
-      required:
-      - orgId
-      - projectId
-    NotFound:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Not Found
-        status:
-          type: integer
-          default: 404
-          example: 404
-          format: int64
-      example:
-        message: Not Found
-        status: 404
-      required:
-      - message
-    StoPagination:
-      type: object
-      properties:
-        link:
-          type: string
-          description: Link-based paging
-          example: ''
-        page:
-          type: integer
-          description: Page number (starting from 0)
-          example: 4
-          format: int64
-        pageSize:
-          type: integer
-          description: Requested page size
-          example: 20
-          format: int64
-        totalItems:
-          type: integer
-          description: Total results available
-          example: 230
-          format: int64
-        totalPages:
-          type: integer
-          description: Total pages available
-          example: 12
-          format: int64
-      example:
-        link: ''
-        page: 4
-        pageSize: 20
-        totalItems: 230
-        totalPages: 12
-      required:
-      - page
-      - pageSize
-      - totalPages
-      - totalItems
     ExemptionRule:
       type: object
       properties:
@@ -1375,6 +991,328 @@ components:
       - name
       - conditions
       - actions
+    GetExemptionConstraintsRequestBody:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/IssueItem'
+          description: Evaluation entries (max 100). Each item self-describes its scope (`targetId` / `pipelineId` / neither) and kind (`occurrences[]` present ⇒ occurrence-level). A single exemption is a one-element list. Items may mix scopes and kinds.
+          example:
+          - issueId: abcdef1234567890ghijkl
+            occurrences:
+            - 101
+            - 102
+            pipelineId: my_pipeline
+            scanId: abcdef1234567890ghijkl
+            targetId: abcdef1234567890ghijkl
+          - issueId: abcdef1234567890ghijkl
+            occurrences:
+            - 101
+            - 102
+            pipelineId: my_pipeline
+            scanId: abcdef1234567890ghijkl
+            targetId: abcdef1234567890ghijkl
+          - issueId: abcdef1234567890ghijkl
+            occurrences:
+            - 101
+            - 102
+            pipelineId: my_pipeline
+            scanId: abcdef1234567890ghijkl
+            targetId: abcdef1234567890ghijkl
+          maxItems: 100
+        orgId:
+          type: string
+          description: 'Harness Organization id this exemption request is scoped to. Required: the backend resolves the project hierarchy (parent_unique_id) from `orgId`/`projectId` to scope attribute resolution for project- and pipeline-level evaluation, and rules conditioned on `org_id` evaluate correctly.'
+          example: default
+          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+          maxLength: 128
+        projectId:
+          type: string
+          description: 'Harness Project id this exemption request is scoped to. Required: the backend resolves the project hierarchy (parent_unique_id) from `orgId`/`projectId` to scope attribute resolution for project- and pipeline-level evaluation, and rules conditioned on `project_id` evaluate correctly.'
+          example: my_project
+          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+          maxLength: 128
+        type:
+          type: string
+          description: Value of the FE's "Reason" dropdown — i.e. the same enum sent as `type` on POST /exemptions ("False Positive", "Acceptable Risk", "Compensating Controls", "Acceptable Use", "Fix Unavailable", "Other"). When set, it is merged into every issue's context so rules with `reason` conditions evaluate correctly. Omit if the user has not picked from the dropdown yet — rules with reason conditions will be skipped in that case. Named `type` here for parity with POST /exemptions.type; internally the rule engine surfaces it as the `reason` axis (which matches the FE dropdown label customers see).
+          example: False Positive
+          enum:
+          - Compensating Controls
+          - Acceptable Use
+          - Acceptable Risk
+          - False Positive
+          - Fix Unavailable
+          - Other
+      example:
+        items:
+        - issueId: abcdef1234567890ghijkl
+          occurrences:
+          - 101
+          - 102
+          pipelineId: my_pipeline
+          scanId: abcdef1234567890ghijkl
+          targetId: abcdef1234567890ghijkl
+        - issueId: abcdef1234567890ghijkl
+          occurrences:
+          - 101
+          - 102
+          pipelineId: my_pipeline
+          scanId: abcdef1234567890ghijkl
+          targetId: abcdef1234567890ghijkl
+        - issueId: abcdef1234567890ghijkl
+          occurrences:
+          - 101
+          - 102
+          pipelineId: my_pipeline
+          scanId: abcdef1234567890ghijkl
+          targetId: abcdef1234567890ghijkl
+        orgId: default
+        projectId: my_project
+        type: False Positive
+      required:
+      - orgId
+      - projectId
+    ExemptionRulesListExemptionRulesResponseBody:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/StoPagination'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExemptionRule'
+          example:
+          - actions:
+              duration:
+                maxDurationDays: 3
+            conditions:
+              epss_score:
+                gte: 90
+              reachable: true
+              severity_code:
+              - Critical
+            created: 1651578240
+            createdBy: user111111111111111111
+            description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+            enabled: true
+            id: abcdef1234567890ghijkl
+            lastModified: 1651578240
+            lastModifiedBy: user111111111111111111
+            name: 'Critical reachable issues: 3 days max'
+            priority: 0
+          - actions:
+              duration:
+                maxDurationDays: 3
+            conditions:
+              epss_score:
+                gte: 90
+              reachable: true
+              severity_code:
+              - Critical
+            created: 1651578240
+            createdBy: user111111111111111111
+            description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+            enabled: true
+            id: abcdef1234567890ghijkl
+            lastModified: 1651578240
+            lastModifiedBy: user111111111111111111
+            name: 'Critical reachable issues: 3 days max'
+            priority: 0
+          - actions:
+              duration:
+                maxDurationDays: 3
+            conditions:
+              epss_score:
+                gte: 90
+              reachable: true
+              severity_code:
+              - Critical
+            created: 1651578240
+            createdBy: user111111111111111111
+            description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+            enabled: true
+            id: abcdef1234567890ghijkl
+            lastModified: 1651578240
+            lastModifiedBy: user111111111111111111
+            name: 'Critical reachable issues: 3 days max'
+            priority: 0
+      example:
+        pagination:
+          link: ''
+          page: 4
+          pageSize: 20
+          totalItems: 230
+          totalPages: 12
+        results:
+        - actions:
+            duration:
+              maxDurationDays: 3
+          conditions:
+            epss_score:
+              gte: 90
+            reachable: true
+            severity_code:
+            - Critical
+          created: 1651578240
+          createdBy: user111111111111111111
+          description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+          enabled: true
+          id: abcdef1234567890ghijkl
+          lastModified: 1651578240
+          lastModifiedBy: user111111111111111111
+          name: 'Critical reachable issues: 3 days max'
+          priority: 0
+        - actions:
+            duration:
+              maxDurationDays: 3
+          conditions:
+            epss_score:
+              gte: 90
+            reachable: true
+            severity_code:
+            - Critical
+          created: 1651578240
+          createdBy: user111111111111111111
+          description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+          enabled: true
+          id: abcdef1234567890ghijkl
+          lastModified: 1651578240
+          lastModifiedBy: user111111111111111111
+          name: 'Critical reachable issues: 3 days max'
+          priority: 0
+        - actions:
+            duration:
+              maxDurationDays: 3
+          conditions:
+            epss_score:
+              gte: 90
+            reachable: true
+            severity_code:
+            - Critical
+          created: 1651578240
+          createdBy: user111111111111111111
+          description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+          enabled: true
+          id: abcdef1234567890ghijkl
+          lastModified: 1651578240
+          lastModifiedBy: user111111111111111111
+          name: 'Critical reachable issues: 3 days max'
+          priority: 0
+      required:
+      - results
+      - pagination
+    StoPagination:
+      type: object
+      properties:
+        link:
+          type: string
+          description: Link-based paging
+          example: ''
+        page:
+          type: integer
+          description: Page number (starting from 0)
+          example: 4
+          format: int64
+        pageSize:
+          type: integer
+          description: Requested page size
+          example: 20
+          format: int64
+        totalItems:
+          type: integer
+          description: Total results available
+          example: 230
+          format: int64
+        totalPages:
+          type: integer
+          description: Total pages available
+          example: 12
+          format: int64
+      example:
+        link: ''
+        page: 4
+        pageSize: 20
+        totalItems: 230
+        totalPages: 12
+      required:
+      - page
+      - pageSize
+      - totalPages
+      - totalItems
+    IssueItem:
+      type: object
+      properties:
+        issueId:
+          type: string
+          description: Issue ID to evaluate.
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        occurrences:
+          type: array
+          items:
+            type: integer
+            example: 6624826437369263000
+            format: int64
+          description: Occurrence internal IDs being exempted. When present, this item is an occurrence-level exemption (always target-scoped, `targetId` required). When omitted but `scanId` is set, all non-exempted occurrences for the issue in that scan are evaluated.
+          example:
+          - 101
+          - 102
+        pipelineId:
+          type: string
+          description: Pipeline id for this item (pipeline scope). Mutually exclusive with `targetId`. Different items may target different pipelines.
+          example: my_pipeline
+          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+          maxLength: 128
+        scanId:
+          type: string
+          description: Harness Scan ID. When set with `targetId` and without `occurrences[]`, expands to all non-exempted occurrences for the issue in that scan (current-occurrences-only exemption). Mutually exclusive with `pipelineId`.
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+        targetId:
+          type: string
+          description: Target id for this item (target scope). Required when `occurrences[]` is set. Mutually exclusive with `pipelineId`.
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+      example:
+        issueId: abcdef1234567890ghijkl
+        occurrences:
+        - 101
+        - 102
+        pipelineId: my_pipeline
+        scanId: abcdef1234567890ghijkl
+        targetId: abcdef1234567890ghijkl
+      required:
+      - issueId
+    NotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          default: 404
+          example: 404
+          format: int64
+      example:
+        message: Not Found
+        status: 404
+      required:
+      - message
+    IDResult:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier
+          example: abcdef1234567890ghijkl
+          pattern: ^[a-zA-Z0-9_-]{22}$
+      example:
+        id: abcdef1234567890ghijkl
+      required:
+      - id
     ExemptionConstraints:
       type: object
       properties:
@@ -1394,6 +1332,68 @@ components:
         maxDurationDays: 7
       required:
       - matchedRuleId
+    UpdateExemptionRuleRequestBody:
+      type: object
+      properties:
+        actions:
+          type: object
+          description: 'Actions to apply when the rule matches. Today: duration only. Action handlers are pluggable; see the design doc for the planned set.'
+          example:
+            duration:
+              maxDurationDays: 3
+          additionalProperties: true
+        conditions:
+          type: object
+          description: Matcher conditions. Keys are attribute names that appear in the issue context (severity_code, type, reachability, exploitability, epss, plus anything in issue.details). Missing keys are wildcards. Each value is either an array (OR-list), an object describing a numeric range, or a scalar (equality).
+          example:
+            epss_score:
+              gte: 90
+            reachable: true
+            severity_code:
+            - Critical
+          additionalProperties: true
+        description:
+          type: string
+          description: Free-form rule description.
+          example: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+          maxLength: 1024
+        enabled:
+          type: boolean
+          description: 'Whether the rule is active. Disabled rules are retained and still listed, but are skipped during evaluation. OPTIONAL: defaults to true on create; on update, omit to keep the current state or send false/true to toggle.'
+          example: true
+        name:
+          type: string
+          description: Human-readable rule name. Must be unique within an account.
+          example: 'Critical reachable issues: 3 days max'
+          minLength: 1
+          maxLength: 256
+        priority:
+          type: integer
+          description: '0-based rank within an account. Lower fires first (first-match-wins). OPTIONAL on both create and update: if omitted on CREATE the new rule is appended at the bottom (rank = current rule count); if omitted on UPDATE the rule keeps its current rank. When supplied, send 0 to insert at the top, 1..n to insert at that rank, or any value >= rule count to land at the tail.'
+          example: 0
+          format: int64
+          minimum: 0
+        userId:
+          type: string
+          description: Harness User ID
+          example: abcdef1234567890ghijkl
+      example:
+        actions:
+          duration:
+            maxDurationDays: 3
+        conditions:
+          epss_score:
+            gte: 90
+          reachable: true
+          severity_code:
+          - Critical
+        description: Critical findings that are reachable in production must be remediated quickly; cap exemptions at 3 days.
+        enabled: true
+        name: 'Critical reachable issues: 3 days max'
+        priority: 0
+        userId: abcdef1234567890ghijkl
+      required:
+      - userId
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -382,12 +382,14 @@ paths:
                 $ref: '#/components/schemas/api.RestError'
 components:
   schemas:
-    api.ResponseErrorCode:
+    security_governance.AccessControl:
       type: string
       enum:
-      - PIPELINE_NOT_FOUND
+      - ALLOWED
+      - BLOCKED
       x-enum-varnames:
-      - PipelineNotFound
+      - ALLOWED
+      - BLOCKED
     security_governance.Workload:
       type: object
       properties:
@@ -407,24 +409,7 @@ components:
           type: array
           items:
             type: string
-    security_governance.Operator:
-      type: string
-      enum:
-      - EQUAL_TO
-      - NOT_EQUAL_TO
-      x-enum-varnames:
-      - EQUAL_TO
-      - NOT_EQUAL_TO
-    security_governance.ApplicationSpec:
-      type: object
-      properties:
-        operator:
-          $ref: '#/components/schemas/security_governance.Operator'
-        workloads:
-          type: array
-          items:
-            $ref: '#/components/schemas/security_governance.Workload'
-    chaosguardconditions.UpdateConditionResponse:
+    chaosguardconditions.ConditionResponse:
       type: object
       required:
       - conditionId
@@ -434,8 +419,10 @@ components:
       properties:
         conditionId:
           type: string
-        correlationID:
-          type: string
+        createdAt:
+          type: integer
+        createdBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
         description:
           type: string
         faultSpec:
@@ -448,10 +435,45 @@ components:
           $ref: '#/components/schemas/security_governance.MachineSpec'
         name:
           type: string
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosguardconditions.Rule'
         tags:
           type: array
           items:
             type: string
+        updatedAt:
+          type: integer
+        updatedBy:
+          $ref: '#/components/schemas/hcesdk.UserDetails'
+    security_governance.MachineSpec:
+      type: object
+      properties:
+        infraSpec:
+          $ref: '#/components/schemas/security_governance.InfraSpec'
+        unverifiedProbe:
+          $ref: '#/components/schemas/security_governance.AccessControl'
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
+      type: object
+      properties:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    security_governance.FaultSpec:
+      type: object
+      properties:
+        faults:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.Fault'
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
     chaosguardconditions.GetConditionResponse:
       type: object
       required:
@@ -492,34 +514,7 @@ components:
           type: integer
         updatedBy:
           $ref: '#/components/schemas/hcesdk.UserDetails'
-    github_com_harness_hce-saas_graphql_server_api.Pagination:
-      type: object
-      properties:
-        index:
-          type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-    security_governance.InfraSpec:
-      type: object
-      properties:
-        infraIds:
-          type: array
-          items:
-            type: string
-        operator:
-          $ref: '#/components/schemas/security_governance.Operator'
-    security_governance.Fault:
-      type: object
-      properties:
-        faultType:
-          $ref: '#/components/schemas/security_governance.FaultType'
-        name:
-          type: string
-    chaosguardconditions.CreateConditionRequest:
+    chaosguardconditions.UpdateConditionResponse:
       type: object
       required:
       - conditionId
@@ -528,6 +523,8 @@ components:
       - name
       properties:
         conditionId:
+          type: string
+        correlationID:
           type: string
         description:
           type: string
@@ -545,15 +542,20 @@ components:
           type: array
           items:
             type: string
-    security_governance.FaultSpec:
+    security_governance.Env:
       type: object
       properties:
-        faults:
-          type: array
-          items:
-            $ref: '#/components/schemas/security_governance.Fault'
-        operator:
-          $ref: '#/components/schemas/security_governance.Operator'
+        name:
+          type: string
+        value:
+          type: string
+    security_governance.Fault:
+      type: object
+      properties:
+        faultType:
+          $ref: '#/components/schemas/security_governance.FaultType'
+        name:
+          type: string
     chaosguardconditions.ListConditionResponse:
       type: object
       properties:
@@ -565,50 +567,14 @@ components:
           type: string
         pagination:
           $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    api.RestError:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
-    security_governance.MachineSpec:
-      type: object
-      properties:
-        infraSpec:
-          $ref: '#/components/schemas/security_governance.InfraSpec'
-        unverifiedProbe:
-          $ref: '#/components/schemas/security_governance.AccessControl'
-    security_governance.K8sSpec:
-      type: object
-      properties:
-        applicationSpec:
-          $ref: '#/components/schemas/security_governance.ApplicationSpec'
-        chaosServiceAccountSpec:
-          $ref: '#/components/schemas/security_governance.ChaosServiceAccountSpec'
-        infraSpec:
-          $ref: '#/components/schemas/security_governance.InfraSpec'
-        unverifiedProbe:
-          $ref: '#/components/schemas/security_governance.AccessControl'
-    security_governance.AccessControl:
+    security_governance.Operator:
       type: string
       enum:
-      - ALLOWED
-      - BLOCKED
+      - EQUAL_TO
+      - NOT_EQUAL_TO
       x-enum-varnames:
-      - ALLOWED
-      - BLOCKED
-    chaosguardconditions.DeleteConditionResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        message:
-          type: string
-        success:
-          type: boolean
+      - EQUAL_TO
+      - NOT_EQUAL_TO
     chaosguardconditions.CreateConditionResponse:
       type: object
       required:
@@ -637,27 +603,43 @@ components:
           type: array
           items:
             type: string
-    security_governance.FaultType:
-      type: string
-      enum:
-      - FAULT_GROUP
-      - FAULT_NAME
-      x-enum-varnames:
-      - FAULT_GROUP
-      - FAULT_NAME
-    security_governance.InfraType:
-      type: string
-      enum:
-      - Kubernetes
-      - KubernetesV2
-      - Linux
-      - Windows
-      x-enum-varnames:
-      - KUBERNETES
-      - KUBERNETESV2
-      - Linux
-      - Windows
-    chaosguardconditions.ConditionResponse:
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
+          type: string
+    chaosguardconditions.DeleteConditionResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        message:
+          type: string
+        success:
+          type: boolean
+    hcesdk.UserDetails:
+      type: object
+      properties:
+        email:
+          type: string
+        userID:
+          type: string
+        username:
+          type: string
+    shared.Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        correlationID:
+          type: string
+        message:
+          type: string
+    chaosguardconditions.CreateConditionRequest:
       type: object
       required:
       - conditionId
@@ -667,10 +649,6 @@ components:
       properties:
         conditionId:
           type: string
-        createdAt:
-          type: integer
-        createdBy:
-          $ref: '#/components/schemas/hcesdk.UserDetails'
         description:
           type: string
         faultSpec:
@@ -683,33 +661,83 @@ components:
           $ref: '#/components/schemas/security_governance.MachineSpec'
         name:
           type: string
-        rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/chaosguardconditions.Rule'
         tags:
           type: array
           items:
             type: string
-        updatedAt:
-          type: integer
-        updatedBy:
-          $ref: '#/components/schemas/hcesdk.UserDetails'
-    hcesdk.UserDetails:
+    security_governance.InfraSpec:
       type: object
       properties:
-        email:
-          type: string
-        userID:
-          type: string
-        username:
-          type: string
-    security_governance.Env:
+        infraIds:
+          type: array
+          items:
+            type: string
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+    security_governance.InfraType:
+      type: string
+      enum:
+      - Kubernetes
+      - KubernetesV2
+      - Linux
+      - Windows
+      x-enum-varnames:
+      - KUBERNETES
+      - KUBERNETESV2
+      - Linux
+      - Windows
+    security_governance.ApplicationSpec:
       type: object
+      properties:
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+        workloads:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.Workload'
+    security_governance.K8sSpec:
+      type: object
+      properties:
+        applicationSpec:
+          $ref: '#/components/schemas/security_governance.ApplicationSpec'
+        chaosServiceAccountSpec:
+          $ref: '#/components/schemas/security_governance.ChaosServiceAccountSpec'
+        infraSpec:
+          $ref: '#/components/schemas/security_governance.InfraSpec'
+        unverifiedProbe:
+          $ref: '#/components/schemas/security_governance.AccessControl'
+    security_governance.ChaosServiceAccountSpec:
+      type: object
+      properties:
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+        serviceAccounts:
+          type: array
+          items:
+            type: string
+    security_governance.FaultType:
+      type: string
+      enum:
+      - FAULT_GROUP
+      - FAULT_NAME
+      x-enum-varnames:
+      - FAULT_GROUP
+      - FAULT_NAME
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    chaosguardconditions.Rule:
+      type: object
+      required:
+      - name
+      - ruleId
       properties:
         name:
           type: string
-        value:
+        ruleId:
           type: string
     security_governance.Condition:
       type: object
@@ -734,34 +762,6 @@ components:
         name:
           type: string
         tags:
-          type: array
-          items:
-            type: string
-    shared.Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        correlationID:
-          type: string
-        message:
-          type: string
-    chaosguardconditions.Rule:
-      type: object
-      required:
-      - name
-      - ruleId
-      properties:
-        name:
-          type: string
-        ruleId:
-          type: string
-    security_governance.ChaosServiceAccountSpec:
-      type: object
-      properties:
-        operator:
-          $ref: '#/components/schemas/security_governance.Operator'
-        serviceAccounts:
           type: array
           items:
             type: string

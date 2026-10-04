@@ -115,253 +115,58 @@ paths:
       tags:
       - Orgs
 components:
-  requestBodies:
-    DBInstanceListRequest:
+  responses:
+    DBSchemaListResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/DBInstanceListInput'
-      description: Request for listing instances where schema input is not a required property.
-    DBSchemaFilterRequest:
+            description: Response body for List Schema
+            items:
+              $ref: '#/components/schemas/DBSchemaOut'
+            type: array
+      description: Response body for List Database Schema
+      headers:
+        X-Page-Number:
+          description: Page number in Paginated response.
+          schema:
+            type: integer
+        X-Page-Size:
+          description: Maximum page size in Paginated response.
+          schema:
+            type: integer
+        X-Total-Elements:
+          description: Total number of elements returned in Paginated response.
+          schema:
+            type: integer
+    DBInstanceListResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/DBSchemaFilterIn'
+            description: Response body for List Schema
+            items:
+              $ref: '#/components/schemas/DBInstanceOut'
+            type: array
+      description: Response body for List Database Schema
+      headers:
+        X-Page-Number:
+          description: Page number in Paginated response.
+          schema:
+            type: integer
+        X-Page-Size:
+          description: Maximum page size in Paginated response.
+          schema:
+            type: integer
+        X-Total-Elements:
+          description: Total number of elements returned in Paginated response.
+          schema:
+            type: integer
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
   schemas:
-    MigrationType:
-      default: Liquibase
-      description: DB Migration tool type
-      enum:
-      - Liquibase
-      - Flyway
-      title: MigrationType
-      type: string
-      x-stoplight:
-        id: jxued8v34v6x0
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
-    DBSchemaType:
-      description: db schema type
-      enum:
-      - Repository
-      - Script
-      title: DBSchemaType
-      type: string
-      x-stoplight:
-        id: 8x2xf0r3syqjg
-    ChangeLogScript:
-      additionalProperties: false
-      description: if schemaType is Script location of the changelog file after using a custom script to download
-      properties:
-        command:
-          description: command script used to download the changelog file
-          example: curl -X -o changeLog.yaml https://www.filestore.com/changeLog.yaml
-          minLength: 1
-          type: string
-          x-stoplight:
-            id: rdani02niu442
-        image:
-          description: The fully-qualified name (FQN) of the image
-          example: plugins/image:latest
-          minLength: 1
-          type: string
-          x-stoplight:
-            id: ojq7cfe1up903
-        location:
-          description: location of the changelog file
-          example: folder/changelog.yaml
-          type: string
-          x-stoplight:
-            id: 8qehjmy01r5iw
-        shell:
-          description: shell type
-          example: Sh, Bash, <+pipeline.variables.shell>
-          type: string
-        toml:
-          description: config file for Flyway migration type
-          type: string
-          x-stoplight:
-            id: nphvi8wa0cmuw
-      required:
-      - image
-      - command
-      - shell
-      - location
-      title: changeLog script
-      type: object
-      x-stoplight:
-        id: j6ug0asalsuve
-    DBInstanceListInput:
-      description: Input for filtering instances in list API
-      properties:
-        instanceFQNs:
-          description: list of '-' separated values of schema identifier and instance identifiers
-          items:
-            type: string
-            x-stoplight:
-              id: 00pgdyu11awof
-          type: array
-          x-stoplight:
-            id: uvfrk9mlk33vq
-        schemaIdentifiers:
-          description: list of schema identifiers to filter instances
-          items:
-            type: string
-            x-stoplight:
-              id: 31wkmpwoswrbq
-          type: array
-          x-stoplight:
-            id: 8t3kd4dz91anx
-      title: DBInstanceListInput
-      type: object
-      x-stoplight:
-        id: fx5xiutdaefop
-    DBSchemaFilterIn:
-      description: List schema body input
-      properties:
-        identifiers:
-          description: list of schema identifiers
-          items:
-            type: string
-            x-stoplight:
-              id: nfsp4sjueo3t2
-          type: array
-          x-stoplight:
-            id: va094q90m251a
-      title: DBSchemaFilterIn
-      type: object
-      x-stoplight:
-        id: sj7v1o7j1aoz2
-    DBSchemaOut:
-      description: Database Schema Response
-      properties:
-        changeLogScript:
-          $ref: '#/components/schemas/ChangeLogScript'
-        changelog:
-          $ref: '#/components/schemas/Changelog'
-        created:
-          description: epoch seconds when the database schema was created
-          format: int64
-          type: integer
-        identifier:
-          description: identifier of the database schema
-          type: string
-        instanceCount:
-          description: number of database instances corresponding to database schema
-          format: int64
-          type: integer
-        migrationType:
-          $ref: '#/components/schemas/MigrationType'
-        name:
-          description: name of the database schema
-          type: string
-        parentId:
-          description: parentUniqueId for scope schema belongs to
-          type: string
-          x-stoplight:
-            id: ly84xx0ojw0dw
-        primaryDbInstanceId:
-          description: Identifier for the primary dbInstance used for advanced feature like LLM Authoring etc.
-          type: string
-          x-stoplight:
-            id: 2q5akpayctizx
-        schemaSourceType:
-          enum:
-          - Git
-          - Artifactory
-          - Custom
-          - HarnessCode
-          readOnly: true
-          type: string
-          x-stoplight:
-            id: 802m1r25ghm6l
-        service:
-          description: harness service corresponding to database schema
-          type: string
-        tags:
-          additionalProperties:
-            type: string
-          description: tags attached to the database schema
-          type: object
-          x-go-type-skip-optional-pointer: true
-        type:
-          $ref: '#/components/schemas/DBSchemaType'
-        updated:
-          description: epoch seconds when the database schema was last updated
-          format: int64
-          type: integer
-        usePercona:
-          default: false
-          description: if percona-toolkit is enabled
-          type: boolean
-          x-stoplight:
-            id: dnfipv17ffs3v
-      required:
-      - identifier
-      - name
-      - created
-      - instanceCount
-      - type
-      - parentId
-      - migrationType
-      - usePercona
-      title: Database Schema Response
-      type: object
-      x-stoplight:
-        id: 1y01syuq8w851
-    Changelog:
-      additionalProperties: false
-      description: 'if schemaType is Repository location of the changelog file containing schema changes in a git repository.
-
-        Provide connector for third-party git connectors, or repo without connector to use Harness Code Repository.
-
-        '
-      properties:
-        archivePath:
-          description: path excluding the repo till the archive file
-          minLength: 1
-          type: string
-          x-stoplight:
-            id: 53mqhpfa5038m
-        connector:
-          description: 'identifier of the harness git connector. Optional when using Harness Code Repository. Omit or set to empty string to use Harness Code Repository (requires `repo` to be set).
-
-            '
-          example: harness_git
-          type: string
-          x-go-type-skip-optional-pointer: true
-        location:
-          description: path to the change log file
-          example: folder/changelog.yaml
-          minLength: 1
-          type: string
-        repo:
-          description: repo name of the git based connector when ConnectionType is Account
-          example: folder/changelog.yaml
-          minLength: 1
-          type: string
-          x-stoplight:
-            id: pw3ul0rkm8xt6
-        toml:
-          description: config file for Flyway migration type
-          type: string
-          x-stoplight:
-            id: ojrzuagzdfn20
-      required:
-      - location
-      type: object
-      x-stoplight:
-        id: rytv7gaa34yns
     DBInstanceOut:
       description: Database Instance Response
       properties:
@@ -439,58 +244,261 @@ components:
       type: object
       x-stoplight:
         id: qcmn5nllz3a1z
-  responses:
-    DBInstanceListResponse:
+    Changelog:
+      additionalProperties: false
+      description: 'if schemaType is Repository location of the changelog file containing schema changes in a git repository.
+
+        Provide connector for third-party git connectors, or repo without connector to use Harness Code Repository.
+
+        '
+      properties:
+        archivePath:
+          description: path excluding the repo till the archive file
+          minLength: 1
+          type: string
+          x-stoplight:
+            id: 53mqhpfa5038m
+        connector:
+          description: 'identifier of the harness git connector. Optional when using Harness Code Repository. Omit or set to empty string to use Harness Code Repository (requires `repo` to be set).
+
+            '
+          example: harness_git
+          type: string
+          x-go-type-skip-optional-pointer: true
+        location:
+          description: path to the change log file
+          example: folder/changelog.yaml
+          minLength: 1
+          type: string
+        repo:
+          description: repo name of the git based connector when ConnectionType is Account
+          example: folder/changelog.yaml
+          minLength: 1
+          type: string
+          x-stoplight:
+            id: pw3ul0rkm8xt6
+        toml:
+          description: config file for Flyway migration type
+          type: string
+          x-stoplight:
+            id: ojrzuagzdfn20
+      required:
+      - location
+      type: object
+      x-stoplight:
+        id: rytv7gaa34yns
+    ChangeLogScript:
+      additionalProperties: false
+      description: if schemaType is Script location of the changelog file after using a custom script to download
+      properties:
+        command:
+          description: command script used to download the changelog file
+          example: curl -X -o changeLog.yaml https://www.filestore.com/changeLog.yaml
+          minLength: 1
+          type: string
+          x-stoplight:
+            id: rdani02niu442
+        image:
+          description: The fully-qualified name (FQN) of the image
+          example: plugins/image:latest
+          minLength: 1
+          type: string
+          x-stoplight:
+            id: ojq7cfe1up903
+        location:
+          description: location of the changelog file
+          example: folder/changelog.yaml
+          type: string
+          x-stoplight:
+            id: 8qehjmy01r5iw
+        shell:
+          description: shell type
+          example: Sh, Bash, <+pipeline.variables.shell>
+          type: string
+        toml:
+          description: config file for Flyway migration type
+          type: string
+          x-stoplight:
+            id: nphvi8wa0cmuw
+      required:
+      - image
+      - command
+      - shell
+      - location
+      title: changeLog script
+      type: object
+      x-stoplight:
+        id: j6ug0asalsuve
+    MigrationType:
+      default: Liquibase
+      description: DB Migration tool type
+      enum:
+      - Liquibase
+      - Flyway
+      title: MigrationType
+      type: string
+      x-stoplight:
+        id: jxued8v34v6x0
+    DBSchemaFilterIn:
+      description: List schema body input
+      properties:
+        identifiers:
+          description: list of schema identifiers
+          items:
+            type: string
+            x-stoplight:
+              id: nfsp4sjueo3t2
+          type: array
+          x-stoplight:
+            id: va094q90m251a
+      title: DBSchemaFilterIn
+      type: object
+      x-stoplight:
+        id: sj7v1o7j1aoz2
+    DBInstanceListInput:
+      description: Input for filtering instances in list API
+      properties:
+        instanceFQNs:
+          description: list of '-' separated values of schema identifier and instance identifiers
+          items:
+            type: string
+            x-stoplight:
+              id: 00pgdyu11awof
+          type: array
+          x-stoplight:
+            id: uvfrk9mlk33vq
+        schemaIdentifiers:
+          description: list of schema identifiers to filter instances
+          items:
+            type: string
+            x-stoplight:
+              id: 31wkmpwoswrbq
+          type: array
+          x-stoplight:
+            id: 8t3kd4dz91anx
+      title: DBInstanceListInput
+      type: object
+      x-stoplight:
+        id: fx5xiutdaefop
+    DbOpsError:
+      description: Error Response
+      properties:
+        message:
+          description: error message detail
+          type: string
+      required:
+      - message
+      title: Error Response
+      type: object
+      x-stoplight:
+        id: 61cwtgnps2mpt
+    DBSchemaOut:
+      description: Database Schema Response
+      properties:
+        changeLogScript:
+          $ref: '#/components/schemas/ChangeLogScript'
+        changelog:
+          $ref: '#/components/schemas/Changelog'
+        created:
+          description: epoch seconds when the database schema was created
+          format: int64
+          type: integer
+        identifier:
+          description: identifier of the database schema
+          type: string
+        instanceCount:
+          description: number of database instances corresponding to database schema
+          format: int64
+          type: integer
+        migrationType:
+          $ref: '#/components/schemas/MigrationType'
+        name:
+          description: name of the database schema
+          type: string
+        parentId:
+          description: parentUniqueId for scope schema belongs to
+          type: string
+          x-stoplight:
+            id: ly84xx0ojw0dw
+        primaryDbInstanceId:
+          description: Identifier for the primary dbInstance used for advanced feature like LLM Authoring etc.
+          type: string
+          x-stoplight:
+            id: 2q5akpayctizx
+        schemaSourceType:
+          enum:
+          - Git
+          - Artifactory
+          - Custom
+          - HarnessCode
+          readOnly: true
+          type: string
+          x-stoplight:
+            id: 802m1r25ghm6l
+        service:
+          description: harness service corresponding to database schema
+          type: string
+        tags:
+          additionalProperties:
+            type: string
+          description: tags attached to the database schema
+          type: object
+          x-go-type-skip-optional-pointer: true
+        type:
+          $ref: '#/components/schemas/DBSchemaType'
+        updated:
+          description: epoch seconds when the database schema was last updated
+          format: int64
+          type: integer
+        usePercona:
+          default: false
+          description: if percona-toolkit is enabled
+          type: boolean
+          x-stoplight:
+            id: dnfipv17ffs3v
+      required:
+      - identifier
+      - name
+      - created
+      - instanceCount
+      - type
+      - parentId
+      - migrationType
+      - usePercona
+      title: Database Schema Response
+      type: object
+      x-stoplight:
+        id: 1y01syuq8w851
+    DBSchemaType:
+      description: db schema type
+      enum:
+      - Repository
+      - Script
+      title: DBSchemaType
+      type: string
+      x-stoplight:
+        id: 8x2xf0r3syqjg
+  requestBodies:
+    DBInstanceListRequest:
       content:
         application/json:
           schema:
-            description: Response body for List Schema
-            items:
-              $ref: '#/components/schemas/DBInstanceOut'
-            type: array
-      description: Response body for List Database Schema
-      headers:
-        X-Page-Number:
-          description: Page number in Paginated response.
-          schema:
-            type: integer
-        X-Page-Size:
-          description: Maximum page size in Paginated response.
-          schema:
-            type: integer
-        X-Total-Elements:
-          description: Total number of elements returned in Paginated response.
-          schema:
-            type: integer
-    ErrorResponse:
+            $ref: '#/components/schemas/DBInstanceListInput'
+      description: Request for listing instances where schema input is not a required property.
+    DBSchemaFilterRequest:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
-    DBSchemaListResponse:
-      content:
-        application/json:
-          schema:
-            description: Response body for List Schema
-            items:
-              $ref: '#/components/schemas/DBSchemaOut'
-            type: array
-      description: Response body for List Database Schema
-      headers:
-        X-Page-Number:
-          description: Page number in Paginated response.
-          schema:
-            type: integer
-        X-Page-Size:
-          description: Maximum page size in Paginated response.
-          schema:
-            type: integer
-        X-Total-Elements:
-          description: Total number of elements returned in Paginated response.
-          schema:
-            type: integer
+            $ref: '#/components/schemas/DBSchemaFilterIn'
   parameters:
+    DbOpsPageIndex:
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
     DbOpsOrder:
       description: Order on the basis of which sorting is done.
       in: query
@@ -500,25 +508,6 @@ components:
         enum:
         - ASC
         - DESC
-        type: string
-    DbOpsPageIndex:
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-      in: query
-      name: page
-      schema:
-        default: 0
-        format: int64
-        type: integer
-    DbOpsSort:
-      description: Parameter on the basis of which sorting is done.
-      in: query
-      name: sort
-      schema:
-        default: created
-        enum:
-        - name
-        - updated
-        - created
         type: string
     DbOpsLimit:
       description: 'Pagination: Number of items to return.'
@@ -534,6 +523,17 @@ components:
       in: query
       name: search_term
       schema:
+        type: string
+    DbOpsSort:
+      description: Parameter on the basis of which sorting is done.
+      in: query
+      name: sort
+      schema:
+        default: created
+        enum:
+        - name
+        - updated
+        - created
         type: string
   securitySchemes:
     x-api-key:

@@ -423,51 +423,6 @@ paths:
         id: release-tasks-get
 components:
   schemas:
-    StepInfoDetailsDTO:
-      type: object
-      description: Provided if `type` is Approval.
-      properties:
-        approvedByName:
-          type: string
-          description: Name of the person who approved the step.
-        approvedByEmail:
-          type: string
-          description: Email of the person who approved the step.
-        approvedAt:
-          type: integer
-          format: integer
-          description: Timestamp of the approval.
-        comments:
-          type: string
-          description: Comments provided during the approval.
-        approvalAction:
-          type: string
-          description: Action taken for the approval.
-        jiraUrl:
-          type: string
-          description: URL of the Jira ticket.
-        ticketStatus:
-          type: string
-          description: Status of the Jira ticket.
-        issueType:
-          type: string
-          description: Type of the Jira issue.
-    ReleaseActionResponse:
-      type: object
-      required:
-      - id
-      - status
-      properties:
-        id:
-          type: string
-          description: ID of the release
-        status:
-          type: string
-          description: New status of the release
-        interruptedExecutionId:
-          type: string
-          description: ID of the execution that was interrupted
-          x-omitempty: true
     RmError:
       title: Error Response
       x-stoplight:
@@ -491,6 +446,235 @@ components:
           - FORBIDDEN
           - NOT_FOUND
           - INTERNAL_SERVER_ERROR
+    ApprovedByDTO:
+      type: object
+      required:
+      - email
+      properties:
+        name:
+          type: string
+          description: Name of the person who approved the step.
+        email:
+          type: string
+          description: Email of the person who approved the step.
+    TimeRangeDTO:
+      title: TimeRangeDTO
+      x-stoplight:
+        id: hn1xs7mdq98t8
+      type: object
+      required:
+      - startTime
+      - endTime
+      properties:
+        startTime:
+          type: integer
+          x-stoplight:
+            id: 0hwcfemzmo3ir
+        endTime:
+          type: integer
+          x-stoplight:
+            id: yn8e6z0kbqqma
+        cursor:
+          type: string
+          x-stoplight:
+            id: yk127vxz4p3ew
+        limit:
+          type: integer
+          x-stoplight:
+            id: pzpbxgbr61103
+    RmPageable:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          $ref: '#/components/schemas/PageableSort'
+        offset:
+          type: integer
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+    ApprovalInfoDTO:
+      type: object
+      required:
+      - approvedBy
+      - approvedAt
+      properties:
+        approvedBy:
+          $ref: '#/components/schemas/ApprovedByDTO'
+        approvedAt:
+          type: integer
+          format: int64
+          description: Timestamp of the approval.
+        comments:
+          type: string
+          description: Comments provided during the approval.
+    EnvironmentDTO:
+      title: EnvironmentDTO
+      x-stoplight:
+        id: welv4akcc949t
+      type: object
+      required:
+      - identifier
+      properties:
+        identifier:
+          type: string
+          x-stoplight:
+            id: cae3z7dgcbrhz
+        orgIdentifier:
+          type: string
+          x-stoplight:
+            id: t0tzpes5cl8d9
+        projectIdentifier:
+          type: string
+          x-stoplight:
+            id: cby40h9n1rk5g
+    StageInfoType:
+      type: string
+      enum:
+      - CD
+      - Custom
+      - GITOPS
+      - Approval
+      description: Type of the stage (e.g., CD, custom)
+    AdHocReleaseRequest:
+      title: AdHocReleaseRequest
+      type: object
+      required:
+      - processIdentifier
+      - name
+      - version
+      - identifier
+      - expectedStartTs
+      - expectedEndTs
+      properties:
+        processIdentifier:
+          type: string
+          description: Identifier of the orchestration process
+        processInputIdentifier:
+          type: string
+          description: Identifier of the orchestration process input (optional)
+          x-omitempty: true
+        name:
+          type: string
+          description: Name of the ad hoc release
+        version:
+          type: string
+          description: Version of the ad hoc release
+        identifier:
+          type: string
+          description: Unique identifier for the ad hoc release
+        description:
+          type: string
+          description: Optional description
+          x-omitempty: true
+        expectedStartTs:
+          type: integer
+          description: Expected start timestamp in milliseconds
+        expectedEndTs:
+          type: integer
+          description: Expected end timestamp in milliseconds
+        color:
+          type: string
+          description: Hex color code for the release
+          x-omitempty: true
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Key-value tags for the release
+          x-omitempty: true
+    PageableSort:
+      type: object
+      x-go-name: PageableSort
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    RmStatus:
+      type: string
+      description: Status of the stage.
+      enum:
+      - ABORTED
+      - OUTPUT_WAITING
+      - ASYNC_WAITING
+      - APPROVAL_REJECTED
+      - APPROVAL_WAITING
+      - DISCONTINUING
+      - ERROR
+      - ERRORED
+      - EXPIRED
+      - FAILED
+      - FREEZE_FAILED
+      - IGNORE_FAILED
+      - INPUT_WAITING
+      - INTERVENTION_WAITING
+      - QUEUED
+      - REJECTED
+      - RESUMED
+      - RUNNING
+      - SCHEDULED
+      - SKIPPED
+      - STARTING
+      - STARTING_QUEUED_STEP
+      - SUCCESS
+      - SUCCEEDED
+      - SUSPENDED
+      - TIMED_WAITING
+      - TASK_WAITING
+      - UPLOAD_WAITING
+      - WAIT_STEP_RUNNING
+      - WAITING
+      - ON_HOLD
+    TriggerType:
+      type: string
+      enum:
+      - MANUAL
+      - WEBHOOK
+      - WEBHOOK_CUSTOM
+      - ARTIFACT
+      - MANIFEST
+      - SCHEDULER_CRON
+      description: Unit of time used for repeating releases.
+    ReleaseApprovalDTO:
+      title: ReleaseApprovalDTO
+      x-stoplight:
+        id: 3tsv4huyi5u4n
+      type: object
+      required:
+      - orgIdentifier
+      - projectIdentifier
+      - pipelineIdentifier
+      - planExecutionId
+      - name
+      - runSequenceId
+      - status
+      - type
+      properties:
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        pipelineIdentifier:
+          type: string
+        planExecutionId:
+          type: string
+        name:
+          type: string
+        runSequenceId:
+          type: integer
+        status:
+          $ref: '#/components/schemas/RmStatus'
+        type:
+          $ref: '#/components/schemas/ReleaseApprovalType'
+        approvalInfo:
+          $ref: '#/components/schemas/ApprovalInfoDTO'
     ServiceInfoDTO:
       title: ServiceInfoDto
       x-stoplight:
@@ -532,25 +716,12 @@ components:
           - project
           - org
           - unknown
-    StageInfoDetailsDTO:
-      type: object
-      description: Info related to stage
-      properties:
-        serviceName:
-          type: string
-          description: Name of the service.
-        serviceId:
-          type: string
-          description: Identifier of the service.
-        envName:
-          type: string
-          description: Name of the environment.
-        envId:
-          type: string
-          description: Identifier of the environment.
-        artifactDisplayName:
-          type: string
-          description: Display name of the artifact.
+    ReleaseApprovalType:
+      type: string
+      description: Type of the step (e.g., Approval, JiraUpdate, JiraCreate, JiraApproval).
+      enum:
+      - HarnessApproval
+      - JiraApproval
     ClusterDeploymentDTO:
       title: ClusterDeploymentDTO
       x-stoplight:
@@ -587,6 +758,205 @@ components:
           description: Services deployed to this cluster
           x-stoplight:
             id: cluster-services
+          items:
+            $ref: '#/components/schemas/ServiceInfoDTO'
+    SubprocessInfo:
+      type: object
+      required:
+      - processIdentifier
+      - processInputIdentifier
+      - releaseInput
+      - output
+      properties:
+        processIdentifier:
+          type: string
+          description: Process identifier. Required when retryWith is SUBPROCESS.
+        processInputIdentifier:
+          type: string
+          description: Process input identifier. Required when retryWith is SUBPROCESS.
+        releaseInput:
+          type: string
+          description: Release input YAML. Required when retryWith is SUBPROCESS.
+        output:
+          type: object
+          additionalProperties:
+            type: string
+          description: Output map with key-value pairs.
+    StageInfoDTO:
+      type: object
+      description: Details about the stage activity (provided if type is stage).
+      required:
+      - type
+      - name
+      - identifier
+      - status
+      - startTs
+      - info
+      properties:
+        type:
+          $ref: '#/components/schemas/StageInfoType'
+        startTs:
+          type: integer
+          description: Start timestamp of the stage.
+        endTs:
+          type: integer
+          description: End timestamp of the stage.
+        name:
+          type: string
+          description: Name of the stage.
+        identifier:
+          type: string
+          description: Identifier of the stage.
+        status:
+          $ref: '#/components/schemas/RmStatus'
+        info:
+          $ref: '#/components/schemas/StageInfoDetailsDTO'
+        stageNodeId:
+          type: string
+          description: Node Id of the stage.
+        stageExecutionId:
+          type: string
+          description: Stage execution Id.
+    StageInfoDetailsDTO:
+      type: object
+      description: Info related to stage
+      properties:
+        serviceName:
+          type: string
+          description: Name of the service.
+        serviceId:
+          type: string
+          description: Identifier of the service.
+        envName:
+          type: string
+          description: Name of the environment.
+        envId:
+          type: string
+          description: Identifier of the environment.
+        artifactDisplayName:
+          type: string
+          description: Display name of the artifact.
+    StepInfoDTO:
+      type: object
+      description: Details about the step activity (provided if type is step).
+      required:
+      - type
+      - name
+      - identifier
+      - status
+      - startTs
+      - info
+      properties:
+        startTs:
+          type: integer
+          description: Start timestamp of the step.
+        endTs:
+          type: integer
+          description: End timestamp of the step.
+        type:
+          $ref: '#/components/schemas/StepInfoType'
+        status:
+          $ref: '#/components/schemas/RmStatus'
+        name:
+          type: string
+          description: Name of the step.
+        identifier:
+          type: string
+          description: Identifier of the step.
+        info:
+          $ref: '#/components/schemas/StepInfoDetailsDTO'
+        stageNodeId:
+          type: string
+          description: Node Id of the stage.
+        stepExecutionId:
+          type: string
+          description: Step execution identifier.
+        stageExecutionId:
+          type: string
+          description: Stage Execution Id
+    ReleaseActionRequest:
+      title: ReleaseActionRequest
+      type: object
+      required:
+      - action
+      - message
+      properties:
+        action:
+          type: string
+          enum:
+          - Abort
+          description: Action to perform on the release
+        message:
+          type: string
+          description: Message explaining the reason for the action (e.g., why the release is being aborted)
+          example: Production issue detected - rolling back due to memory leak
+    ExecutionTaskStatus:
+      type: string
+      description: Current status of the execution task
+      enum:
+      - TODO
+      - IN_PROGRESS
+      - SUCCEEDED
+      - FAILED
+      - BLOCKED
+      x-oapi-codegen-extra-tags:
+        validate: required
+    StringOrBool:
+      oneOf:
+      - type: boolean
+        description: Boolean value
+      - type: string
+        description: String value
+      description: Flexible type that accepts either a boolean or a string
+    NextRequest:
+      type: object
+      properties:
+        cursor:
+          type: string
+        limit:
+          type: integer
+    ReleaseActionResponse:
+      type: object
+      required:
+      - id
+      - status
+      properties:
+        id:
+          type: string
+          description: ID of the release
+        status:
+          type: string
+          description: New status of the release
+        interruptedExecutionId:
+          type: string
+          description: ID of the execution that was interrupted
+          x-omitempty: true
+    InfrastructureDeploymentDTO:
+      title: InfrastructureDeploymentDTO
+      x-stoplight:
+        id: infra-deploy-dto
+      type: object
+      description: Represents services deployed to a traditional infrastructure
+      required:
+      - identifier
+      - name
+      - services
+      properties:
+        identifier:
+          type: string
+          description: Infrastructure identifier
+          x-stoplight:
+            id: infra-id
+        name:
+          type: string
+          description: Infrastructure name
+          x-stoplight:
+            id: infra-name
+        services:
+          type: array
+          description: Services deployed to this infrastructure
+          x-stoplight:
+            id: infra-services
           items:
             $ref: '#/components/schemas/ServiceInfoDTO'
     EnvironmentDashboardDTO:
@@ -674,92 +1044,49 @@ components:
           x-stoplight:
             id: j5bso2heelxd6
           $ref: '#/components/schemas/EnvironmentType'
-    SubprocessTriggerResponse:
+    SubprocessTriggerRequest:
+      title: SubprocessTriggerRequest
       type: object
       required:
-      - activityExecutionId
+      - subprocessInfo
       properties:
-        activityExecutionId:
-          type: string
-          description: ID of the newly created activity execution
-    RmStatus:
+        subprocessInfo:
+          $ref: '#/components/schemas/SubprocessInfo'
+    StepInfoType:
       type: string
-      description: Status of the stage.
+      description: Type of the step (e.g., Approval, JiraUpdate, JiraCreate, JiraApproval).
       enum:
-      - ABORTED
-      - OUTPUT_WAITING
-      - ASYNC_WAITING
-      - APPROVAL_REJECTED
-      - APPROVAL_WAITING
-      - DISCONTINUING
-      - ERROR
-      - ERRORED
-      - EXPIRED
-      - FAILED
-      - FREEZE_FAILED
-      - IGNORE_FAILED
-      - INPUT_WAITING
-      - INTERVENTION_WAITING
-      - QUEUED
-      - REJECTED
-      - RESUMED
-      - RUNNING
-      - SCHEDULED
-      - SKIPPED
-      - STARTING
-      - STARTING_QUEUED_STEP
-      - SUCCESS
-      - SUCCEEDED
-      - SUSPENDED
-      - TIMED_WAITING
-      - TASK_WAITING
-      - UPLOAD_WAITING
-      - WAIT_STEP_RUNNING
-      - WAITING
-      - ON_HOLD
-    TimeRangeDTO:
-      title: TimeRangeDTO
-      x-stoplight:
-        id: hn1xs7mdq98t8
-      type: object
-      required:
-      - startTime
-      - endTime
-      properties:
-        startTime:
-          type: integer
-          x-stoplight:
-            id: 0hwcfemzmo3ir
-        endTime:
-          type: integer
-          x-stoplight:
-            id: yn8e6z0kbqqma
-        cursor:
-          type: string
-          x-stoplight:
-            id: yk127vxz4p3ew
-        limit:
-          type: integer
-          x-stoplight:
-            id: pzpbxgbr61103
-    ApprovedByDTO:
-      type: object
-      required:
-      - email
-      properties:
-        name:
-          type: string
-          description: Name of the person who approved the step.
-        email:
-          type: string
-          description: Email of the person who approved the step.
-    StringOrBool:
+      - HarnessApproval
+      - JiraUpdate
+      - JiraCreate
+      - JiraApproval
+    ActivityType:
+      type: string
+      enum:
+      - stage
+      - step
+      description: Type of the activity (e.g., stage, step).
+    StringOrStringArray:
       oneOf:
-      - type: boolean
-        description: Boolean value
       - type: string
-        description: String value
-      description: Flexible type that accepts either a boolean or a string
+        description: Reference as a string
+      - type: array
+        items:
+          type: string
+        description: Array of references as strings
+      description: Flexible type that accepts either a single string or an array of strings for user references
+    RmFailureInfo:
+      type: object
+      description: Information about a failure that occurred
+      required:
+      - msg
+      properties:
+        msg:
+          type: string
+          description: The failure message describing what went wrong
+        code:
+          type: string
+          description: The failure code indicating the type of failure
     ReleaseActivity:
       type: object
       required:
@@ -802,275 +1129,80 @@ components:
           $ref: '#/components/schemas/StepInfoDTO'
         triggeredBy:
           $ref: '#/components/schemas/TriggeredByDTO'
-    StageInfoDTO:
+    ReleaseParentDTO:
+      title: ReleaseParentDTO
       type: object
-      description: Details about the stage activity (provided if type is stage).
-      required:
-      - type
-      - name
-      - identifier
-      - status
-      - startTs
-      - info
       properties:
-        type:
-          $ref: '#/components/schemas/StageInfoType'
-        startTs:
-          type: integer
-          description: Start timestamp of the stage.
-        endTs:
-          type: integer
-          description: End timestamp of the stage.
-        name:
+        id:
           type: string
-          description: Name of the stage.
+          description: Release id of the ancestor
         identifier:
           type: string
-          description: Identifier of the stage.
-        status:
-          $ref: '#/components/schemas/RmStatus'
-        info:
-          $ref: '#/components/schemas/StageInfoDetailsDTO'
-        stageNodeId:
+          description: Release identifier of the ancestor
+        processName:
           type: string
-          description: Node Id of the stage.
-        stageExecutionId:
-          type: string
-          description: Stage execution Id.
-    AdHocReleaseRequest:
-      title: AdHocReleaseRequest
-      type: object
-      required:
-      - processIdentifier
-      - name
-      - version
-      - identifier
-      - expectedStartTs
-      - expectedEndTs
-      properties:
+          description: Name of the orchestration process attached to this ancestor release
         processIdentifier:
           type: string
-          description: Identifier of the orchestration process
-        processInputIdentifier:
+          description: Identifier of the orchestration process attached to this ancestor release
+        activityName:
           type: string
-          description: Identifier of the orchestration process input (optional)
-          x-omitempty: true
-        name:
+          description: Name of the subprocess activity that created this ancestor release (empty for roots)
+        activityIdentifier:
           type: string
-          description: Name of the ad hoc release
-        version:
-          type: string
-          description: Version of the ad hoc release
-        identifier:
-          type: string
-          description: Unique identifier for the ad hoc release
-        description:
-          type: string
-          description: Optional description
-          x-omitempty: true
-        expectedStartTs:
-          type: integer
-          description: Expected start timestamp in milliseconds
-        expectedEndTs:
-          type: integer
-          description: Expected end timestamp in milliseconds
-        color:
-          type: string
-          description: Hex color code for the release
-          x-omitempty: true
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          description: Key-value tags for the release
-          x-omitempty: true
-    ReleaseApprovalDTO:
-      title: ReleaseApprovalDTO
-      x-stoplight:
-        id: 3tsv4huyi5u4n
-      type: object
-      required:
-      - orgIdentifier
-      - projectIdentifier
-      - pipelineIdentifier
-      - planExecutionId
-      - name
-      - runSequenceId
-      - status
-      - type
-      properties:
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        pipelineIdentifier:
-          type: string
-        planExecutionId:
-          type: string
-        name:
-          type: string
-        runSequenceId:
-          type: integer
-        status:
-          $ref: '#/components/schemas/RmStatus'
-        type:
-          $ref: '#/components/schemas/ReleaseApprovalType'
-        approvalInfo:
-          $ref: '#/components/schemas/ApprovalInfoDTO'
-    EnvironmentDTO:
-      title: EnvironmentDTO
-      x-stoplight:
-        id: welv4akcc949t
-      type: object
-      required:
-      - identifier
-      properties:
-        identifier:
-          type: string
-          x-stoplight:
-            id: cae3z7dgcbrhz
-        orgIdentifier:
-          type: string
-          x-stoplight:
-            id: t0tzpes5cl8d9
-        projectIdentifier:
-          type: string
-          x-stoplight:
-            id: cby40h9n1rk5g
-    StepInfoType:
-      type: string
-      description: Type of the step (e.g., Approval, JiraUpdate, JiraCreate, JiraApproval).
-      enum:
-      - HarnessApproval
-      - JiraUpdate
-      - JiraCreate
-      - JiraApproval
-    RmFailureInfo:
-      type: object
-      description: Information about a failure that occurred
-      required:
-      - msg
-      properties:
-        msg:
-          type: string
-          description: The failure message describing what went wrong
-        code:
-          type: string
-          description: The failure code indicating the type of failure
-    TriggerType:
-      type: string
-      enum:
-      - MANUAL
-      - WEBHOOK
-      - WEBHOOK_CUSTOM
-      - ARTIFACT
-      - MANIFEST
-      - SCHEDULER_CRON
-      description: Unit of time used for repeating releases.
-    ActivityType:
-      type: string
-      enum:
-      - stage
-      - step
-      description: Type of the activity (e.g., stage, step).
-    StageInfoType:
-      type: string
-      enum:
-      - CD
-      - Custom
-      - GITOPS
-      - Approval
-      description: Type of the stage (e.g., CD, custom)
-    SubprocessTriggerRequest:
-      title: SubprocessTriggerRequest
-      type: object
-      required:
-      - subprocessInfo
-      properties:
-        subprocessInfo:
-          $ref: '#/components/schemas/SubprocessInfo'
+          description: Identifier of the subprocess activity that created this ancestor release (empty for roots)
     EnvironmentType:
       type: string
       enum:
       - PreProduction
       - Production
-    ExecutionTaskStatus:
-      type: string
-      description: Current status of the execution task
-      enum:
-      - TODO
-      - IN_PROGRESS
-      - SUCCEEDED
-      - FAILED
-      - BLOCKED
-      x-oapi-codegen-extra-tags:
-        validate: required
-    InfrastructureDeploymentDTO:
-      title: InfrastructureDeploymentDTO
-      x-stoplight:
-        id: infra-deploy-dto
+    ExecutionTaskDTO:
       type: object
-      description: Represents services deployed to a traditional infrastructure
+      description: Represents an execution task for a specific activity
       required:
       - identifier
       - name
-      - services
-      properties:
-        identifier:
-          type: string
-          description: Infrastructure identifier
-          x-stoplight:
-            id: infra-id
-        name:
-          type: string
-          description: Infrastructure name
-          x-stoplight:
-            id: infra-name
-        services:
-          type: array
-          description: Services deployed to this infrastructure
-          x-stoplight:
-            id: infra-services
-          items:
-            $ref: '#/components/schemas/ServiceInfoDTO'
-    StepInfoDTO:
-      type: object
-      description: Details about the step activity (provided if type is step).
-      required:
-      - type
-      - name
-      - identifier
       - status
-      - startTs
-      - info
+      - required
+      - userGroups
+      - expectedDuration
       properties:
-        startTs:
-          type: integer
-          description: Start timestamp of the step.
-        endTs:
-          type: integer
-          description: End timestamp of the step.
-        type:
-          $ref: '#/components/schemas/StepInfoType'
-        status:
-          $ref: '#/components/schemas/RmStatus'
-        name:
-          type: string
-          description: Name of the step.
         identifier:
           type: string
-          description: Identifier of the step.
-        info:
-          $ref: '#/components/schemas/StepInfoDetailsDTO'
-        stageNodeId:
+          description: Unique identifier of the task
+        name:
           type: string
-          description: Node Id of the stage.
-        stepExecutionId:
+          description: Name of the task
+        description:
           type: string
-          description: Step execution identifier.
-        stageExecutionId:
+          description: Description of the task
+        status:
+          $ref: '#/components/schemas/ExecutionTaskStatus'
+        required:
+          $ref: '#/components/schemas/StringOrBool'
+          description: Whether this task is required
+        userGroups:
+          $ref: '#/components/schemas/StringOrStringArray'
+          description: List of user group identifiers assigned to this task
+        expectedDuration:
           type: string
-          description: Stage Execution Id
+          description: Expected duration for the task (e.g., "1d 12h")
+        actualDuration:
+          type: string
+          description: Actual duration taken for the task (e.g., "7h")
+        createdAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the task was created
+        lastUpdatedAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the task was last updated
+        taskExecutionId:
+          type: string
+          description: ID of the task execution
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
     TriggeredByDTO:
       type: object
       description: Details of the user who triggered the activity.
@@ -1086,43 +1218,35 @@ components:
           description: Avatar URL of the person.
         triggerType:
           $ref: '#/components/schemas/TriggerType'
-    RmPageable:
+    StepInfoDetailsDTO:
       type: object
+      description: Provided if `type` is Approval.
       properties:
-        pageNumber:
-          type: integer
-        pageSize:
-          type: integer
-        sort:
-          $ref: '#/components/schemas/PageableSort'
-        offset:
-          type: integer
-        paged:
-          type: boolean
-        unpaged:
-          type: boolean
-    SubprocessInfo:
-      type: object
-      required:
-      - processIdentifier
-      - processInputIdentifier
-      - releaseInput
-      - output
-      properties:
-        processIdentifier:
+        approvedByName:
           type: string
-          description: Process identifier. Required when retryWith is SUBPROCESS.
-        processInputIdentifier:
+          description: Name of the person who approved the step.
+        approvedByEmail:
           type: string
-          description: Process input identifier. Required when retryWith is SUBPROCESS.
-        releaseInput:
+          description: Email of the person who approved the step.
+        approvedAt:
+          type: integer
+          format: integer
+          description: Timestamp of the approval.
+        comments:
           type: string
-          description: Release input YAML. Required when retryWith is SUBPROCESS.
-        output:
-          type: object
-          additionalProperties:
-            type: string
-          description: Output map with key-value pairs.
+          description: Comments provided during the approval.
+        approvalAction:
+          type: string
+          description: Action taken for the approval.
+        jiraUrl:
+          type: string
+          description: URL of the Jira ticket.
+        ticketStatus:
+          type: string
+          description: Status of the Jira ticket.
+        issueType:
+          type: string
+          description: Type of the Jira issue.
     ReleaseDTO:
       title: ReleaseDTO
       type: object
@@ -1204,233 +1328,25 @@ components:
         identifier:
           type: string
           description: Identifier of the created release
-    ReleaseApprovalType:
-      type: string
-      description: Type of the step (e.g., Approval, JiraUpdate, JiraCreate, JiraApproval).
-      enum:
-      - HarnessApproval
-      - JiraApproval
-    NextRequest:
-      type: object
-      properties:
-        cursor:
-          type: string
-        limit:
-          type: integer
-    StringOrStringArray:
-      oneOf:
-      - type: string
-        description: Reference as a string
-      - type: array
-        items:
-          type: string
-        description: Array of references as strings
-      description: Flexible type that accepts either a single string or an array of strings for user references
-    PageableSort:
-      type: object
-      x-go-name: PageableSort
-      properties:
-        empty:
-          type: boolean
-        sorted:
-          type: boolean
-        unsorted:
-          type: boolean
-    ApprovalInfoDTO:
+    SubprocessTriggerResponse:
       type: object
       required:
-      - approvedBy
-      - approvedAt
+      - activityExecutionId
       properties:
-        approvedBy:
-          $ref: '#/components/schemas/ApprovedByDTO'
-        approvedAt:
-          type: integer
-          format: int64
-          description: Timestamp of the approval.
-        comments:
+        activityExecutionId:
           type: string
-          description: Comments provided during the approval.
-    ReleaseActionRequest:
-      title: ReleaseActionRequest
-      type: object
-      required:
-      - action
-      - message
-      properties:
-        action:
-          type: string
-          enum:
-          - Abort
-          description: Action to perform on the release
-        message:
-          type: string
-          description: Message explaining the reason for the action (e.g., why the release is being aborted)
-          example: Production issue detected - rolling back due to memory leak
-    ReleaseParentDTO:
-      title: ReleaseParentDTO
-      type: object
-      properties:
-        id:
-          type: string
-          description: Release id of the ancestor
-        identifier:
-          type: string
-          description: Release identifier of the ancestor
-        processName:
-          type: string
-          description: Name of the orchestration process attached to this ancestor release
-        processIdentifier:
-          type: string
-          description: Identifier of the orchestration process attached to this ancestor release
-        activityName:
-          type: string
-          description: Name of the subprocess activity that created this ancestor release (empty for roots)
-        activityIdentifier:
-          type: string
-          description: Identifier of the subprocess activity that created this ancestor release (empty for roots)
-    ExecutionTaskDTO:
-      type: object
-      description: Represents an execution task for a specific activity
-      required:
-      - identifier
-      - name
-      - status
-      - required
-      - userGroups
-      - expectedDuration
-      properties:
-        identifier:
-          type: string
-          description: Unique identifier of the task
-        name:
-          type: string
-          description: Name of the task
-        description:
-          type: string
-          description: Description of the task
-        status:
-          $ref: '#/components/schemas/ExecutionTaskStatus'
-        required:
-          $ref: '#/components/schemas/StringOrBool'
-          description: Whether this task is required
-        userGroups:
-          $ref: '#/components/schemas/StringOrStringArray'
-          description: List of user group identifiers assigned to this task
-        expectedDuration:
-          type: string
-          description: Expected duration for the task (e.g., "1d 12h")
-        actualDuration:
-          type: string
-          description: Actual duration taken for the task (e.g., "7h")
-        createdAt:
-          type: integer
-          format: int64
-          description: Unix timestamp when the task was created
-        lastUpdatedAt:
-          type: integer
-          format: int64
-          description: Unix timestamp when the task was last updated
-        taskExecutionId:
-          type: string
-          description: ID of the task execution
-        failureInfo:
-          $ref: '#/components/schemas/RmFailureInfo'
-  requestBodies:
-    ReleaseSummaryRequest:
-      description: Provide the filtering for release summary
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              timeRanges:
-                x-stoplight:
-                  id: mcl3yvfgxod21
-                type: array
-                items:
-                  $ref: '#/components/schemas/TimeRangeDTO'
-    UpdateReleaseRequest:
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - yaml
-            - startTs
-            - duration
-            properties:
-              yaml:
-                type: string
-                x-stoplight:
-                  id: iajp3uj485zjr
-              startTs:
-                type: integer
-                x-stoplight:
-                  id: 5el84v3en86uw
-              duration:
-                type: string
-                x-stoplight:
-                  id: 5el84v3en86wu
-              processIdentifier:
-                type: string
-                description: Identifier of the orchestration process
-                x-stoplight:
-                  id: c6lf1bupdd0ym
-              processInputIdentifier:
-                type: string
-                description: Identifier of the orchestration process input
-                x-stoplight:
-                  id: c6lf1bupdd0ym
-    CreateAdHocReleaseRequest:
-      description: Request body for creating an ad hoc release
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AdHocReleaseRequest'
+          description: ID of the newly created activity execution
   parameters:
-    RmLimit:
-      name: limit
+    Cursor:
+      name: cursor
       in: query
       schema:
-        type: number
-        default: 500
-        maximum: 500
-      description: The number of records expected
+        type: string
+      description: Cursor Based Pagination
     Size:
       name: size
       in: query
       required: false
-      schema:
-        type: integer
-    AccountParam:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Account Identifier
-    InfrastructureIdentifiersListParam:
-      name: infrastructureIdentifiers
-      in: query
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
-      description: List of infrastructure identifiers
-    ReleaseId:
-      name: releaseId
-      in: path
-      required: true
-      schema:
-        type: string
-    EndTime:
-      name: endTs
-      in: query
-      required: true
       schema:
         type: integer
     RmPage:
@@ -1439,42 +1355,42 @@ components:
       required: false
       schema:
         type: integer
-    RmOrgParam:
-      name: orgIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Organisation Identifier
-    Cursor:
-      name: cursor
-      in: query
-      schema:
-        type: string
-      description: Cursor Based Pagination
-    StatusListParam:
-      name: status
-      in: query
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
-        uniqueItems: false
-      allowReserved: false
-    RmProjectParam:
-      name: projectIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Project Identifier
     StartTime:
       name: startTs
       in: query
       required: true
       schema:
         type: integer
+    EnvironmentIdentifiersListParam:
+      name: environmentIdentifiers
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      description: List of environment identifiers
+    SearchTermParam:
+      name: searchTerm
+      in: query
+      description: Optional search string to filter releases by name.
+      required: false
+      schema:
+        type: string
+    ReleaseId:
+      name: releaseId
+      in: path
+      required: true
+      schema:
+        type: string
+    RmLimit:
+      name: limit
+      in: query
+      schema:
+        type: number
+        default: 500
+        maximum: 500
+      description: The number of records expected
     RmSort:
       name: sort
       in: query
@@ -1503,24 +1419,6 @@ components:
         example4:
           value:
           - end_ts,asc
-    EnvironmentIdentifiersListParam:
-      name: environmentIdentifiers
-      in: query
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
-      description: List of environment identifiers
-    ReleaseGroupIdsParam:
-      name: releaseGroupIds
-      in: query
-      description: Optional list of release group IDs to filter by
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
     ReleaseTypeParam:
       name: type
       in: query
@@ -1531,20 +1429,62 @@ components:
         enum:
         - Orchestration
         - Tracking
-    SearchTermParam:
-      name: searchTerm
+    InfrastructureIdentifiersListParam:
+      name: infrastructureIdentifiers
       in: query
-      description: Optional search string to filter releases by name.
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      description: List of infrastructure identifiers
+    StatusListParam:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+        uniqueItems: false
+      allowReserved: false
+    EndTime:
+      name: endTs
+      in: query
+      required: true
+      schema:
+        type: integer
+    ReleaseGroupIdsParam:
+      name: releaseGroupIds
+      in: query
+      description: Optional list of release group IDs to filter by
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+    RmOrgParam:
+      name: orgIdentifier
+      in: query
       required: false
       schema:
         type: string
+      description: Organisation Identifier
+    AccountParam:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Account Identifier
+    RmProjectParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Project Identifier
   responses:
-    ReleaseActionResponse:
-      description: Release action executed successfully
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ReleaseActionResponse'
     EnvironmentDashboardResponse:
       description: Response for the environment dashboard screen
       content:
@@ -1604,34 +1544,6 @@ components:
                 type: boolean
               empty:
                 type: boolean
-    ReleaseSummaryResponse:
-      description: Returns a list of releaseEntities
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - releases
-            - nextRequest
-            properties:
-              releases:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ReleaseDTO'
-              nextRequest:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TimeRangeDTO'
-              last:
-                type: boolean
-                x-stoplight:
-                  id: 5u6pepygt9njo
-    CreateAdHocReleaseResponse:
-      description: Ad hoc release created successfully
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AdHocReleaseResponse'
     RmReleaseDetailsResponse:
       description: Response for the single release information
       content:
@@ -1653,75 +1565,6 @@ components:
                 type: string
                 x-stoplight:
                   id: r7fkpyimn44oh
-    RmErrorResponse:
-      description: Error Response body
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RmError'
-    UpdateReleaseResponse:
-      description: Response for updating releases
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - id
-            - yaml
-            properties:
-              id:
-                type: string
-              yaml:
-                type: string
-                x-stoplight:
-                  id: azso4lcdvvkwx
-    ReleaseTasksResponse:
-      description: Successful response for release tasks
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - tasks
-            - nextRequest
-            - last
-            properties:
-              tasks:
-                type: array
-                description: List of tasks from manual activities.
-                items:
-                  $ref: '#/components/schemas/ExecutionTaskDTO'
-              nextRequest:
-                $ref: '#/components/schemas/NextRequest'
-              last:
-                type: boolean
-                description: Whether this is the last page of results
-    ReleaseActivitiesResponse:
-      description: Successful response
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - activities
-            - nextRequest
-            - last
-            properties:
-              activities:
-                type: array
-                description: List of activities.
-                items:
-                  $ref: '#/components/schemas/ReleaseActivity'
-              nextRequest:
-                $ref: '#/components/schemas/NextRequest'
-              last:
-                type: boolean
-    SubprocessTriggerResponse:
-      description: Response of subprocess trigger API
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SubprocessTriggerResponse'
     EnvironmentListPerReleaseResponse:
       description: ''
       content:
@@ -1744,6 +1587,163 @@ components:
                 type: boolean
                 x-stoplight:
                   id: 5pdrduhitbef4
+    RmErrorResponse:
+      description: Error Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RmError'
+    UpdateReleaseResponse:
+      description: Response for updating releases
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - id
+            - yaml
+            properties:
+              id:
+                type: string
+              yaml:
+                type: string
+                x-stoplight:
+                  id: azso4lcdvvkwx
+    ReleaseActionResponse:
+      description: Release action executed successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReleaseActionResponse'
+    CreateAdHocReleaseResponse:
+      description: Ad hoc release created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AdHocReleaseResponse'
+    ReleaseActivitiesResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - activities
+            - nextRequest
+            - last
+            properties:
+              activities:
+                type: array
+                description: List of activities.
+                items:
+                  $ref: '#/components/schemas/ReleaseActivity'
+              nextRequest:
+                $ref: '#/components/schemas/NextRequest'
+              last:
+                type: boolean
+    ReleaseSummaryResponse:
+      description: Returns a list of releaseEntities
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - releases
+            - nextRequest
+            properties:
+              releases:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReleaseDTO'
+              nextRequest:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeRangeDTO'
+              last:
+                type: boolean
+                x-stoplight:
+                  id: 5u6pepygt9njo
+    ReleaseTasksResponse:
+      description: Successful response for release tasks
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - tasks
+            - nextRequest
+            - last
+            properties:
+              tasks:
+                type: array
+                description: List of tasks from manual activities.
+                items:
+                  $ref: '#/components/schemas/ExecutionTaskDTO'
+              nextRequest:
+                $ref: '#/components/schemas/NextRequest'
+              last:
+                type: boolean
+                description: Whether this is the last page of results
+    SubprocessTriggerResponse:
+      description: Response of subprocess trigger API
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SubprocessTriggerResponse'
+  requestBodies:
+    CreateAdHocReleaseRequest:
+      description: Request body for creating an ad hoc release
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AdHocReleaseRequest'
+    ReleaseSummaryRequest:
+      description: Provide the filtering for release summary
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              timeRanges:
+                x-stoplight:
+                  id: mcl3yvfgxod21
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeRangeDTO'
+    UpdateReleaseRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - yaml
+            - startTs
+            - duration
+            properties:
+              yaml:
+                type: string
+                x-stoplight:
+                  id: iajp3uj485zjr
+              startTs:
+                type: integer
+                x-stoplight:
+                  id: 5el84v3en86uw
+              duration:
+                type: string
+                x-stoplight:
+                  id: 5el84v3en86wu
+              processIdentifier:
+                type: string
+                description: Identifier of the orchestration process
+                x-stoplight:
+                  id: c6lf1bupdd0ym
+              processInputIdentifier:
+                type: string
+                description: Identifier of the orchestration process input
+                x-stoplight:
+                  id: c6lf1bupdd0ym
   securitySchemes:
     x-api-key:
       name: x-api-key

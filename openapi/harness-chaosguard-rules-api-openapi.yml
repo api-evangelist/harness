@@ -422,45 +422,22 @@ paths:
                 $ref: '#/components/schemas/shared.Error'
 components:
   schemas:
-    api.ResponseErrorCode:
+    security_governance.RecurrenceSpec:
+      type: object
+      properties:
+        until:
+          type: integer
+        value:
+          description: set if recurrenceType is Monthly
+          type: integer
+    security_governance.AccessControl:
       type: string
       enum:
-      - PIPELINE_NOT_FOUND
+      - ALLOWED
+      - BLOCKED
       x-enum-varnames:
-      - PipelineNotFound
-    chaosguardrules.CreateRuleRequest:
-      type: object
-      required:
-      - conditionIds
-      - name
-      - ruleId
-      - timeWindows
-      - userGroupIds
-      properties:
-        conditionIds:
-          type: array
-          items:
-            type: string
-        description:
-          type: string
-        isEnabled:
-          type: boolean
-        name:
-          type: string
-        ruleId:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        timeWindows:
-          type: array
-          items:
-            $ref: '#/components/schemas/security_governance.TimeWindow'
-        userGroupIds:
-          type: array
-          items:
-            type: string
+      - ALLOWED
+      - BLOCKED
     security_governance.Workload:
       type: object
       properties:
@@ -480,23 +457,13 @@ components:
           type: array
           items:
             type: string
-    security_governance.Operator:
-      type: string
-      enum:
-      - EQUAL_TO
-      - NOT_EQUAL_TO
-      x-enum-varnames:
-      - EQUAL_TO
-      - NOT_EQUAL_TO
-    security_governance.ApplicationSpec:
+    security_governance.MachineSpec:
       type: object
       properties:
-        operator:
-          $ref: '#/components/schemas/security_governance.Operator'
-        workloads:
-          type: array
-          items:
-            $ref: '#/components/schemas/security_governance.Workload'
+        infraSpec:
+          $ref: '#/components/schemas/security_governance.InfraSpec'
+        unverifiedProbe:
+          $ref: '#/components/schemas/security_governance.AccessControl'
     github_com_harness_hce-saas_graphql_server_api.Pagination:
       type: object
       properties:
@@ -508,6 +475,52 @@ components:
           type: integer
         totalPages:
           type: integer
+    security_governance.FaultSpec:
+      type: object
+      properties:
+        faults:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.Fault'
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+    security_governance.Env:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    security_governance.Fault:
+      type: object
+      properties:
+        faultType:
+          $ref: '#/components/schemas/security_governance.FaultType'
+        name:
+          type: string
+    security_governance.Recurrence:
+      type: object
+      required:
+      - type
+      properties:
+        spec:
+          $ref: '#/components/schemas/security_governance.RecurrenceSpec'
+        type:
+          type: string
+          enum:
+          - Yearly
+          - Monthly
+          - Daily
+          - Weekly
+          - None
+    security_governance.Operator:
+      type: string
+      enum:
+      - EQUAL_TO
+      - NOT_EQUAL_TO
+      x-enum-varnames:
+      - EQUAL_TO
+      - NOT_EQUAL_TO
     chaosguardrules.GetRuleResponse:
       type: object
       required:
@@ -555,22 +568,6 @@ components:
           type: array
           items:
             type: string
-    security_governance.InfraSpec:
-      type: object
-      properties:
-        infraIds:
-          type: array
-          items:
-            type: string
-        operator:
-          $ref: '#/components/schemas/security_governance.Operator'
-    security_governance.Fault:
-      type: object
-      properties:
-        faultType:
-          $ref: '#/components/schemas/security_governance.FaultType'
-        name:
-          type: string
     security_governance.TimeWindow:
       type: object
       required:
@@ -587,34 +584,6 @@ components:
           type: integer
         timeZone:
           type: string
-    security_governance.FaultSpec:
-      type: object
-      properties:
-        faults:
-          type: array
-          items:
-            $ref: '#/components/schemas/security_governance.Fault'
-        operator:
-          $ref: '#/components/schemas/security_governance.Operator'
-    security_governance.RecurrenceSpec:
-      type: object
-      properties:
-        until:
-          type: integer
-        value:
-          description: set if recurrenceType is Monthly
-          type: integer
-    chaosguardrules.ListRuleResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        pagination:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-        rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/chaosguardrules.RuleResponse'
     api.RestError:
       type: object
       properties:
@@ -624,14 +593,7 @@ components:
           type: string
         message:
           type: string
-    security_governance.MachineSpec:
-      type: object
-      properties:
-        infraSpec:
-          $ref: '#/components/schemas/security_governance.InfraSpec'
-        unverifiedProbe:
-          $ref: '#/components/schemas/security_governance.AccessControl'
-    chaosguardrules.CreateRuleResponse:
+    chaosguardrules.UpdateRuleResponse:
       type: object
       required:
       - conditionIds
@@ -666,6 +628,96 @@ components:
           type: array
           items:
             type: string
+    hcesdk.UserDetails:
+      type: object
+      properties:
+        email:
+          type: string
+        userID:
+          type: string
+        username:
+          type: string
+    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_security_governance.Rule:
+      type: object
+      required:
+      - conditionIds
+      - name
+      - ruleId
+      - timeWindows
+      - userGroupIds
+      properties:
+        conditionIds:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        isEnabled:
+          type: boolean
+        name:
+          type: string
+        ruleId:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        timeWindows:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.TimeWindow'
+        userGroupIds:
+          type: array
+          items:
+            type: string
+    shared.Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        correlationID:
+          type: string
+        message:
+          type: string
+    chaosguardrules.DeleteRuleResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        message:
+          type: string
+        success:
+          type: boolean
+    security_governance.InfraSpec:
+      type: object
+      properties:
+        infraIds:
+          type: array
+          items:
+            type: string
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+    security_governance.InfraType:
+      type: string
+      enum:
+      - Kubernetes
+      - KubernetesV2
+      - Linux
+      - Windows
+      x-enum-varnames:
+      - KUBERNETES
+      - KUBERNETESV2
+      - Linux
+      - Windows
+    security_governance.ApplicationSpec:
+      type: object
+      properties:
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+        workloads:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.Workload'
     security_governance.K8sSpec:
       type: object
       properties:
@@ -677,6 +729,40 @@ components:
           $ref: '#/components/schemas/security_governance.InfraSpec'
         unverifiedProbe:
           $ref: '#/components/schemas/security_governance.AccessControl'
+    chaosguardrules.ListRuleResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        pagination:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosguardrules.RuleResponse'
+    security_governance.ChaosServiceAccountSpec:
+      type: object
+      properties:
+        operator:
+          $ref: '#/components/schemas/security_governance.Operator'
+        serviceAccounts:
+          type: array
+          items:
+            type: string
+    security_governance.FaultType:
+      type: string
+      enum:
+      - FAULT_GROUP
+      - FAULT_NAME
+      x-enum-varnames:
+      - FAULT_GROUP
+      - FAULT_NAME
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
     chaosguardrules.RuleResponse:
       type: object
       required:
@@ -724,133 +810,6 @@ components:
           type: array
           items:
             type: string
-    chaosguardrules.UpdateRuleResponse:
-      type: object
-      required:
-      - conditionIds
-      - name
-      - ruleId
-      - timeWindows
-      - userGroupIds
-      properties:
-        conditionIds:
-          type: array
-          items:
-            type: string
-        correlationID:
-          type: string
-        description:
-          type: string
-        isEnabled:
-          type: boolean
-        name:
-          type: string
-        ruleId:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        timeWindows:
-          type: array
-          items:
-            $ref: '#/components/schemas/security_governance.TimeWindow'
-        userGroupIds:
-          type: array
-          items:
-            type: string
-    security_governance.AccessControl:
-      type: string
-      enum:
-      - ALLOWED
-      - BLOCKED
-      x-enum-varnames:
-      - ALLOWED
-      - BLOCKED
-    security_governance.FaultType:
-      type: string
-      enum:
-      - FAULT_GROUP
-      - FAULT_NAME
-      x-enum-varnames:
-      - FAULT_GROUP
-      - FAULT_NAME
-    security_governance.InfraType:
-      type: string
-      enum:
-      - Kubernetes
-      - KubernetesV2
-      - Linux
-      - Windows
-      x-enum-varnames:
-      - KUBERNETES
-      - KUBERNETESV2
-      - Linux
-      - Windows
-    security_governance.Recurrence:
-      type: object
-      required:
-      - type
-      properties:
-        spec:
-          $ref: '#/components/schemas/security_governance.RecurrenceSpec'
-        type:
-          type: string
-          enum:
-          - Yearly
-          - Monthly
-          - Daily
-          - Weekly
-          - None
-    hcesdk.UserDetails:
-      type: object
-      properties:
-        email:
-          type: string
-        userID:
-          type: string
-        username:
-          type: string
-    security_governance.Env:
-      type: object
-      properties:
-        name:
-          type: string
-        value:
-          type: string
-    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_security_governance.Rule:
-      type: object
-      required:
-      - conditionIds
-      - name
-      - ruleId
-      - timeWindows
-      - userGroupIds
-      properties:
-        conditionIds:
-          type: array
-          items:
-            type: string
-        description:
-          type: string
-        isEnabled:
-          type: boolean
-        name:
-          type: string
-        ruleId:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        timeWindows:
-          type: array
-          items:
-            $ref: '#/components/schemas/security_governance.TimeWindow'
-        userGroupIds:
-          type: array
-          items:
-            type: string
     security_governance.Condition:
       type: object
       required:
@@ -877,30 +836,71 @@ components:
           type: array
           items:
             type: string
-    shared.Error:
+    chaosguardrules.CreateRuleResponse:
       type: object
+      required:
+      - conditionIds
+      - name
+      - ruleId
+      - timeWindows
+      - userGroupIds
       properties:
-        code:
-          type: integer
+        conditionIds:
+          type: array
+          items:
+            type: string
         correlationID:
           type: string
-        message:
+        description:
           type: string
-    chaosguardrules.DeleteRuleResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        message:
-          type: string
-        success:
+        isEnabled:
           type: boolean
-    security_governance.ChaosServiceAccountSpec:
+        name:
+          type: string
+        ruleId:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        timeWindows:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.TimeWindow'
+        userGroupIds:
+          type: array
+          items:
+            type: string
+    chaosguardrules.CreateRuleRequest:
       type: object
+      required:
+      - conditionIds
+      - name
+      - ruleId
+      - timeWindows
+      - userGroupIds
       properties:
-        operator:
-          $ref: '#/components/schemas/security_governance.Operator'
-        serviceAccounts:
+        conditionIds:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        isEnabled:
+          type: boolean
+        name:
+          type: string
+        ruleId:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        timeWindows:
+          type: array
+          items:
+            $ref: '#/components/schemas/security_governance.TimeWindow'
+        userGroupIds:
           type: array
           items:
             type: string

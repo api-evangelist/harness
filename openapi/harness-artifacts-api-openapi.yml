@@ -446,207 +446,6 @@ paths:
       tags:
       - Artifacts
 components:
-  parameters:
-    versionParam:
-      description: Version
-      in: query
-      name: version
-      schema:
-        type: string
-    fromDateParam:
-      description: Date. Format - MM/DD/YYYY
-      in: query
-      name: from
-      schema:
-        type: string
-    RegistrypageNumber:
-      description: Current page number
-      in: query
-      name: page
-      schema:
-        default: 1
-        format: int64
-        type: integer
-    digestOptParam:
-      description: Digest.
-      in: query
-      name: digest
-      schema:
-        type: string
-    AccountIdentifierParam:
-      description: Account Identifier
-      in: query
-      name: accountIdentifier
-      schema:
-        type: string
-    versionPathParam:
-      description: Name of Artifact Version.
-      in: path
-      name: version
-      required: true
-      schema:
-        type: string
-    versionTypeParam:
-      description: Version Type.
-      in: query
-      name: version_type
-      schema:
-        enum:
-        - DIGEST
-        - TAG
-        type: string
-    envType:
-      description: env type
-      in: query
-      name: env_type
-      schema:
-        description: Environment Type
-        enum:
-        - PreProduction
-        - Production
-        type: string
-    fileNamePathParam:
-      description: Name of Artifact File.
-      in: path
-      name: file_name
-      required: true
-      schema:
-        type: string
-    RegistrypageSize:
-      description: Number of items per page
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        type: integer
-    searchTerm:
-      description: search Term.
-      in: query
-      name: search_term
-      schema:
-        type: string
-    registryRefPathParam:
-      description: 'Reference to the scope in which the registry exists.
-
-
-        Format depends on the scope:
-
-
-        - **Account-level**: `account_id/registry_name/+`
-
-        - **Organization-level**: `account_id/org_id/registry_name/+`
-
-        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
-
-
-        The `/+` suffix is used internally to route scoped requests.
-
-        It must be included **exactly as shown** in the URL.
-
-        '
-      examples:
-        accountLevel:
-          description: Only account ID, scoped at account level
-          summary: Account-level registry
-          value: acc123/registry123/+
-        orgLevel:
-          description: Account and org ID, scoped at org level
-          summary: Organization-level registry
-          value: acc123/org456/registry123/+
-        projectLevel:
-          description: Account, org, and project ID, scoped at project level
-          summary: Project-level registry
-          value: acc123/org456/proj789/registry123/+
-      in: path
-      name: registry_ref
-      required: true
-      schema:
-        type: string
-    artifactPathParam:
-      description: "Name of the artifact.\n\nThe value depends on whether the name contains a slash (`/`):\n\n- If the artifact name **contains `/`**, append a trailing `/+` at the end.\n  - Example: `mygroup/myartifact/+`\n- If the artifact name **does not contain `/`**, use the plain name.\n  - Example: `myartifact`\n\nThis is used internally to distinguish between namespaced and flat artifact names.\n"
-      examples:
-        flat:
-          summary: Flat artifact name
-          value: myartifact
-        namespaced:
-          summary: Namespaced artifact
-          value: mygroup/myartifact/+
-      in: path
-      name: artifact
-      required: true
-      schema:
-        type: string
-    sortField:
-      description: sortField
-      in: query
-      name: sort_field
-      schema:
-        type: string
-    artifactTypeParam:
-      description: artifact type.
-      in: query
-      name: artifact_type
-      schema:
-        enum:
-        - model
-        - dataset
-        - module
-        - provider
-        type: string
-    deleteFilterParam:
-      description: Filter for soft-deleted entities
-      in: query
-      name: deleted
-      schema:
-        default: exclude
-        enum:
-        - exclude
-        - include
-        - only
-        type: string
-    RegistryIdentifierPathParam:
-      description: Unique registry Identifier in a account.
-      in: path
-      name: registry_identifier
-      required: true
-      schema:
-        type: string
-    filtersParam:
-      description: 'Key-value filters for artifact version. Repeat the parameter once per filter.
-
-        Format per entry: key:value
-
-        Example: ?filters=architecture:amd64&filters=distribution:ubuntu
-
-        '
-      explode: true
-      in: query
-      name: filters
-      schema:
-        items:
-          example: architecture:amd64
-          type: string
-        type: array
-      style: form
-    toDateParam:
-      description: Date. Format - MM/DD/YYYY
-      in: query
-      name: to
-      schema:
-        type: string
-    childVersionParam:
-      description: Child version incase of Docker artifacts.
-      in: query
-      name: childVersion
-      schema:
-        type: string
-    RegistrysortOrder:
-      description: sortOrder
-      in: query
-      name: sort_order
-      schema:
-        type: string
   schemas:
     ListArtifactLabel:
       description: A list of Harness Artifact Labels
@@ -677,14 +476,12 @@ components:
       required:
       - labels
       type: object
-    CreateBulkDownloadRequestResponseOutput:
+    RubyArtifactDetailConfig:
+      description: Config for RubyGems artifact details
       properties:
-        downloadId:
-          description: Unique identifier for the download request
-          example: 12345678-1234-1234-1234-123456789012
-          type: string
-      required:
-      - downloadId
+        metadata:
+          additionalProperties: true
+          type: object
       type: object
     ListFileDetail:
       description: A list of Harness Artifact Files
@@ -716,162 +513,49 @@ components:
       required:
       - files
       type: object
-    RegistryError:
-      description: Standard error response with code, message and optional details
-      properties:
-        code:
-          description: The HTTP error code
-          example: '404'
-          type: string
-        details:
-          description: 'Additional context and details about the error.
-
-            May include field-specific validation errors or debugging information.
-
-            '
-          example:
-            field: registry_identifier
-            reason: Registry does not exist in the specified project
-            value: invalid-registry
-          type: object
-        message:
-          description: Human-readable error message explaining what went wrong
-          example: Registry not found
-          type: string
-      required:
-      - code
-      - message
-      type: object
-    ArtifactVersionMetadata:
-      description: Artifact Version Metadata
-      properties:
-        artifactKey:
-          additionalProperties:
-            type: string
-          type: object
-        artifactType:
-          $ref: '#/components/schemas/RegistryArtifactType'
-        deletedAt:
-          description: Timestamp in milliseconds when the artifact was soft deleted. Null if not deleted.
-          type: string
-        deploymentMetadata:
-          $ref: '#/components/schemas/DeploymentMetadata'
-        digestCount:
-          format: int64
-          type: integer
-        downloadsCount:
-          format: int64
-          type: integer
-        fileCount:
-          format: int64
-          type: integer
-        firewallMode:
-          enum:
-          - ENABLED
-          - QUARANTINE
-          - ALLOW
-          type: string
-        isQuarantined:
-          type: boolean
-        lastModified:
-          type: string
-        lastScannedAt:
-          type: string
-        metadata:
-          $ref: '#/components/schemas/ArtifactEntityMetadata'
-        name:
-          type: string
-        packageType:
-          $ref: '#/components/schemas/PackageType'
-        pullCommand:
-          type: string
-        quarantineReason:
-          type: string
-        registryIdentifier:
-          type: string
-        registryPath:
-          type: string
-        registryType:
-          $ref: '#/components/schemas/RegistryType'
-        registryUUID:
-          type: string
-        scanId:
-          type: string
-        scanStatus:
-          enum:
-          - WARN
-          - BLOCKED
-          - ALLOWED
-          type: string
-        size:
-          type: string
-        uuid:
-          type: string
-      required:
-      - name
-      - registryIdentifier
-      - latestVersion
-      - registryPath
-      - packageType
-      - uuid
-      - registryUUID
-      type: object
-    OciArtifactTag:
-      description: OCI Artifact Tag info
-      properties:
-        digest:
-          type: string
-        name:
-          type: string
-      required:
-      - name
-      - digest
-      type: object
-    ConanArtifactDetailConfig:
-      description: Config for Conan artifact details
+    PuppetArtifactDetailConfig:
+      description: Config for puppet artifact details
       properties:
         metadata:
           additionalProperties: true
           type: object
       type: object
-    FileDetail:
-      description: File Detail
+    ArtifactStats:
+      description: Harness Artifact Stats
       properties:
-        checksums:
-          items:
-            type: string
-          type: array
-        createdAt:
-          type: string
-        downloadCommand:
-          type: string
-        name:
-          type: string
-        path:
-          type: string
-        size:
-          type: string
-      required:
-      - name
-      - size
-      - checksums
-      - downloadCommand
-      - createdAt
-      - path
+        downloadCount:
+          format: int64
+          type: integer
+        downloadSize:
+          format: int64
+          type: integer
+        totalStorageSize:
+          format: int64
+          type: integer
+        uploadSize:
+          format: int64
+          type: integer
       type: object
-    ListOciArtifactTags:
+    DebianArtifactDetailConfig:
+      description: Config for debian artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    ListArtifactVersion:
       description: A list of Artifact versions
       properties:
+        artifactVersions:
+          description: A list of Artifact versions
+          items:
+            $ref: '#/components/schemas/ArtifactVersionMetadata'
+          type: array
         itemCount:
           description: The total number of items
           example: 1
           format: int64
           type: integer
-        ociArtifactTags:
-          description: A list of OCI Artifact tags
-          items:
-            $ref: '#/components/schemas/OciArtifactTag'
-          type: array
         pageCount:
           description: The total number of pages
           example: 100
@@ -887,7 +571,100 @@ components:
           example: 1
           type: integer
       required:
-      - ociArtifactTags
+      - artifacts
+      type: object
+    PackageType:
+      description: refers to package
+      enum:
+      - DOCKER
+      - MAVEN
+      - PYTHON
+      - GENERIC
+      - HELM
+      - NUGET
+      - NPM
+      - RPM
+      - CARGO
+      - COMPOSER
+      - GO
+      - HUGGINGFACE
+      - CONDA
+      - DART
+      - SWIFT
+      - PUPPET
+      - RUBY
+      - CRAN
+      - RAW
+      - HELM_HTTP
+      - DEBIAN
+      - CONAN
+      - TERRAFORM
+      type: string
+    CreateBulkDownloadRequestResponseOutput:
+      properties:
+        downloadId:
+          description: Unique identifier for the download request
+          example: 12345678-1234-1234-1234-123456789012
+          type: string
+      required:
+      - downloadId
+      type: object
+    ArtifactLabelRequest:
+      properties:
+        labels:
+          items:
+            type: string
+          type: array
+      required:
+      - labels
+      type: object
+    GoArtifactDetailConfig:
+      description: Config for Go artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    ArtifactEntityMetadata:
+      additionalProperties: true
+      description: Artifact Entity Metadata
+      type: object
+    ArtifactDeploymentsList:
+      description: A list of Artifact Deployments
+      properties:
+        deployments:
+          description: A list of Artifact
+          items:
+            $ref: '#/components/schemas/ArtifactDeploymentsDetail'
+          type: array
+        itemCount:
+          description: The total number of items
+          example: 1
+          format: int64
+          type: integer
+        pageCount:
+          description: The total number of pages
+          example: 100
+          format: int64
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          format: int64
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+      required:
+      - artifacts
+      type: object
+    PythonArtifactDetailConfig:
+      description: Config for python artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
       type: object
     ArtifactDetail:
       description: Artifact Detail
@@ -977,159 +754,10 @@ components:
       - url
       - packageType
       type: object
-    RpmArtifactDetailConfig:
-      description: Config for RPM artifact details
+    GenericArtifactDetailConfig:
+      description: Config for generic artifact details
       properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    ArtifactDeploymentsList:
-      description: A list of Artifact Deployments
-      properties:
-        deployments:
-          description: A list of Artifact
-          items:
-            $ref: '#/components/schemas/ArtifactDeploymentsDetail'
-          type: array
-        itemCount:
-          description: The total number of items
-          example: 1
-          format: int64
-          type: integer
-        pageCount:
-          description: The total number of pages
-          example: 100
-          format: int64
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          format: int64
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
-      required:
-      - artifacts
-      type: object
-    NpmArtifactDetailConfig:
-      description: Config for npm artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    ArtifactLabelRequest:
-      properties:
-        labels:
-          items:
-            type: string
-          type: array
-      required:
-      - labels
-      type: object
-    CRANArtifactDetailConfig:
-      description: Config for CRAN artifact details.
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    TerraformArtifactDetailConfig:
-      description: Config for Terraform artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    HuggingFaceArtifactDetailConfig:
-      description: Config for huggingface artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    ListArtifactVersion:
-      description: A list of Artifact versions
-      properties:
-        artifactVersions:
-          description: A list of Artifact versions
-          items:
-            $ref: '#/components/schemas/ArtifactVersionMetadata'
-          type: array
-        itemCount:
-          description: The total number of items
-          example: 1
-          format: int64
-          type: integer
-        pageCount:
-          description: The total number of pages
-          example: 100
-          format: int64
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          format: int64
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
-      required:
-      - artifacts
-      type: object
-    RegistryType:
-      description: refers to type of registry i.e virtual or upstream
-      discriminator:
-        propertyName: type
-      enum:
-      - VIRTUAL
-      - UPSTREAM
-      type: string
-    PythonArtifactDetailConfig:
-      description: Config for python artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    ArtifactDeploymentsDetail:
-      description: Artifact deployments Detail
-      properties:
-        count:
-          type: integer
-        envIdentifier:
-          type: string
-        envName:
-          type: string
-        envType:
-          $ref: '#/components/schemas/RegistryEnvironmentType'
-        infraIdentifier:
-          type: string
-        infraName:
-          type: string
-        lastDeployedAt:
-          type: string
-        lastDeployedById:
-          type: string
-        lastDeployedByName:
-          type: string
-        lastPipelineExecutionId:
-          type: string
-        lastPipelineExecutionName:
-          type: string
-        orgIdentifier:
-          type: string
-        pipelineId:
-          type: string
-        projectIdentifier:
-          type: string
-        serviceIdentifier:
-          type: string
-        serviceName:
+        description:
           type: string
       type: object
     MavenArtifactDetailConfig:
@@ -1140,85 +768,31 @@ components:
         groupId:
           type: string
       type: object
-    HelmArtifactDetailConfig:
-      description: Config for helm artifact details
+    RegistryError:
+      description: Standard error response with code, message and optional details
       properties:
-        pullCommand:
+        code:
+          description: The HTTP error code
+          example: '404'
           type: string
-      type: object
-    ArtifactSummary:
-      description: Harness Artifact Summary
-      properties:
-        artifactType:
-          $ref: '#/components/schemas/RegistryArtifactType'
-        createdAt:
-          type: string
-        deletedAt:
-          description: Timestamp in milliseconds when the registry was soft-deleted
-          type: string
-        downloadsCount:
-          format: int64
-          type: integer
-        imageName:
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-        modifiedAt:
-          type: string
-        packageType:
-          $ref: '#/components/schemas/PackageType'
-        registryUUID:
-          type: string
-        uuid:
+        details:
+          description: 'Additional context and details about the error.
+
+            May include field-specific validation errors or debugging information.
+
+            '
+          example:
+            field: registry_identifier
+            reason: Registry does not exist in the specified project
+            value: invalid-registry
+          type: object
+        message:
+          description: Human-readable error message explaining what went wrong
+          example: Registry not found
           type: string
       required:
-      - imageName
-      - packageType
-      - uuid
-      - registryUUID
-      type: object
-    ArtifactDeploymentsDetails:
-      description: Docker Artifact deployments Details
-      properties:
-        deployments:
-          $ref: '#/components/schemas/ArtifactDeploymentsList'
-        deploymentsStats:
-          $ref: '#/components/schemas/DeploymentStats'
-      required:
-      - deployments
-      type: object
-    ArtifactEntityMetadata:
-      additionalProperties: true
-      description: Artifact Entity Metadata
-      type: object
-    GoArtifactDetailConfig:
-      description: Config for Go artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    GenericArtifactDetailConfig:
-      description: Config for generic artifact details
-      properties:
-        description:
-          type: string
-      type: object
-    NugetArtifactDetailConfig:
-      description: Config for nuget artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    CondaArtifactDetailConfig:
-      description: Config for conda artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
+      - code
+      - message
       type: object
     RegistryStatus:
       description: Request processing status indicator
@@ -1227,101 +801,6 @@ components:
       - FAILURE
       - ERROR
       type: string
-    RubyArtifactDetailConfig:
-      description: Config for RubyGems artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    HelmHttpArtifactDetailConfig:
-      description: Config for Helm HTTP artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    DockerArtifactDetailConfig:
-      description: Config for docker artifact details
-      properties:
-        pullCommand:
-          type: string
-      type: object
-    CargoArtifactDetailConfig:
-      description: Config for Cargo artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    DartArtifactDetailConfig:
-      description: Config for dart artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    DebianArtifactDetailConfig:
-      description: Config for debian artifact details
-      properties:
-        metadata:
-          additionalProperties: true
-          type: object
-      type: object
-    PackageType:
-      description: refers to package
-      enum:
-      - DOCKER
-      - MAVEN
-      - PYTHON
-      - GENERIC
-      - HELM
-      - NUGET
-      - NPM
-      - RPM
-      - CARGO
-      - COMPOSER
-      - GO
-      - HUGGINGFACE
-      - CONDA
-      - DART
-      - SWIFT
-      - PUPPET
-      - RUBY
-      - CRAN
-      - RAW
-      - HELM_HTTP
-      - DEBIAN
-      - CONAN
-      - TERRAFORM
-      type: string
-    RegistryEnvironmentType:
-      description: Environment Type
-      enum:
-      - PreProduction
-      - Production
-      type: string
-    DeploymentMetadata:
-      properties:
-        nonProdEnvCount:
-          type: integer
-        prodEnvCount:
-          type: integer
-      required:
-      - prodEnvCount
-      - nonProdEnvCount
-      type: object
-    DeploymentStats:
-      description: DeploymentStats
-      properties:
-        PreProduction:
-          type: integer
-        Production:
-          type: integer
-      required:
-      - Production
-      - PreProduction
-      type: object
     RegistryUserInfo:
       description: Structured user information for a principal
       properties:
@@ -1338,21 +817,131 @@ components:
           description: Principal unique identifier (username)
           type: string
       type: object
-    ComposerArtifactDetailConfig:
-      description: Config for composer artifact details
+    HelmArtifactDetailConfig:
+      description: Config for helm artifact details
+      properties:
+        pullCommand:
+          type: string
+      type: object
+    RpmArtifactDetailConfig:
+      description: Config for RPM artifact details
       properties:
         metadata:
           additionalProperties: true
           type: object
       type: object
-    RegistryArtifactType:
-      description: refers to artifact type
-      enum:
-      - model
-      - dataset
-      - module
-      - provider
-      type: string
+    ConanArtifactDetailConfig:
+      description: Config for Conan artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    SwiftArtifactDetailConfig:
+      description: Config for swift artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    DartArtifactDetailConfig:
+      description: Config for dart artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    OciArtifactTag:
+      description: OCI Artifact Tag info
+      properties:
+        digest:
+          type: string
+        name:
+          type: string
+      required:
+      - name
+      - digest
+      type: object
+    ArtifactVersionMetadata:
+      description: Artifact Version Metadata
+      properties:
+        artifactKey:
+          additionalProperties:
+            type: string
+          type: object
+        artifactType:
+          $ref: '#/components/schemas/RegistryArtifactType'
+        deletedAt:
+          description: Timestamp in milliseconds when the artifact was soft deleted. Null if not deleted.
+          type: string
+        deploymentMetadata:
+          $ref: '#/components/schemas/DeploymentMetadata'
+        digestCount:
+          format: int64
+          type: integer
+        downloadsCount:
+          format: int64
+          type: integer
+        fileCount:
+          format: int64
+          type: integer
+        firewallMode:
+          enum:
+          - ENABLED
+          - QUARANTINE
+          - ALLOW
+          type: string
+        isQuarantined:
+          type: boolean
+        lastModified:
+          type: string
+        lastScannedAt:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/ArtifactEntityMetadata'
+        name:
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        pullCommand:
+          type: string
+        quarantineReason:
+          type: string
+        registryIdentifier:
+          type: string
+        registryPath:
+          type: string
+        registryType:
+          $ref: '#/components/schemas/RegistryType'
+        registryUUID:
+          type: string
+        scanId:
+          type: string
+        scanStatus:
+          enum:
+          - WARN
+          - BLOCKED
+          - ALLOWED
+          type: string
+        size:
+          type: string
+        uuid:
+          type: string
+      required:
+      - name
+      - registryIdentifier
+      - latestVersion
+      - registryPath
+      - packageType
+      - uuid
+      - registryUUID
+      type: object
+    DockerArtifactDetailConfig:
+      description: Config for docker artifact details
+      properties:
+        pullCommand:
+          type: string
+      type: object
     ArtifactVersionSummary:
       description: Docker Artifact Version Summary
       properties:
@@ -1417,37 +1006,253 @@ components:
       - registryUUID
       - imageUUID
       type: object
-    ArtifactStats:
-      description: Harness Artifact Stats
-      properties:
-        downloadCount:
-          format: int64
-          type: integer
-        downloadSize:
-          format: int64
-          type: integer
-        totalStorageSize:
-          format: int64
-          type: integer
-        uploadSize:
-          format: int64
-          type: integer
-      type: object
-    SwiftArtifactDetailConfig:
-      description: Config for swift artifact details
+    RegistryType:
+      description: refers to type of registry i.e virtual or upstream
+      discriminator:
+        propertyName: type
+      enum:
+      - VIRTUAL
+      - UPSTREAM
+      type: string
+    TerraformArtifactDetailConfig:
+      description: Config for Terraform artifact details
       properties:
         metadata:
           additionalProperties: true
           type: object
       type: object
-    PuppetArtifactDetailConfig:
-      description: Config for puppet artifact details
+    ArtifactSummary:
+      description: Harness Artifact Summary
+      properties:
+        artifactType:
+          $ref: '#/components/schemas/RegistryArtifactType'
+        createdAt:
+          type: string
+        deletedAt:
+          description: Timestamp in milliseconds when the registry was soft-deleted
+          type: string
+        downloadsCount:
+          format: int64
+          type: integer
+        imageName:
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+        modifiedAt:
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        registryUUID:
+          type: string
+        uuid:
+          type: string
+      required:
+      - imageName
+      - packageType
+      - uuid
+      - registryUUID
+      type: object
+    RegistryArtifactType:
+      description: refers to artifact type
+      enum:
+      - model
+      - dataset
+      - module
+      - provider
+      type: string
+    HuggingFaceArtifactDetailConfig:
+      description: Config for huggingface artifact details
       properties:
         metadata:
           additionalProperties: true
           type: object
+      type: object
+    ArtifactDeploymentsDetails:
+      description: Docker Artifact deployments Details
+      properties:
+        deployments:
+          $ref: '#/components/schemas/ArtifactDeploymentsList'
+        deploymentsStats:
+          $ref: '#/components/schemas/DeploymentStats'
+      required:
+      - deployments
+      type: object
+    CondaArtifactDetailConfig:
+      description: Config for conda artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    RegistryEnvironmentType:
+      description: Environment Type
+      enum:
+      - PreProduction
+      - Production
+      type: string
+    CRANArtifactDetailConfig:
+      description: Config for CRAN artifact details.
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    CargoArtifactDetailConfig:
+      description: Config for Cargo artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    DeploymentMetadata:
+      properties:
+        nonProdEnvCount:
+          type: integer
+        prodEnvCount:
+          type: integer
+      required:
+      - prodEnvCount
+      - nonProdEnvCount
+      type: object
+    NugetArtifactDetailConfig:
+      description: Config for nuget artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    ComposerArtifactDetailConfig:
+      description: Config for composer artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    HelmHttpArtifactDetailConfig:
+      description: Config for Helm HTTP artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    FileDetail:
+      description: File Detail
+      properties:
+        checksums:
+          items:
+            type: string
+          type: array
+        createdAt:
+          type: string
+        downloadCommand:
+          type: string
+        name:
+          type: string
+        path:
+          type: string
+        size:
+          type: string
+      required:
+      - name
+      - size
+      - checksums
+      - downloadCommand
+      - createdAt
+      - path
+      type: object
+    NpmArtifactDetailConfig:
+      description: Config for npm artifact details
+      properties:
+        metadata:
+          additionalProperties: true
+          type: object
+      type: object
+    ListOciArtifactTags:
+      description: A list of Artifact versions
+      properties:
+        itemCount:
+          description: The total number of items
+          example: 1
+          format: int64
+          type: integer
+        ociArtifactTags:
+          description: A list of OCI Artifact tags
+          items:
+            $ref: '#/components/schemas/OciArtifactTag'
+          type: array
+        pageCount:
+          description: The total number of pages
+          example: 100
+          format: int64
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          format: int64
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+      required:
+      - ociArtifactTags
+      type: object
+    DeploymentStats:
+      description: DeploymentStats
+      properties:
+        PreProduction:
+          type: integer
+        Production:
+          type: integer
+      required:
+      - Production
+      - PreProduction
+      type: object
+    ArtifactDeploymentsDetail:
+      description: Artifact deployments Detail
+      properties:
+        count:
+          type: integer
+        envIdentifier:
+          type: string
+        envName:
+          type: string
+        envType:
+          $ref: '#/components/schemas/RegistryEnvironmentType'
+        infraIdentifier:
+          type: string
+        infraName:
+          type: string
+        lastDeployedAt:
+          type: string
+        lastDeployedById:
+          type: string
+        lastDeployedByName:
+          type: string
+        lastPipelineExecutionId:
+          type: string
+        lastPipelineExecutionName:
+          type: string
+        orgIdentifier:
+          type: string
+        pipelineId:
+          type: string
+        projectIdentifier:
+          type: string
+        serviceIdentifier:
+          type: string
+        serviceName:
+          type: string
       type: object
   responses:
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
     ArtifactLabelResponse:
       content:
         application/json:
@@ -1462,106 +1267,6 @@ components:
             - data
             type: object
       description: response to get artifact label response
-    RegistryUnauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Authentication failed or missing credentials
-    ArtifactVersionSummaryResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ArtifactVersionSummary'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get docker artifact version summary
-    CreateBulkDownloadRequestResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/CreateBulkDownloadRequestResponseOutput'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: Response containing status of bulk download operation
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    ArtifactStatsResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ArtifactStats'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get artifact stats response
-    FileDetailResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ListFileDetail'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get artifact files
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
-    ArtifactDeploymentsResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ArtifactDeploymentsDetails'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get docker artifact deployments details
     ListArtifactVersionResponse:
       content:
         application/json:
@@ -1576,20 +1281,65 @@ components:
             - data
             type: object
       description: response for list versions of artifact
-    ListArtifactLabelResponse:
+    Success:
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            type: object
+      description: Generic success response
+    ListOciArtifactTagsResponse:
       content:
         application/json:
           schema:
             properties:
               data:
-                $ref: '#/components/schemas/ListArtifactLabel'
+                $ref: '#/components/schemas/ListOciArtifactTags'
               status:
                 $ref: '#/components/schemas/RegistryStatus'
             required:
             - status
             - data
             type: object
-      description: response for list artifact labels
+      description: response for list tags info of an OCI artifact
+    Redirect:
+      description: Temporary Redirect
+      headers:
+        Location:
+          description: The URL of the redirected resource
+          schema:
+            format: uri
+            type: string
+    CreateBulkDownloadRequestResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/CreateBulkDownloadRequestResponseOutput'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: Response containing status of bulk download operation
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
     ArtifactDetailResponse:
       content:
         application/json:
@@ -1619,20 +1369,32 @@ components:
             - downloadUrl
             type: object
       description: response to head artifact file
-    ListOciArtifactTagsResponse:
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    ArtifactVersionSummaryResponse:
       content:
         application/json:
           schema:
             properties:
               data:
-                $ref: '#/components/schemas/ListOciArtifactTags'
+                $ref: '#/components/schemas/ArtifactVersionSummary'
               status:
                 $ref: '#/components/schemas/RegistryStatus'
             required:
             - status
             - data
             type: object
-      description: response for list tags info of an OCI artifact
+      description: response to get docker artifact version summary
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
     ArtifactSummaryResponse:
       content:
         application/json:
@@ -1647,25 +1409,263 @@ components:
             - data
             type: object
       description: response to get artifact summary
-    Redirect:
-      description: Temporary Redirect
-      headers:
-        Location:
-          description: The URL of the redirected resource
-          schema:
-            format: uri
-            type: string
-    Success:
+    FileDetailResponse:
       content:
         application/json:
           schema:
             properties:
+              data:
+                $ref: '#/components/schemas/ListFileDetail'
               status:
                 $ref: '#/components/schemas/RegistryStatus'
             required:
             - status
+            - data
             type: object
-      description: Generic success response
+      description: response to get artifact files
+    ListArtifactLabelResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ListArtifactLabel'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response for list artifact labels
+    ArtifactDeploymentsResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ArtifactDeploymentsDetails'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get docker artifact deployments details
+    ArtifactStatsResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ArtifactStats'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get artifact stats response
+  parameters:
+    fileNamePathParam:
+      description: Name of Artifact File.
+      in: path
+      name: file_name
+      required: true
+      schema:
+        type: string
+    versionParam:
+      description: Version
+      in: query
+      name: version
+      schema:
+        type: string
+    RegistrysortOrder:
+      description: sortOrder
+      in: query
+      name: sort_order
+      schema:
+        type: string
+    RegistryIdentifierPathParam:
+      description: Unique registry Identifier in a account.
+      in: path
+      name: registry_identifier
+      required: true
+      schema:
+        type: string
+    artifactTypeParam:
+      description: artifact type.
+      in: query
+      name: artifact_type
+      schema:
+        enum:
+        - model
+        - dataset
+        - module
+        - provider
+        type: string
+    searchTerm:
+      description: search Term.
+      in: query
+      name: search_term
+      schema:
+        type: string
+    AccountIdentifierParam:
+      description: Account Identifier
+      in: query
+      name: accountIdentifier
+      schema:
+        type: string
+    artifactPathParam:
+      description: "Name of the artifact.\n\nThe value depends on whether the name contains a slash (`/`):\n\n- If the artifact name **contains `/`**, append a trailing `/+` at the end.\n  - Example: `mygroup/myartifact/+`\n- If the artifact name **does not contain `/`**, use the plain name.\n  - Example: `myartifact`\n\nThis is used internally to distinguish between namespaced and flat artifact names.\n"
+      examples:
+        flat:
+          summary: Flat artifact name
+          value: myartifact
+        namespaced:
+          summary: Namespaced artifact
+          value: mygroup/myartifact/+
+      in: path
+      name: artifact
+      required: true
+      schema:
+        type: string
+    RegistrypageNumber:
+      description: Current page number
+      in: query
+      name: page
+      schema:
+        default: 1
+        format: int64
+        type: integer
+    digestOptParam:
+      description: Digest.
+      in: query
+      name: digest
+      schema:
+        type: string
+    registryRefPathParam:
+      description: 'Reference to the scope in which the registry exists.
+
+
+        Format depends on the scope:
+
+
+        - **Account-level**: `account_id/registry_name/+`
+
+        - **Organization-level**: `account_id/org_id/registry_name/+`
+
+        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
+
+
+        The `/+` suffix is used internally to route scoped requests.
+
+        It must be included **exactly as shown** in the URL.
+
+        '
+      examples:
+        accountLevel:
+          description: Only account ID, scoped at account level
+          summary: Account-level registry
+          value: acc123/registry123/+
+        orgLevel:
+          description: Account and org ID, scoped at org level
+          summary: Organization-level registry
+          value: acc123/org456/registry123/+
+        projectLevel:
+          description: Account, org, and project ID, scoped at project level
+          summary: Project-level registry
+          value: acc123/org456/proj789/registry123/+
+      in: path
+      name: registry_ref
+      required: true
+      schema:
+        type: string
+    sortField:
+      description: sortField
+      in: query
+      name: sort_field
+      schema:
+        type: string
+    childVersionParam:
+      description: Child version incase of Docker artifacts.
+      in: query
+      name: childVersion
+      schema:
+        type: string
+    versionPathParam:
+      description: Name of Artifact Version.
+      in: path
+      name: version
+      required: true
+      schema:
+        type: string
+    versionTypeParam:
+      description: Version Type.
+      in: query
+      name: version_type
+      schema:
+        enum:
+        - DIGEST
+        - TAG
+        type: string
+    deleteFilterParam:
+      description: Filter for soft-deleted entities
+      in: query
+      name: deleted
+      schema:
+        default: exclude
+        enum:
+        - exclude
+        - include
+        - only
+        type: string
+    RegistrypageSize:
+      description: Number of items per page
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        type: integer
+    envType:
+      description: env type
+      in: query
+      name: env_type
+      schema:
+        description: Environment Type
+        enum:
+        - PreProduction
+        - Production
+        type: string
+    fromDateParam:
+      description: Date. Format - MM/DD/YYYY
+      in: query
+      name: from
+      schema:
+        type: string
+    filtersParam:
+      description: 'Key-value filters for artifact version. Repeat the parameter once per filter.
+
+        Format per entry: key:value
+
+        Example: ?filters=architecture:amd64&filters=distribution:ubuntu
+
+        '
+      explode: true
+      in: query
+      name: filters
+      schema:
+        items:
+          example: architecture:amd64
+          type: string
+        type: array
+      style: form
+    toDateParam:
+      description: Date. Format - MM/DD/YYYY
+      in: query
+      name: to
+      schema:
+        type: string
   requestBodies:
     ArtifactLabelRequest:
       content:

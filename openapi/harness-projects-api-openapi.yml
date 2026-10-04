@@ -349,169 +349,64 @@ paths:
       description: Harness SaaS Production
 components:
   schemas:
-    appprojectsAppProjectStatus:
+    v1ManagedFieldsEntry:
       type: object
       properties:
-        jwtTokensByRole:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/appprojectsJWTTokens'
-          title: JWTTokensByRole contains a list of JWT tokens issued for a given role
-      title: AppProjectStatus contains status information for AppProject CRs
-    appprojectsSignatureKey:
-      type: object
-      properties:
-        keyID:
+        manager:
           type: string
-          title: The ID of the key in hexadecimal notation
-      title: SignatureKey is the specification of a key required to verify commit signatures with
-    appprojectsClusterResourceRestrictionItem:
-      type: object
-      properties:
-        group:
+          description: Manager is an identifier of the workflow managing these fields.
+        operation:
           type: string
-        kind:
-          type: string
-        name:
-          type: string
-          description: 'Name is the name of the restricted resource. Glob patterns using Go''s filepath.Match syntax are supported.
+          description: 'Operation is the type of operation which lead to this ManagedFieldsEntry being created.
 
-            Unlike the group and kind fields, if no name is specified, all resources of the specified group/kind are matched.'
-      title: ClusterResourceRestrictionItem is a cluster resource that is restricted by the project's whitelist or blacklist
-    projectsProjectUpdateRequest:
+            The only valid values for this field are ''Apply'' and ''Update''.'
+        apiVersion:
+          type: string
+          description: 'APIVersion defines the version of this resource that this field set
+
+            applies to. The format is "group/version" just like the top-level
+
+            APIVersion field. It is necessary to track the version of a field
+
+            set because it cannot be automatically converted.'
+        time:
+          $ref: '#/components/schemas/v1Time'
+        fieldsType:
+          type: string
+          title: 'FieldsType is the discriminator for the different fields format and version.
+
+            There is currently only one possible value: "FieldsV1"'
+        fieldsV1:
+          $ref: '#/components/schemas/v1FieldsV1'
+        subresource:
+          type: string
+          description: 'Subresource is the name of the subresource used to update that object, or
+
+            empty string if the object was updated through the main resource. The
+
+            value of this field is used to distinguish between managers, even if they
+
+            share the same name. For example, a status update will be distinct from a
+
+            regular update using the same manager name.
+
+            Note that the APIVersion field is not related to the Subresource field and
+
+            it always corresponds to the version of the main resource.'
+      description: 'ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
+
+        that the fieldset applies to.'
+    protobufAny:
       type: object
       properties:
-        project:
-          $ref: '#/components/schemas/appprojectsAppProject'
-    v1FieldsV1:
-      type: object
-      properties:
-        Raw:
+        type_url:
+          type: string
+          description: "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        value:
           type: string
           format: byte
-          description: Raw is the underlying serialization of this object.
-      description: 'FieldsV1 stores a set of fields in a data structure like a Trie, in JSON format.
-
-
-        Each key is either a ''.'' representing the field itself, and will always map to an empty set,
-
-        or a string representing a sub-field or item. The string will follow one of these four formats:
-
-        ''f:<name>'', where <name> is the name of a field in a struct, or key in a map
-
-        ''v:<value>'', where <value> is the exact json formatted value of a list item
-
-        ''i:<index>'', where <index> is position of a item in a list
-
-        ''k:<keys>'', where <keys> is a map of  a list item''s key fields to their unique values
-
-        If a key maps to an empty Fields value, the field that key represents is part of the set.
-
-
-        The exact format is defined in sigs.k8s.io/structured-merge-diff
-
-        +protobuf.options.(gogoproto.goproto_stringer)=false'
-    appprojectsJWTTokens:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsJWTToken'
-      title: JWTTokens represents a list of JWT tokens
-    appprojectsAppProjectSpec:
-      type: object
-      properties:
-        sourceRepos:
-          type: array
-          items:
-            type: string
-          title: SourceRepos contains list of repository URLs which can be used for deployment
-        destinations:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsApplicationDestination'
-          title: Destinations contains list of destinations available for deployment
-        description:
-          type: string
-          title: Description contains optional project description
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsProjectRole'
-          title: Roles are user defined RBAC roles associated with this project
-        clusterResourceWhitelist:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsClusterResourceRestrictionItem'
-          title: ClusterResourceWhitelist contains list of whitelisted cluster level resources
-        namespaceResourceBlacklist:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1GroupKind'
-          title: NamespaceResourceBlacklist contains list of blacklisted namespace level resources
-        orphanedResources:
-          $ref: '#/components/schemas/appprojectsOrphanedResourcesMonitorSettings'
-        syncWindows:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsSyncWindow'
-          title: SyncWindows controls when syncs can be run for apps in this project
-        namespaceResourceWhitelist:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1GroupKind'
-          title: NamespaceResourceWhitelist contains list of whitelisted namespace level resources
-        signatureKeys:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsSignatureKey'
-          title: SignatureKeys contains a list of PGP key IDs that commits in Git must be signed with in order to be allowed for sync
-        clusterResourceBlacklist:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsClusterResourceRestrictionItem'
-          title: ClusterResourceBlacklist contains list of blacklisted cluster level resources
-        sourceNamespaces:
-          type: array
-          items:
-            type: string
-          title: SourceNamespaces defines the namespaces application resources are allowed to be created in
-        permitOnlyProjectScopedClusters:
-          type: boolean
-          title: PermitOnlyProjectScopedClusters determines whether destinations can only reference clusters which are project-scoped
-        destinationServiceAccounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsApplicationDestinationServiceAccount'
-          description: DestinationServiceAccounts holds information about the service accounts to be impersonated for the application sync operation for each destination.
-      title: AppProjectSpec is the specification of an AppProject
-    v1GroupKind:
-      type: object
-      properties:
-        group:
-          type: string
-        kind:
-          type: string
-      description: +protobuf.options.(gogoproto.goproto_stringer)=false
-      title: 'GroupKind specifies a Group and a Kind, but does not force a version.  This is useful for identifying
-
-        concepts during lookup stages without having partially valid types'
-    appprojectsApplicationDestination:
-      type: object
-      properties:
-        server:
-          type: string
-          title: Server specifies the URL of the target cluster and must be set to the Kubernetes control plane API
-        namespace:
-          type: string
-          title: 'Namespace specifies the target namespace for the application''s resources.
-
-            The namespace will only be set for namespace-scoped resources that have not set a value for .metadata.namespace'
-        name:
-          type: string
-          title: Name is an alternate way of specifying the target cluster by its symbolic name
-      title: ApplicationDestination holds information about the application's destination
+          description: Must be a valid serialized protocol buffer of the above specified type.
+      description: "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     v1ObjectMeta:
       type: object
       properties:
@@ -747,6 +642,34 @@ components:
       description: 'ObjectMeta is metadata that all persisted resources must have, which includes all objects
 
         users must create.'
+    projectsProjectUpdateRequest:
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/appprojectsAppProject'
+    appprojectsJWTTokens:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsJWTToken'
+      title: JWTTokens represents a list of JWT tokens
+    appprojectsApplicationDestination:
+      type: object
+      properties:
+        server:
+          type: string
+          title: Server specifies the URL of the target cluster and must be set to the Kubernetes control plane API
+        namespace:
+          type: string
+          title: 'Namespace specifies the target namespace for the application''s resources.
+
+            The namespace will only be set for namespace-scoped resources that have not set a value for .metadata.namespace'
+        name:
+          type: string
+          title: Name is an alternate way of specifying the target cluster by its symbolic name
+      title: ApplicationDestination holds information about the application's destination
     appprojectsAppProject:
       type: object
       properties:
@@ -775,31 +698,19 @@ components:
         +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
         +kubebuilder:resource:path=appprojects,shortName=appproj;appprojs'
-    appprojectsProjectRole:
+    appprojectsApplicationDestinationServiceAccount:
       type: object
       properties:
-        name:
+        server:
           type: string
-          title: Name is a name for this role
-        description:
+          description: Server specifies the URL of the target cluster's Kubernetes control plane API.
+        namespace:
           type: string
-          title: Description is a description of the role
-        policies:
-          type: array
-          items:
-            type: string
-          title: Policies Stores a list of casbin formatted strings that define access policies for the role in the project
-        jwtTokens:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsJWTToken'
-          title: JWTTokens are a list of generated JWT tokens bound to this role
-        groups:
-          type: array
-          items:
-            type: string
-          title: Groups are a list of OIDC group claims bound to this role
-      title: ProjectRole represents a role that has access to a project
+          description: Namespace specifies the target namespace for the application's resources.
+        defaultServiceAccount:
+          type: string
+          title: DefaultServiceAccount to be used for impersonation during the sync operation
+      description: ApplicationDestinationServiceAccount holds information about the service account to be impersonated for the application sync operation.
     appprojectsOrphanedResourcesMonitorSettings:
       type: object
       properties:
@@ -812,43 +723,112 @@ components:
             $ref: '#/components/schemas/appprojectsOrphanedResourceKey'
           title: Ignore contains a list of resources that are to be excluded from orphaned resources monitoring
       title: OrphanedResourcesMonitorSettings holds settings of orphaned resources monitoring
-    appprojectsOrphanedResourceKey:
+    v1GroupKind:
       type: object
       properties:
         group:
           type: string
         kind:
           type: string
-        name:
-          type: string
-      title: OrphanedResourceKey is a reference to a resource to be ignored from
-    projectsEmptyResponse:
-      type: object
-    gatewayruntimeError:
-      type: object
-      properties:
-        error:
-          type: string
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-        details:
-          type: array
-          items:
-            $ref: '#/components/schemas/protobufAny'
-    protobufAny:
+      description: +protobuf.options.(gogoproto.goproto_stringer)=false
+      title: 'GroupKind specifies a Group and a Kind, but does not force a version.  This is useful for identifying
+
+        concepts during lookup stages without having partially valid types'
+    v1FieldsV1:
       type: object
       properties:
-        type_url:
-          type: string
-          description: "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
-        value:
+        Raw:
           type: string
           format: byte
-          description: Must be a valid serialized protocol buffer of the above specified type.
-      description: "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+          description: Raw is the underlying serialization of this object.
+      description: 'FieldsV1 stores a set of fields in a data structure like a Trie, in JSON format.
+
+
+        Each key is either a ''.'' representing the field itself, and will always map to an empty set,
+
+        or a string representing a sub-field or item. The string will follow one of these four formats:
+
+        ''f:<name>'', where <name> is the name of a field in a struct, or key in a map
+
+        ''v:<value>'', where <value> is the exact json formatted value of a list item
+
+        ''i:<index>'', where <index> is position of a item in a list
+
+        ''k:<keys>'', where <keys> is a map of  a list item''s key fields to their unique values
+
+        If a key maps to an empty Fields value, the field that key represents is part of the set.
+
+
+        The exact format is defined in sigs.k8s.io/structured-merge-diff
+
+        +protobuf.options.(gogoproto.goproto_stringer)=false'
+    appprojectsAppProjectSpec:
+      type: object
+      properties:
+        sourceRepos:
+          type: array
+          items:
+            type: string
+          title: SourceRepos contains list of repository URLs which can be used for deployment
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsApplicationDestination'
+          title: Destinations contains list of destinations available for deployment
+        description:
+          type: string
+          title: Description contains optional project description
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsProjectRole'
+          title: Roles are user defined RBAC roles associated with this project
+        clusterResourceWhitelist:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsClusterResourceRestrictionItem'
+          title: ClusterResourceWhitelist contains list of whitelisted cluster level resources
+        namespaceResourceBlacklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1GroupKind'
+          title: NamespaceResourceBlacklist contains list of blacklisted namespace level resources
+        orphanedResources:
+          $ref: '#/components/schemas/appprojectsOrphanedResourcesMonitorSettings'
+        syncWindows:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsSyncWindow'
+          title: SyncWindows controls when syncs can be run for apps in this project
+        namespaceResourceWhitelist:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1GroupKind'
+          title: NamespaceResourceWhitelist contains list of whitelisted namespace level resources
+        signatureKeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsSignatureKey'
+          title: SignatureKeys contains a list of PGP key IDs that commits in Git must be signed with in order to be allowed for sync
+        clusterResourceBlacklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsClusterResourceRestrictionItem'
+          title: ClusterResourceBlacklist contains list of blacklisted cluster level resources
+        sourceNamespaces:
+          type: array
+          items:
+            type: string
+          title: SourceNamespaces defines the namespaces application resources are allowed to be created in
+        permitOnlyProjectScopedClusters:
+          type: boolean
+          title: PermitOnlyProjectScopedClusters determines whether destinations can only reference clusters which are project-scoped
+        destinationServiceAccounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsApplicationDestinationServiceAccount'
+          description: DestinationServiceAccounts holds information about the service accounts to be impersonated for the application sync operation for each destination.
+      title: AppProjectSpec is the specification of an AppProject
     v1ListMeta:
       type: object
       properties:
@@ -912,18 +892,81 @@ components:
       description: 'ListMeta describes metadata that synthetic resources must have, including lists and
 
         various status objects. A resource may have only one of {ObjectMeta, ListMeta}.'
-    appprojectsJWTToken:
+    appprojectsAppProjectList:
       type: object
       properties:
-        iat:
+        metadata:
+          $ref: '#/components/schemas/v1ListMeta'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsAppProject'
+      title: 'AppProjectList is list of AppProject resources
+
+        +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object'
+    appprojectsSyncWindow:
+      type: object
+      properties:
+        kind:
           type: string
-          format: int64
-        exp:
+          title: Kind defines if the window allows or blocks syncs
+        schedule:
           type: string
-          format: int64
-        id:
+          title: Schedule is the time the window will begin, specified in cron format
+        duration:
           type: string
-      title: JWTToken holds the issuedAt and expiresAt values of a token
+          title: Duration is the amount of time the sync window will be open
+        applications:
+          type: array
+          items:
+            type: string
+          title: Applications contains a list of applications that the window will apply to
+        namespaces:
+          type: array
+          items:
+            type: string
+          title: Namespaces contains a list of namespaces that the window will apply to
+        clusters:
+          type: array
+          items:
+            type: string
+          title: Clusters contains a list of clusters that the window will apply to
+        manualSync:
+          type: boolean
+          title: ManualSync enables manual syncs when they would otherwise be blocked
+        timeZone:
+          type: string
+          title: TimeZone of the sync that will be applied to the schedule
+        project:
+          type: string
+          title: 'Project this sync window belongs to
+
+            this will be deprecated in future'
+      title: SyncWindow contains the kind, time, duration and attributes that are used to assign the syncWindows to apps
+    gatewayruntimeError:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/protobufAny'
+    appprojectsOrphanedResourceKey:
+      type: object
+      properties:
+        group:
+          type: string
+        kind:
+          type: string
+        name:
+          type: string
+      title: OrphanedResourceKey is a reference to a resource to be ignored from
     projectsProjectCreateRequest:
       type: object
       properties:
@@ -932,6 +975,15 @@ components:
         upsert:
           type: boolean
       description: ProjectCreateRequest defines project creation parameters.
+    appprojectsAppProjectStatus:
+      type: object
+      properties:
+        jwtTokensByRole:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/appprojectsJWTTokens'
+          title: JWTTokensByRole contains a list of JWT tokens issued for a given role
+      title: AppProjectStatus contains status information for AppProject CRs
     v1OwnerReference:
       type: object
       properties:
@@ -984,70 +1036,43 @@ components:
         be cluster-scoped, so there is no namespace field.
 
         +structType=atomic'
-    appprojectsAppProjectList:
+    appprojectsJWTToken:
       type: object
       properties:
-        metadata:
-          $ref: '#/components/schemas/v1ListMeta'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/appprojectsAppProject'
-      title: 'AppProjectList is list of AppProject resources
-
-        +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object'
-    appprojectsSyncWindow:
+        iat:
+          type: string
+          format: int64
+        exp:
+          type: string
+          format: int64
+        id:
+          type: string
+      title: JWTToken holds the issuedAt and expiresAt values of a token
+    appprojectsProjectRole:
       type: object
       properties:
-        kind:
+        name:
           type: string
-          title: Kind defines if the window allows or blocks syncs
-        schedule:
+          title: Name is a name for this role
+        description:
           type: string
-          title: Schedule is the time the window will begin, specified in cron format
-        duration:
-          type: string
-          title: Duration is the amount of time the sync window will be open
-        applications:
+          title: Description is a description of the role
+        policies:
           type: array
           items:
             type: string
-          title: Applications contains a list of applications that the window will apply to
-        namespaces:
+          title: Policies Stores a list of casbin formatted strings that define access policies for the role in the project
+        jwtTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/appprojectsJWTToken'
+          title: JWTTokens are a list of generated JWT tokens bound to this role
+        groups:
           type: array
           items:
             type: string
-          title: Namespaces contains a list of namespaces that the window will apply to
-        clusters:
-          type: array
-          items:
-            type: string
-          title: Clusters contains a list of clusters that the window will apply to
-        manualSync:
-          type: boolean
-          title: ManualSync enables manual syncs when they would otherwise be blocked
-        timeZone:
-          type: string
-          title: TimeZone of the sync that will be applied to the schedule
-        project:
-          type: string
-          title: 'Project this sync window belongs to
-
-            this will be deprecated in future'
-      title: SyncWindow contains the kind, time, duration and attributes that are used to assign the syncWindows to apps
-    appprojectsApplicationDestinationServiceAccount:
-      type: object
-      properties:
-        server:
-          type: string
-          description: Server specifies the URL of the target cluster's Kubernetes control plane API.
-        namespace:
-          type: string
-          description: Namespace specifies the target namespace for the application's resources.
-        defaultServiceAccount:
-          type: string
-          title: DefaultServiceAccount to be used for impersonation during the sync operation
-      description: ApplicationDestinationServiceAccount holds information about the service account to be impersonated for the application sync operation.
+          title: Groups are a list of OIDC group claims bound to this role
+      title: ProjectRole represents a role that has access to a project
     v1Time:
       type: object
       properties:
@@ -1081,70 +1106,28 @@ components:
         +protobuf.as=Timestamp
 
         +protobuf.options.(gogoproto.goproto_stringer)=false'
-    v1ManagedFieldsEntry:
+    appprojectsSignatureKey:
       type: object
       properties:
-        manager:
+        keyID:
           type: string
-          description: Manager is an identifier of the workflow managing these fields.
-        operation:
-          type: string
-          description: 'Operation is the type of operation which lead to this ManagedFieldsEntry being created.
-
-            The only valid values for this field are ''Apply'' and ''Update''.'
-        apiVersion:
-          type: string
-          description: 'APIVersion defines the version of this resource that this field set
-
-            applies to. The format is "group/version" just like the top-level
-
-            APIVersion field. It is necessary to track the version of a field
-
-            set because it cannot be automatically converted.'
-        time:
-          $ref: '#/components/schemas/v1Time'
-        fieldsType:
-          type: string
-          title: 'FieldsType is the discriminator for the different fields format and version.
-
-            There is currently only one possible value: "FieldsV1"'
-        fieldsV1:
-          $ref: '#/components/schemas/v1FieldsV1'
-        subresource:
-          type: string
-          description: 'Subresource is the name of the subresource used to update that object, or
-
-            empty string if the object was updated through the main resource. The
-
-            value of this field is used to distinguish between managers, even if they
-
-            share the same name. For example, a status update will be distinct from a
-
-            regular update using the same manager name.
-
-            Note that the APIVersion field is not related to the Subresource field and
-
-            it always corresponds to the version of the main resource.'
-      description: 'ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
-
-        that the fieldset applies to.'
-    ProjectList:
+          title: The ID of the key in hexadecimal notation
+      title: SignatureKey is the specification of a key required to verify commit signatures with
+    appprojectsClusterResourceRestrictionItem:
       type: object
       properties:
-        status:
+        group:
           type: string
-          example: SUCCESS
-        data:
-          type: object
-          properties:
-            totalPages:
-              type: integer
-            totalItems:
-              type: integer
-            content:
-              type: array
-              items:
-                $ref: '#/components/schemas/Project'
+        kind:
+          type: string
+        name:
+          type: string
+          description: 'Name is the name of the restricted resource. Glob patterns using Go''s filepath.Match syntax are supported.
+
+            Unlike the group and kind fields, if no name is specified, all resources of the specified group/kind are matched.'
+      title: ClusterResourceRestrictionItem is a cluster resource that is restricted by the project's whitelist or blacklist
+    projectsEmptyResponse:
+      type: object
     Project:
       type: object
       description: A Harness project.
@@ -1164,18 +1147,35 @@ components:
         color:
           type: string
           example: '#0063F7'
+    ProjectList:
+      type: object
+      properties:
+        status:
+          type: string
+          example: SUCCESS
+        data:
+          type: object
+          properties:
+            totalPages:
+              type: integer
+            totalItems:
+              type: integer
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Project'
   requestBodies:
-    projectsProjectCreateRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/projectsProjectCreateRequest'
-      required: true
     projectsProjectUpdateRequest:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/projectsProjectUpdateRequest'
+      required: true
+    projectsProjectCreateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/projectsProjectCreateRequest'
       required: true
   securitySchemes:
     x-api-key:

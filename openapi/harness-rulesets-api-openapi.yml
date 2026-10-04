@@ -207,6 +207,11 @@ paths:
                 $ref: '#/components/schemas/ResponseDTORuleSetList'
 components:
   schemas:
+    CreateRuleSetDTO:
+      type: object
+      properties:
+        ruleSet:
+          $ref: '#/components/schemas/RuleSet'
     EmbeddedUser:
       type: object
       properties:
@@ -218,6 +223,99 @@ components:
           type: string
         externalUserId:
           type: string
+    ResponseDTORuleSetList:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/RuleSetList'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    RuleSetRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: account id
+        isOOTB:
+          type: boolean
+          description: isOOTBPolicy
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        tags:
+          type: string
+          description: Tags
+        cloudProvider:
+          type: string
+          description: cloudProvider
+        ruleSetIds:
+          type: array
+          description: ruleSetIds
+          items:
+            type: string
+            description: ruleSetIds
+        ruleIds:
+          type: array
+          description: ruleIds
+          items:
+            type: string
+            description: ruleIds
+        search:
+          type: string
+          description: search
+        limit:
+          type: integer
+          description: limit
+          format: int32
+        offset:
+          type: integer
+          description: offset
+          format: int32
+        orderBy:
+          type: array
+          description: The order by condition for Rule Set query
+          items:
+            $ref: '#/components/schemas/CCMSort'
+      description: This has the query to list the policy packs
+    ResponseDTOBoolean:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: boolean
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    CreateRuleSetFilterDTO:
+      type: object
+      properties:
+        ruleSet:
+          $ref: '#/components/schemas/RuleSetRequest'
+    CcmErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -808,35 +906,12 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOBoolean:
+    ValidationError:
       type: object
       properties:
-        status:
+        fieldId:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: boolean
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ResponseDTORuleSet:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/RuleSet'
-        metaData:
-          type: object
-        correlationId:
+        error:
           type: string
     Failure:
       type: object
@@ -1257,41 +1332,6 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    CcmErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    CreateRuleSetFilterDTO:
-      type: object
-      properties:
-        ruleSet:
-          $ref: '#/components/schemas/RuleSetRequest'
-    ResponseDTORuleSetList:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/RuleSetList'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
     CCMSort:
       type: object
       properties:
@@ -1826,69 +1866,6 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
-    RuleSetList:
-      type: object
-      properties:
-        totalItems:
-          type: integer
-          description: Total items
-          format: int32
-        ruleSet:
-          type: array
-          description: List of rules executions
-          items:
-            $ref: '#/components/schemas/RuleSet'
-      description: This object will contain the complete definition of a Cloud Cost RuleSet List
-    RuleSetRequest:
-      type: object
-      properties:
-        accountId:
-          type: string
-          description: account id
-        isOOTB:
-          type: boolean
-          description: isOOTBPolicy
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        tags:
-          type: string
-          description: Tags
-        cloudProvider:
-          type: string
-          description: cloudProvider
-        ruleSetIds:
-          type: array
-          description: ruleSetIds
-          items:
-            type: string
-            description: ruleSetIds
-        ruleIds:
-          type: array
-          description: ruleIds
-          items:
-            type: string
-            description: ruleIds
-        search:
-          type: string
-          description: search
-        limit:
-          type: integer
-          description: limit
-          format: int32
-        offset:
-          type: integer
-          description: offset
-          format: int32
-        orderBy:
-          type: array
-          description: The order by condition for Rule Set query
-          items:
-            $ref: '#/components/schemas/CCMSort'
-      description: This has the query to list the policy packs
     RuleSet:
       type: object
       properties:
@@ -1945,11 +1922,34 @@ components:
         lastUpdatedBy:
           $ref: '#/components/schemas/EmbeddedUser'
       description: This object will contain the complete definition of a Cloud Cost Policy set
-    CreateRuleSetDTO:
+    ResponseDTORuleSet:
       type: object
       properties:
-        ruleSet:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
           $ref: '#/components/schemas/RuleSet'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    RuleSetList:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+          description: Total items
+          format: int32
+        ruleSet:
+          type: array
+          description: List of rules executions
+          items:
+            $ref: '#/components/schemas/RuleSet'
+      description: This object will contain the complete definition of a Cloud Cost RuleSet List
   securitySchemes:
     x-api-key:
       name: x-api-key

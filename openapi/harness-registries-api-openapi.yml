@@ -168,28 +168,231 @@ paths:
       tags:
       - Registries
 components:
+  responses:
+    ListRegistryArtifactResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ListRegistryArtifact'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response for list artifact
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    ClientSetupDetailsResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ClientSetupDetails'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response for client setup details
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
+    Success:
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            type: object
+      description: Generic success response
+    RegistryResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/Registry'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response for create, get and update registry
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
+  parameters:
+    registryRefPathParam:
+      description: 'Reference to the scope in which the registry exists.
+
+
+        Format depends on the scope:
+
+
+        - **Account-level**: `account_id/registry_name/+`
+
+        - **Organization-level**: `account_id/org_id/registry_name/+`
+
+        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
+
+
+        The `/+` suffix is used internally to route scoped requests.
+
+        It must be included **exactly as shown** in the URL.
+
+        '
+      examples:
+        accountLevel:
+          description: Only account ID, scoped at account level
+          summary: Account-level registry
+          value: acc123/registry123/+
+        orgLevel:
+          description: Account and org ID, scoped at org level
+          summary: Organization-level registry
+          value: acc123/org456/registry123/+
+        projectLevel:
+          description: Account, org, and project ID, scoped at project level
+          summary: Project-level registry
+          value: acc123/org456/proj789/registry123/+
+      in: path
+      name: registry_ref
+      required: true
+      schema:
+        type: string
+    searchTerm:
+      description: search Term.
+      in: query
+      name: search_term
+      schema:
+        type: string
+    RegistrypageSize:
+      description: Number of items per page
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        type: integer
+    LabelsParam:
+      description: Label.
+      in: query
+      name: label
+      schema:
+        items:
+          type: string
+        type: array
+    versionParam:
+      description: Version
+      in: query
+      name: version
+      schema:
+        type: string
+    RegistrypageNumber:
+      description: Current page number
+      in: query
+      name: page
+      schema:
+        default: 1
+        format: int64
+        type: integer
+    RegistrysortOrder:
+      description: sortOrder
+      in: query
+      name: sort_order
+      schema:
+        type: string
+    sortField:
+      description: sortField
+      in: query
+      name: sort_field
+      schema:
+        type: string
+    requiredSpaceRefQueryParam:
+      description: 'Reference to the scope in which the registry exists (required for registry creation).
+
+
+        Format depends on the scope:
+
+
+        - **Account-level**: `account_id/+`
+
+        - **Organization-level**: `account_id/org/+`
+
+        - **Project-level**: `account_id/org/project/+`
+
+
+        The `/+` suffix is used internally to route scoped requests.
+
+        It must be included **exactly as shown** in the URL.
+
+        '
+      examples:
+        accountLevel:
+          description: Only account ID, scoped at account level
+          summary: Account-level registry
+          value: acc123/+
+        orgLevel:
+          description: Account and org, scoped at org level
+          summary: Organization-level registry
+          value: acc123/org456/+
+        projectLevel:
+          description: Account, org, and project, scoped at project level
+          summary: Project-level registry
+          value: acc123/org456/proj789/+
+      in: query
+      name: space_ref
+      required: true
+      schema:
+        type: string
+    artifactTypeParam:
+      description: artifact type.
+      in: query
+      name: artifact_type
+      schema:
+        enum:
+        - model
+        - dataset
+        - module
+        - provider
+        type: string
+    artifactParam:
+      description: Artifat
+      in: query
+      name: artifact
+      schema:
+        type: string
   schemas:
-    ClientSetupStepCommand:
-      description: Client Setup Step Command
-      properties:
-        label:
-          type: string
-        value:
-          type: string
-      type: object
-    UserPassword:
-      properties:
-        secretIdentifier:
-          type: string
-        secretSpaceId:
-          format: int64
-          type: integer
-        secretSpacePath:
-          type: string
-        userName:
-          type: string
-      required:
-      - userName
     ClientSetupDetails:
       description: Client Setup Details
       properties:
@@ -206,239 +409,14 @@ components:
       - secHeader
       - sections
       type: object
-    ListRegistryArtifact:
-      description: A list of Artifacts
-      properties:
-        artifacts:
-          description: A list of Artifact
-          items:
-            $ref: '#/components/schemas/RegistryArtifactMetadata'
-          type: array
-        itemCount:
-          description: The total number of items
-          example: 1
-          format: int64
-          type: integer
-        pageCount:
-          description: The total number of pages
-          example: 100
-          format: int64
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          format: int64
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
-      required:
-      - artifacts
-      type: object
-    TabSetupStep:
-      description: Tab Setup step
-      properties:
-        header:
-          type: string
-        sections:
-          items:
-            $ref: '#/components/schemas/ClientSetupSection'
-          type: array
-      type: object
-    RegistryType:
-      description: refers to type of registry i.e virtual or upstream
-      discriminator:
-        propertyName: type
+    RegistryArtifactType:
+      description: refers to artifact type
       enum:
-      - VIRTUAL
-      - UPSTREAM
+      - model
+      - dataset
+      - module
+      - provider
       type: string
-    Anonymous: {}
-    PackageType:
-      description: refers to package
-      enum:
-      - DOCKER
-      - MAVEN
-      - PYTHON
-      - GENERIC
-      - HELM
-      - NUGET
-      - NPM
-      - RPM
-      - CARGO
-      - COMPOSER
-      - GO
-      - HUGGINGFACE
-      - CONDA
-      - DART
-      - SWIFT
-      - PUPPET
-      - RUBY
-      - CRAN
-      - RAW
-      - HELM_HTTP
-      - DEBIAN
-      - CONAN
-      - TERRAFORM
-      type: string
-    AccessKeySecretKey:
-      properties:
-        accessKey:
-          type: string
-        accessKeySecretIdentifier:
-          type: string
-        accessKeySecretSpaceId:
-          format: int64
-          type: integer
-        accessKeySecretSpacePath:
-          type: string
-        secretKeyIdentifier:
-          type: string
-        secretKeySpaceId:
-          format: int64
-          type: integer
-        secretKeySpacePath:
-          type: string
-      required:
-      - secretKeyIdentifier
-    RegistryError:
-      description: Standard error response with code, message and optional details
-      properties:
-        code:
-          description: The HTTP error code
-          example: '404'
-          type: string
-        details:
-          description: 'Additional context and details about the error.
-
-            May include field-specific validation errors or debugging information.
-
-            '
-          example:
-            field: registry_identifier
-            reason: Registry does not exist in the specified project
-            value: invalid-registry
-          type: object
-        message:
-          description: Human-readable error message explaining what went wrong
-          example: Registry not found
-          type: string
-      required:
-      - code
-      - message
-      type: object
-    RegistryConfig:
-      description: SubConfig specific for Virtual or Upstream Registry
-      discriminator:
-        mapping:
-          UPSTREAM: '#/components/schemas/UpstreamConfig'
-          VIRTUAL: '#/components/schemas/VirtualConfig'
-        propertyName: type
-      oneOf:
-      - $ref: '#/components/schemas/VirtualConfig'
-      - $ref: '#/components/schemas/UpstreamConfig'
-      properties:
-        type:
-          $ref: '#/components/schemas/RegistryType'
-      required:
-      - type
-      type: object
-    VirtualConfig:
-      description: Configuration for Harness Virtual Artifact Registries
-      properties:
-        debianConfig:
-          $ref: '#/components/schemas/DebianConfig'
-        upstreamProxies:
-          items:
-            type: string
-          type: array
-      type: object
-    RegistryArtifactMetadata:
-      description: Artifact Metadata
-      properties:
-        artifactType:
-          $ref: '#/components/schemas/RegistryArtifactType'
-        deletedAt:
-          description: Timestamp in milliseconds when the registry was soft-deleted
-          type: string
-        downloadsCount:
-          format: int64
-          type: integer
-        isPublic:
-          type: boolean
-        isQuarantined:
-          type: boolean
-        labels:
-          items:
-            type: string
-          type: array
-        lastModified:
-          type: string
-        latestVersion:
-          type: string
-        name:
-          type: string
-        packageType:
-          $ref: '#/components/schemas/PackageType'
-        registryIdentifier:
-          type: string
-        registryPath:
-          type: string
-        registryUUID:
-          type: string
-        uuid:
-          type: string
-      required:
-      - name
-      - registryIdentifier
-      - latestVersion
-      - registryPath
-      - packageType
-      - isPublic
-      - uuid
-      - registryUUID
-      type: object
-    ClientSetupStep:
-      description: Client Setup Step
-      properties:
-        commands:
-          items:
-            $ref: '#/components/schemas/ClientSetupStepCommand'
-          type: array
-        header:
-          type: string
-        type:
-          $ref: '#/components/schemas/ClientSetupStepType'
-      type: object
-    ClientSetupSection:
-      description: Client Setup Section
-      discriminator:
-        mapping:
-          INLINE: '#/components/schemas/ClientSetupStepConfig'
-          TABS: '#/components/schemas/TabSetupStepConfig'
-        propertyName: type
-      oneOf:
-      - $ref: '#/components/schemas/ClientSetupStepConfig'
-      - $ref: '#/components/schemas/TabSetupStepConfig'
-      properties:
-        header:
-          type: string
-        secHeader:
-          type: string
-        type:
-          $ref: '#/components/schemas/SectionType'
-      required:
-      - type
-      type: object
-    ClientSetupStepConfig:
-      description: Client Setup Step
-      properties:
-        steps:
-          items:
-            $ref: '#/components/schemas/ClientSetupStep'
-          type: array
-      type: object
     RegistryRequest:
       properties:
         allowedPattern:
@@ -497,44 +475,119 @@ components:
       - isPublic
       - parentRef
       type: object
-    CleanupPolicy:
-      description: Cleanup Policy for Harness Artifact Registries
+    UpstreamProxyConfigFirewallMode:
+      description: Firewall mode applied to an upstream proxy.
+      enum:
+      - ALLOW
+      - ENABLED
+      - QUARANTINE
+      type: string
+    ListRegistryArtifact:
+      description: A list of Artifacts
       properties:
-        expireDays:
+        artifacts:
+          description: A list of Artifact
+          items:
+            $ref: '#/components/schemas/RegistryArtifactMetadata'
+          type: array
+        itemCount:
+          description: The total number of items
+          example: 1
+          format: int64
           type: integer
-        name:
+        pageCount:
+          description: The total number of pages
+          example: 100
+          format: int64
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          format: int64
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+      required:
+      - artifacts
+      type: object
+    ClientSetupStep:
+      description: Client Setup Step
+      properties:
+        commands:
+          items:
+            $ref: '#/components/schemas/ClientSetupStepCommand'
+          type: array
+        header:
           type: string
-        packagePrefix:
+        type:
+          $ref: '#/components/schemas/ClientSetupStepType'
+      type: object
+    RegistryArtifactMetadata:
+      description: Artifact Metadata
+      properties:
+        artifactType:
+          $ref: '#/components/schemas/RegistryArtifactType'
+        deletedAt:
+          description: Timestamp in milliseconds when the registry was soft-deleted
+          type: string
+        downloadsCount:
+          format: int64
+          type: integer
+        isPublic:
+          type: boolean
+        isQuarantined:
+          type: boolean
+        labels:
           items:
             type: string
           type: array
-        versionPrefix:
+        lastModified:
+          type: string
+        latestVersion:
+          type: string
+        name:
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        registryIdentifier:
+          type: string
+        registryPath:
+          type: string
+        registryUUID:
+          type: string
+        uuid:
+          type: string
+      required:
+      - name
+      - registryIdentifier
+      - latestVersion
+      - registryPath
+      - packageType
+      - isPublic
+      - uuid
+      - registryUUID
+      type: object
+    Anonymous: {}
+    VirtualConfig:
+      description: Configuration for Harness Virtual Artifact Registries
+      properties:
+        debianConfig:
+          $ref: '#/components/schemas/DebianConfig'
+        upstreamProxies:
           items:
             type: string
           type: array
       type: object
-    RegistryArtifactType:
-      description: refers to artifact type
-      enum:
-      - model
-      - dataset
-      - module
-      - provider
-      type: string
-    AuthType:
-      description: Authentication type
-      enum:
-      - UserPassword
-      - AccessKeySecretKey
-      - Anonymous
-      type: string
-    RegistryStatus:
-      description: Request processing status indicator
-      enum:
-      - SUCCESS
-      - FAILURE
-      - ERROR
-      type: string
+    TabSetupStepConfig:
+      description: Tab Setup step config
+      properties:
+        tabs:
+          items:
+            $ref: '#/components/schemas/TabSetupStep'
+          type: array
+      type: object
     UpstreamConfig:
       description: Configuration for Harness Artifact UpstreamProxies
       properties:
@@ -586,64 +639,13 @@ components:
       - authType
       type: object
       x-discriminator-value: UPSTREAM
-    SectionType:
-      description: refers to client setup section type
-      discriminator:
-        propertyName: type
+    AuthType:
+      description: Authentication type
       enum:
-      - INLINE
-      - TABS
+      - UserPassword
+      - AccessKeySecretKey
+      - Anonymous
       type: string
-    Scanner:
-      description: Scanner for Harness Artifact Registries
-      properties:
-        name:
-          enum:
-          - AQUA_TRIVY
-          - GRYPE
-          type: string
-      type: object
-    TabSetupStepConfig:
-      description: Tab Setup step config
-      properties:
-        tabs:
-          items:
-            $ref: '#/components/schemas/TabSetupStep'
-          type: array
-      type: object
-    ClientSetupStepType:
-      description: ClientSetupStepType type
-      enum:
-      - Static
-      - GenerateToken
-      type: string
-    UpstreamProxyConfigFirewallMode:
-      description: Firewall mode applied to an upstream proxy.
-      enum:
-      - ALLOW
-      - ENABLED
-      - QUARANTINE
-      type: string
-    DebianConfig:
-      description: Debian-specific configuration, applicable only when packageType is DEBIAN.
-      properties:
-        optionalIndexCompressionFormats:
-          description: Optional additional compression formats to generate for index/metadata files.
-          items:
-            enum:
-            - .xz
-            type: string
-          type: array
-        remoteIndexedArchitectures:
-          default:
-          - amd64
-          - i386
-          - arm64
-          description: Architectures to index when building metadata from linked remote (upstream) registries.
-          items:
-            type: string
-          type: array
-      type: object
     Registry:
       description: Harness Artifact Registry
       properties:
@@ -701,230 +703,228 @@ components:
       - isPublic
       - uuid
       type: object
-  parameters:
-    versionParam:
-      description: Version
-      in: query
-      name: version
-      schema:
-        type: string
-    RegistrypageSize:
-      description: Number of items per page
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        type: integer
-    searchTerm:
-      description: search Term.
-      in: query
-      name: search_term
-      schema:
-        type: string
-    RegistrypageNumber:
-      description: Current page number
-      in: query
-      name: page
-      schema:
-        default: 1
-        format: int64
-        type: integer
-    LabelsParam:
-      description: Label.
-      in: query
-      name: label
-      schema:
-        items:
+    TabSetupStep:
+      description: Tab Setup step
+      properties:
+        header:
           type: string
-        type: array
-    registryRefPathParam:
-      description: 'Reference to the scope in which the registry exists.
+        sections:
+          items:
+            $ref: '#/components/schemas/ClientSetupSection'
+          type: array
+      type: object
+    CleanupPolicy:
+      description: Cleanup Policy for Harness Artifact Registries
+      properties:
+        expireDays:
+          type: integer
+        name:
+          type: string
+        packagePrefix:
+          items:
+            type: string
+          type: array
+        versionPrefix:
+          items:
+            type: string
+          type: array
+      type: object
+    RegistryType:
+      description: refers to type of registry i.e virtual or upstream
+      discriminator:
+        propertyName: type
+      enum:
+      - VIRTUAL
+      - UPSTREAM
+      type: string
+    UserPassword:
+      properties:
+        secretIdentifier:
+          type: string
+        secretSpaceId:
+          format: int64
+          type: integer
+        secretSpacePath:
+          type: string
+        userName:
+          type: string
+      required:
+      - userName
+    Scanner:
+      description: Scanner for Harness Artifact Registries
+      properties:
+        name:
+          enum:
+          - AQUA_TRIVY
+          - GRYPE
+          type: string
+      type: object
+    PackageType:
+      description: refers to package
+      enum:
+      - DOCKER
+      - MAVEN
+      - PYTHON
+      - GENERIC
+      - HELM
+      - NUGET
+      - NPM
+      - RPM
+      - CARGO
+      - COMPOSER
+      - GO
+      - HUGGINGFACE
+      - CONDA
+      - DART
+      - SWIFT
+      - PUPPET
+      - RUBY
+      - CRAN
+      - RAW
+      - HELM_HTTP
+      - DEBIAN
+      - CONAN
+      - TERRAFORM
+      type: string
+    SectionType:
+      description: refers to client setup section type
+      discriminator:
+        propertyName: type
+      enum:
+      - INLINE
+      - TABS
+      type: string
+    ClientSetupStepConfig:
+      description: Client Setup Step
+      properties:
+        steps:
+          items:
+            $ref: '#/components/schemas/ClientSetupStep'
+          type: array
+      type: object
+    AccessKeySecretKey:
+      properties:
+        accessKey:
+          type: string
+        accessKeySecretIdentifier:
+          type: string
+        accessKeySecretSpaceId:
+          format: int64
+          type: integer
+        accessKeySecretSpacePath:
+          type: string
+        secretKeyIdentifier:
+          type: string
+        secretKeySpaceId:
+          format: int64
+          type: integer
+        secretKeySpacePath:
+          type: string
+      required:
+      - secretKeyIdentifier
+    RegistryConfig:
+      description: SubConfig specific for Virtual or Upstream Registry
+      discriminator:
+        mapping:
+          UPSTREAM: '#/components/schemas/UpstreamConfig'
+          VIRTUAL: '#/components/schemas/VirtualConfig'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/VirtualConfig'
+      - $ref: '#/components/schemas/UpstreamConfig'
+      properties:
+        type:
+          $ref: '#/components/schemas/RegistryType'
+      required:
+      - type
+      type: object
+    ClientSetupSection:
+      description: Client Setup Section
+      discriminator:
+        mapping:
+          INLINE: '#/components/schemas/ClientSetupStepConfig'
+          TABS: '#/components/schemas/TabSetupStepConfig'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/ClientSetupStepConfig'
+      - $ref: '#/components/schemas/TabSetupStepConfig'
+      properties:
+        header:
+          type: string
+        secHeader:
+          type: string
+        type:
+          $ref: '#/components/schemas/SectionType'
+      required:
+      - type
+      type: object
+    ClientSetupStepType:
+      description: ClientSetupStepType type
+      enum:
+      - Static
+      - GenerateToken
+      type: string
+    DebianConfig:
+      description: Debian-specific configuration, applicable only when packageType is DEBIAN.
+      properties:
+        optionalIndexCompressionFormats:
+          description: Optional additional compression formats to generate for index/metadata files.
+          items:
+            enum:
+            - .xz
+            type: string
+          type: array
+        remoteIndexedArchitectures:
+          default:
+          - amd64
+          - i386
+          - arm64
+          description: Architectures to index when building metadata from linked remote (upstream) registries.
+          items:
+            type: string
+          type: array
+      type: object
+    ClientSetupStepCommand:
+      description: Client Setup Step Command
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+      type: object
+    RegistryError:
+      description: Standard error response with code, message and optional details
+      properties:
+        code:
+          description: The HTTP error code
+          example: '404'
+          type: string
+        details:
+          description: 'Additional context and details about the error.
 
+            May include field-specific validation errors or debugging information.
 
-        Format depends on the scope:
-
-
-        - **Account-level**: `account_id/registry_name/+`
-
-        - **Organization-level**: `account_id/org_id/registry_name/+`
-
-        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
-
-
-        The `/+` suffix is used internally to route scoped requests.
-
-        It must be included **exactly as shown** in the URL.
-
-        '
-      examples:
-        accountLevel:
-          description: Only account ID, scoped at account level
-          summary: Account-level registry
-          value: acc123/registry123/+
-        orgLevel:
-          description: Account and org ID, scoped at org level
-          summary: Organization-level registry
-          value: acc123/org456/registry123/+
-        projectLevel:
-          description: Account, org, and project ID, scoped at project level
-          summary: Project-level registry
-          value: acc123/org456/proj789/registry123/+
-      in: path
-      name: registry_ref
-      required: true
-      schema:
-        type: string
-    requiredSpaceRefQueryParam:
-      description: 'Reference to the scope in which the registry exists (required for registry creation).
-
-
-        Format depends on the scope:
-
-
-        - **Account-level**: `account_id/+`
-
-        - **Organization-level**: `account_id/org/+`
-
-        - **Project-level**: `account_id/org/project/+`
-
-
-        The `/+` suffix is used internally to route scoped requests.
-
-        It must be included **exactly as shown** in the URL.
-
-        '
-      examples:
-        accountLevel:
-          description: Only account ID, scoped at account level
-          summary: Account-level registry
-          value: acc123/+
-        orgLevel:
-          description: Account and org, scoped at org level
-          summary: Organization-level registry
-          value: acc123/org456/+
-        projectLevel:
-          description: Account, org, and project, scoped at project level
-          summary: Project-level registry
-          value: acc123/org456/proj789/+
-      in: query
-      name: space_ref
-      required: true
-      schema:
-        type: string
-    RegistrysortOrder:
-      description: sortOrder
-      in: query
-      name: sort_order
-      schema:
-        type: string
-    artifactTypeParam:
-      description: artifact type.
-      in: query
-      name: artifact_type
-      schema:
-        enum:
-        - model
-        - dataset
-        - module
-        - provider
-        type: string
-    artifactParam:
-      description: Artifat
-      in: query
-      name: artifact
-      schema:
-        type: string
-    sortField:
-      description: sortField
-      in: query
-      name: sort_field
-      schema:
-        type: string
-  responses:
-    ClientSetupDetailsResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ClientSetupDetails'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response for client setup details
-    RegistryUnauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Authentication failed or missing credentials
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    ListRegistryArtifactResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ListRegistryArtifact'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response for list artifact
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
-    RegistryResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/Registry'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response for create, get and update registry
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    Success:
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            type: object
-      description: Generic success response
+            '
+          example:
+            field: registry_identifier
+            reason: Registry does not exist in the specified project
+            value: invalid-registry
+          type: object
+        message:
+          description: Human-readable error message explaining what went wrong
+          example: Registry not found
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    RegistryStatus:
+      description: Request processing status indicator
+      enum:
+      - SUCCESS
+      - FAILURE
+      - ERROR
+      type: string
   requestBodies:
     RegistryRequest:
       content:

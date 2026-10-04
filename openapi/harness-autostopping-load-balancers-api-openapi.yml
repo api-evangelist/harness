@@ -305,6 +305,91 @@ paths:
           content: {}
 components:
   schemas:
+    ContainerSvc:
+      type: object
+      properties:
+        cluster:
+          type: string
+        service:
+          type: string
+        region:
+          type: string
+        task_count:
+          type: number
+    RoutingData:
+      type: object
+      properties:
+        instance:
+          $ref: '#/components/schemas/InstanceBasedRoutingData'
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortConfig'
+        lb:
+          type: string
+        k8s:
+          type: object
+          properties:
+            RuleJson:
+              type: string
+            ConnectorID:
+              type: string
+            Namespace:
+              type: string
+        custom_domain_providers:
+          type: object
+          properties: {}
+        container_svc:
+          $ref: '#/components/schemas/ContainerSvc'
+        database:
+          $ref: '#/components/schemas/RDSDatabase'
+    Proxy:
+      type: object
+      properties:
+        id:
+          type: string
+    RDSDatabase:
+      type: object
+      properties:
+        id:
+          type: string
+        region:
+          type: string
+    ServiceMetadata:
+      type: object
+      properties:
+        cloud_provider_details:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+        target_group_details:
+          type: object
+          properties: {}
+        service_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceError'
+        kubernetes_connector_id:
+          type: string
+        autostopping_proxy_config:
+          type: object
+          properties:
+            http:
+              $ref: '#/components/schemas/HTTPProxy'
+            tcp:
+              $ref: '#/components/schemas/HTTPProxy'
+    CertificateData:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        content:
+          type: string
     LwService:
       required:
       - cloud_account_id
@@ -358,84 +443,6 @@ components:
           $ref: '#/components/schemas/ServiceMetadata'
         status:
           type: string
-    RDSDatabase:
-      type: object
-      properties:
-        id:
-          type: string
-        region:
-          type: string
-    RoutingData:
-      type: object
-      properties:
-        instance:
-          $ref: '#/components/schemas/InstanceBasedRoutingData'
-        ports:
-          type: array
-          items:
-            $ref: '#/components/schemas/PortConfig'
-        lb:
-          type: string
-        k8s:
-          type: object
-          properties:
-            RuleJson:
-              type: string
-            ConnectorID:
-              type: string
-            Namespace:
-              type: string
-        custom_domain_providers:
-          type: object
-          properties: {}
-        container_svc:
-          $ref: '#/components/schemas/ContainerSvc'
-        database:
-          $ref: '#/components/schemas/RDSDatabase'
-    ServicesResponse:
-      type: object
-      properties:
-        response:
-          type: array
-          items:
-            $ref: '#/components/schemas/LwService'
-    DeleteAccessPointPayload:
-      type: object
-      properties:
-        ids:
-          type: array
-          items:
-            type: string
-        with_resources:
-          type: boolean
-    ContainerSvc:
-      type: object
-      properties:
-        cluster:
-          type: string
-        service:
-          type: string
-        region:
-          type: string
-        task_count:
-          type: number
-    GetAccessPointResponse:
-      type: object
-      properties:
-        response:
-          $ref: '#/components/schemas/AccessPoint'
-    AccessPointActivityResponse:
-      type: object
-      properties:
-        response:
-          $ref: '#/components/schemas/ServiceUsageRecord'
-    InstanceBasedRoutingData:
-      type: object
-      properties:
-        filter_text:
-          type: string
-        scale_group:
-          $ref: '#/components/schemas/ASGMinimal'
     PortConfig:
       type: object
       properties:
@@ -457,119 +464,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RoutingRule'
-    CertificateData:
-      type: object
-      properties:
-        name:
-          type: string
-        password:
-          type: string
-        content:
-          type: string
-    TargetGroupMinimal:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        port:
-          type: integer
-        protocol:
-          type: string
-        vpc:
-          type: string
-    HTTPProxy:
-      required:
-      - proxy
-      - ports
-      type: object
-      properties:
-        proxy:
-          $ref: '#/components/schemas/Proxy'
-        ports:
-          type: array
-          items:
-            $ref: '#/components/schemas/PortConfig'
-    Opts:
-      type: object
-      properties:
-        preserve_private_ip:
-          type: boolean
-        delete_cloud_resources:
-          type: boolean
-        always_use_private_ip:
-          type: boolean
-        access_details:
-          type: object
-          properties: {}
-        hide_progress_page:
-          type: boolean
-        idle_time_for_state_sync:
-          type: boolean
-          description: If true, idle time is used for state sync instead of the default 5 minutes
-    ASGMinimal:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        desired:
-          type: integer
-        min:
-          type: integer
-        max:
-          type: integer
-        on_demand:
-          type: integer
-        spot:
-          type: integer
-        mixed_instance:
-          type: boolean
-        cloud_account_id:
-          type: string
-        provider_name:
-          type: string
-        target_groups:
-          type: array
-          items:
-            $ref: '#/components/schemas/TargetGroupMinimal'
-        region:
-          type: string
-        availability_zones:
-          type: array
-          items:
-            type: string
-        status:
-          type: string
-        meta:
-          type: object
-          properties: {}
-    CreateAccessPointResponse:
-      type: object
-      properties:
-        response:
-          $ref: '#/components/schemas/AccessPoint'
-        errors:
-          type: array
-          items:
-            type: string
-        metadata:
-          type: object
-          properties: {}
-    ListAccessPointResponse:
-      type: object
-      properties:
-        response:
-          type: array
-          items:
-            $ref: '#/components/schemas/AccessPoint'
-    RoutingRule:
-      type: object
-      properties:
-        path_match:
-          type: string
     ServiceUsageRecord:
       type: object
       properties:
@@ -583,32 +477,20 @@ components:
           type: number
         created_at:
           type: string
-    ServiceMetadata:
+    DeleteAccessPointPayload:
       type: object
       properties:
-        cloud_provider_details:
-          type: object
-          properties:
-            name:
-              type: string
-            type:
-              type: string
-        target_group_details:
-          type: object
-          properties: {}
-        service_errors:
+        ids:
           type: array
           items:
-            $ref: '#/components/schemas/ServiceError'
-        kubernetes_connector_id:
-          type: string
-        autostopping_proxy_config:
-          type: object
-          properties:
-            http:
-              $ref: '#/components/schemas/HTTPProxy'
-            tcp:
-              $ref: '#/components/schemas/HTTPProxy'
+            type: string
+        with_resources:
+          type: boolean
+    GetAccessPointResponse:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/AccessPoint'
     AccessPoint:
       type: object
       properties:
@@ -652,18 +534,73 @@ components:
           type: array
           items:
             type: string
-    Proxy:
+    ASGMinimal:
       type: object
       properties:
         id:
           type: string
-    ServiceError:
+        name:
+          type: string
+        desired:
+          type: integer
+        min:
+          type: integer
+        max:
+          type: integer
+        on_demand:
+          type: integer
+        spot:
+          type: integer
+        mixed_instance:
+          type: boolean
+        cloud_account_id:
+          type: string
+        provider_name:
+          type: string
+        target_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetGroupMinimal'
+        region:
+          type: string
+        availability_zones:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        meta:
+          type: object
+          properties: {}
+    RoutingRule:
       type: object
       properties:
-        error:
+        path_match:
           type: string
-        action:
-          type: string
+    HTTPProxy:
+      required:
+      - proxy
+      - ports
+      type: object
+      properties:
+        proxy:
+          $ref: '#/components/schemas/Proxy'
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortConfig'
+    CreateAccessPointResponse:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/AccessPoint'
+        errors:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          properties: {}
     AccessPointMeta:
       type: object
       properties:
@@ -705,6 +642,69 @@ components:
           $ref: '#/components/schemas/CertificateData'
         func_region:
           type: string
+    TargetGroupMinimal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        port:
+          type: integer
+        protocol:
+          type: string
+        vpc:
+          type: string
+    ServicesResponse:
+      type: object
+      properties:
+        response:
+          type: array
+          items:
+            $ref: '#/components/schemas/LwService'
+    ServiceError:
+      type: object
+      properties:
+        error:
+          type: string
+        action:
+          type: string
+    ListAccessPointResponse:
+      type: object
+      properties:
+        response:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessPoint'
+    AccessPointActivityResponse:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/ServiceUsageRecord'
+    Opts:
+      type: object
+      properties:
+        preserve_private_ip:
+          type: boolean
+        delete_cloud_resources:
+          type: boolean
+        always_use_private_ip:
+          type: boolean
+        access_details:
+          type: object
+          properties: {}
+        hide_progress_page:
+          type: boolean
+        idle_time_for_state_sync:
+          type: boolean
+          description: If true, idle time is used for state sync instead of the default 5 minutes
+    InstanceBasedRoutingData:
+      type: object
+      properties:
+        filter_text:
+          type: string
+        scale_group:
+          $ref: '#/components/schemas/ASGMinimal'
   securitySchemes:
     x-api-key:
       name: x-api-key

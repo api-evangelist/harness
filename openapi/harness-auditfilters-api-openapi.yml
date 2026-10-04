@@ -337,35 +337,7 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOBoolean'
 components:
   schemas:
-    Filter:
-      required:
-      - filterProperties
-      - identifier
-      - name
-      type: object
-      properties:
-        name:
-          type: string
-          description: Name of the Filter.
-        identifier:
-          type: string
-          description: Identifier of the Filter.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        filterProperties:
-          $ref: '#/components/schemas/FilterProperties'
-        filterVisibility:
-          type: string
-          description: This indicates visibility of Filter, by default it is Everyone.
-          enum:
-          - EveryOne
-          - OnlyCreator
-      description: This has details of the Filter entity defined in Harness
-    ResponseDTOPageResponseFilter:
+    ResponseDTOBoolean:
       type: object
       properties:
         status:
@@ -375,36 +347,10 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/PageResponseFilter'
+          type: boolean
         metaData:
           type: object
         correlationId:
-          type: string
-    PageResponseFilter:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Filter'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
           type: string
     ResponseMessage:
       type: object
@@ -996,7 +942,40 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOBoolean:
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    PageResponseFilter:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    ResponseDTOPageResponseFilter:
       type: object
       properties:
         status:
@@ -1006,11 +985,64 @@ components:
           - FAILURE
           - ERROR
         data:
-          type: boolean
+          $ref: '#/components/schemas/PageResponseFilter'
         metaData:
           type: object
         correlationId:
           type: string
+    FilterProperties:
+      required:
+      - filterType
+      type: object
+      properties:
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+            description: Filter tags as a key-value pair.
+          description: Filter tags as a key-value pair.
+        filterType:
+          type: string
+          description: This specifies the corresponding Entity of the filter.
+          enum:
+          - Connector
+          - Secret
+          - DelegateProfile
+          - Delegate
+          - PipelineSetup
+          - PipelineExecution
+          - Deployment
+          - Audit
+          - Template
+          - Trigger
+          - EnvironmentGroup
+          - FileStore
+          - CCMRecommendation
+          - Anomaly
+          - RIInventory
+          - SPInventory
+          - Autocud
+          - CCMConnector
+          - CCMK8sConnector
+          - Environment
+          - RuleExecution
+          - Override
+          - InputSet
+          - Webhook
+          - CCMBudget
+          - Service
+          - QueuedPipeline
+      description: Properties of the Filter entity defined in Harness.
+      discriminator:
+        propertyName: filterType
+    AuditErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     Failure:
       type: object
       properties:
@@ -1853,66 +1885,34 @@ components:
         metadata:
           $ref: '#/components/schemas/AuditErrorMetadata'
       description: This is Error entity as defined in Harness
-    FilterProperties:
+    Filter:
       required:
-      - filterType
+      - filterProperties
+      - identifier
+      - name
       type: object
       properties:
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-            description: Filter tags as a key-value pair.
-          description: Filter tags as a key-value pair.
-        filterType:
+        name:
           type: string
-          description: This specifies the corresponding Entity of the filter.
+          description: Name of the Filter.
+        identifier:
+          type: string
+          description: Identifier of the Filter.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        filterProperties:
+          $ref: '#/components/schemas/FilterProperties'
+        filterVisibility:
+          type: string
+          description: This indicates visibility of Filter, by default it is Everyone.
           enum:
-          - Connector
-          - Secret
-          - DelegateProfile
-          - Delegate
-          - PipelineSetup
-          - PipelineExecution
-          - Deployment
-          - Audit
-          - Template
-          - Trigger
-          - EnvironmentGroup
-          - FileStore
-          - CCMRecommendation
-          - Anomaly
-          - RIInventory
-          - SPInventory
-          - Autocud
-          - CCMConnector
-          - CCMK8sConnector
-          - Environment
-          - RuleExecution
-          - Override
-          - InputSet
-          - Webhook
-          - CCMBudget
-          - Service
-          - QueuedPipeline
-      description: Properties of the Filter entity defined in Harness.
-      discriminator:
-        propertyName: filterType
-    AuditErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
+          - EveryOne
+          - OnlyCreator
+      description: This has details of the Filter entity defined in Harness
     ResponseDTOFilter:
       type: object
       properties:

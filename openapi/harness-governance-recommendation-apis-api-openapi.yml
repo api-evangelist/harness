@@ -157,34 +157,44 @@ paths:
                 $ref: '#/components/schemas/ResponseDTORuleRecommendationSummaryList'
 components:
   schemas:
-    RuleRecommendationExecution:
+    ResponseDTORuleRecommendationSummary:
       type: object
       properties:
-        connectorId:
-          type: string
-        targetId:
-          type: string
-        targetName:
-          type: string
-        targetRegion:
-          type: string
-        executionId:
-          type: string
-        statusMessage:
-          type: string
         status:
           type: string
           enum:
-          - FAILED
-          - IN_PROGRESS
-          - PARTIAL_SUCCESS
           - SUCCESS
-          - IGNORED
-        potentialSavings:
-          type: number
-          format: double
-        isHarnessError:
-          type: boolean
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/RuleRecommendationSummary'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTORuleExecutionInternalList:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/RuleExecutionInternalList'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    CcmErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -775,19 +785,13 @@ components:
           type: object
           additionalProperties:
             type: string
-    RuleRecommendationSummaryList:
+    ValidationError:
       type: object
       properties:
-        totalItems:
-          type: integer
-          description: Total items
-          format: int32
-        ruleRecommendationSummaries:
-          type: array
-          description: List of rule recommendation summaries
-          items:
-            $ref: '#/components/schemas/RuleRecommendationSummary'
-      description: This object will contain the complete definition of CCM Governance Rule Health Summary List
+        fieldId:
+          type: string
+        error:
+          type: string
     RuleExecutionInternal:
       type: object
       properties:
@@ -911,21 +915,6 @@ components:
         ootb:
           type: boolean
       description: This object will contain the complete definition of a Cloud Cost Policy Internal Execution
-    ResponseDTORuleRecommendationSummary:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/RuleRecommendationSummary'
-        metaData:
-          type: object
-        correlationId:
-          type: string
     ResourceBreakdown:
       type: object
       properties:
@@ -944,14 +933,209 @@ components:
           additionalProperties:
             type: string
       description: This object stores resource details for a policy execution.
-    CcmErrorMetadata:
+    RuleRecommendationSummary:
       type: object
       properties:
-        type:
+        id:
+          $ref: '#/components/schemas/RuleRecommendationSummaryId'
+        targets:
+          type: array
+          items:
+            type: string
+        cloudProvider:
           type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
+          enum:
+          - AWS
+          - AZURE
+          - GCP
+        ruleName:
+          type: string
+        isOOTB:
+          type: boolean
+        lastEvaluatedAt:
+          type: integer
+          format: int64
+        potentialSavings:
+          type: number
+          format: double
+        status:
+          type: string
+          enum:
+          - FAILED
+          - IN_PROGRESS
+          - PARTIAL_SUCCESS
+          - SUCCESS
+          - IGNORED
+        executions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleRecommendationExecution'
+        totalExecutions:
+          type: integer
+          format: int32
+        totalFailedExecutions:
+          type: integer
+          format: int32
+        totalRecommendations:
+          type: integer
+          format: int64
+        enableGranularRecommendation:
+          type: boolean
+        pricingCostType:
+          type: string
+      description: This object will contain the complete definition of a Cloud Cost Asset Governance Rule Recommendation
+    RuleExecutionInternalList:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+          description: Total items
+          format: int32
+        ruleExecutionInternals:
+          type: array
+          description: List of rules executions
+          items:
+            $ref: '#/components/schemas/RuleExecutionInternal'
+      description: This object will contain the complete definition of a Cloud Cost Governance Internal Evaluation List
+    RuleRecommendationExecution:
+      type: object
+      properties:
+        connectorId:
+          type: string
+        targetId:
+          type: string
+        targetName:
+          type: string
+        targetRegion:
+          type: string
+        executionId:
+          type: string
+        statusMessage:
+          type: string
+        status:
+          type: string
+          enum:
+          - FAILED
+          - IN_PROGRESS
+          - PARTIAL_SUCCESS
+          - SUCCESS
+          - IGNORED
+        potentialSavings:
+          type: number
+          format: double
+        isHarnessError:
+          type: boolean
+    CCMSort:
+      type: object
+      properties:
+        field:
+          type: string
+          description: List of all possible Fields
+          enum:
+          - PERSPECTIVE_ID
+          - ANOMALY_ID
+          - WORKLOAD
+          - WORKLOAD_TYPE
+          - CLUSTER_ID
+          - CLUSTER_NAME
+          - CLUSTER_NAMESPACE
+          - CLUSTER_NAMESPACE_ID
+          - CLUSTER_WORKLOAD
+          - CLUSTER_WORKLOAD_ID
+          - CLUSTER_NODE
+          - CLUSTER_POD
+          - CLUSTER_PARENT_INSTANCE_ID
+          - CLUSTER_STORAGE
+          - CLUSTER_APPLICATION
+          - CLUSTER_ENVIRONMENT
+          - CLUSTER_SERVICE
+          - CLUSTER_CLOUD_PROVIDER
+          - CLUSTER_ECS_SERVICE
+          - CLUSTER_ECS_SERVICE_ID
+          - CLUSTER_ECS_TASK
+          - CLUSTER_ECS_TASK_ID
+          - CLUSTER_ECS_LAUNCH_TYPE
+          - CLUSTER_ECS_LAUNCH_TYPE_ID
+          - NAMESPACE
+          - SERVICE
+          - SERVICE_NAME
+          - GCP_PRODUCT
+          - GCP_PROJECT
+          - GCP_SKU_ID
+          - GCP_SKU_DESCRIPTION
+          - GCP_RESOURCE_GLOBAL_NAME
+          - AWS_ACCOUNT
+          - AWS_SERVICE
+          - AWS_INSTANCE_TYPE
+          - AWS_USAGE_TYPE
+          - AWS_BILLING_ENTITY
+          - AWS_LINE_ITEM_TYPE
+          - AWS_RESOURCE_ID
+          - AZURE_SUBSCRIPTION_GUID
+          - AZURE_METER_NAME
+          - AZURE_METER_CATEGORY
+          - AZURE_METER_SUBCATEGORY
+          - AZURE_RESOURCE_ID
+          - AZURE_RESOURCE_GROUP_NAME
+          - AZURE_RESOURCE_TYPE
+          - AZURE_RESOURCE
+          - AZURE_SERVICE_NAME
+          - AZURE_SERVICE_TIER
+          - AZURE_INSTANCE_ID
+          - AZURE_SUBSCRIPTION_NAME
+          - AZURE_PUBLISHER_NAME
+          - AZURE_PUBLISHER_TYPE
+          - AZURE_RESERVATION_ID
+          - AZURE_RESERVATION_NAME
+          - AZURE_FREQUENCY
+          - AZURE_CHARGE_TYPE
+          - AZURE_PRICING_MODEL
+          - AZURE_BENEFIT_NAME
+          - AZURE_RESOURCE_NAME
+          - OPENAI_PROJECT_ID
+          - OPENAI_MODEL
+          - OPENAI_USAGE_TYPE
+          - ANTHROPIC_PROJECT_ID
+          - ANTHROPIC_MODEL
+          - ANTHROPIC_USAGE_TYPE
+          - COMMON_PRODUCT
+          - COMMON_REGION
+          - COMMON_NONE
+          - CLOUD_PROVIDER
+          - STATUS
+          - REGION
+          - ANOMALY_TIME
+          - ACTUAL_COST
+          - EXPECTED_COST
+          - ANOMALOUS_SPEND
+          - COST_IMPACT
+          - ALL
+          - ANOMALOUS_SPEND_PERCENTAGE
+          - TOTAL_COST
+          - IDLE_COST
+          - UNALLOCATED_COST
+          - RULE_NAME
+          - RULE_SET_NAME
+          - POTENTIAL_SAVINGS
+          - LAST_EVALUATED_AT
+          - ANOMALY_STATUS
+          - RECOMMENDATIONS_COUNT
+          - ACTUAL_AMOUNT
+          - CRITICALITY
+          - DURATION
+          - UPDATED_AT
+          - UPDATED_BY
+          - UPDATED_AT_RELATIVE
+          - REPORTED_BY
+          - COST_CATEGORY_NAME
+          - COST_BUCKET_NAME
+          - UNIT_METRIC_NAME
+        order:
+          type: string
+          enum:
+          - ASCENDING
+          - DESCENDING
+      description: The order by condition for Rule Set query
     Failure:
       type: object
       properties:
@@ -1371,211 +1555,6 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    RuleRecommendationSummary:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/RuleRecommendationSummaryId'
-        targets:
-          type: array
-          items:
-            type: string
-        cloudProvider:
-          type: string
-          enum:
-          - AWS
-          - AZURE
-          - GCP
-        ruleName:
-          type: string
-        isOOTB:
-          type: boolean
-        lastEvaluatedAt:
-          type: integer
-          format: int64
-        potentialSavings:
-          type: number
-          format: double
-        status:
-          type: string
-          enum:
-          - FAILED
-          - IN_PROGRESS
-          - PARTIAL_SUCCESS
-          - SUCCESS
-          - IGNORED
-        executions:
-          type: array
-          items:
-            $ref: '#/components/schemas/RuleRecommendationExecution'
-        totalExecutions:
-          type: integer
-          format: int32
-        totalFailedExecutions:
-          type: integer
-          format: int32
-        totalRecommendations:
-          type: integer
-          format: int64
-        enableGranularRecommendation:
-          type: boolean
-        pricingCostType:
-          type: string
-      description: This object will contain the complete definition of a Cloud Cost Asset Governance Rule Recommendation
-    ResponseDTORuleExecutionInternalList:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/RuleExecutionInternalList'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    RuleExecutionInternalList:
-      type: object
-      properties:
-        totalItems:
-          type: integer
-          description: Total items
-          format: int32
-        ruleExecutionInternals:
-          type: array
-          description: List of rules executions
-          items:
-            $ref: '#/components/schemas/RuleExecutionInternal'
-      description: This object will contain the complete definition of a Cloud Cost Governance Internal Evaluation List
-    ResponseDTORuleRecommendationSummaryList:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/RuleRecommendationSummaryList'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    CCMSort:
-      type: object
-      properties:
-        field:
-          type: string
-          description: List of all possible Fields
-          enum:
-          - PERSPECTIVE_ID
-          - ANOMALY_ID
-          - WORKLOAD
-          - WORKLOAD_TYPE
-          - CLUSTER_ID
-          - CLUSTER_NAME
-          - CLUSTER_NAMESPACE
-          - CLUSTER_NAMESPACE_ID
-          - CLUSTER_WORKLOAD
-          - CLUSTER_WORKLOAD_ID
-          - CLUSTER_NODE
-          - CLUSTER_POD
-          - CLUSTER_PARENT_INSTANCE_ID
-          - CLUSTER_STORAGE
-          - CLUSTER_APPLICATION
-          - CLUSTER_ENVIRONMENT
-          - CLUSTER_SERVICE
-          - CLUSTER_CLOUD_PROVIDER
-          - CLUSTER_ECS_SERVICE
-          - CLUSTER_ECS_SERVICE_ID
-          - CLUSTER_ECS_TASK
-          - CLUSTER_ECS_TASK_ID
-          - CLUSTER_ECS_LAUNCH_TYPE
-          - CLUSTER_ECS_LAUNCH_TYPE_ID
-          - NAMESPACE
-          - SERVICE
-          - SERVICE_NAME
-          - GCP_PRODUCT
-          - GCP_PROJECT
-          - GCP_SKU_ID
-          - GCP_SKU_DESCRIPTION
-          - GCP_RESOURCE_GLOBAL_NAME
-          - AWS_ACCOUNT
-          - AWS_SERVICE
-          - AWS_INSTANCE_TYPE
-          - AWS_USAGE_TYPE
-          - AWS_BILLING_ENTITY
-          - AWS_LINE_ITEM_TYPE
-          - AWS_RESOURCE_ID
-          - AZURE_SUBSCRIPTION_GUID
-          - AZURE_METER_NAME
-          - AZURE_METER_CATEGORY
-          - AZURE_METER_SUBCATEGORY
-          - AZURE_RESOURCE_ID
-          - AZURE_RESOURCE_GROUP_NAME
-          - AZURE_RESOURCE_TYPE
-          - AZURE_RESOURCE
-          - AZURE_SERVICE_NAME
-          - AZURE_SERVICE_TIER
-          - AZURE_INSTANCE_ID
-          - AZURE_SUBSCRIPTION_NAME
-          - AZURE_PUBLISHER_NAME
-          - AZURE_PUBLISHER_TYPE
-          - AZURE_RESERVATION_ID
-          - AZURE_RESERVATION_NAME
-          - AZURE_FREQUENCY
-          - AZURE_CHARGE_TYPE
-          - AZURE_PRICING_MODEL
-          - AZURE_BENEFIT_NAME
-          - AZURE_RESOURCE_NAME
-          - OPENAI_PROJECT_ID
-          - OPENAI_MODEL
-          - OPENAI_USAGE_TYPE
-          - ANTHROPIC_PROJECT_ID
-          - ANTHROPIC_MODEL
-          - ANTHROPIC_USAGE_TYPE
-          - COMMON_PRODUCT
-          - COMMON_REGION
-          - COMMON_NONE
-          - CLOUD_PROVIDER
-          - STATUS
-          - REGION
-          - ANOMALY_TIME
-          - ACTUAL_COST
-          - EXPECTED_COST
-          - ANOMALOUS_SPEND
-          - COST_IMPACT
-          - ALL
-          - ANOMALOUS_SPEND_PERCENTAGE
-          - TOTAL_COST
-          - IDLE_COST
-          - UNALLOCATED_COST
-          - RULE_NAME
-          - RULE_SET_NAME
-          - POTENTIAL_SAVINGS
-          - LAST_EVALUATED_AT
-          - ANOMALY_STATUS
-          - RECOMMENDATIONS_COUNT
-          - ACTUAL_AMOUNT
-          - CRITICALITY
-          - DURATION
-          - UPDATED_AT
-          - UPDATED_BY
-          - UPDATED_AT_RELATIVE
-          - REPORTED_BY
-          - COST_CATEGORY_NAME
-          - COST_BUCKET_NAME
-          - UNIT_METRIC_NAME
-        order:
-          type: string
-          enum:
-          - ASCENDING
-          - DESCENDING
-      description: The order by condition for Rule Set query
     CcmError:
       type: object
       properties:
@@ -1999,12 +1978,20 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
-    ValidationError:
+    ResponseDTORuleRecommendationSummaryList:
       type: object
       properties:
-        fieldId:
+        status:
           type: string
-        error:
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/RuleRecommendationSummaryList'
+        metaData:
+          type: object
+        correlationId:
           type: string
     RuleRecommendationSummaryId:
       type: object
@@ -2013,6 +2000,19 @@ components:
           type: string
         accountId:
           type: string
+    RuleRecommendationSummaryList:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+          description: Total items
+          format: int32
+        ruleRecommendationSummaries:
+          type: array
+          description: List of rule recommendation summaries
+          items:
+            $ref: '#/components/schemas/RuleRecommendationSummary'
+      description: This object will contain the complete definition of CCM Governance Rule Health Summary List
     RuleRecommendationHealthSummaryFilter:
       type: object
       properties:

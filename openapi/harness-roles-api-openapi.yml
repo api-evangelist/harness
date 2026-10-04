@@ -404,7 +404,42 @@ paths:
                 $ref: '#/components/schemas/ResponseDTORoleResponse'
 components:
   schemas:
-    AccessDeniedError:
+    ResourceScope:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+    PageResponseRoleWithPrincipalCountResponse:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int64
+        totalItems:
+          type: integer
+          format: int64
+        pageItemCount:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleWithPrincipalCountResponse'
+        pageIndex:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        pageToken:
+          type: string
+    AuthzError:
       type: object
       properties:
         status:
@@ -826,25 +861,7 @@ components:
             $ref: '#/components/schemas/ResponseMessage'
         metadata:
           $ref: '#/components/schemas/AuthzErrorMetadata'
-        failedPermissionChecks:
-          type: array
-          items:
-            $ref: '#/components/schemas/PermissionCheck'
-    ResponseDTORoleResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/AuthzRoleResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
+      description: This is Error entity as defined in Harness
     ResponseMessage:
       type: object
       properties:
@@ -1435,6 +1452,137 @@ components:
           type: object
           additionalProperties:
             type: string
+    AuthzErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    PermissionCheck:
+      required:
+      - permission
+      - resourceType
+      type: object
+      properties:
+        resourceScope:
+          $ref: '#/components/schemas/ResourceScope'
+        resourceType:
+          type: string
+        resourceAttributes:
+          type: object
+          additionalProperties:
+            type: string
+        resourceIdentifier:
+          type: string
+        permission:
+          type: string
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    AuthzScope:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+    ResponseDTOPageResponseRoleWithPrincipalCountResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/PageResponseRoleWithPrincipalCountResponse'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    AuthzRoleResponse:
+      required:
+      - role
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+        scope:
+          $ref: '#/components/schemas/AuthzScope'
+        harnessManaged:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
+        lastModifiedAt:
+          type: integer
+          format: int64
+    ResponseDTORoleResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/AuthzRoleResponse'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    Role:
+      required:
+      - identifier
+      - name
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Unique identifier of the role
+        name:
+          type: string
+          description: Name of the role
+        permissions:
+          uniqueItems: true
+          type: array
+          description: List of the permission identifiers (Subset of the list returned by GET /authz/api/permissions)
+          items:
+            type: string
+            description: List of the permission identifiers (Subset of the list returned by GET /authz/api/permissions)
+        allowedScopeLevels:
+          uniqueItems: true
+          type: array
+          description: The scope levels at which this role can be used
+          items:
+            type: string
+            description: The scope levels at which this role can be used
+            enum:
+            - account
+            - organization
+            - project
+        description:
+          type: string
+          description: Description of the role
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+            description: Tags
+          description: Tags
     Failure:
       type: object
       properties:
@@ -1854,71 +2002,32 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    AuthzErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    PermissionCheck:
+    RoleWithPrincipalCountResponse:
       required:
-      - permission
-      - resourceType
+      - role
       type: object
       properties:
-        resourceScope:
-          $ref: '#/components/schemas/ResourceScope'
-        resourceType:
-          type: string
-        resourceAttributes:
-          type: object
-          additionalProperties:
-            type: string
-        resourceIdentifier:
-          type: string
-        permission:
-          type: string
-    Role:
-      required:
-      - identifier
-      - name
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: Unique identifier of the role
-        name:
-          type: string
-          description: Name of the role
-        permissions:
-          uniqueItems: true
-          type: array
-          description: List of the permission identifiers (Subset of the list returned by GET /authz/api/permissions)
-          items:
-            type: string
-            description: List of the permission identifiers (Subset of the list returned by GET /authz/api/permissions)
-        allowedScopeLevels:
-          uniqueItems: true
-          type: array
-          description: The scope levels at which this role can be used
-          items:
-            type: string
-            description: The scope levels at which this role can be used
-            enum:
-            - account
-            - organization
-            - project
-        description:
-          type: string
-          description: Description of the role
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-            description: Tags
-          description: Tags
+        role:
+          $ref: '#/components/schemas/Role'
+        scope:
+          $ref: '#/components/schemas/AuthzScope'
+        harnessManaged:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
+        lastModifiedAt:
+          type: integer
+          format: int64
+        roleAssignedToUserCount:
+          type: integer
+          format: int32
+        roleAssignedToUserGroupCount:
+          type: integer
+          format: int32
+        roleAssignedToServiceAccountCount:
+          type: integer
+          format: int32
     SortOrder:
       type: object
       properties:
@@ -1929,7 +2038,7 @@ components:
           enum:
           - ASC
           - DESC
-    AuthzError:
+    AccessDeniedError:
       type: object
       properties:
         status:
@@ -2351,119 +2460,10 @@ components:
             $ref: '#/components/schemas/ResponseMessage'
         metadata:
           $ref: '#/components/schemas/AuthzErrorMetadata'
-      description: This is Error entity as defined in Harness
-    ResourceScope:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-    RoleWithPrincipalCountResponse:
-      required:
-      - role
-      type: object
-      properties:
-        role:
-          $ref: '#/components/schemas/Role'
-        scope:
-          $ref: '#/components/schemas/AuthzScope'
-        harnessManaged:
-          type: boolean
-        createdAt:
-          type: integer
-          format: int64
-        lastModifiedAt:
-          type: integer
-          format: int64
-        roleAssignedToUserCount:
-          type: integer
-          format: int32
-        roleAssignedToUserGroupCount:
-          type: integer
-          format: int32
-        roleAssignedToServiceAccountCount:
-          type: integer
-          format: int32
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    ResponseDTOPageResponseRoleWithPrincipalCountResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/PageResponseRoleWithPrincipalCountResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    AuthzRoleResponse:
-      required:
-      - role
-      type: object
-      properties:
-        role:
-          $ref: '#/components/schemas/Role'
-        scope:
-          $ref: '#/components/schemas/AuthzScope'
-        harnessManaged:
-          type: boolean
-        createdAt:
-          type: integer
-          format: int64
-        lastModifiedAt:
-          type: integer
-          format: int64
-    AuthzScope:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-          description: Account Identifier for the Entity.
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-    PageResponseRoleWithPrincipalCountResponse:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int64
-        totalItems:
-          type: integer
-          format: int64
-        pageItemCount:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          format: int64
-        content:
+        failedPermissionChecks:
           type: array
           items:
-            $ref: '#/components/schemas/RoleWithPrincipalCountResponse'
-        pageIndex:
-          type: integer
-          format: int64
-        empty:
-          type: boolean
-        pageToken:
-          type: string
+            $ref: '#/components/schemas/PermissionCheck'
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -100,21 +100,20 @@ paths:
       x-summary-source: derived
 components:
   schemas:
-    ResponseDTOCCMServiceNowDetails:
+    ServiceNowFieldValueNG:
       type: object
       properties:
-        status:
+        value:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/CCMServiceNowDetails'
-        metaData:
-          type: object
-        correlationId:
+        displayValue:
           type: string
+    CCMServiceNowDetails:
+      type: object
+      properties:
+        connectorRef:
+          type: string
+        serviceNowTicket:
+          $ref: '#/components/schemas/ServiceNowTicketNG'
     CCMServiceNowCreateDTO:
       required:
       - recommendationId
@@ -150,21 +149,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    ServiceNowTicketNG:
-      required:
-      - fields
-      - number
-      - url
-      type: object
-      properties:
-        url:
-          type: string
-        number:
-          type: string
-        fields:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ServiceNowFieldValueNG'
     ResponseMessage:
       type: object
       properties:
@@ -755,19 +739,50 @@ components:
           type: object
           additionalProperties:
             type: string
-    CCMServiceNowDetails:
+    ValidationError:
       type: object
       properties:
-        connectorRef:
+        fieldId:
           type: string
-        serviceNowTicket:
-          $ref: '#/components/schemas/ServiceNowTicketNG'
-    ServiceNowFieldValueNG:
+        error:
+          type: string
+    CcmErrorMetadata:
       type: object
       properties:
-        value:
+        type:
           type: string
-        displayValue:
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    ServiceNowTicketNG:
+      required:
+      - fields
+      - number
+      - url
+      type: object
+      properties:
+        url:
+          type: string
+        number:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ServiceNowFieldValueNG'
+    ResponseDTOCCMServiceNowDetails:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/CCMServiceNowDetails'
+        metaData:
+          type: object
+        correlationId:
           type: string
     Failure:
       type: object
@@ -1188,14 +1203,6 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    CcmErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
     CcmError:
       type: object
       properties:
@@ -1619,13 +1626,6 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

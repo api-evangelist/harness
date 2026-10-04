@@ -124,32 +124,63 @@ paths:
       x-stoplight:
         id: 9r5etj2feldxk
 components:
+  responses:
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
+    OverviewResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              dbInstanceCount:
+                type: integer
+                x-stoplight:
+                  id: e5je7p05bgy6e
+              dbSchemaCount:
+                type: integer
+                x-stoplight:
+                  id: vl4i8hl01jg9t
+              recentDeployments:
+                items:
+                  $ref: '#/components/schemas/OverviewResponseOutput'
+                maxItems: 5
+                type: array
+                x-stoplight:
+                  id: a3qanidk29h47
+            required:
+            - dbInstanceCount
+            - dbSchemaCount
+            type: object
+      description: Get Overview Response
   schemas:
-    TimeSeriesDataPoints:
+    CcmErrorMetadata:
       type: object
       properties:
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/CcmDataPoint'
-        time:
-          type: integer
-          format: int64
-    ResponseDTOCCMOverview:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    CcmReference:
       type: object
       properties:
-        status:
+        id:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/CCMOverview'
-        metaData:
-          type: object
-        correlationId:
+        name:
           type: string
+        type:
+          type: string
+    CcmDataPoint:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/CcmReference'
+        value:
+          type: number
     ResponseMessage:
       type: object
       properties:
@@ -740,39 +771,35 @@ components:
           type: object
           additionalProperties:
             type: string
-    OverviewResponseOutput:
+    ValidationError:
+      type: object
       properties:
-        dbInstanceIdentifier:
+        fieldId:
           type: string
-          x-stoplight:
-            id: ro2tbyjw4ret9
-        dbInstanceName:
+        error:
           type: string
-          x-stoplight:
-            id: rfhtocn7bxq4e
-        dbSchemaIdentifier:
+    DbOpsError:
+      description: Error Response
+      properties:
+        message:
+          description: error message detail
           type: string
-          x-stoplight:
-            id: armfitbm4jksk
-        dbSchemaName:
-          type: string
-          x-stoplight:
-            id: 0dy50a77d4uwj
-        lastDeployed:
-          format: int64
-          type: integer
-          x-stoplight:
-            id: o071rdrf2o8px
       required:
-      - dbSchemaIdentifier
-      - dbSchemaName
-      - dbInstanceIdentifier
-      - dbInstanceName
-      - lastDeployed
-      title: Overview Response Output
+      - message
+      title: Error Response
       type: object
       x-stoplight:
-        id: rf7l1cm9j1d8b
+        id: 61cwtgnps2mpt
+    TimeSeriesDataPoints:
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/CcmDataPoint'
+        time:
+          type: integer
+          format: int64
     Failure:
       type: object
       properties:
@@ -1192,59 +1219,6 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    CcmErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    CcmDataPoint:
-      type: object
-      properties:
-        key:
-          $ref: '#/components/schemas/CcmReference'
-        value:
-          type: number
-    CCMOverview:
-      type: object
-      properties:
-        costPerDay:
-          type: array
-          items:
-            $ref: '#/components/schemas/TimeSeriesDataPoints'
-        totalCost:
-          type: number
-          format: double
-        totalCostTrend:
-          type: number
-          format: double
-        recommendationsCount:
-          type: integer
-          format: int32
-      description: This object contains CCM Overview details
-    CcmReference:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        type:
-          type: string
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
     CcmError:
       type: object
       properties:
@@ -1668,45 +1642,71 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
-    ValidationError:
+    CCMOverview:
       type: object
       properties:
-        fieldId:
+        costPerDay:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSeriesDataPoints'
+        totalCost:
+          type: number
+          format: double
+        totalCostTrend:
+          type: number
+          format: double
+        recommendationsCount:
+          type: integer
+          format: int32
+      description: This object contains CCM Overview details
+    OverviewResponseOutput:
+      properties:
+        dbInstanceIdentifier:
           type: string
-        error:
+          x-stoplight:
+            id: ro2tbyjw4ret9
+        dbInstanceName:
           type: string
-  responses:
-    OverviewResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              dbInstanceCount:
-                type: integer
-                x-stoplight:
-                  id: e5je7p05bgy6e
-              dbSchemaCount:
-                type: integer
-                x-stoplight:
-                  id: vl4i8hl01jg9t
-              recentDeployments:
-                items:
-                  $ref: '#/components/schemas/OverviewResponseOutput'
-                maxItems: 5
-                type: array
-                x-stoplight:
-                  id: a3qanidk29h47
-            required:
-            - dbInstanceCount
-            - dbSchemaCount
-            type: object
-      description: Get Overview Response
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
+          x-stoplight:
+            id: rfhtocn7bxq4e
+        dbSchemaIdentifier:
+          type: string
+          x-stoplight:
+            id: armfitbm4jksk
+        dbSchemaName:
+          type: string
+          x-stoplight:
+            id: 0dy50a77d4uwj
+        lastDeployed:
+          format: int64
+          type: integer
+          x-stoplight:
+            id: o071rdrf2o8px
+      required:
+      - dbSchemaIdentifier
+      - dbSchemaName
+      - dbInstanceIdentifier
+      - dbInstanceName
+      - lastDeployed
+      title: Overview Response Output
+      type: object
+      x-stoplight:
+        id: rf7l1cm9j1d8b
+    ResponseDTOCCMOverview:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/CCMOverview'
+        metaData:
+          type: object
+        correlationId:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -163,20 +163,120 @@ paths:
       tags:
       - ComplianceStats
 components:
+  parameters:
+    Page2:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    Limit6:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
+    Order2:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        default: ASC
+      description: Order on the basis of which sorting is done.
   schemas:
-    SeverityComplianceMetrics:
-      title: SeverityComplianceMetrics
+    ComplianceEvaluationTrend:
+      title: ComplianceEvaluationTrend
       x-stoplight:
-        id: i4qcivi1ic7hu
+        id: pjgvs47v5rtej
       type: object
-      description: 'Stores severity vs failure count '
+      description: Data point for compliane evaluation trend api
       properties:
-        severity:
-          $ref: '#/components/schemas/ComplianceCheckSeverity'
+        window_start_time:
+          type: string
+          x-stoplight:
+            id: rmrtkj4ikb0ov
+        window_end_time:
+          type: string
+          x-stoplight:
+            id: 159g6x7sv80gx
+        passed:
+          type: integer
+          x-stoplight:
+            id: 3plfwztlj4pki
         failed:
           type: integer
           x-stoplight:
-            id: yu6c57ls9hgps
+            id: 5prsa89cck6v6
+    ComplianceStandardType:
+      title: ComplianceStandardType
+      type: string
+      x-stoplight:
+        id: hqwyia5x65e2x
+      enum:
+      - CIS
+      - OWASP
+    ComplianceResultStatus:
+      title: ComplianceResultStatus
+      type: string
+      x-stoplight:
+        id: g7eq9rgfjalfb
+      enum:
+      - PASSED
+      - FAILED
+      - UNKNOWN
+    ArtifactComplianceMetrics:
+      title: ArtifactComplianceMetrics
+      x-stoplight:
+        id: 242scbkezm5gm
+      type: object
+      x-tags:
+      - ComplianceResults
+      description: Stores artifact type vs passed failed count
+      properties:
+        artifactType:
+          type: string
+          enum:
+          - REPOSITORY
+          - WORKFLOW
+        passed:
+          type: integer
+          x-stoplight:
+            id: b5cstllpizhou
+        failed:
+          type: integer
+          x-stoplight:
+            id: 2kv0hqe1s1ove
     ComplianceScanType:
       title: ComplianceScanType
       x-stoplight:
@@ -186,16 +286,27 @@ components:
       - REPOSITORY
       - CICD
       description: Type of scan on the source like Repository scan or Worklfow scan
-    ComplianceCheckSeverity:
-      title: ComplianceCheckSeverity
-      type: string
+    ComplianceResultsEvaluationBreakdown:
+      title: ComplianceResultsEvaluationBreakdown
       x-stoplight:
-        id: kpbii4pjiw1ff
-      enum:
-      - CRITICAL
-      - HIGH
-      - MEDIUM
-      - LOW
+        id: j3aiueawgux7b
+      type: object
+      description: Powers Compliance Result EvaluationBreakdown
+      properties:
+        passed:
+          type: integer
+          x-stoplight:
+            id: 3zs88xgwugylw
+        failed:
+          type: integer
+          x-stoplight:
+            id: 249xuf23b0qjx
+        severity_breakdown:
+          type: array
+          x-stoplight:
+            id: m2ju4nhsgkoub
+          items:
+            $ref: '#/components/schemas/SeverityComplianceMetrics'
     ComplianceResultFilter:
       type: object
       x-examples:
@@ -228,6 +339,19 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ComplianceScanType'
+    SeverityComplianceMetrics:
+      title: SeverityComplianceMetrics
+      x-stoplight:
+        id: i4qcivi1ic7hu
+      type: object
+      description: 'Stores severity vs failure count '
+      properties:
+        severity:
+          $ref: '#/components/schemas/ComplianceCheckSeverity'
+        failed:
+          type: integer
+          x-stoplight:
+            id: yu6c57ls9hgps
     ComplianceChecksMetrics:
       title: ComplianceChecksMetrics
       x-stoplight:
@@ -265,163 +389,31 @@ components:
           type: string
           x-stoplight:
             id: vhtwdq312xu3r
-    ComplianceEvaluationTrend:
-      title: ComplianceEvaluationTrend
-      x-stoplight:
-        id: pjgvs47v5rtej
-      type: object
-      description: Data point for compliane evaluation trend api
-      properties:
-        window_start_time:
-          type: string
-          x-stoplight:
-            id: rmrtkj4ikb0ov
-        window_end_time:
-          type: string
-          x-stoplight:
-            id: 159g6x7sv80gx
-        passed:
-          type: integer
-          x-stoplight:
-            id: 3plfwztlj4pki
-        failed:
-          type: integer
-          x-stoplight:
-            id: 5prsa89cck6v6
-    ComplianceResultStatus:
-      title: ComplianceResultStatus
+    ComplianceCheckSeverity:
+      title: ComplianceCheckSeverity
       type: string
       x-stoplight:
-        id: g7eq9rgfjalfb
+        id: kpbii4pjiw1ff
       enum:
-      - PASSED
-      - FAILED
-      - UNKNOWN
-    ArtifactComplianceMetrics:
-      title: ArtifactComplianceMetrics
-      x-stoplight:
-        id: 242scbkezm5gm
-      type: object
-      x-tags:
-      - ComplianceResults
-      description: Stores artifact type vs passed failed count
-      properties:
-        artifactType:
-          type: string
-          enum:
-          - REPOSITORY
-          - WORKFLOW
-        passed:
-          type: integer
-          x-stoplight:
-            id: b5cstllpizhou
-        failed:
-          type: integer
-          x-stoplight:
-            id: 2kv0hqe1s1ove
-    ComplianceResultsEvaluationBreakdown:
-      title: ComplianceResultsEvaluationBreakdown
-      x-stoplight:
-        id: j3aiueawgux7b
-      type: object
-      description: Powers Compliance Result EvaluationBreakdown
-      properties:
-        passed:
-          type: integer
-          x-stoplight:
-            id: 3zs88xgwugylw
-        failed:
-          type: integer
-          x-stoplight:
-            id: 249xuf23b0qjx
-        severity_breakdown:
-          type: array
-          x-stoplight:
-            id: m2ju4nhsgkoub
-          items:
-            $ref: '#/components/schemas/SeverityComplianceMetrics'
-    ComplianceStandardType:
-      title: ComplianceStandardType
-      type: string
-      x-stoplight:
-        id: hqwyia5x65e2x
-      enum:
-      - CIS
-      - OWASP
-  requestBodies:
-    ComplianceEvaluationTrendRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceResultFilter'
-    ComplianceResultsEvaluationBreakdownByArtifactsRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceResultFilter'
-    FetchComplianeResultChecksStatsRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceResultFilter'
-    ComplianceResultsOverviewRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ComplianceResultFilter'
-      description: ''
-  parameters:
-    Page2:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-        minimum: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Limit6:
-      name: limit
-      in: query
-      schema:
-        type: integer
-        default: 30
-        maximum: 1000
-        minimum: 1
-      description: Number of items to return per page.
-    AccountHeader6:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    Order2:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-        default: ASC
-      description: Order on the basis of which sorting is done.
-    ProjectParam1:
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness project ID
-      name: project
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
   responses:
+    ComplianceResultsEvaluationBreakdownResponse:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceResultsEvaluationBreakdown'
+    ComplianceChecksStatsResponse:
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ComplianceChecksMetrics'
     ComplianceEvaluationTrendResponse:
       description: Example response
       content:
@@ -438,20 +430,28 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/ArtifactComplianceMetrics'
-    ComplianceResultsEvaluationBreakdownResponse:
-      description: ''
+  requestBodies:
+    ComplianceResultsOverviewRequestBody:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ComplianceResultsEvaluationBreakdown'
-    ComplianceChecksStatsResponse:
+            $ref: '#/components/schemas/ComplianceResultFilter'
       description: ''
+    ComplianceEvaluationTrendRequest:
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ComplianceChecksMetrics'
+            $ref: '#/components/schemas/ComplianceResultFilter'
+    FetchComplianeResultChecksStatsRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceResultFilter'
+    ComplianceResultsEvaluationBreakdownByArtifactsRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComplianceResultFilter'
   securitySchemes:
     x-api-key:
       name: x-api-key

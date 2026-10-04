@@ -90,35 +90,141 @@ paths:
         '200':
           $ref: '#/components/responses/EntityResponseBodyList'
 components:
+  responses:
+    EntityResponseBodyList:
+      description: 'Response containing a paginated list of Entities matching the filter criteria. The response includes the matching entities in the body and pagination metadata in the headers. Headers include total element count, current page information, and counts for entities owned by or starred by the current user.
+
+        '
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityResponse'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityResponse'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements that match the filter criteria
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Current page number in the paginated response
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum number of items per page in the paginated response
+        Total-Owned:
+          schema:
+            type: integer
+          description: Total number of entities owned by the current user or their groups
+        Total-Starred:
+          schema:
+            type: integer
+          description: Total number of entities marked as favorites by the current user
+    TeamHierarchyResponse:
+      description: Team hierarchy response containing Teams & Sub-Teams metadata
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TeamHierarchyNode'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TeamHierarchyNode'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+  parameters:
+    OrgIdentifierQueryParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Unique identifier of the organization within the account
+    Page1:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: null
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    ScopeParam:
+      name: scope
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Scope of the entity (account, account.orgId, account.orgId.projectId)
+    ProjectIdentifierQueryParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Unique identifier of the project within the organization
+    IdentifierParam:
+      name: identifier
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier of the entity within its scope and kind
+    AccountHeader5:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to.
+    SearchTerm5:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: This would be used to filter resources having attributes matching the search term.
+    Sort6:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        default: null
+      description: Parameter on the basis of which sorting is done.
+    LimitWithRestriction:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 10
+        maximum: 100
+      description: 'Maximum number of items to return per page (1-100, default: 10)'
   schemas:
-    CacheResponseData:
-      title: CacheResponseData
-      x-stoplight:
-        id: 5twby12bhyems
-      type: object
-      x-examples:
-        example-1:
-          cache_state: VALID_CACHE
-          ttl_left: 9223372036854776000
-          last_updated_at: 9223372036854776000
-      properties:
-        cache_state:
-          type: string
-          enum:
-          - VALID_CACHE
-          - STALE_CACHE
-          - UNKNOWN
-          description: Tells the state of cache.
-        ttl_left:
-          type: integer
-          format: int64
-          description: Time left till cache expriry.
-        last_updated_at:
-          type: integer
-          format: int64
-          description: Time when the cache was last updated at.
-        is_sync_enabled:
-          type: boolean
     EntityResponse:
       title: Entity Response Body
       description: Detailed information about an Entity, including its metadata, relationships, and YAML representation.
@@ -417,140 +523,34 @@ components:
           description: Direct sub-teams nested under this Team, recursively to N levels.
           items:
             $ref: '#/components/schemas/TeamHierarchyNode'
-  responses:
-    TeamHierarchyResponse:
-      description: Team hierarchy response containing Teams & Sub-Teams metadata
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/TeamHierarchyNode'
-        application/yaml:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/TeamHierarchyNode'
-      headers:
-        X-Total-Elements:
-          schema:
-            type: integer
-          description: Total number of elements returned in Paginated response.
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Page number in Paginated response.
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum page size in Paginated response.
-    EntityResponseBodyList:
-      description: 'Response containing a paginated list of Entities matching the filter criteria. The response includes the matching entities in the body and pagination metadata in the headers. Headers include total element count, current page information, and counts for entities owned by or starred by the current user.
-
-        '
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/EntityResponse'
-        application/yaml:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/EntityResponse'
-      headers:
-        X-Total-Elements:
-          schema:
-            type: integer
-          description: Total number of elements that match the filter criteria
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Current page number in the paginated response
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum number of items per page in the paginated response
-        Total-Owned:
-          schema:
-            type: integer
-          description: Total number of entities owned by the current user or their groups
-        Total-Starred:
-          schema:
-            type: integer
-          description: Total number of entities marked as favorites by the current user
-  parameters:
-    AccountHeader5:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to.
-    ProjectIdentifierQueryParam:
-      name: projectIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: Unique identifier of the project within the organization
-    OrgIdentifierQueryParam:
-      name: orgIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: Unique identifier of the organization within the account
-    Page1:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: null
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    SearchTerm5:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: This would be used to filter resources having attributes matching the search term.
-    IdentifierParam:
-      name: identifier
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Unique identifier of the entity within its scope and kind
-    Sort6:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        default: null
-      description: Parameter on the basis of which sorting is done.
-    ScopeParam:
-      name: scope
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Scope of the entity (account, account.orgId, account.orgId.projectId)
-    LimitWithRestriction:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 10
-        maximum: 100
-      description: 'Maximum number of items to return per page (1-100, default: 10)'
+    CacheResponseData:
+      title: CacheResponseData
+      x-stoplight:
+        id: 5twby12bhyems
+      type: object
+      x-examples:
+        example-1:
+          cache_state: VALID_CACHE
+          ttl_left: 9223372036854776000
+          last_updated_at: 9223372036854776000
+      properties:
+        cache_state:
+          type: string
+          enum:
+          - VALID_CACHE
+          - STALE_CACHE
+          - UNKNOWN
+          description: Tells the state of cache.
+        ttl_left:
+          type: integer
+          format: int64
+          description: Time left till cache expriry.
+        last_updated_at:
+          type: integer
+          format: int64
+          description: Time when the cache was last updated at.
+        is_sync_enabled:
+          type: boolean
   securitySchemes:
     x-api-key:
       name: x-api-key

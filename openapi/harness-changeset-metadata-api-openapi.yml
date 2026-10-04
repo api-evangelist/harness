@@ -98,6 +98,67 @@ paths:
         id: 6egw8y19cxi6o
 components:
   parameters:
+    DbOpsAccountHeader:
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+      in: header
+      name: Harness-Account
+      schema:
+        type: string
+    DbInstanceQuery:
+      description: Identifier for the DBInstance
+      in: query
+      name: dbInstance
+      required: true
+      schema:
+        type: string
+    DbOpsPageIndex:
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
+    DBInstanceParam:
+      description: database instance unique id
+      in: path
+      name: dbinstance
+      required: true
+      schema:
+        type: string
+    ChangesetMetadataContentType:
+      description: 'changesetMetadata contentType. Example : Yaml, Sql'
+      in: query
+      name: contentType
+      required: true
+      schema:
+        enum:
+        - Yaml
+        - Sql
+        example: Yaml
+        type: string
+    DbSchemaQuery:
+      description: DB Schema identifier
+      in: query
+      name: dbSchema
+      required: true
+      schema:
+        type: string
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    DbOpsLimit:
+      description: 'Pagination: Number of items to return.'
+      in: query
+      name: limit
+      schema:
+        default: 10
+        maximum: 100
+        type: integer
     PipelineExecutionId:
       description: plan execution Id of the pipeline execution
       in: query
@@ -116,20 +177,6 @@ components:
       description: parent unique id for the scope
       in: query
       name: parent_id
-      schema:
-        type: string
-    DBInstanceParam:
-      description: database instance unique id
-      in: path
-      name: dbinstance
-      required: true
-      schema:
-        type: string
-    DbSchemaQuery:
-      description: DB Schema identifier
-      in: query
-      name: dbSchema
-      required: true
       schema:
         type: string
     OrgParam:
@@ -162,66 +209,7 @@ components:
       schema:
         maxLength: 128
         type: string
-    ChangesetMetadataContentType:
-      description: 'changesetMetadata contentType. Example : Yaml, Sql'
-      in: query
-      name: contentType
-      required: true
-      schema:
-        enum:
-        - Yaml
-        - Sql
-        example: Yaml
-        type: string
-    DbInstanceQuery:
-      description: Identifier for the DBInstance
-      in: query
-      name: dbInstance
-      required: true
-      schema:
-        type: string
-    DbOpsPageIndex:
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-      in: query
-      name: page
-      schema:
-        default: 0
-        format: int64
-        type: integer
-    DbOpsAccountHeader:
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-      in: header
-      name: Harness-Account
-      schema:
-        type: string
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
-    DbOpsLimit:
-      description: 'Pagination: Number of items to return.'
-      in: query
-      name: limit
-      schema:
-        default: 10
-        maximum: 100
-        type: integer
   schemas:
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
     FlywayMigrationScriptOutput:
       properties:
         data:
@@ -253,19 +241,25 @@ components:
       type: object
       x-stoplight:
         id: i2l6jx3t5wwbu
+    DbOpsError:
+      description: Error Response
+      properties:
+        message:
+          description: error message detail
+          type: string
+      required:
+      - message
+      title: Error Response
+      type: object
+      x-stoplight:
+        id: 61cwtgnps2mpt
   responses:
-    ErrorResponse:
+    ChangeSetMetadataResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
-    FlywayMigrationScriptResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/FlywayMigrationScriptOutput'
-      description: Response body for flyway migration scripts
+            $ref: '#/components/schemas/ChangeSetMetadataOutput'
+      description: Response body for changeSetMetadata
       headers:
         X-Page-Number:
           description: Page number in Paginated response.
@@ -279,12 +273,18 @@ components:
           description: Total number of elements returned in Paginated response.
           schema:
             type: integer
-    ChangeSetMetadataResponse:
+    ErrorResponse:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ChangeSetMetadataOutput'
-      description: Response body for changeSetMetadata
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
+    FlywayMigrationScriptResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FlywayMigrationScriptOutput'
+      description: Response body for flyway migration scripts
       headers:
         X-Page-Number:
           description: Page number in Paginated response.

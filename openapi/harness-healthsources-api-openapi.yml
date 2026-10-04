@@ -260,41 +260,26 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOHealthSourceRuntimeInputs'
 components:
   schemas:
-    ResponseDTOListHealthSourceResponse:
+    CvNGVariable:
       type: object
       properties:
-        status:
+        name:
+          type: string
+        type:
           type: string
           enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/HealthSourceResponse'
-        metaData:
-          type: object
-        correlationId:
+          - String
+          - Number
+          - Secret
+        description:
           type: string
-    CvJsonNode:
-      type: object
-      description: Same data in JSON form for typed UI rendering. Null when hasRuntimeInputs is false.
-    ResponseDTOBoolean:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
+        required:
           type: boolean
-        metaData:
-          type: object
-        correlationId:
+        metadata:
           type: string
+      description: Variables that can be substituted into queries using <+healthSourceVariables.name>
+      discriminator:
+        propertyName: type
     HealthSourceResponse:
       type: object
       properties:
@@ -349,6 +334,65 @@ components:
           description: Last updated timestamp
           format: int64
       description: Response containing Health Source details
+    HealthSourceRuntimeInputs:
+      type: object
+      properties:
+        hasRuntimeInputs:
+          type: boolean
+          description: True when the HealthSource has at least one <+input> field
+        runtimeInputYaml:
+          type: string
+          description: 'YAML snippet to embed directly as healthSourceInputs: in the AI Verify step YAML. Null when hasRuntimeInputs is false.'
+        runtimeInputs:
+          $ref: '#/components/schemas/CvJsonNode'
+      description: Fields on the HealthSource that require runtime input values (<+input> marked). Embed runtimeInputYaml directly as healthSourceInputs in the AI Verify step.
+    ResponseDTOHealthSourceRuntimeInputs:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/HealthSourceRuntimeInputs'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTOListHealthSourceResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthSourceResponse'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    ResponseDTOBoolean:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: boolean
+        metaData:
+          type: object
+        correlationId:
+          type: string
     HealthSource:
       required:
       - connectorRef
@@ -392,18 +436,6 @@ components:
           items:
             $ref: '#/components/schemas/CvNGVariable'
       description: This contains details of the Health Source configuration
-    HealthSourceRuntimeInputs:
-      type: object
-      properties:
-        hasRuntimeInputs:
-          type: boolean
-          description: True when the HealthSource has at least one <+input> field
-        runtimeInputYaml:
-          type: string
-          description: 'YAML snippet to embed directly as healthSourceInputs: in the AI Verify step YAML. Null when hasRuntimeInputs is false.'
-        runtimeInputs:
-          $ref: '#/components/schemas/CvJsonNode'
-      description: Fields on the HealthSource that require runtime input values (<+input> marked). Embed runtimeInputYaml directly as healthSourceInputs in the AI Verify step.
     QueryDefinitionsDTO:
       required:
       - type
@@ -429,7 +461,10 @@ components:
           type: object
         correlationId:
           type: string
-    ResponseDTOHealthSourceRuntimeInputs:
+    CvJsonNode:
+      type: object
+      description: Same data in JSON form for typed UI rendering. Null when hasRuntimeInputs is false.
+    ResponseDTOOptionalHealthSourceResponse:
       type: object
       properties:
         status:
@@ -439,7 +474,7 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/HealthSourceRuntimeInputs'
+          $ref: '#/components/schemas/HealthSourceResponse'
         metaData:
           type: object
         correlationId:
@@ -459,41 +494,6 @@ components:
         spec:
           $ref: '#/components/schemas/QueryDefinitionsDTO'
       description: Wrapper for query definitions containing type and spec
-    ResponseDTOOptionalHealthSourceResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/HealthSourceResponse'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    CvNGVariable:
-      type: object
-      properties:
-        name:
-          type: string
-        type:
-          type: string
-          enum:
-          - String
-          - Number
-          - Secret
-        description:
-          type: string
-        required:
-          type: boolean
-        metadata:
-          type: string
-      description: Variables that can be substituted into queries using <+healthSourceVariables.name>
-      discriminator:
-        propertyName: type
   securitySchemes:
     x-api-key:
       name: x-api-key

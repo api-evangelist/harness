@@ -71,30 +71,57 @@ paths:
       tags:
       - Quarantine
 components:
+  responses:
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
+    Success:
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            type: object
+      description: Generic success response
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
+    quarantinePathResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/quarantinePath'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: quarantine path response
   parameters:
-    artifactTypeParam:
-      description: artifact type.
-      in: query
-      name: artifact_type
-      schema:
-        enum:
-        - model
-        - dataset
-        - module
-        - provider
-        type: string
-    filePathParam:
-      description: filePath
-      in: query
-      name: file_path
-      schema:
-        type: string
-    versionParam:
-      description: Version
-      in: query
-      name: version
-      schema:
-        type: string
     registryRefPathParam:
       description: 'Reference to the scope in which the registry exists.
 
@@ -132,10 +159,16 @@ components:
       required: true
       schema:
         type: string
-    artifactParam:
-      description: Artifat
+    versionParam:
+      description: Version
       in: query
-      name: artifact
+      name: version
+      schema:
+        type: string
+    filePathParam:
+      description: filePath
+      in: query
+      name: file_path
       schema:
         type: string
     filtersParam:
@@ -155,14 +188,24 @@ components:
           type: string
         type: array
       style: form
+    artifactTypeParam:
+      description: artifact type.
+      in: query
+      name: artifact_type
+      schema:
+        enum:
+        - model
+        - dataset
+        - module
+        - provider
+        type: string
+    artifactParam:
+      description: Artifat
+      in: query
+      name: artifact
+      schema:
+        type: string
   schemas:
-    RegistryStatus:
-      description: Request processing status indicator
-      enum:
-      - SUCCESS
-      - FAILURE
-      - ERROR
-      type: string
     quarantinePath:
       description: quarantine path
       properties:
@@ -233,56 +276,13 @@ components:
       - code
       - message
       type: object
-  responses:
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    quarantinePathResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/quarantinePath'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: quarantine path response
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
-    RegistryUnauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Authentication failed or missing credentials
-    Success:
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            type: object
-      description: Generic success response
+    RegistryStatus:
+      description: Request processing status indicator
+      enum:
+      - SUCCESS
+      - FAILURE
+      - ERROR
+      type: string
   requestBodies:
     quarantineRequest:
       content:

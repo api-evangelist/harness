@@ -100,160 +100,25 @@ paths:
       x-stoplight:
         id: 3cxmpehd7r5lf
 components:
-  responses:
-    FlywayDeployedStateResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              deployedScripts:
-                items:
-                  $ref: '#/components/schemas/FlywayDeployedStateOutput'
-                type: array
-                x-stoplight:
-                  id: avkuudlqggpyw
-            type: object
-      description: Response body of migration script deployment
-      headers:
-        X-Page-Number:
-          description: Page number in Paginated response.
-          schema:
-            type: integer
-        X-Page-Size:
-          description: Maximum page size in Paginated response.
-          schema:
-            type: integer
-        X-Total-Elements:
-          description: Total number of elements returned in Paginated response.
-          schema:
-            type: integer
-    FlywayScriptOutputResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AppliedScriptOutput'
-      description: Response Body for Fetching script content for flyway
-      headers:
-        X-Page-Number:
-          description: Page number in Paginated response.
-          schema:
-            type: integer
-        X-Page-Size:
-          description: Maximum page size in Paginated response.
-          schema:
-            type: integer
-        X-Total-Elements:
-          description: Total number of elements returned in Paginated response.
-          schema:
-            type: integer
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
-  parameters:
-    DBInstanceParam:
-      description: database instance unique id
-      in: path
-      name: dbinstance
-      required: true
-      schema:
-        type: string
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
-    DBSchemaParam:
-      description: Identifier of the database schema
-      in: path
-      name: dbschema
-      required: true
-      schema:
-        maxLength: 128
-        type: string
-    FlywayVersion:
-      description: Version of flyway migration script
-      in: query
-      name: flywayVersion
-      required: true
-      schema:
-        type: string
-    DbOpsPageIndex:
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-      in: query
-      name: page
-      schema:
-        default: 0
-        format: int64
-        type: integer
-    DbOpsAccountHeader:
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-      in: header
-      name: Harness-Account
-      schema:
-        type: string
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
-    DbOpsLimit:
-      description: 'Pagination: Number of items to return.'
-      in: query
-      name: limit
-      schema:
-        default: 10
-        maximum: 100
-        type: integer
   schemas:
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
-    FlywayCommandExecutionStatus:
+    FlywayCommand:
+      description: Type of the plugin command to run
       enum:
-      - IN_PROGRESS
-      - SUCCESS
-      - FAILURE
-      - CANCELLED
-      - SUCCESS_ROLLED_BACK
-      title: FlywayCommandExecutionStatus
+      - Migrate
+      - MigrateSQL
+      - Undo
+      - UndoSQL
+      - Info
+      - ParentWrapper
+      - Clone
+      - Custom
+      - Repair
+      minLength: 1
+      title: Command
       type: string
+      x-internal: true
       x-stoplight:
-        id: 6na70i6cet06w
-    AppliedScriptOutput:
-      description: Body for Fetching script content for flyway
-      properties:
-        executionMismatchMsg:
-          description: show message if the script is not from current pipeline execution
-          type: string
-          x-stoplight:
-            id: cx2j2d626sopb
-        statements:
-          description: migration script content for a version
-          items:
-            type: string
-            x-stoplight:
-              id: beb3etwif6p00
-          type: array
-      title: AppliedScriptOutput
-      type: object
-      x-stoplight:
-        id: ilijyrigp5ddd
+        id: c3cn8rwxrl2bb
     DeployedStateInput:
       description: Input for getting execution deployed states
       properties:
@@ -288,6 +153,56 @@ components:
       type: object
       x-stoplight:
         id: vfiwroxnuheqj
+    AppliedScriptOutput:
+      description: Body for Fetching script content for flyway
+      properties:
+        executionMismatchMsg:
+          description: show message if the script is not from current pipeline execution
+          type: string
+          x-stoplight:
+            id: cx2j2d626sopb
+        statements:
+          description: migration script content for a version
+          items:
+            type: string
+            x-stoplight:
+              id: beb3etwif6p00
+          type: array
+      title: AppliedScriptOutput
+      type: object
+      x-stoplight:
+        id: ilijyrigp5ddd
+    DbOpsExecutionMetadata:
+      description: Properties related to pipeline execution
+      properties:
+        pipeline:
+          type: string
+          x-stoplight:
+            id: 5k3ff780hrran
+        planExecutionId:
+          type: string
+          x-stoplight:
+            id: q74ihd08grz1n
+        stageExecutionId:
+          type: string
+          x-stoplight:
+            id: m9yhkxclgnwn2
+      required:
+      - pipeline
+      - planExecutionId
+      - stageExecutionId
+      title: ExecutionMetadata
+      type: object
+      x-stoplight:
+        id: tkbzev2tuyv9j
+    DBStepType:
+      enum:
+      - DBSchemaApply
+      - DBSchemaRollback
+      title: DBStepType
+      type: string
+      x-stoplight:
+        id: ookg93k67z8hz
     FlywayDeployedStateOutput:
       description: The status of migration script deployment
       properties:
@@ -333,55 +248,140 @@ components:
       type: object
       x-stoplight:
         id: pdsn4j431fbeb
-    DBStepType:
-      enum:
-      - DBSchemaApply
-      - DBSchemaRollback
-      title: DBStepType
-      type: string
-      x-stoplight:
-        id: ookg93k67z8hz
-    DbOpsExecutionMetadata:
-      description: Properties related to pipeline execution
+    DbOpsError:
+      description: Error Response
       properties:
-        pipeline:
+        message:
+          description: error message detail
           type: string
-          x-stoplight:
-            id: 5k3ff780hrran
-        planExecutionId:
-          type: string
-          x-stoplight:
-            id: q74ihd08grz1n
-        stageExecutionId:
-          type: string
-          x-stoplight:
-            id: m9yhkxclgnwn2
       required:
-      - pipeline
-      - planExecutionId
-      - stageExecutionId
-      title: ExecutionMetadata
+      - message
+      title: Error Response
       type: object
       x-stoplight:
-        id: tkbzev2tuyv9j
-    FlywayCommand:
-      description: Type of the plugin command to run
+        id: 61cwtgnps2mpt
+    FlywayCommandExecutionStatus:
       enum:
-      - Migrate
-      - MigrateSQL
-      - Undo
-      - UndoSQL
-      - Info
-      - ParentWrapper
-      - Clone
-      - Custom
-      - Repair
-      minLength: 1
-      title: Command
+      - IN_PROGRESS
+      - SUCCESS
+      - FAILURE
+      - CANCELLED
+      - SUCCESS_ROLLED_BACK
+      title: FlywayCommandExecutionStatus
       type: string
-      x-internal: true
       x-stoplight:
-        id: c3cn8rwxrl2bb
+        id: 6na70i6cet06w
+  parameters:
+    DbOpsAccountHeader:
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+      in: header
+      name: Harness-Account
+      schema:
+        type: string
+    FlywayVersion:
+      description: Version of flyway migration script
+      in: query
+      name: flywayVersion
+      required: true
+      schema:
+        type: string
+    DbOpsPageIndex:
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+      in: query
+      name: page
+      schema:
+        default: 0
+        format: int64
+        type: integer
+    DBInstanceParam:
+      description: database instance unique id
+      in: path
+      name: dbinstance
+      required: true
+      schema:
+        type: string
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    DbOpsLimit:
+      description: 'Pagination: Number of items to return.'
+      in: query
+      name: limit
+      schema:
+        default: 10
+        maximum: 100
+        type: integer
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    DBSchemaParam:
+      description: Identifier of the database schema
+      in: path
+      name: dbschema
+      required: true
+      schema:
+        maxLength: 128
+        type: string
+  responses:
+    FlywayScriptOutputResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AppliedScriptOutput'
+      description: Response Body for Fetching script content for flyway
+      headers:
+        X-Page-Number:
+          description: Page number in Paginated response.
+          schema:
+            type: integer
+        X-Page-Size:
+          description: Maximum page size in Paginated response.
+          schema:
+            type: integer
+        X-Total-Elements:
+          description: Total number of elements returned in Paginated response.
+          schema:
+            type: integer
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
+    FlywayDeployedStateResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              deployedScripts:
+                items:
+                  $ref: '#/components/schemas/FlywayDeployedStateOutput'
+                type: array
+                x-stoplight:
+                  id: avkuudlqggpyw
+            type: object
+      description: Response body of migration script deployment
+      headers:
+        X-Page-Number:
+          description: Page number in Paginated response.
+          schema:
+            type: integer
+        X-Page-Size:
+          description: Maximum page size in Paginated response.
+          schema:
+            type: integer
+        X-Total-Elements:
+          description: Total number of elements returned in Paginated response.
+          schema:
+            type: integer
   securitySchemes:
     x-api-key:
       name: x-api-key

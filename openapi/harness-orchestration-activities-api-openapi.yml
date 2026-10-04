@@ -328,18 +328,166 @@ components:
           - FORBIDDEN
           - NOT_FOUND
           - INTERNAL_SERVER_ERROR
-    AnyValue:
-      oneOf:
-      - type: string
-      - type: number
-      - type: boolean
-      - type: object
-        additionalProperties: true
-      - type: array
-        items:
+    RmPageable:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          $ref: '#/components/schemas/PageableSort'
+        offset:
+          type: integer
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+    OnHoldActivityActionRequest:
+      type: object
+      required:
+      - action
+      properties:
+        action:
+          type: string
+          enum:
+          - retry
+          - ignore
+          description: The action to perform on the on-hold activity. Must be 'retry' if retryWith is present.
+          x-oapi-codegen-extra-tags:
+            validate: required,oneof=retry ignore
+        retryWith:
+          type: string
+          enum:
+          - SUBPROCESS
+          description: Specifies the retry mechanism. If present, action must be 'retry'. Currently only SUBPROCESS is supported.
+        subprocessInfo:
+          $ref: '#/components/schemas/SubprocessInfo'
+          description: Subprocess information. Required when retryWith is SUBPROCESS.
+        inputs:
+          type: array
+          description: Optional list of input values for retrying the on-hold activity. Only valid when action is 'retry'.
+          items:
+            $ref: '#/components/schemas/ActivityExecutionInputDTO'
+        outputs:
+          type: array
+          description: Optional list of output values for ignoring the on-hold activity. Only valid when action is 'ignore'.
+          items:
+            $ref: '#/components/schemas/ExecutionOutputDTO'
+    PageableSort:
+      type: object
+      x-go-name: PageableSort
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    OrchestrationActivityYamlDto:
+      type: object
+      required:
+      - identifier
+      - yaml
+      properties:
+        identifier:
+          type: string
+          description: Identifier of the activity
+        yaml:
+          type: string
+          description: YAML configuration of the activity
+        orgIdentifier:
+          type: string
+          description: Organization identifier of the activity
+        projectIdentifier:
+          type: string
+          description: Project identifier of the activity
+    OnHoldActivityActionResponse:
+      type: object
+      properties:
+        activityExecutionId:
+          type: string
+          description: The ID of the processed activity execution
+        action:
+          type: string
+          description: The action that was performed
+    ActivityExecutionInputDTO:
+      type: object
+      description: Input value for an activity execution
+      required:
+      - name
+      - value
+      - type
+      properties:
+        name:
+          type: string
+          description: Name of the input parameter
+        value:
+          $ref: '#/components/schemas/AnyValue'
+          description: Value of the input parameter (can be string, number, boolean, object, array, etc.)
+        type:
+          $ref: '#/components/schemas/InputVariableType'
+          description: Type of the input parameter
+    ExecutionOutputDTO:
+      type: object
+      description: Output value for a phase execution
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+          description: Name of the output parameter
+        value:
+          $ref: '#/components/schemas/AnyValue'
+          description: Value of the output parameter (can be string, number, boolean, object, array, etc.)
+    SubprocessInfo:
+      type: object
+      required:
+      - processIdentifier
+      - processInputIdentifier
+      - releaseInput
+      - output
+      properties:
+        processIdentifier:
+          type: string
+          description: Process identifier. Required when retryWith is SUBPROCESS.
+        processInputIdentifier:
+          type: string
+          description: Process input identifier. Required when retryWith is SUBPROCESS.
+        releaseInput:
+          type: string
+          description: Release input YAML. Required when retryWith is SUBPROCESS.
+        output:
           type: object
-      x-go-type: interface{}
-      description: Flexible type that accepts any JSON value (string, number, boolean, object, or array)
+          additionalProperties:
+            type: string
+          description: Output map with key-value pairs.
+    CreatedByDTO:
+      type: object
+      description: Details of the user who created the event
+      required:
+      - name
+      - email
+      properties:
+        name:
+          type: string
+          description: Name of the user who created the event
+        email:
+          type: string
+          description: Email of the user who created the event
+        identifier:
+          type: string
+          description: Identifier of the user who created the event
+      x-stoplight:
+        id: created-by-dto
+    NextRequest:
+      type: object
+      properties:
+        cursor:
+          type: string
+        limit:
+          type: integer
     OrchestrationActivitySummaryDTO:
       title: OrchestrationActivitySummaryDTO
       type: object
@@ -377,84 +525,6 @@ components:
           $ref: '#/components/schemas/CreatedByDTO'
       x-stoplight:
         id: orchestration-activity-summary-dto
-    ActivityExecutionInputDTO:
-      type: object
-      description: Input value for an activity execution
-      required:
-      - name
-      - value
-      - type
-      properties:
-        name:
-          type: string
-          description: Name of the input parameter
-        value:
-          $ref: '#/components/schemas/AnyValue'
-          description: Value of the input parameter (can be string, number, boolean, object, array, etc.)
-        type:
-          $ref: '#/components/schemas/InputVariableType'
-          description: Type of the input parameter
-    OrchestrationActivityYamlDto:
-      type: object
-      required:
-      - identifier
-      - yaml
-      properties:
-        identifier:
-          type: string
-          description: Identifier of the activity
-        yaml:
-          type: string
-          description: YAML configuration of the activity
-        orgIdentifier:
-          type: string
-          description: Organization identifier of the activity
-        projectIdentifier:
-          type: string
-          description: Project identifier of the activity
-    CreatedByDTO:
-      type: object
-      description: Details of the user who created the event
-      required:
-      - name
-      - email
-      properties:
-        name:
-          type: string
-          description: Name of the user who created the event
-        email:
-          type: string
-          description: Email of the user who created the event
-        identifier:
-          type: string
-          description: Identifier of the user who created the event
-      x-stoplight:
-        id: created-by-dto
-    CreateOrchestrationActivityRequestType:
-      type: string
-      enum:
-      - PIPELINE
-      - MANUAL
-      - SUBPROCESS
-      description: Type of orchestration activity
-    ActivityInputsResponse:
-      type: object
-      description: Enhanced response structure for activity inputs
-      required:
-      - activityInput
-      properties:
-        activityInput:
-          type: string
-          description: activityInput Yaml string
-    OnHoldActivityActionResponse:
-      type: object
-      properties:
-        activityExecutionId:
-          type: string
-          description: The ID of the processed activity execution
-        action:
-          type: string
-          description: The action that was performed
     InputVariableType:
       type: string
       description: Type of an input variable for parameters and process inputs.
@@ -471,21 +541,15 @@ components:
       - infrastructure
       - multiInfrastructure
       - connector
-    RmPageable:
+    ActivityInputsResponse:
       type: object
+      description: Enhanced response structure for activity inputs
+      required:
+      - activityInput
       properties:
-        pageNumber:
-          type: integer
-        pageSize:
-          type: integer
-        sort:
-          $ref: '#/components/schemas/PageableSort'
-        offset:
-          type: integer
-        paged:
-          type: boolean
-        unpaged:
-          type: boolean
+        activityInput:
+          type: string
+          description: activityInput Yaml string
     LastUpdatedByDTO:
       title: LastUpdatedByDTO
       type: object
@@ -500,89 +564,108 @@ components:
           type: string
       x-stoplight:
         id: q1hm7j6egaq6k
-    SubprocessInfo:
-      type: object
-      required:
-      - processIdentifier
-      - processInputIdentifier
-      - releaseInput
-      - output
-      properties:
-        processIdentifier:
-          type: string
-          description: Process identifier. Required when retryWith is SUBPROCESS.
-        processInputIdentifier:
-          type: string
-          description: Process input identifier. Required when retryWith is SUBPROCESS.
-        releaseInput:
-          type: string
-          description: Release input YAML. Required when retryWith is SUBPROCESS.
-        output:
+    AnyValue:
+      oneOf:
+      - type: string
+      - type: number
+      - type: boolean
+      - type: object
+        additionalProperties: true
+      - type: array
+        items:
           type: object
-          additionalProperties:
-            type: string
-          description: Output map with key-value pairs.
-    NextRequest:
-      type: object
-      properties:
-        cursor:
+      x-go-type: interface{}
+      description: Flexible type that accepts any JSON value (string, number, boolean, object, or array)
+    CreateOrchestrationActivityRequestType:
+      type: string
+      enum:
+      - PIPELINE
+      - MANUAL
+      - SUBPROCESS
+      description: Type of orchestration activity
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+      description: Cursor Based Pagination
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+    RmPage:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+    SearchTermParam:
+      name: searchTerm
+      in: query
+      description: Optional search string to filter releases by name.
+      required: false
+      schema:
+        type: string
+    RmLimit:
+      name: limit
+      in: query
+      schema:
+        type: number
+        default: 500
+        maximum: 500
+      description: The number of records expected
+    RmSort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
           type: string
-        limit:
-          type: integer
-    PageableSort:
-      type: object
-      x-go-name: PageableSort
-      properties:
-        empty:
-          type: boolean
-        sorted:
-          type: boolean
-        unsorted:
-          type: boolean
-    OnHoldActivityActionRequest:
-      type: object
-      required:
-      - action
-      properties:
-        action:
-          type: string
-          enum:
-          - retry
-          - ignore
-          description: The action to perform on the on-hold activity. Must be 'retry' if retryWith is present.
-          x-oapi-codegen-extra-tags:
-            validate: required,oneof=retry ignore
-        retryWith:
-          type: string
-          enum:
-          - SUBPROCESS
-          description: Specifies the retry mechanism. If present, action must be 'retry'. Currently only SUBPROCESS is supported.
-        subprocessInfo:
-          $ref: '#/components/schemas/SubprocessInfo'
-          description: Subprocess information. Required when retryWith is SUBPROCESS.
-        inputs:
-          type: array
-          description: Optional list of input values for retrying the on-hold activity. Only valid when action is 'retry'.
-          items:
-            $ref: '#/components/schemas/ActivityExecutionInputDTO'
-        outputs:
-          type: array
-          description: Optional list of output values for ignoring the on-hold activity. Only valid when action is 'ignore'.
-          items:
-            $ref: '#/components/schemas/ExecutionOutputDTO'
-    ExecutionOutputDTO:
-      type: object
-      description: Output value for a phase execution
-      required:
-      - name
-      - value
-      properties:
-        name:
-          type: string
-          description: Name of the output parameter
-        value:
-          $ref: '#/components/schemas/AnyValue'
-          description: Value of the output parameter (can be string, number, boolean, object, array, etc.)
+      description: 'Sort parameters as an array. Format: `[field_name, direction]` where direction is `asc` or `desc`.
+
+        Supported fields: `start_ts`, `startTs`, `end_ts`, `endTs`, `last_updated_at`, `lastUpdatedAt`, `created_at`, `createdAt`, `name`, `identifier`, `status`, `type`.
+
+        When used in query params, use format: `sort=field_name&sort=direction` (e.g., `sort=start_ts&sort=desc`).
+
+        '
+      examples:
+        example1:
+          value:
+          - created_at,asc
+        example2:
+          value:
+          - last_updated_at,desc
+        example3:
+          value:
+          - start_ts,desc
+        example4:
+          value:
+          - end_ts,asc
+    RmOrgParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Organisation Identifier
+    AccountParam:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Account Identifier
+    RmProjectParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Project Identifier
   requestBodies:
     UpdateOrchestrationActivityRequest:
       content:
@@ -595,6 +678,12 @@ components:
               yaml:
                 type: string
       description: Request body for updating an orchestration activity
+    OnHoldActivityActionRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OnHoldActivityActionRequest'
     CreateOrchestrationActivityRequest:
       content:
         application/json:
@@ -606,13 +695,49 @@ components:
               yaml:
                 type: string
       description: Request body for creating an orchestration activity
-    OnHoldActivityActionRequest:
-      required: true
+  responses:
+    OrchestrationActivityListByProcessIdentifierResponse:
+      description: Response for listing orchestration activities by process identifer
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/OnHoldActivityActionRequest'
-  responses:
+            type: object
+            required:
+            - activities
+            - nextRequest
+            - last
+            properties:
+              activities:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrchestrationActivityYamlDto'
+              nextRequest:
+                $ref: '#/components/schemas/NextRequest'
+              last:
+                type: boolean
+                description: Whether this is the last page of results
+    GetOrchestrationActivityResponse:
+      description: Response for Get Orchestration Activity API
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - yaml
+            - identifier
+            properties:
+              yaml:
+                type: string
+                description: YAML representation of the orchestration activity
+              identifier:
+                type: string
+                description: Identifier of the orchestration activity
+    RmErrorResponse:
+      description: Error Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RmError'
     OrchestrationActivitySummaryResponse:
       description: Paginated list of orchestration activities
       content:
@@ -656,74 +781,18 @@ components:
             - numberOfElements
             - first
             - empty
-    OrchestrationActivityListByProcessIdentifierResponse:
-      description: Response for listing orchestration activities by process identifer
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - activities
-            - nextRequest
-            - last
-            properties:
-              activities:
-                type: array
-                items:
-                  $ref: '#/components/schemas/OrchestrationActivityYamlDto'
-              nextRequest:
-                $ref: '#/components/schemas/NextRequest'
-              last:
-                type: boolean
-                description: Whether this is the last page of results
-    GetOrchestrationActivityResponse:
-      description: Response for Get Orchestration Activity API
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - yaml
-            - identifier
-            properties:
-              yaml:
-                type: string
-                description: YAML representation of the orchestration activity
-              identifier:
-                type: string
-                description: Identifier of the orchestration activity
-    ActivityInputsResponse:
-      description: Response containing activity input definitions with their values and metadata
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ActivityInputsResponse'
     OnHoldActivityActionResponse:
       description: On-hold activity action processed successfully
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/OnHoldActivityActionResponse'
-    RmErrorResponse:
-      description: Error Response body
+    ActivityInputsResponse:
+      description: Response containing activity input definitions with their values and metadata
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/RmError'
-    CreateOrchestrationActivityResponse:
-      description: Response for successful orchestration activity creation
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - identifier
-            - yaml
-            properties:
-              identifier:
-                type: string
-              yaml:
-                type: string
+            $ref: '#/components/schemas/ActivityInputsResponse'
     UpdateOrchestrationActivityResponse:
       description: Response for successful orchestration activity update
       content:
@@ -740,89 +809,20 @@ components:
               yaml:
                 type: string
                 description: YAML configuration of the updated orchestration activity
-  parameters:
-    RmLimit:
-      name: limit
-      in: query
-      schema:
-        type: number
-        default: 500
-        maximum: 500
-      description: The number of records expected
-    Size:
-      name: size
-      in: query
-      required: false
-      schema:
-        type: integer
-    AccountParam:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Account Identifier
-    RmPage:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-    RmOrgParam:
-      name: orgIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Organisation Identifier
-    Cursor:
-      name: cursor
-      in: query
-      schema:
-        type: string
-      description: Cursor Based Pagination
-    RmProjectParam:
-      name: projectIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Project Identifier
-    RmSort:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
-      description: 'Sort parameters as an array. Format: `[field_name, direction]` where direction is `asc` or `desc`.
-
-        Supported fields: `start_ts`, `startTs`, `end_ts`, `endTs`, `last_updated_at`, `lastUpdatedAt`, `created_at`, `createdAt`, `name`, `identifier`, `status`, `type`.
-
-        When used in query params, use format: `sort=field_name&sort=direction` (e.g., `sort=start_ts&sort=desc`).
-
-        '
-      examples:
-        example1:
-          value:
-          - created_at,asc
-        example2:
-          value:
-          - last_updated_at,desc
-        example3:
-          value:
-          - start_ts,desc
-        example4:
-          value:
-          - end_ts,asc
-    SearchTermParam:
-      name: searchTerm
-      in: query
-      description: Optional search string to filter releases by name.
-      required: false
-      schema:
-        type: string
+    CreateOrchestrationActivityResponse:
+      description: Response for successful orchestration activity creation
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - identifier
+            - yaml
+            properties:
+              identifier:
+                type: string
+              yaml:
+                type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

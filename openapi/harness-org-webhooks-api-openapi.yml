@@ -118,17 +118,6 @@ paths:
       - $ref: '#/components/parameters/AccountHeader'
 components:
   schemas:
-    CreateWebhookResponse:
-      title: CreateWebhookResponse
-      x-stoplight:
-        id: yak0fnugfnazi
-      type: object
-      description: 'Contains information about the webhook creation '
-      properties:
-        webhook_identifier:
-          type: string
-          x-stoplight:
-            id: 48gdql1ypcu24
     UpdateWebhookRequest:
       title: UpdateWebhookRequest
       x-stoplight:
@@ -150,6 +139,27 @@ components:
             id: 0s3sv7cnssgfa
         spec:
           $ref: '#/components/schemas/WebhookSpec'
+    WebhookSpec:
+      title: WebhookSpec
+      type: object
+      description: Details of the Webhook defined in Harness
+      x-stoplight:
+        id: flbjcalbbs9ui
+      discriminator:
+        propertyName: webhook_type
+        mapping:
+          GIT: '#/components/schemas/GitWebhookSpec'
+          GENERIC: '#/components/schemas/GenericWebhookSpec'
+          SLACK: '#/components/schemas/SlackWebhookSpec'
+      properties:
+        webhook_type:
+          type: string
+          x-stoplight:
+            id: zbdq4istt2a2f
+          enum:
+          - GIT
+          - GENERIC
+          - SLACK
     CreateWebhookRequest:
       title: CreateWebhookRequest
       x-stoplight:
@@ -168,22 +178,6 @@ components:
           type: string
         spec:
           $ref: '#/components/schemas/WebhookSpec'
-    ListWebhookRequest:
-      title: ListWebhookRequest
-      x-stoplight:
-        id: jx8oxje21olue
-      type: object
-      description: Contains information about the webhook list request
-      properties:
-        webhook_type:
-          type: string
-          x-stoplight:
-            id: upkw62u05iw1k
-          enum:
-          - GIT
-          - GENERIC
-          - SLACK
-          - EVENT_BRIDGE_TRIGGER
     WebhookResponse:
       title: WebhookResponse
       x-stoplight:
@@ -210,27 +204,33 @@ components:
           format: int64
         spec:
           $ref: '#/components/schemas/WebhookResponseSpec'
-    WebhookSpec:
-      title: WebhookSpec
-      type: object
-      description: Details of the Webhook defined in Harness
+    CreateWebhookResponse:
+      title: CreateWebhookResponse
       x-stoplight:
-        id: flbjcalbbs9ui
-      discriminator:
-        propertyName: webhook_type
-        mapping:
-          GIT: '#/components/schemas/GitWebhookSpec'
-          GENERIC: '#/components/schemas/GenericWebhookSpec'
-          SLACK: '#/components/schemas/SlackWebhookSpec'
+        id: yak0fnugfnazi
+      type: object
+      description: 'Contains information about the webhook creation '
+      properties:
+        webhook_identifier:
+          type: string
+          x-stoplight:
+            id: 48gdql1ypcu24
+    ListWebhookRequest:
+      title: ListWebhookRequest
+      x-stoplight:
+        id: jx8oxje21olue
+      type: object
+      description: Contains information about the webhook list request
       properties:
         webhook_type:
           type: string
           x-stoplight:
-            id: zbdq4istt2a2f
+            id: upkw62u05iw1k
           enum:
           - GIT
           - GENERIC
           - SLACK
+          - EVENT_BRIDGE_TRIGGER
     UpdateWebhookResponse:
       title: UpdateWebhookResponse
       x-stoplight:
@@ -283,13 +283,46 @@ components:
           schema:
             $ref: '#/components/schemas/ListWebhookRequest'
       description: List webhooks request
+  parameters:
+    OrgPathParam:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the organization the resource is scoped to
+    WebhookIdentifier:
+      name: webhook
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Webhook identifier
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
   responses:
-    UpdateWebhookResponse:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/UpdateWebhookResponse'
     CreateWebhookResponse:
       description: Example response
       content:
@@ -297,12 +330,6 @@ components:
           schema:
             $ref: '#/components/schemas/CreateWebhookResponse'
       headers: {}
-    GetWebhookResponse:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/WebhookResponse'
     ListWebhookResponse:
       description: Example response
       content:
@@ -324,45 +351,18 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-  parameters:
-    WebhookIdentifier:
-      name: webhook
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Webhook identifier
-    OrgPathParam:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the organization the resource is scoped to
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    UpdateWebhookResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateWebhookResponse'
+    GetWebhookResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebhookResponse'
   securitySchemes:
     x-api-key:
       name: x-api-key

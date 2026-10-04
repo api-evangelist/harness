@@ -214,126 +214,7 @@ paths:
       tags:
       - Webhooks
 components:
-  parameters:
-    RegistrypageSize:
-      description: Number of items per page
-      in: query
-      name: size
-      schema:
-        default: 20
-        format: int64
-        type: integer
-    searchTerm:
-      description: search Term.
-      in: query
-      name: search_term
-      schema:
-        type: string
-    RegistrypageNumber:
-      description: Current page number
-      in: query
-      name: page
-      schema:
-        default: 1
-        format: int64
-        type: integer
-    webhookIdentifierPathParam:
-      description: Unique webhook identifier.
-      in: path
-      name: webhook_identifier
-      required: true
-      schema:
-        type: string
-    registryRefPathParam:
-      description: 'Reference to the scope in which the registry exists.
-
-
-        Format depends on the scope:
-
-
-        - **Account-level**: `account_id/registry_name/+`
-
-        - **Organization-level**: `account_id/org_id/registry_name/+`
-
-        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
-
-
-        The `/+` suffix is used internally to route scoped requests.
-
-        It must be included **exactly as shown** in the URL.
-
-        '
-      examples:
-        accountLevel:
-          description: Only account ID, scoped at account level
-          summary: Account-level registry
-          value: acc123/registry123/+
-        orgLevel:
-          description: Account and org ID, scoped at org level
-          summary: Organization-level registry
-          value: acc123/org456/registry123/+
-        projectLevel:
-          description: Account, org, and project ID, scoped at project level
-          summary: Project-level registry
-          value: acc123/org456/proj789/registry123/+
-      in: path
-      name: registry_ref
-      required: true
-      schema:
-        type: string
-    RegistrysortOrder:
-      description: sortOrder
-      in: query
-      name: sort_order
-      schema:
-        type: string
-    webhookExecutionIdPathParam:
-      description: Unique webhook execution identifier.
-      in: path
-      name: webhook_execution_id
-      required: true
-      schema:
-        type: string
-    sortField:
-      description: sortField
-      in: query
-      name: sort_field
-      schema:
-        type: string
-  requestBodies:
-    WebhookRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/WebhookRequest'
-      description: request for create and update webhook
   schemas:
-    RegistryError:
-      description: Standard error response with code, message and optional details
-      properties:
-        code:
-          description: The HTTP error code
-          example: '404'
-          type: string
-        details:
-          description: 'Additional context and details about the error.
-
-            May include field-specific validation errors or debugging information.
-
-            '
-          example:
-            field: registry_identifier
-            reason: Registry does not exist in the specified project
-            value: invalid-registry
-          type: object
-        message:
-          description: Human-readable error message explaining what went wrong
-          example: Registry not found
-          type: string
-      required:
-      - code
-      - message
-      type: object
     WebhookExecution:
       description: Harness Regstries Webhook Execution
       properties:
@@ -395,43 +276,6 @@ components:
       required:
       - webhooks
       type: object
-    ListWebhooksExecutions:
-      description: A list of Harness Registries webhooks executions
-      properties:
-        executions:
-          description: A list of Registries webhooks executions
-          items:
-            $ref: '#/components/schemas/WebhookExecution'
-          type: array
-        itemCount:
-          description: The total number of items
-          example: 1
-          format: int64
-          type: integer
-        pageCount:
-          description: The total number of pages
-          example: 100
-          format: int64
-          type: integer
-        pageIndex:
-          description: The current page
-          example: 0
-          format: int64
-          type: integer
-        pageSize:
-          description: The number of items per page
-          example: 1
-          type: integer
-      required:
-      - executions
-      type: object
-    WebhookExecResult:
-      description: refers to webhook execution
-      enum:
-      - SUCCESS
-      - RETRIABLE_ERROR
-      - FATAL_ERROR
-      type: string
     ExtraHeader:
       description: Webhook Extra Header
       properties:
@@ -446,19 +290,16 @@ components:
       - key
       - value
       type: object
-    Trigger:
-      description: refers to trigger
-      enum:
-      - ARTIFACT_CREATION
-      - ARTIFACT_DELETION
-      type: string
-    RegistryStatus:
-      description: Request processing status indicator
-      enum:
-      - SUCCESS
-      - FAILURE
-      - ERROR
-      type: string
+    WebhookExecRequest:
+      description: Harness Regstries HTTP Webhook Request
+      properties:
+        body:
+          type: string
+        headers:
+          type: string
+        url:
+          type: string
+      type: object
     WebhookExecResponse:
       description: Harness Regstries HTTP Webhook Response
       properties:
@@ -507,6 +348,75 @@ components:
       - url
       - name
       type: object
+    ListWebhooksExecutions:
+      description: A list of Harness Registries webhooks executions
+      properties:
+        executions:
+          description: A list of Registries webhooks executions
+          items:
+            $ref: '#/components/schemas/WebhookExecution'
+          type: array
+        itemCount:
+          description: The total number of items
+          example: 1
+          format: int64
+          type: integer
+        pageCount:
+          description: The total number of pages
+          example: 100
+          format: int64
+          type: integer
+        pageIndex:
+          description: The current page
+          example: 0
+          format: int64
+          type: integer
+        pageSize:
+          description: The number of items per page
+          example: 1
+          type: integer
+      required:
+      - executions
+      type: object
+    WebhookExecResult:
+      description: refers to webhook execution
+      enum:
+      - SUCCESS
+      - RETRIABLE_ERROR
+      - FATAL_ERROR
+      type: string
+    RegistryError:
+      description: Standard error response with code, message and optional details
+      properties:
+        code:
+          description: The HTTP error code
+          example: '404'
+          type: string
+        details:
+          description: 'Additional context and details about the error.
+
+            May include field-specific validation errors or debugging information.
+
+            '
+          example:
+            field: registry_identifier
+            reason: Registry does not exist in the specified project
+            value: invalid-registry
+          type: object
+        message:
+          description: Human-readable error message explaining what went wrong
+          example: Registry not found
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    Trigger:
+      description: refers to trigger
+      enum:
+      - ARTIFACT_CREATION
+      - ARTIFACT_DELETION
+      type: string
     Webhook:
       description: Harness Regstries Webhook
       properties:
@@ -558,17 +468,126 @@ components:
       - enabled
       - insecure
       type: object
-    WebhookExecRequest:
-      description: Harness Regstries HTTP Webhook Request
-      properties:
-        body:
-          type: string
-        headers:
-          type: string
-        url:
-          type: string
-      type: object
+    RegistryStatus:
+      description: Request processing status indicator
+      enum:
+      - SUCCESS
+      - FAILURE
+      - ERROR
+      type: string
+  parameters:
+    webhookExecutionIdPathParam:
+      description: Unique webhook execution identifier.
+      in: path
+      name: webhook_execution_id
+      required: true
+      schema:
+        type: string
+    registryRefPathParam:
+      description: 'Reference to the scope in which the registry exists.
+
+
+        Format depends on the scope:
+
+
+        - **Account-level**: `account_id/registry_name/+`
+
+        - **Organization-level**: `account_id/org_id/registry_name/+`
+
+        - **Project-level**: `account_id/org_id/project_id/registry_name/+`
+
+
+        The `/+` suffix is used internally to route scoped requests.
+
+        It must be included **exactly as shown** in the URL.
+
+        '
+      examples:
+        accountLevel:
+          description: Only account ID, scoped at account level
+          summary: Account-level registry
+          value: acc123/registry123/+
+        orgLevel:
+          description: Account and org ID, scoped at org level
+          summary: Organization-level registry
+          value: acc123/org456/registry123/+
+        projectLevel:
+          description: Account, org, and project ID, scoped at project level
+          summary: Project-level registry
+          value: acc123/org456/proj789/registry123/+
+      in: path
+      name: registry_ref
+      required: true
+      schema:
+        type: string
+    searchTerm:
+      description: search Term.
+      in: query
+      name: search_term
+      schema:
+        type: string
+    RegistrypageSize:
+      description: Number of items per page
+      in: query
+      name: size
+      schema:
+        default: 20
+        format: int64
+        type: integer
+    RegistrypageNumber:
+      description: Current page number
+      in: query
+      name: page
+      schema:
+        default: 1
+        format: int64
+        type: integer
+    RegistrysortOrder:
+      description: sortOrder
+      in: query
+      name: sort_order
+      schema:
+        type: string
+    sortField:
+      description: sortField
+      in: query
+      name: sort_field
+      schema:
+        type: string
+    webhookIdentifierPathParam:
+      description: Unique webhook identifier.
+      in: path
+      name: webhook_identifier
+      required: true
+      schema:
+        type: string
   responses:
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    ListWebhooksResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/ListWebhooks'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response for list webhooks
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
     ListWebhooksExecutionResponse:
       content:
         application/json:
@@ -583,6 +602,12 @@ components:
             - data
             type: object
       description: list webhooks executions response
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
     WebhookExecutionResponse:
       content:
         application/json:
@@ -603,6 +628,23 @@ components:
           schema:
             $ref: '#/components/schemas/RegistryError'
       description: Authentication failed or missing credentials
+    Success:
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            type: object
+      description: Generic success response
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
     WebhookResponse:
       content:
         application/json:
@@ -617,55 +659,13 @@ components:
             - data
             type: object
       description: response for create, get and update webhook
-    ListWebhooksResponse:
+  requestBodies:
+    WebhookRequest:
       content:
         application/json:
           schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/ListWebhooks'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response for list webhooks
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    Success:
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            type: object
-      description: Generic success response
+            $ref: '#/components/schemas/WebhookRequest'
+      description: request for create and update webhook
   securitySchemes:
     x-api-key:
       name: x-api-key

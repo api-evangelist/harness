@@ -186,7 +186,18 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOBoolean'
 components:
   schemas:
-    ResponseDTONotificationSetting:
+    EmbeddedUser:
+      type: object
+      properties:
+        uuid:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        externalUserId:
+          type: string
+    ResponseDTOBoolean:
       type: object
       properties:
         status:
@@ -196,11 +207,19 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/NotificationSetting'
+          type: boolean
         metaData:
           type: object
         correlationId:
           type: string
+    CcmErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -791,20 +810,22 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOBoolean:
+    AnomalyAlertPreferences:
       type: object
       properties:
-        status:
+        costThreshold:
+          type: number
+          format: double
+        costThresholdPercentage:
+          type: number
+          format: double
+      description: This object stores threshold preferences for an anomaly alert
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: boolean
-        metaData:
-          type: object
-        correlationId:
+        error:
           type: string
     ResponseDTOString:
       type: object
@@ -1240,37 +1261,23 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    NotificationChannel:
-      required:
-      - type
+    ResponseDTOListNotificationSetting:
       type: object
       properties:
-        notificationChannelType:
+        status:
           type: string
           enum:
-          - EMAIL
-          - SLACK
-          - PAGERDUTY
-          - MSTEAMS
-          - WEBHOOK
-          - DATADOG
-        channelUrls:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
           type: array
           items:
-            type: string
-        type:
+            $ref: '#/components/schemas/NotificationSetting'
+        metaData:
+          type: object
+        correlationId:
           type: string
-      description: The Cloud Cost Notification Channel definition
-      discriminator:
-        propertyName: type
-    CcmErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
     CcmError:
       type: object
       properties:
@@ -1694,17 +1701,6 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
-    EmbeddedUser:
-      type: object
-      properties:
-        uuid:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        externalUserId:
-          type: string
     NotificationSetting:
       required:
       - accountId
@@ -1748,14 +1744,30 @@ components:
         lastUpdatedBy:
           $ref: '#/components/schemas/EmbeddedUser'
       description: The Cloud Cost Notification Setting definition
-    ValidationError:
+    NotificationChannel:
+      required:
+      - type
       type: object
       properties:
-        fieldId:
+        notificationChannelType:
           type: string
-        error:
+          enum:
+          - EMAIL
+          - SLACK
+          - PAGERDUTY
+          - MSTEAMS
+          - WEBHOOK
+          - DATADOG
+        channelUrls:
+          type: array
+          items:
+            type: string
+        type:
           type: string
-    ResponseDTOListNotificationSetting:
+      description: The Cloud Cost Notification Channel definition
+      discriminator:
+        propertyName: type
+    ResponseDTONotificationSetting:
       type: object
       properties:
         status:
@@ -1765,23 +1777,11 @@ components:
           - FAILURE
           - ERROR
         data:
-          type: array
-          items:
-            $ref: '#/components/schemas/NotificationSetting'
+          $ref: '#/components/schemas/NotificationSetting'
         metaData:
           type: object
         correlationId:
           type: string
-    AnomalyAlertPreferences:
-      type: object
-      properties:
-        costThreshold:
-          type: number
-          format: double
-        costThresholdPercentage:
-          type: number
-          format: double
-      description: This object stores threshold preferences for an anomaly alert
   securitySchemes:
     x-api-key:
       name: x-api-key

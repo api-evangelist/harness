@@ -429,12 +429,6 @@ paths:
                 $ref: '#/components/schemas/api.RestError'
 components:
   schemas:
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
     shared.PaginationResponse:
       type: object
       properties:
@@ -446,45 +440,25 @@ components:
           type: integer
         totalPages:
           type: integer
-    types.ListMetadataRequest:
-      type: object
-      properties:
-        identifiers:
-          type: array
-          items:
-            type: string
-    github_com_harness_hce-saas_graphql_server_models_shared.Metadata:
-      type: object
-      properties:
-        description:
-          type: string
-        identity:
-          type: string
-        name:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-    chaos_hub.AuthType:
+    chaos_hub.ConnectorScope:
       type: string
       enum:
-      - Ssh
-      - UsernameToken
+      - ACCOUNT
+      - PROJECT
+      - ORGANISATION
       x-enum-varnames:
-      - AuthTypeSSH
-      - AuthTypeUsernameToken
-    shared.ListMetadataResponse:
+      - ConnectorScopeAccount
+      - ConnectorScopeProject
+      - ConnectorScopeOrganisation
+    api.RestError:
       type: object
       properties:
-        correlationID:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
           type: string
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_models_shared.Metadata'
-        pagination:
-          $ref: '#/components/schemas/shared.PaginationResponse'
+        message:
+          type: string
     chaoshubv2.UpdateHubRequest:
       type: object
       required:
@@ -498,6 +472,24 @@ components:
           type: array
           items:
             type: string
+    types.ListMetadataRequest:
+      type: object
+      properties:
+        identifiers:
+          type: array
+          items:
+            type: string
+    shared.ListMetadataResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_models_shared.Metadata'
+        pagination:
+          $ref: '#/components/schemas/shared.PaginationResponse'
     chaoshubv2.CreateHubRequest:
       type: object
       required:
@@ -520,82 +512,23 @@ components:
           type: array
           items:
             type: string
-    chaoshubv2.ChaosHubResponse:
-      type: object
-      required:
-      - accountID
-      - hubId
-      - identity
-      - isDefault
-      - isRemoved
-      - name
-      properties:
-        accountID:
-          type: string
-        actionTemplateCount:
-          type: integer
-        authType:
-          description: TBD check if this details is available in connector details if so deprecate it
-          allOf:
-          - $ref: '#/components/schemas/chaos_hub.AuthType'
-        connectorId:
-          description: 'TBD use ConnectorRef: org.test-connector and deprecate it'
-          type: string
-        connectorScope:
-          description: TBD use ConnectorRef and deprecate it
-          allOf:
-          - $ref: '#/components/schemas/chaos_hub.ConnectorScope'
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        description:
-          type: string
-        experimentTemplateCount:
-          type: integer
-        faultTemplateCount:
-          type: integer
-        hubId:
-          type: string
-        identity:
-          type: string
-        isDefault:
-          type: boolean
-        isRemoved:
-          type: boolean
-        lastSyncedAt:
-          type: integer
-        name:
-          type: string
-        orgID:
-          type: string
-        probeTemplateCount:
-          type: integer
-        projectID:
-          type: string
-        repoBranch:
-          type: string
-        repoName:
-          type: string
-        repoUrl:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
-    api.RestError:
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
       type: object
       properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
     chaoshubv2.GetHubResponse:
       type: object
       required:
@@ -663,19 +596,29 @@ components:
           type: integer
         updatedBy:
           type: string
-    github_com_harness_hce-saas_graphql_server_api.Empty:
-      type: object
-    github_com_harness_hce-saas_graphql_server_api.Pagination:
+    chaos_hub.AuthType:
+      type: string
+      enum:
+      - Ssh
+      - UsernameToken
+      x-enum-varnames:
+      - AuthTypeSSH
+      - AuthTypeUsernameToken
+    github_com_harness_hce-saas_graphql_server_models_shared.Metadata:
       type: object
       properties:
-        index:
-          type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
+        description:
+          type: string
+        identity:
+          type: string
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    github_com_harness_hce-saas_graphql_server_api.Empty:
+      type: object
     chaoshubv2.ListHubResponse:
       type: object
       properties:
@@ -685,16 +628,73 @@ components:
             $ref: '#/components/schemas/chaoshubv2.ChaosHubResponse'
         pagination:
           $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    chaos_hub.ConnectorScope:
-      type: string
-      enum:
-      - ACCOUNT
-      - PROJECT
-      - ORGANISATION
-      x-enum-varnames:
-      - ConnectorScopeAccount
-      - ConnectorScopeProject
-      - ConnectorScopeOrganisation
+    chaoshubv2.ChaosHubResponse:
+      type: object
+      required:
+      - accountID
+      - hubId
+      - identity
+      - isDefault
+      - isRemoved
+      - name
+      properties:
+        accountID:
+          type: string
+        actionTemplateCount:
+          type: integer
+        authType:
+          description: TBD check if this details is available in connector details if so deprecate it
+          allOf:
+          - $ref: '#/components/schemas/chaos_hub.AuthType'
+        connectorId:
+          description: 'TBD use ConnectorRef: org.test-connector and deprecate it'
+          type: string
+        connectorScope:
+          description: TBD use ConnectorRef and deprecate it
+          allOf:
+          - $ref: '#/components/schemas/chaos_hub.ConnectorScope'
+        createdAt:
+          type: integer
+        createdBy:
+          type: string
+        description:
+          type: string
+        experimentTemplateCount:
+          type: integer
+        faultTemplateCount:
+          type: integer
+        hubId:
+          type: string
+        identity:
+          type: string
+        isDefault:
+          type: boolean
+        isRemoved:
+          type: boolean
+        lastSyncedAt:
+          type: integer
+        name:
+          type: string
+        orgID:
+          type: string
+        probeTemplateCount:
+          type: integer
+        projectID:
+          type: string
+        repoBranch:
+          type: string
+        repoName:
+          type: string
+        repoUrl:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

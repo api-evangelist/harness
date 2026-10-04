@@ -95,28 +95,6 @@ paths:
       tags:
       - sscaPipelineView
 components:
-  parameters:
-    AccountHeader6:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    ProjectParam1:
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness project ID
-      name: project
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
   schemas:
     ArtifactListingPipelineResponse:
       title: ArtifactListingPipelineResponse
@@ -150,11 +128,92 @@ components:
           $ref: '#/components/schemas/SlsaModelPipeline'
         verification:
           $ref: '#/components/schemas/IntegrityVerificationModelPipeline'
-    VerificationStatus:
-      type: string
-      enum:
-      - PASSED
-      - FAILED
+    ArtifactSbomDriftResponse:
+      title: ArtifactSbomDriftResponse
+      x-stoplight:
+        id: 8wtldj2bdrxbl
+      type: object
+      description: Response body for sbom drift calculation between 2 artifact versions.
+      required:
+      - drift_id
+      - tag
+      - base_tag
+      - artifact_name
+      - total_drifts
+      properties:
+        drift_id:
+          type: string
+          x-stoplight:
+            id: abkvlxxav7a0m
+          description: Drift ID to get the drift results
+        tag:
+          type: string
+          x-stoplight:
+            id: r8jspopjepniy
+          description: Tag on which drift was calculated
+        base_tag:
+          type: string
+          x-stoplight:
+            id: vp5s1sanmd26h
+          description: Base tag from which drift was calculated
+        artifact_name:
+          type: string
+          x-stoplight:
+            id: v2iqwtzrsb78d
+          description: Artifact name
+        total_drifts:
+          type: integer
+          x-stoplight:
+            id: qii5blwextc6b
+          description: Sum total of component and license drifts.
+        component_drift_summary:
+          $ref: '#/components/schemas/ComponentDriftSummary'
+        license_drift_summary:
+          $ref: '#/components/schemas/LicenseDriftSummary'
+    ArtifactModelPipeline:
+      title: ArtifactModelPipeline
+      x-stoplight:
+        id: 61ctnoe7t4ss3
+      type: object
+      properties:
+        id:
+          type: string
+          x-stoplight:
+            id: yefth9vlf9svq
+        type:
+          type: string
+          x-stoplight:
+            id: tv59jsryuwpbn
+          enum:
+          - image
+          - repository
+        name:
+          type: string
+          x-stoplight:
+            id: 1pqx5aj5zkzlf
+        registry_url:
+          type: string
+          x-stoplight:
+            id: 2d0pchss1tcw3
+        variant:
+          $ref: '#/components/schemas/ArtifactVariant'
+        tag:
+          type: string
+          x-stoplight:
+            id: 69micl0vn4rn8
+        digest:
+          type: string
+          x-stoplight:
+            id: 6z1z7v5v1zv5z
+        metadata:
+          type: object
+          additionalProperties: true
+          x-stoplight:
+            id: bcmiu856m2sf8
+        source_id:
+          type: string
+          x-stoplight:
+            id: fstrqsl3noow2
     OrchestrationModelPipeline:
       title: OrchestrationModePipeline
       x-stoplight:
@@ -223,71 +282,11 @@ components:
           enum:
           - image
           - repository
-    ArtifactVariant:
-      title: ArtifactVariant
-      x-stoplight:
-        id: uyb3jwhgs9wjh
-      type: object
-      properties:
-        type:
-          type: string
-          x-stoplight:
-            id: 2r8lmxejmwqbf
-          enum:
-          - tag
-          - branch
-          - gitTag
-          - commit
-          description: type of the variant of the artifact.
-        value:
-          type: string
-          x-stoplight:
-            id: hd1p3s7bugn88
-          description: Value of the variant of the artifact.
-    ArtifactModelPipeline:
-      title: ArtifactModelPipeline
-      x-stoplight:
-        id: 61ctnoe7t4ss3
-      type: object
-      properties:
-        id:
-          type: string
-          x-stoplight:
-            id: yefth9vlf9svq
-        type:
-          type: string
-          x-stoplight:
-            id: tv59jsryuwpbn
-          enum:
-          - image
-          - repository
-        name:
-          type: string
-          x-stoplight:
-            id: 1pqx5aj5zkzlf
-        registry_url:
-          type: string
-          x-stoplight:
-            id: 2d0pchss1tcw3
-        variant:
-          $ref: '#/components/schemas/ArtifactVariant'
-        tag:
-          type: string
-          x-stoplight:
-            id: 69micl0vn4rn8
-        digest:
-          type: string
-          x-stoplight:
-            id: 6z1z7v5v1zv5z
-        metadata:
-          type: object
-          additionalProperties: true
-          x-stoplight:
-            id: bcmiu856m2sf8
-        source_id:
-          type: string
-          x-stoplight:
-            id: fstrqsl3noow2
+    VerificationStatus:
+      type: string
+      enum:
+      - PASSED
+      - FAILED
     RekorLog:
       title: RekorLogDataModel
       x-stoplight:
@@ -318,64 +317,85 @@ components:
           type: string
           x-stoplight:
             id: x13syvivwlh3c
-    LicenseDriftSummary:
-      title: LicenseDriftSummary
+    IntegrityVerificationModelPipeline:
+      title: IntegrityVerificationModelPipeline
       x-stoplight:
-        id: xqrznhby6s5pm
+        id: xwfsxgb9yu8ji
       type: object
       properties:
-        total:
-          type: integer
+        stage_identifier:
+          type: string
           x-stoplight:
-            id: rv3e26us1gpns
-          description: Total number of license drifts.
-        added:
-          type: integer
+            id: gr8axhf45jpge
+        stage_execution_identifier:
+          type: string
           x-stoplight:
-            id: i712aeyzprqnp
-          description: Total number of licenses added.
-        deleted:
-          type: integer
+            id: kcmobatnnddtg
+        stage_name:
+          type: string
           x-stoplight:
-            id: 78xi96muf5dzy
-          description: Total number of licenses deleted
-      required:
-      - total
-      - added
-      - deleted
-      description: Provides License Drift Summary
-    ComponentDriftSummary:
-      title: ComponentDriftSummary
+            id: q6f06mp4lmtxz
+        step_name:
+          type: string
+          x-stoplight:
+            id: w6m4q6vh272rm
+        step_identifier:
+          type: string
+          x-stoplight:
+            id: w33jxve6yupz8
+        step_execution_identifier:
+          type: string
+          x-stoplight:
+            id: 84al2ba43212l
+        integrity_verification:
+          $ref: '#/components/schemas/IntegrityVerification'
+    EnforcementModelPipeline:
+      title: EnforcementModelPipeline
       x-stoplight:
-        id: b32uzhtuywe2w
+        id: ut3o0hygwe7ix
       type: object
-      description: Component drift summary
       properties:
-        total:
-          type: integer
+        enforcement_id:
+          type: string
           x-stoplight:
-            id: hxyal6jm7n1op
-          description: Total number of component drifts.
-        added:
-          type: integer
+            id: b2hgfv4mj8241
+        stage_identifier:
+          type: string
           x-stoplight:
-            id: r0v4mbai7xjnj
-          description: Number of components added.
-        deleted:
-          type: integer
+            id: oz5ws0a02laui
+        stage_execution_identifier:
+          type: string
           x-stoplight:
-            id: cloho1oa3yqwg
-          description: Number of components deleted.
-        modified:
-          type: integer
+            id: whewc03m3qozi
+        stage_name:
+          type: string
           x-stoplight:
-            id: eg71m292ud719
-          description: Number of components modified.
-      required:
-      - total
-      - added
-      - deleted
-      - modified
+            id: ikgtltwwdg0rw
+        step_identifier:
+          type: string
+          x-stoplight:
+            id: orepr0579uyzj
+        step_name:
+          type: string
+          x-stoplight:
+            id: kbee31r1eoczc
+        step_execution_identifier:
+          type: string
+          x-stoplight:
+            id: yjzg8nk78u4iu
+        violations:
+          type: object
+          x-stoplight:
+            id: rvy4v3poiwxzh
+          properties:
+            allow_list_violation_count:
+              type: integer
+              x-stoplight:
+                id: t7h07x2uykclv
+            deny_list_violation_count:
+              type: integer
+              x-stoplight:
+                id: x443igjdrgko3
     SlsaModelPipeline:
       title: SlsaModelPipeline
       x-stoplight:
@@ -456,149 +476,64 @@ components:
                   type: string
                   x-stoplight:
                     id: mjtplnggn4n6m
-    ArtifactSbomDriftResponse:
-      title: ArtifactSbomDriftResponse
+    LicenseDriftSummary:
+      title: LicenseDriftSummary
       x-stoplight:
-        id: 8wtldj2bdrxbl
+        id: xqrznhby6s5pm
       type: object
-      description: Response body for sbom drift calculation between 2 artifact versions.
-      required:
-      - drift_id
-      - tag
-      - base_tag
-      - artifact_name
-      - total_drifts
       properties:
-        drift_id:
-          type: string
-          x-stoplight:
-            id: abkvlxxav7a0m
-          description: Drift ID to get the drift results
-        tag:
-          type: string
-          x-stoplight:
-            id: r8jspopjepniy
-          description: Tag on which drift was calculated
-        base_tag:
-          type: string
-          x-stoplight:
-            id: vp5s1sanmd26h
-          description: Base tag from which drift was calculated
-        artifact_name:
-          type: string
-          x-stoplight:
-            id: v2iqwtzrsb78d
-          description: Artifact name
-        total_drifts:
+        total:
           type: integer
           x-stoplight:
-            id: qii5blwextc6b
-          description: Sum total of component and license drifts.
-        component_drift_summary:
-          $ref: '#/components/schemas/ComponentDriftSummary'
-        license_drift_summary:
-          $ref: '#/components/schemas/LicenseDriftSummary'
-    IntegrityVerificationModelPipeline:
-      title: IntegrityVerificationModelPipeline
+            id: rv3e26us1gpns
+          description: Total number of license drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: i712aeyzprqnp
+          description: Total number of licenses added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: 78xi96muf5dzy
+          description: Total number of licenses deleted
+      required:
+      - total
+      - added
+      - deleted
+      description: Provides License Drift Summary
+    ComponentDriftSummary:
+      title: ComponentDriftSummary
       x-stoplight:
-        id: xwfsxgb9yu8ji
+        id: b32uzhtuywe2w
       type: object
+      description: Component drift summary
       properties:
-        stage_identifier:
-          type: string
+        total:
+          type: integer
           x-stoplight:
-            id: gr8axhf45jpge
-        stage_execution_identifier:
-          type: string
+            id: hxyal6jm7n1op
+          description: Total number of component drifts.
+        added:
+          type: integer
           x-stoplight:
-            id: kcmobatnnddtg
-        stage_name:
-          type: string
+            id: r0v4mbai7xjnj
+          description: Number of components added.
+        deleted:
+          type: integer
           x-stoplight:
-            id: q6f06mp4lmtxz
-        step_name:
-          type: string
+            id: cloho1oa3yqwg
+          description: Number of components deleted.
+        modified:
+          type: integer
           x-stoplight:
-            id: w6m4q6vh272rm
-        step_identifier:
-          type: string
-          x-stoplight:
-            id: w33jxve6yupz8
-        step_execution_identifier:
-          type: string
-          x-stoplight:
-            id: 84al2ba43212l
-        integrity_verification:
-          $ref: '#/components/schemas/IntegrityVerification'
-    EnforcementModelPipeline:
-      title: EnforcementModelPipeline
-      x-stoplight:
-        id: ut3o0hygwe7ix
-      type: object
-      properties:
-        enforcement_id:
-          type: string
-          x-stoplight:
-            id: b2hgfv4mj8241
-        stage_identifier:
-          type: string
-          x-stoplight:
-            id: oz5ws0a02laui
-        stage_execution_identifier:
-          type: string
-          x-stoplight:
-            id: whewc03m3qozi
-        stage_name:
-          type: string
-          x-stoplight:
-            id: ikgtltwwdg0rw
-        step_identifier:
-          type: string
-          x-stoplight:
-            id: orepr0579uyzj
-        step_name:
-          type: string
-          x-stoplight:
-            id: kbee31r1eoczc
-        step_execution_identifier:
-          type: string
-          x-stoplight:
-            id: yjzg8nk78u4iu
-        violations:
-          type: object
-          x-stoplight:
-            id: rvy4v3poiwxzh
-          properties:
-            allow_list_violation_count:
-              type: integer
-              x-stoplight:
-                id: t7h07x2uykclv
-            deny_list_violation_count:
-              type: integer
-              x-stoplight:
-                id: x443igjdrgko3
-    IntegrityVerification:
-      title: IntegrityVerification
-      x-stoplight:
-        id: o67gzhl92dluh
-      type: object
-      properties:
-        rekor:
-          $ref: '#/components/schemas/RekorLog'
-        error_message:
-          type: string
-          x-stoplight:
-            id: n4kkqgdolwbxh
-        status:
-          $ref: '#/components/schemas/VerificationStatus'
-        pipeline_id:
-          type: string
-          x-stoplight:
-            id: 1oh36wopxh7ek
-        pipeline_execution_id:
-          type: string
-          x-stoplight:
-            id: wqwwxp6452gmd
+            id: eg71m292ud719
+          description: Number of components modified.
+      required:
+      - total
+      - added
+      - deleted
+      - modified
     SSCASummary:
       title: SSCASummary
       x-stoplight:
@@ -671,6 +606,49 @@ components:
               type: integer
               x-stoplight:
                 id: a68y3zknjhgm8
+    IntegrityVerification:
+      title: IntegrityVerification
+      x-stoplight:
+        id: o67gzhl92dluh
+      type: object
+      properties:
+        rekor:
+          $ref: '#/components/schemas/RekorLog'
+        error_message:
+          type: string
+          x-stoplight:
+            id: n4kkqgdolwbxh
+        status:
+          $ref: '#/components/schemas/VerificationStatus'
+        pipeline_id:
+          type: string
+          x-stoplight:
+            id: 1oh36wopxh7ek
+        pipeline_execution_id:
+          type: string
+          x-stoplight:
+            id: wqwwxp6452gmd
+    ArtifactVariant:
+      title: ArtifactVariant
+      x-stoplight:
+        id: uyb3jwhgs9wjh
+      type: object
+      properties:
+        type:
+          type: string
+          x-stoplight:
+            id: 2r8lmxejmwqbf
+          enum:
+          - tag
+          - branch
+          - gitTag
+          - commit
+          description: type of the variant of the artifact.
+        value:
+          type: string
+          x-stoplight:
+            id: hd1p3s7bugn88
+          description: Value of the variant of the artifact.
   responses:
     ArtifactListingResponsePipelineBody:
       description: Example response
@@ -686,6 +664,28 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ArtifactListingPipelineRequestBody'
+  parameters:
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
   securitySchemes:
     x-api-key:
       name: x-api-key

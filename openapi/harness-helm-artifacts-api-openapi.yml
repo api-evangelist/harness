@@ -75,183 +75,7 @@ paths:
       tags:
       - Helm Artifacts
 components:
-  schemas:
-    PackageType:
-      description: refers to package
-      enum:
-      - DOCKER
-      - MAVEN
-      - PYTHON
-      - GENERIC
-      - HELM
-      - NUGET
-      - NPM
-      - RPM
-      - CARGO
-      - COMPOSER
-      - GO
-      - HUGGINGFACE
-      - CONDA
-      - DART
-      - SWIFT
-      - PUPPET
-      - RUBY
-      - CRAN
-      - RAW
-      - HELM_HTTP
-      - DEBIAN
-      - CONAN
-      - TERRAFORM
-      type: string
-    RegistryStatus:
-      description: Request processing status indicator
-      enum:
-      - SUCCESS
-      - FAILURE
-      - ERROR
-      type: string
-    HelmArtifactDetail:
-      description: Helm Artifact Detail
-      properties:
-        artifact:
-          type: string
-        createdAt:
-          type: string
-        downloadsCount:
-          format: int64
-          type: integer
-        metadata:
-          $ref: '#/components/schemas/ArtifactEntityMetadata'
-        modifiedAt:
-          type: string
-        packageType:
-          $ref: '#/components/schemas/PackageType'
-        pullCommand:
-          type: string
-        pullCommandByDigest:
-          type: string
-        registryPath:
-          type: string
-        size:
-          type: string
-        url:
-          type: string
-        version:
-          type: string
-      required:
-      - imageName
-      - version
-      - registryPath
-      - url
-      - packageType
-      type: object
-    ArtifactEntityMetadata:
-      additionalProperties: true
-      description: Artifact Entity Metadata
-      type: object
-    HelmArtifactManifest:
-      description: Helm Artifact Manifest
-      properties:
-        manifest:
-          type: string
-      required:
-      - manifest
-      type: object
-    RegistryError:
-      description: Standard error response with code, message and optional details
-      properties:
-        code:
-          description: The HTTP error code
-          example: '404'
-          type: string
-        details:
-          description: 'Additional context and details about the error.
-
-            May include field-specific validation errors or debugging information.
-
-            '
-          example:
-            field: registry_identifier
-            reason: Registry does not exist in the specified project
-            value: invalid-registry
-          type: object
-        message:
-          description: Human-readable error message explaining what went wrong
-          example: Registry not found
-          type: string
-      required:
-      - code
-      - message
-      type: object
-  responses:
-    RegistryNotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The requested resource was not found
-    RegistryUnauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Access denied due to insufficient permissions
-    RegistryBadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: The request was invalid or malformed
-    HelmArtifactDetailResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/HelmArtifactDetail'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get helm artifact detail
-    RegistryInternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: An unexpected server error occurred
-    HelmArtifactManifestResponse:
-      content:
-        application/json:
-          schema:
-            properties:
-              data:
-                $ref: '#/components/schemas/HelmArtifactManifest'
-              status:
-                $ref: '#/components/schemas/RegistryStatus'
-            required:
-            - status
-            - data
-            type: object
-      description: response to get helm artifact manifest
-    RegistryUnauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RegistryError'
-      description: Authentication failed or missing credentials
   parameters:
-    versionTypeParam:
-      description: Version Type.
-      in: query
-      name: version_type
-      schema:
-        enum:
-        - DIGEST
-        - TAG
-        type: string
     artifactPathParam:
       description: "Name of the artifact.\n\nThe value depends on whether the name contains a slash (`/`):\n\n- If the artifact name **contains `/`**, append a trailing `/+` at the end.\n  - Example: `mygroup/myartifact/+`\n- If the artifact name **does not contain `/`**, use the plain name.\n  - Example: `myartifact`\n\nThis is used internally to distinguish between namespaced and flat artifact names.\n"
       examples:
@@ -310,6 +134,182 @@ components:
       required: true
       schema:
         type: string
+    versionTypeParam:
+      description: Version Type.
+      in: query
+      name: version_type
+      schema:
+        enum:
+        - DIGEST
+        - TAG
+        type: string
+  responses:
+    RegistryBadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The request was invalid or malformed
+    RegistryNotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: The requested resource was not found
+    RegistryInternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: An unexpected server error occurred
+    HelmArtifactManifestResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/HelmArtifactManifest'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get helm artifact manifest
+    HelmArtifactDetailResponse:
+      content:
+        application/json:
+          schema:
+            properties:
+              data:
+                $ref: '#/components/schemas/HelmArtifactDetail'
+              status:
+                $ref: '#/components/schemas/RegistryStatus'
+            required:
+            - status
+            - data
+            type: object
+      description: response to get helm artifact detail
+    RegistryUnauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Authentication failed or missing credentials
+    RegistryUnauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistryError'
+      description: Access denied due to insufficient permissions
+  schemas:
+    ArtifactEntityMetadata:
+      additionalProperties: true
+      description: Artifact Entity Metadata
+      type: object
+    HelmArtifactDetail:
+      description: Helm Artifact Detail
+      properties:
+        artifact:
+          type: string
+        createdAt:
+          type: string
+        downloadsCount:
+          format: int64
+          type: integer
+        metadata:
+          $ref: '#/components/schemas/ArtifactEntityMetadata'
+        modifiedAt:
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        pullCommand:
+          type: string
+        pullCommandByDigest:
+          type: string
+        registryPath:
+          type: string
+        size:
+          type: string
+        url:
+          type: string
+        version:
+          type: string
+      required:
+      - imageName
+      - version
+      - registryPath
+      - url
+      - packageType
+      type: object
+    RegistryError:
+      description: Standard error response with code, message and optional details
+      properties:
+        code:
+          description: The HTTP error code
+          example: '404'
+          type: string
+        details:
+          description: 'Additional context and details about the error.
+
+            May include field-specific validation errors or debugging information.
+
+            '
+          example:
+            field: registry_identifier
+            reason: Registry does not exist in the specified project
+            value: invalid-registry
+          type: object
+        message:
+          description: Human-readable error message explaining what went wrong
+          example: Registry not found
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    HelmArtifactManifest:
+      description: Helm Artifact Manifest
+      properties:
+        manifest:
+          type: string
+      required:
+      - manifest
+      type: object
+    PackageType:
+      description: refers to package
+      enum:
+      - DOCKER
+      - MAVEN
+      - PYTHON
+      - GENERIC
+      - HELM
+      - NUGET
+      - NPM
+      - RPM
+      - CARGO
+      - COMPOSER
+      - GO
+      - HUGGINGFACE
+      - CONDA
+      - DART
+      - SWIFT
+      - PUPPET
+      - RUBY
+      - CRAN
+      - RAW
+      - HELM_HTTP
+      - DEBIAN
+      - CONAN
+      - TERRAFORM
+      type: string
+    RegistryStatus:
+      description: Request processing status indicator
+      enum:
+      - SUCCESS
+      - FAILURE
+      - ERROR
+      type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

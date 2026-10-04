@@ -205,20 +205,197 @@ paths:
       x-stoplight:
         id: sq6emrti1dnvu
 components:
+  responses:
+    ArtifactDetailResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ArtifactDetailResponse'
+    ArtifactListingResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ArtifactListingResponse'
+      headers:
+        X-Total-Elements:
+          $ref: '#/components/headers/X-Total-Elements'
+        X-Page-Number:
+          $ref: '#/components/headers/X-Page-Number'
+        X-Page-Size:
+          $ref: '#/components/headers/X-Page-Size'
+    ArtifactComponentViewResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ArtifactComponentViewResponse'
+      headers:
+        X-Total-Elements:
+          $ref: '#/components/headers/X-Total-Elements'
+        X-Page-Number:
+          $ref: '#/components/headers/X-Page-Number'
+        X-Page-Size:
+          $ref: '#/components/headers/X-Page-Size'
+    ArtifactDeploymentViewResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ArtifactDeploymentViewResponse'
+      headers:
+        X-Total-Elements:
+          $ref: '#/components/headers/X-Total-Elements'
+        X-Page-Number:
+          $ref: '#/components/headers/X-Page-Number'
+        X-Page-Size:
+          $ref: '#/components/headers/X-Page-Size'
   schemas:
-    ArtifactDeploymentViewRequestBody:
-      title: ArtifactDeploymentViewRequestBody
-      x-stoplight:
-        id: 5qyutfccgf2o9
+    ComponentFilter:
+      title: ComponentFilter
       type: object
       properties:
-        environment:
-          type: string
-        environment_type:
+        field_name:
           type: string
           enum:
-          - Prod
-          - NonProd
+          - ComponentVersion
+          - ComponentName
+        value:
+          type: string
+        operator:
+          $ref: '#/components/schemas/Operator'
+      required:
+      - field_name
+      - value
+      - operator
+      x-stoplight:
+        id: p0u8koyls0i0c
+    Operator:
+      title: Operator
+      x-stoplight:
+        id: nxhoa45ajna2q
+      enum:
+      - Equals
+      - StartsWith
+      - Contains
+      - NotEquals
+      - GreaterThan
+      - GreaterThanEquals
+      - LessThan
+      - LessThanEquals
+    ArtifactListingResponse:
+      title: ArtifactListingResponse
+      x-stoplight:
+        id: ffkyhbx1mpa93
+      type: object
+      x-examples: {}
+      required:
+      - id
+      - name
+      - tag
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        tag:
+          type: string
+        url:
+          type: string
+        components_count:
+          type: integer
+        allow_list_violation_count:
+          type: string
+        deny_list_violation_count:
+          type: string
+        activity:
+          type: string
+          enum:
+          - DEPLOYED
+          - GENERATED
+        updated:
+          type: string
+        prod_env_count:
+          type: integer
+        non_prod_env_count:
+          type: integer
+        enforcement_id:
+          type: string
+        orchestration_id:
+          type: string
+        build_pipeline_id:
+          type: string
+        build_pipeline_execution_id:
+          type: string
+        baseline:
+          type: boolean
+          x-stoplight:
+            id: bhdfxt2zo1ccg
+        metadata:
+          type: object
+          additionalProperties: true
+        scorecard:
+          type: object
+          x-stoplight:
+            id: 7cnufejjvh2xb
+          properties:
+            max_score:
+              type: string
+              x-stoplight:
+                id: 8rfm461fllni5
+            avg_score:
+              type: string
+              x-stoplight:
+                id: rloj7ie5t1u6x
+    Slsa:
+      title: Slsa
+      x-stoplight:
+        id: ay4nzhxmkraca
+      type: object
+      description: Slsa Verification Data
+      properties:
+        provenance:
+          type: string
+          x-stoplight:
+            id: yyy7o9vx6ht3f
+          description: Slsa provenance data
+        policy_outcome_status:
+          type: string
+          x-stoplight:
+            id: rany3wjtgl60e
+          description: Slsa policy outcome
+    LicenseFilter:
+      title: LicenseFilter
+      type: object
+      properties:
+        value:
+          type: string
+        operator:
+          $ref: '#/components/schemas/Operator'
+      required:
+      - value
+      - operator
+      x-stoplight:
+        id: ae7ieb3d1qze1
+    ArtifactListingRequestBody:
+      type: object
+      x-examples: {}
+      properties:
+        search_term:
+          type: string
+        component_filter:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentFilter'
+        license_filter:
+          $ref: '#/components/schemas/LicenseFilter'
         policy_violation:
           type: string
           enum:
@@ -226,6 +403,15 @@ components:
           - DENY
           - ANY
           - NONE
+        environment_type:
+          type: string
+          enum:
+          - Prod
+          - NonProd
+          - None
+          - All
+      x-stoplight:
+        id: 9ddio8k8n5fia
     StoIssueCount:
       title: StoIssueCount
       x-stoplight:
@@ -318,32 +504,73 @@ components:
           description: Harness Pipeline Id
         pipeline_details:
           $ref: '#/components/schemas/PipelineDetails'
-    LicenseFilter:
-      title: LicenseFilter
+    ArtifactDetailResponse:
+      title: ArtifactDetailResponse
       type: object
+      x-examples: {}
+      x-stoplight:
+        id: px56xa89l9myy
       properties:
-        value:
+        id:
           type: string
-        operator:
-          $ref: '#/components/schemas/Operator'
+          description: Artifact Identifier
+        name:
+          type: string
+          description: Name of the artifact
+        url:
+          type: string
+          description: Registry url of the artifact
+        tag:
+          type: string
+          description: Version of the artifact
+        components_count:
+          type: integer
+          description: Count of the normalized components within the artifact
+        updated:
+          type: string
+          description: Last Updated time of artifact
+        prod_env_count:
+          type: integer
+          description: Count of production env in which artifact is deployed
+        non_prod_env_count:
+          type: integer
+          description: Count of pre-production env in which artifact is deploye
+        build_pipeline_id:
+          type: string
+          description: Pipeline id of build pipeline used to orchestrate the artifact
+        build_pipeline_name:
+          type: string
+          x-stoplight:
+            id: rswo3za1467x2
+          description: Pipeline name of build pipeline used to orchestrate the artifact
+        build_pipeline_execution_id:
+          type: string
+          description: Pipeline execution id of build pipeline used to orchestrate the artifact
+        orchestration_id:
+          type: string
+          description: Orchestration step identifier
+        scorecard:
+          type: object
+          x-stoplight:
+            id: m4r1asknhuioj
+          properties:
+            max_score:
+              type: string
+              x-stoplight:
+                id: a3gfc89dp2mv9
+            avg_score:
+              type: string
+              x-stoplight:
+                id: ukdzx8upko3wt
+        metadata:
+          type: object
+          additionalProperties: true
+        sto_issue_count:
+          $ref: '#/components/schemas/StoIssueCount'
       required:
-      - value
-      - operator
-      x-stoplight:
-        id: ae7ieb3d1qze1
-    Operator:
-      title: Operator
-      x-stoplight:
-        id: nxhoa45ajna2q
-      enum:
-      - Equals
-      - StartsWith
-      - Contains
-      - NotEquals
-      - GreaterThan
-      - GreaterThanEquals
-      - LessThan
-      - LessThanEquals
+      - id
+      - name
+      - tag
     ArtifactComponentViewResponse:
       title: ArtifactComponentViewResponse
       x-stoplight:
@@ -368,123 +595,6 @@ components:
             id: disrwjq6ou28k
           items:
             $ref: '#/components/schemas/LayerType'
-    ArtifactDeploymentViewResponse:
-      title: ArtifactDeploymentViewResponse
-      x-stoplight:
-        id: jugz9izzxuuvo
-      type: object
-      properties:
-        env_id:
-          type: string
-          description: Harness environment id
-        env_name:
-          type: string
-          description: Environment name
-        env_type:
-          type: string
-          enum:
-          - PROD
-          - NONPROD
-          description: Environment type
-        pipeline_id:
-          type: string
-          description: Pipeline identifier of deployment pipeline
-        pipeline_name:
-          type: string
-          description: Pipeline name of deployment pipeline
-        pipeline_execution_id:
-          type: string
-          description: Pipeline execution identifier of deployment pipeline
-        pipeline_sequence_id:
-          type: string
-          description: Pipeline Sequence id of deployment pipeline
-        allow_list_violation_count:
-          type: string
-          description: Allow list type policy violation count
-        deny_list_violation_count:
-          type: string
-          description: Deny list type policy violation count
-        triggered_by:
-          type: string
-          description: Name of who trigger the deployment pipeline
-        triggered_by_id:
-          type: string
-          description: Id of who trigger the deployment pipeline
-        triggered_at:
-          type: string
-          description: Time of trigger of the deployment pipeline
-        triggered_type:
-          type: string
-          description: Trigger type of the deployment pipeline
-        enforcement_id:
-          type: string
-          description: Enforcement step identifier
-        slsa_verification:
-          $ref: '#/components/schemas/Slsa'
-      x-examples: {}
-    Slsa:
-      title: Slsa
-      x-stoplight:
-        id: ay4nzhxmkraca
-      type: object
-      description: Slsa Verification Data
-      properties:
-        provenance:
-          type: string
-          x-stoplight:
-            id: yyy7o9vx6ht3f
-          description: Slsa provenance data
-        policy_outcome_status:
-          type: string
-          x-stoplight:
-            id: rany3wjtgl60e
-          description: Slsa policy outcome
-    ArtifactComponentViewRequestBody:
-      title: ArtifactComponentViewRequestBody
-      x-stoplight:
-        id: x5f2v20n46hkz
-      type: object
-      properties:
-        component_filter:
-          type: array
-          items:
-            $ref: '#/components/schemas/ComponentFilter'
-        license_filter:
-          $ref: '#/components/schemas/LicenseFilter'
-        package_supplier:
-          type: string
-        package_manager:
-          type: string
-        image_layer:
-          $ref: '#/components/schemas/LayerType'
-    ArtifactListingRequestBody:
-      type: object
-      x-examples: {}
-      properties:
-        search_term:
-          type: string
-        component_filter:
-          type: array
-          items:
-            $ref: '#/components/schemas/ComponentFilter'
-        license_filter:
-          $ref: '#/components/schemas/LicenseFilter'
-        policy_violation:
-          type: string
-          enum:
-          - ALLOW
-          - DENY
-          - ANY
-          - NONE
-        environment_type:
-          type: string
-          enum:
-          - Prod
-          - NonProd
-          - None
-          - All
-      x-stoplight:
-        id: 9ddio8k8n5fia
     PipelineDetails:
       title: PipelineDetails
       x-stoplight:
@@ -558,137 +668,6 @@ components:
           - BUILD
           - DEPLOY
           - SECURITY
-    ArtifactListingResponse:
-      title: ArtifactListingResponse
-      x-stoplight:
-        id: ffkyhbx1mpa93
-      type: object
-      x-examples: {}
-      required:
-      - id
-      - name
-      - tag
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        tag:
-          type: string
-        url:
-          type: string
-        components_count:
-          type: integer
-        allow_list_violation_count:
-          type: string
-        deny_list_violation_count:
-          type: string
-        activity:
-          type: string
-          enum:
-          - DEPLOYED
-          - GENERATED
-        updated:
-          type: string
-        prod_env_count:
-          type: integer
-        non_prod_env_count:
-          type: integer
-        enforcement_id:
-          type: string
-        orchestration_id:
-          type: string
-        build_pipeline_id:
-          type: string
-        build_pipeline_execution_id:
-          type: string
-        baseline:
-          type: boolean
-          x-stoplight:
-            id: bhdfxt2zo1ccg
-        metadata:
-          type: object
-          additionalProperties: true
-        scorecard:
-          type: object
-          x-stoplight:
-            id: 7cnufejjvh2xb
-          properties:
-            max_score:
-              type: string
-              x-stoplight:
-                id: 8rfm461fllni5
-            avg_score:
-              type: string
-              x-stoplight:
-                id: rloj7ie5t1u6x
-    ArtifactDetailResponse:
-      title: ArtifactDetailResponse
-      type: object
-      x-examples: {}
-      x-stoplight:
-        id: px56xa89l9myy
-      properties:
-        id:
-          type: string
-          description: Artifact Identifier
-        name:
-          type: string
-          description: Name of the artifact
-        url:
-          type: string
-          description: Registry url of the artifact
-        tag:
-          type: string
-          description: Version of the artifact
-        components_count:
-          type: integer
-          description: Count of the normalized components within the artifact
-        updated:
-          type: string
-          description: Last Updated time of artifact
-        prod_env_count:
-          type: integer
-          description: Count of production env in which artifact is deployed
-        non_prod_env_count:
-          type: integer
-          description: Count of pre-production env in which artifact is deploye
-        build_pipeline_id:
-          type: string
-          description: Pipeline id of build pipeline used to orchestrate the artifact
-        build_pipeline_name:
-          type: string
-          x-stoplight:
-            id: rswo3za1467x2
-          description: Pipeline name of build pipeline used to orchestrate the artifact
-        build_pipeline_execution_id:
-          type: string
-          description: Pipeline execution id of build pipeline used to orchestrate the artifact
-        orchestration_id:
-          type: string
-          description: Orchestration step identifier
-        scorecard:
-          type: object
-          x-stoplight:
-            id: m4r1asknhuioj
-          properties:
-            max_score:
-              type: string
-              x-stoplight:
-                id: a3gfc89dp2mv9
-            avg_score:
-              type: string
-              x-stoplight:
-                id: ukdzx8upko3wt
-        metadata:
-          type: object
-          additionalProperties: true
-        sto_issue_count:
-          $ref: '#/components/schemas/StoIssueCount'
-      required:
-      - id
-      - name
-      - tag
     LayerType:
       title: LayerType
       enum:
@@ -697,25 +676,98 @@ components:
       - DISTRO
       x-stoplight:
         id: 151c5cf8ekave
-    ComponentFilter:
-      title: ComponentFilter
+    ArtifactDeploymentViewResponse:
+      title: ArtifactDeploymentViewResponse
+      x-stoplight:
+        id: jugz9izzxuuvo
       type: object
       properties:
-        field_name:
+        env_id:
+          type: string
+          description: Harness environment id
+        env_name:
+          type: string
+          description: Environment name
+        env_type:
           type: string
           enum:
-          - ComponentVersion
-          - ComponentName
-        value:
+          - PROD
+          - NONPROD
+          description: Environment type
+        pipeline_id:
           type: string
-        operator:
-          $ref: '#/components/schemas/Operator'
-      required:
-      - field_name
-      - value
-      - operator
+          description: Pipeline identifier of deployment pipeline
+        pipeline_name:
+          type: string
+          description: Pipeline name of deployment pipeline
+        pipeline_execution_id:
+          type: string
+          description: Pipeline execution identifier of deployment pipeline
+        pipeline_sequence_id:
+          type: string
+          description: Pipeline Sequence id of deployment pipeline
+        allow_list_violation_count:
+          type: string
+          description: Allow list type policy violation count
+        deny_list_violation_count:
+          type: string
+          description: Deny list type policy violation count
+        triggered_by:
+          type: string
+          description: Name of who trigger the deployment pipeline
+        triggered_by_id:
+          type: string
+          description: Id of who trigger the deployment pipeline
+        triggered_at:
+          type: string
+          description: Time of trigger of the deployment pipeline
+        triggered_type:
+          type: string
+          description: Trigger type of the deployment pipeline
+        enforcement_id:
+          type: string
+          description: Enforcement step identifier
+        slsa_verification:
+          $ref: '#/components/schemas/Slsa'
+      x-examples: {}
+    ArtifactDeploymentViewRequestBody:
+      title: ArtifactDeploymentViewRequestBody
       x-stoplight:
-        id: p0u8koyls0i0c
+        id: 5qyutfccgf2o9
+      type: object
+      properties:
+        environment:
+          type: string
+        environment_type:
+          type: string
+          enum:
+          - Prod
+          - NonProd
+        policy_violation:
+          type: string
+          enum:
+          - ALLOW
+          - DENY
+          - ANY
+          - NONE
+    ArtifactComponentViewRequestBody:
+      title: ArtifactComponentViewRequestBody
+      x-stoplight:
+        id: x5f2v20n46hkz
+      type: object
+      properties:
+        component_filter:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentFilter'
+        license_filter:
+          $ref: '#/components/schemas/LicenseFilter'
+        package_supplier:
+          type: string
+        package_manager:
+          type: string
+        image_layer:
+          $ref: '#/components/schemas/LayerType'
   requestBodies:
     ArtifactListingRequestBody:
       content:
@@ -723,6 +775,13 @@ components:
           schema:
             $ref: '#/components/schemas/ArtifactListingRequestBody'
   parameters:
+    Tag:
+      name: tag
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness artifact tag
     Page2:
       name: page
       in: query
@@ -732,15 +791,27 @@ components:
         default: 0
         minimum: 0
       description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Limit6:
-      name: limit
-      in: query
+    Artifact:
+      name: artifact
+      in: path
+      required: true
       schema:
-        type: integer
-        default: 30
-        maximum: 1000
-        minimum: 1
-      description: Number of items to return per page.
+        type: string
+      description: Harness artifact identifier
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
     AccountHeader6:
       name: Harness-Account
       in: header
@@ -759,95 +830,24 @@ components:
         - DESC
         default: ASC
       description: Order on the basis of which sorting is done.
-    ProjectParam1:
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness project ID
-      name: project
-    Tag:
-      name: tag
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness artifact tag
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
-    Artifact:
-      name: artifact
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness artifact identifier
-  responses:
-    ArtifactComponentViewResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ArtifactComponentViewResponse'
-      headers:
-        X-Total-Elements:
-          $ref: '#/components/headers/X-Total-Elements'
-        X-Page-Number:
-          $ref: '#/components/headers/X-Page-Number'
-        X-Page-Size:
-          $ref: '#/components/headers/X-Page-Size'
-    ArtifactListingResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ArtifactListingResponse'
-      headers:
-        X-Total-Elements:
-          $ref: '#/components/headers/X-Total-Elements'
-        X-Page-Number:
-          $ref: '#/components/headers/X-Page-Number'
-        X-Page-Size:
-          $ref: '#/components/headers/X-Page-Size'
-    ArtifactDeploymentViewResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ArtifactDeploymentViewResponse'
-      headers:
-        X-Total-Elements:
-          $ref: '#/components/headers/X-Total-Elements'
-        X-Page-Number:
-          $ref: '#/components/headers/X-Page-Number'
-        X-Page-Size:
-          $ref: '#/components/headers/X-Page-Size'
-    ArtifactDetailResponseBody:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ArtifactDetailResponse'
-  headers:
-    X-Page-Size:
+    Limit6:
+      name: limit
+      in: query
       schema:
         type: integer
-      description: Maximum page size in Paginated response.
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
+  headers:
     X-Page-Number:
       schema:
         type: integer
       description: Page number in Paginated response.
+    X-Page-Size:
+      schema:
+        type: integer
+      description: Maximum page size in Paginated response.
     X-Total-Elements:
       schema:
         type: integer

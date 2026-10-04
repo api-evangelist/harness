@@ -148,6 +148,134 @@ paths:
           content: {}
 components:
   schemas:
+    RenewalEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Activity row identifier
+        cloud_account_id:
+          type: string
+        region:
+          type: string
+        status:
+          type: string
+          description: Activity status (e.g. pending, complete)
+        expiry_date:
+          type: string
+          format: date
+          description: Reservation expiry date from activity metadata (YYYY-MM-DD)
+        renewal_scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Present when status indicates renewal scheduling completed; mirrors last update time
+        updated_at:
+          type: string
+          format: date-time
+          description: When the activity was last updated
+        description:
+          type: string
+          description: Human-readable activity description
+    EventsChartsSuccessResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        success:
+          type: boolean
+          description: Specifies if the operation is successful
+        errors:
+          type: string
+          description: Specifies the error if the operation failed
+        response:
+          type: object
+          properties:
+            total:
+              type: integer
+            pages:
+              type: integer
+            events:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChartResponse'
+    RIRecommendationScheduleSuccessResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        success:
+          type: boolean
+          description: Specifies if the operation is successful
+        errors:
+          type: string
+          description: Specifies the error if the operation failed
+        response:
+          $ref: '#/components/schemas/RIRecommendationSchedule'
+    RIRecommendationSchedule:
+      type: object
+      properties:
+        minIntervalDays:
+          type: integer
+          description: Minimum calendar days after the last completed RI approval transaction before a non-force recommendation run proceeds
+        lastTransactionAt:
+          type: string
+          format: date-time
+          description: Omitted when no qualifying completed approval transaction exists (e.g. recommendation job never ran or none completed yet). Otherwise, updated time of the latest transaction used for cooldown.
+        nextEligibleAt:
+          type: string
+          format: date-time
+          description: Earliest time a non-force run clears the cooldown; omitted when there is no prior transaction or cooldown is disabled
+        isEligibleNow:
+          type: boolean
+          description: Whether a non-force recommendation run would not be skipped for cooldown reasons
+        lastRunCompletedAt:
+          type: string
+          format: date-time
+          description: When the latest completed RI recommendation engine job finished for this cloud account and service
+        recommendationsGenerated:
+          type: integer
+          description: Number of RI recommendations enqueued in that last completed run
+        noNewRecommendationsReason:
+          type: string
+          description: When no new recommendations were produced, machine-readable reason (e.g. target_coverage_achieved, guardrails_validation_failed, pending_jobs_or_cooldown, recommendation_cooldown, no_forecast_data)
+        noNewRecommendationsReasonMessage:
+          type: string
+          description: Default English explanation for the UI when noNewRecommendationsReason is set; clients may localize using noNewRecommendationsReason as the key
+    RenewalEventsRequest:
+      type: object
+      properties:
+        cloud_account_ids:
+          type: array
+          items:
+            type: string
+          description: When non-empty, only renewal events for these cloud accounts are returned
+        start_date:
+          type: string
+          format: date
+          description: Start of filter range (YYYY-MM-DD). Defaults to 30 days before today (UTC) when omitted.
+          example: '2025-01-01'
+        end_date:
+          type: string
+          format: date
+          description: End of filter range (YYYY-MM-DD). Defaults to today (UTC) when omitted.
+          example: '2025-01-31'
+        regions:
+          type: array
+          items:
+            type: string
+          description: When non-empty, only events whose region matches one of these values
+        service:
+          type: string
+          description: AWS service type; defaults to Amazon Elastic Compute Cloud - Compute when omitted
+          enum:
+          - Amazon Elastic Compute Cloud - Compute
+          - Amazon Relational Database Service
+          default: Amazon Elastic Compute Cloud - Compute
     ChartResponse:
       type: object
       properties:
@@ -196,134 +324,6 @@ components:
           - Amazon Elastic Compute Cloud - Compute
           default: Amazon Elastic Compute Cloud - Compute
           description: Service to fetch the details for.
-    RIRecommendationSchedule:
-      type: object
-      properties:
-        minIntervalDays:
-          type: integer
-          description: Minimum calendar days after the last completed RI approval transaction before a non-force recommendation run proceeds
-        lastTransactionAt:
-          type: string
-          format: date-time
-          description: Omitted when no qualifying completed approval transaction exists (e.g. recommendation job never ran or none completed yet). Otherwise, updated time of the latest transaction used for cooldown.
-        nextEligibleAt:
-          type: string
-          format: date-time
-          description: Earliest time a non-force run clears the cooldown; omitted when there is no prior transaction or cooldown is disabled
-        isEligibleNow:
-          type: boolean
-          description: Whether a non-force recommendation run would not be skipped for cooldown reasons
-        lastRunCompletedAt:
-          type: string
-          format: date-time
-          description: When the latest completed RI recommendation engine job finished for this cloud account and service
-        recommendationsGenerated:
-          type: integer
-          description: Number of RI recommendations enqueued in that last completed run
-        noNewRecommendationsReason:
-          type: string
-          description: When no new recommendations were produced, machine-readable reason (e.g. target_coverage_achieved, guardrails_validation_failed, pending_jobs_or_cooldown, recommendation_cooldown, no_forecast_data)
-        noNewRecommendationsReasonMessage:
-          type: string
-          description: Default English explanation for the UI when noNewRecommendationsReason is set; clients may localize using noNewRecommendationsReason as the key
-    EventsChartsSuccessResponse:
-      type: object
-      properties:
-        ts:
-          type: integer
-          description: Response timestamp
-        success:
-          type: boolean
-          description: Specifies if the operation is successful
-        errors:
-          type: string
-          description: Specifies the error if the operation failed
-        response:
-          type: object
-          properties:
-            total:
-              type: integer
-            pages:
-              type: integer
-            events:
-              type: array
-              items:
-                $ref: '#/components/schemas/ChartResponse'
-    RIRecommendationScheduleSuccessResponse:
-      type: object
-      properties:
-        ts:
-          type: integer
-          description: Response timestamp
-        success:
-          type: boolean
-          description: Specifies if the operation is successful
-        errors:
-          type: string
-          description: Specifies the error if the operation failed
-        response:
-          $ref: '#/components/schemas/RIRecommendationSchedule'
-    RenewalEventsRequest:
-      type: object
-      properties:
-        cloud_account_ids:
-          type: array
-          items:
-            type: string
-          description: When non-empty, only renewal events for these cloud accounts are returned
-        start_date:
-          type: string
-          format: date
-          description: Start of filter range (YYYY-MM-DD). Defaults to 30 days before today (UTC) when omitted.
-          example: '2025-01-01'
-        end_date:
-          type: string
-          format: date
-          description: End of filter range (YYYY-MM-DD). Defaults to today (UTC) when omitted.
-          example: '2025-01-31'
-        regions:
-          type: array
-          items:
-            type: string
-          description: When non-empty, only events whose region matches one of these values
-        service:
-          type: string
-          description: AWS service type; defaults to Amazon Elastic Compute Cloud - Compute when omitted
-          enum:
-          - Amazon Elastic Compute Cloud - Compute
-          - Amazon Relational Database Service
-          default: Amazon Elastic Compute Cloud - Compute
-    RenewalEvent:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: Activity row identifier
-        cloud_account_id:
-          type: string
-        region:
-          type: string
-        status:
-          type: string
-          description: Activity status (e.g. pending, complete)
-        expiry_date:
-          type: string
-          format: date
-          description: Reservation expiry date from activity metadata (YYYY-MM-DD)
-        renewal_scheduled_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Present when status indicates renewal scheduling completed; mirrors last update time
-        updated_at:
-          type: string
-          format: date-time
-          description: When the activity was last updated
-        description:
-          type: string
-          description: Human-readable activity description
   securitySchemes:
     x-api-key:
       name: x-api-key

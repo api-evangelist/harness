@@ -152,7 +152,150 @@ paths:
       tags:
       - Org Infrastructures
 components:
+  parameters:
+    OrgPathParam:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the organization the resource is scoped to
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    SearchTerm1:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching with search term.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    DeploymentType:
+      name: deployment_type
+      in: query
+      required: false
+      description: Service Definition Type
+      schema:
+        type: string
+        enum:
+        - Kubernetes
+        - NativeHelm
+        - Ssh
+        - WinRm
+        - ServerlessAwsLambda
+        - AzureWebApp
+        - GitOps
+        - ECS
+        - TAS
+        - CustomDeployment
+        - Elastigroup
+        - Asg
+        - GoogleCloudFunctions
+        - AwsLambda
+        - AWS_SAM
+    Sort1:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - name
+        - identifier
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    InfrastructureDefinitionPathParam:
+      name: infrastructure-definition
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the scoped infrastructure definition entity to be used in the selected operation.
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    ForceDelete:
+      name: forceDelete
+      in: query
+      schema:
+        type: boolean
+        default: false
+      description: Enable this field to force delete the entity
+    InfraIdentifiers:
+      name: infra_ids
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+      description: List of Infrastructure Identifiers
+    EnvironmentPathParam:
+      name: environment
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the scoped environment entity to be used for the selected operation.
   responses:
+    InfrastructureResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InfrastructureResponse'
+          examples:
+            example-1:
+              value:
+                infrastructure:
+                  account: sample_account
+                  identifier: example_
+                  org: sample_organization
+                  project: sample_project
+                  name: Example_infrastructure
+                  description: This is a example infrastructure
+                  tags:
+                    example-tag-1: example-tag-1-value
+                    example-tag-2: example-tag-2-value
+                  yaml: "environment:\n  name: \"Example_infrastructure\"\n  identifier: \"example_infrastructure\"\n  tags: {}\n"
+                created: 1234567890
+                updated: 1234567890
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/InfrastructureResponse'
+          examples:
+            example-1:
+              value: "infrastructure:\n  account: sample_account\n  identifier: example_infrastructure\n  org: sample_organization\n  project: sample_project\n  name: Example_environment\n  description: This is a example infrastructure\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n  yaml: |\n    environment:\n      name: \"Example_infrastructure\"\n      identifier: \"example_infrastructure\"\n      tags: {}\ncreated: 1234567890\nupdated: 1234567890\n"
     InfrastructureListResponse:
       description: Example infrastructure list response
       content:
@@ -198,285 +341,37 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-    InfrastructureResponse:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InfrastructureResponse'
-          examples:
-            example-1:
-              value:
-                infrastructure:
-                  account: sample_account
-                  identifier: example_
-                  org: sample_organization
-                  project: sample_project
-                  name: Example_infrastructure
-                  description: This is a example infrastructure
-                  tags:
-                    example-tag-1: example-tag-1-value
-                    example-tag-2: example-tag-2-value
-                  yaml: "environment:\n  name: \"Example_infrastructure\"\n  identifier: \"example_infrastructure\"\n  tags: {}\n"
-                created: 1234567890
-                updated: 1234567890
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/InfrastructureResponse'
-          examples:
-            example-1:
-              value: "infrastructure:\n  account: sample_account\n  identifier: example_infrastructure\n  org: sample_organization\n  project: sample_project\n  name: Example_environment\n  description: This is a example infrastructure\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n  yaml: |\n    environment:\n      name: \"Example_infrastructure\"\n      identifier: \"example_infrastructure\"\n      tags: {}\ncreated: 1234567890\nupdated: 1234567890\n"
-  requestBodies:
-    InfrastructureUpdateRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InfrastructureUpdateRequest'
-          examples:
-            example-1:
-              value:
-                identifier: example_infrastructure_v0
-                name: Example_Infra_V0
-                description: This is a example infrastructure v0
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                yaml: "environment:\n  name: \"Example_Infra_V0\"\n  identifier: \"example_infrastructure_v0\"\n  tags: {}\n"
-            example-2:
-              value:
-                identifier: example_infrastructure_v1
-                name: Example_Env_V1
-                description: This is a example infrastructure v1
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                yaml: "infrastructure:\n  version: 1\n  kind: Infrastructure\n"
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/InfrastructureUpdateRequest'
-          examples:
-            example-1:
-              value: "identifier: example_infrastructure_v0\nname: Example_Infra_V0\ndescription: This is a example infrastructure\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_Infra_V0\"\n    identifier: \"example_infrastructure_v0\"\n    tags: {}\n"
-      description: Update Infrastructure request body
-      required: true
-    InfrastructureCreateRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InfrastructureCreateRequest'
-          examples:
-            example-1:
-              value:
-                identifier: example_infrastructure_v0
-                name: Example_Infra_V0
-                description: This is a example infrastructure v0
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                yaml: "environment:\n  name: \"Example_Infra_V0\"\n  identifier: \"example_infrastructure_v0\"\n  tags: {}\n"
-            example-2:
-              value:
-                identifier: example_infrastructure_v1
-                name: Example_Env_V1
-                description: This is a example infrastructure v1
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                yaml: "infrastructure:\n  version: 1\n  kind: Infrastructure\n"
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/InfrastructureCreateRequest'
-          examples:
-            example-1:
-              value: "identifier: example_infrastructure_v0\nname: Example_Infra_V0\ndescription: This is a example infrastructure\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_Infra_V0\"\n    identifier: \"example_infrastructure_v0\"\n    tags: {}\n"
-      description: Create Infrastructure request body
-      required: true
-  parameters:
-    InfrastructureDefinitionPathParam:
-      name: infrastructure-definition
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the scoped infrastructure definition entity to be used in the selected operation.
-    DeploymentType:
-      name: deployment_type
-      in: query
-      required: false
-      description: Service Definition Type
-      schema:
-        type: string
-        enum:
-        - Kubernetes
-        - NativeHelm
-        - Ssh
-        - WinRm
-        - ServerlessAwsLambda
-        - AzureWebApp
-        - GitOps
-        - ECS
-        - TAS
-        - CustomDeployment
-        - Elastigroup
-        - Asg
-        - GoogleCloudFunctions
-        - AwsLambda
-        - AWS_SAM
-    SearchTerm1:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching with search term.
-    InfraIdentifiers:
-      name: infra_ids
-      in: query
-      required: false
-      schema:
-        type: array
-        uniqueItems: true
-        items:
-          type: string
-      description: List of Infrastructure Identifiers
-    Sort1:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - name
-        - identifier
-        - created
-        - updated
-      description: Parameter on the basis of which sorting is done.
-    ForceDelete:
-      name: forceDelete
-      in: query
-      schema:
-        type: boolean
-        default: false
-      description: Enable this field to force delete the entity
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    OrgPathParam:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the organization the resource is scoped to
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
-    EnvironmentPathParam:
-      name: environment
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the scoped environment entity to be used for the selected operation.
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
   schemas:
-    InfrastructureType:
-      type: string
-      enum:
-      - KUBERNETES_DIRECT
-      - KUBERNETES_GCP
-      - KUBERNETES_AZURE
-      - PDC
-      - SSH_WINRM_AZURE
-      - SERVERLESS_AWS_LAMBDA
-      - AZURE_WEB_APP
-      - SSH_WINRM_AWS
-      - CUSTOM_DEPLOYMENT
-      - ECS
-      - ELASTIGROUP
-      - TAS
-      - ASG
-      - GOOGLE_CLOUD_FUNCTIONS
-      - AWS_SAM
-      - AWS_LAMBDA
-      - KUBERNETES_AWS
-      - KUBERNETES_RANCHER
-    InfrastructureUpdateRequest:
+    InfrastructureResponse:
       type: object
       x-examples:
         example-1:
-          identifier: example_infrastructure
-          name: Example_infrastructure
-          description: This is a example infrastructure
-          tags:
-            example-tag-1: example-tag-1-value
-            example-tag-2: example-tag-2-value
-          yaml: "infrastructure:\n  name: \"Example_infrastructure\"\n  identifier: \"example_infrastructure\"\n  tags: {}\n"
-      title: InfrastructureUpdateRequest
-      description: 'Infrastructure Update Request Body '
+          infrastructure:
+            account: sample_account
+            identifier: example_infrastructure
+            org: sample_organization
+            project: sample_project
+            name: Example_infrastructure
+            description: This is a example infrastructure
+            tags:
+              example-tag-1: example-tag-1-value
+              example-tag-2: example-tag-2-value
+            yaml: "service:\n  name: \"Example_infrastructure\"\n  identifier: \"example_infrastructure\"\n  tags: {}\n"
+          created: 1234567890
+          updated: 1234567890
+      description: Default response when a infrastructure is returned
+      title: InfrastructureResponse
       properties:
-        identifier:
-          type: string
-          description: Identifier of the Infrastructure
-          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
-          minLength: 1
-          maxLength: 128
-        name:
-          type: string
-          description: Name of the Infrastructure
-          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
-          minLength: 1
-          maxLength: 128
-        description:
-          type: string
-          description: Description of the Infrastructure
-          maxLength: 1024
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-          description: Infrastructure tags
-          maxProperties: 128
-        type:
-          $ref: '#/components/schemas/InfrastructureType'
-        harness_version:
-          type: string
-          description: version of harness yaml
-        yaml:
-          type: string
-          description: YAML for the Infrastructure Request
-      required:
-      - identifier
-      - name
-      - type
-      - yaml
+        infrastructure:
+          $ref: '#/components/schemas/Infrastructure'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for infrastructure.
+        updated:
+          type: integer
+          format: int64
+          description: Last modification timestamp for infrastructure.
     Infrastructure:
       type: object
       x-examples:
@@ -551,36 +446,76 @@ components:
       - identifier
       - name
       - type
-    InfrastructureResponse:
+    InfrastructureType:
+      type: string
+      enum:
+      - KUBERNETES_DIRECT
+      - KUBERNETES_GCP
+      - KUBERNETES_AZURE
+      - PDC
+      - SSH_WINRM_AZURE
+      - SERVERLESS_AWS_LAMBDA
+      - AZURE_WEB_APP
+      - SSH_WINRM_AWS
+      - CUSTOM_DEPLOYMENT
+      - ECS
+      - ELASTIGROUP
+      - TAS
+      - ASG
+      - GOOGLE_CLOUD_FUNCTIONS
+      - AWS_SAM
+      - AWS_LAMBDA
+      - KUBERNETES_AWS
+      - KUBERNETES_RANCHER
+    InfrastructureUpdateRequest:
       type: object
       x-examples:
         example-1:
-          infrastructure:
-            account: sample_account
-            identifier: example_infrastructure
-            org: sample_organization
-            project: sample_project
-            name: Example_infrastructure
-            description: This is a example infrastructure
-            tags:
-              example-tag-1: example-tag-1-value
-              example-tag-2: example-tag-2-value
-            yaml: "service:\n  name: \"Example_infrastructure\"\n  identifier: \"example_infrastructure\"\n  tags: {}\n"
-          created: 1234567890
-          updated: 1234567890
-      description: Default response when a infrastructure is returned
-      title: InfrastructureResponse
+          identifier: example_infrastructure
+          name: Example_infrastructure
+          description: This is a example infrastructure
+          tags:
+            example-tag-1: example-tag-1-value
+            example-tag-2: example-tag-2-value
+          yaml: "infrastructure:\n  name: \"Example_infrastructure\"\n  identifier: \"example_infrastructure\"\n  tags: {}\n"
+      title: InfrastructureUpdateRequest
+      description: 'Infrastructure Update Request Body '
       properties:
-        infrastructure:
-          $ref: '#/components/schemas/Infrastructure'
-        created:
-          type: integer
-          format: int64
-          description: Creation timestamp for infrastructure.
-        updated:
-          type: integer
-          format: int64
-          description: Last modification timestamp for infrastructure.
+        identifier:
+          type: string
+          description: Identifier of the Infrastructure
+          pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Name of the Infrastructure
+          pattern: ^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+          description: Description of the Infrastructure
+          maxLength: 1024
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Infrastructure tags
+          maxProperties: 128
+        type:
+          $ref: '#/components/schemas/InfrastructureType'
+        harness_version:
+          type: string
+          description: version of harness yaml
+        yaml:
+          type: string
+          description: YAML for the Infrastructure Request
+      required:
+      - identifier
+      - name
+      - type
+      - yaml
     InfrastructureCreateRequest:
       type: object
       x-examples:
@@ -630,6 +565,71 @@ components:
       - name
       - type
       - yaml
+  requestBodies:
+    InfrastructureCreateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InfrastructureCreateRequest'
+          examples:
+            example-1:
+              value:
+                identifier: example_infrastructure_v0
+                name: Example_Infra_V0
+                description: This is a example infrastructure v0
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "environment:\n  name: \"Example_Infra_V0\"\n  identifier: \"example_infrastructure_v0\"\n  tags: {}\n"
+            example-2:
+              value:
+                identifier: example_infrastructure_v1
+                name: Example_Env_V1
+                description: This is a example infrastructure v1
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "infrastructure:\n  version: 1\n  kind: Infrastructure\n"
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/InfrastructureCreateRequest'
+          examples:
+            example-1:
+              value: "identifier: example_infrastructure_v0\nname: Example_Infra_V0\ndescription: This is a example infrastructure\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_Infra_V0\"\n    identifier: \"example_infrastructure_v0\"\n    tags: {}\n"
+      description: Create Infrastructure request body
+      required: true
+    InfrastructureUpdateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InfrastructureUpdateRequest'
+          examples:
+            example-1:
+              value:
+                identifier: example_infrastructure_v0
+                name: Example_Infra_V0
+                description: This is a example infrastructure v0
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "environment:\n  name: \"Example_Infra_V0\"\n  identifier: \"example_infrastructure_v0\"\n  tags: {}\n"
+            example-2:
+              value:
+                identifier: example_infrastructure_v1
+                name: Example_Env_V1
+                description: This is a example infrastructure v1
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                yaml: "infrastructure:\n  version: 1\n  kind: Infrastructure\n"
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/InfrastructureUpdateRequest'
+          examples:
+            example-1:
+              value: "identifier: example_infrastructure_v0\nname: Example_Infra_V0\ndescription: This is a example infrastructure\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nyaml: |\n  service:\n    name: \"Example_Infra_V0\"\n    identifier: \"example_infrastructure_v0\"\n    tags: {}\n"
+      description: Update Infrastructure request body
+      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

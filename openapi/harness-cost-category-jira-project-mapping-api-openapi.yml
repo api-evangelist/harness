@@ -258,7 +258,25 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOBoolean'
 components:
   schemas:
-    ResponseDTOCostCategoryJiraMapping:
+    EmbeddedUser:
+      type: object
+      properties:
+        uuid:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        externalUserId:
+          type: string
+    JiraProjectDetails:
+      type: object
+      properties:
+        projectId:
+          type: string
+        projectName:
+          type: string
+    ResponseDTOBoolean:
       type: object
       properties:
         status:
@@ -268,18 +286,19 @@ components:
           - FAILURE
           - ERROR
         data:
-          $ref: '#/components/schemas/CostCategoryJiraMapping'
+          type: boolean
         metaData:
           type: object
         correlationId:
           type: string
-    JiraProjectDetails:
+    CcmErrorMetadata:
       type: object
       properties:
-        projectId:
+        type:
           type: string
-        projectName:
-          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
     ResponseMessage:
       type: object
       properties:
@@ -870,21 +889,36 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOBoolean:
+    ValidationError:
       type: object
       properties:
-        status:
+        fieldId:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: boolean
-        metaData:
-          type: object
-        correlationId:
+        error:
           type: string
+    CostCategoryJiraMapping:
+      type: object
+      properties:
+        uuid:
+          type: string
+        accountId:
+          type: string
+        costCategoryName:
+          type: string
+        costBucketName:
+          type: string
+        jiraProjectDetails:
+          $ref: '#/components/schemas/JiraProjectDetails'
+        createdAt:
+          type: integer
+          format: int64
+        lastUpdatedAt:
+          type: integer
+          format: int64
+        lastUpdatedBy:
+          $ref: '#/components/schemas/EmbeddedUser'
+        createdBy:
+          $ref: '#/components/schemas/EmbeddedUser'
     ResponseDTOString:
       type: object
       properties:
@@ -900,31 +934,6 @@ components:
           type: object
         correlationId:
           type: string
-    ResponseDTOListCostCategoryJiraMapping:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/CostCategoryJiraMapping'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    CcmErrorMetadata:
-      type: object
-      properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
     Failure:
       type: object
       properties:
@@ -1344,29 +1353,21 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    CostCategoryJiraMapping:
+    ResponseDTOCostCategoryJiraMapping:
       type: object
       properties:
-        uuid:
+        status:
           type: string
-        accountId:
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/CostCategoryJiraMapping'
+        metaData:
+          type: object
+        correlationId:
           type: string
-        costCategoryName:
-          type: string
-        costBucketName:
-          type: string
-        jiraProjectDetails:
-          $ref: '#/components/schemas/JiraProjectDetails'
-        createdAt:
-          type: integer
-          format: int64
-        lastUpdatedAt:
-          type: integer
-          format: int64
-        lastUpdatedBy:
-          $ref: '#/components/schemas/EmbeddedUser'
-        createdBy:
-          $ref: '#/components/schemas/EmbeddedUser'
     CcmError:
       type: object
       properties:
@@ -1790,23 +1791,22 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
-    EmbeddedUser:
+    ResponseDTOListCostCategoryJiraMapping:
       type: object
       properties:
-        uuid:
+        status:
           type: string
-        name:
-          type: string
-        email:
-          type: string
-        externalUserId:
-          type: string
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CostCategoryJiraMapping'
+        metaData:
+          type: object
+        correlationId:
           type: string
   securitySchemes:
     x-api-key:

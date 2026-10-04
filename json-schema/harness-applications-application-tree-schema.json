@@ -1,0 +1,355 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/harness/main/json-schema/harness-applications-application-tree-schema.json",
+  "title": "ApplicationTree represents the hierarchical structure of resources associated with an Argo CD application",
+  "x-generated": "2026-10-04",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/harness-applications-api-openapi.yml#/components/schemas/applicationsApplicationTree",
+  "type": "object",
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/applicationsResourceNode"
+      },
+      "description": "Nodes contains a list of resources that are either directly managed by the application\nor are children of directly managed resources."
+    },
+    "orphanedNodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/applicationsResourceNode"
+      },
+      "description": "OrphanedNodes contains resources that exist in the same namespace as the application\nbut are not managed by it. This list is populated only if orphaned resource tracking\nis enabled in the application's project settings."
+    },
+    "hosts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/applicationsHostInfo"
+      },
+      "title": "Hosts holds list of Kubernetes nodes that run application related pods"
+    },
+    "shardsCount": {
+      "type": "string",
+      "format": "int64",
+      "description": "ShardsCount represents the total number of shards the application tree is split into.\nThis is used to distribute resource processing across multiple shards."
+    }
+  },
+  "$defs": {
+    "applicationsHealthStatus": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "Status holds the status code of the application or resource"
+        },
+        "message": {
+          "type": "string",
+          "title": "Message is a human-readable informational message describing the health status"
+        },
+        "lastTransitionTime": {
+          "$ref": "#/$defs/v1Time"
+        }
+      },
+      "title": "HealthStatus contains information about the currently observed health state of a resource"
+    },
+    "applicationsHostInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name is the hostname or node name in the Kubernetes cluster."
+        },
+        "resourcesInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/applicationsHostResourceInfo"
+          },
+          "description": "ResourcesInfo provides a list of resource usage details for different resource types on this host."
+        },
+        "systemInfo": {
+          "$ref": "#/$defs/v1NodeSystemInfo"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels holds the labels attached to the host."
+        }
+      },
+      "description": "HostInfo holds metadata and resource usage metrics for a specific host in the cluster."
+    },
+    "applicationsHostResourceInfo": {
+      "type": "object",
+      "properties": {
+        "resourceName": {
+          "type": "string",
+          "description": "ResourceName specifies the type of resource (e.g., CPU, memory, storage)."
+        },
+        "requestedByApp": {
+          "type": "string",
+          "format": "int64",
+          "description": "RequestedByApp indicates the total amount of this resource requested by the application running on the host."
+        },
+        "requestedByNeighbors": {
+          "type": "string",
+          "format": "int64",
+          "description": "RequestedByNeighbors indicates the total amount of this resource requested by other workloads on the same host."
+        },
+        "capacity": {
+          "type": "string",
+          "format": "int64",
+          "description": "Capacity represents the total available capacity of this resource on the host."
+        }
+      },
+      "description": "HostResourceInfo represents resource usage details for a specific resource type on a host."
+    },
+    "applicationsInfoItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name is a human readable title for this piece of information."
+        },
+        "value": {
+          "type": "string",
+          "description": "Value is human readable content."
+        }
+      },
+      "title": "InfoItem contains arbitrary, human readable information about an application"
+    },
+    "applicationsResourceNetworkingInfo": {
+      "type": "object",
+      "properties": {
+        "targetLabels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "TargetLabels represents labels associated with the target resources that this resource communicates with."
+        },
+        "targetRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/applicationsResourceRef"
+          },
+          "description": "TargetRefs contains references to other resources that this resource interacts with, such as Services or Pods."
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels holds the labels associated with this networking resource."
+        },
+        "ingress": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/v1LoadBalancerIngress"
+          },
+          "description": "Ingress provides information about external access points (e.g., load balancer ingress) for this resource."
+        },
+        "externalURLs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "ExternalURLs holds a list of URLs that should be accessible externally.\nThis field is typically populated for Ingress resources based on their hostname rules."
+        }
+      },
+      "description": "ResourceNetworkingInfo holds networking-related information for a resource."
+    },
+    "applicationsResourceNode": {
+      "type": "object",
+      "properties": {
+        "resourceRef": {
+          "$ref": "#/$defs/applicationsResourceRef"
+        },
+        "parentRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/applicationsResourceRef"
+          },
+          "description": "ParentRefs lists the parent resources that reference this resource.\nThis helps in understanding ownership and hierarchical relationships."
+        },
+        "info": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/applicationsInfoItem"
+          },
+          "description": "Info provides additional metadata or annotations about the resource."
+        },
+        "networkingInfo": {
+          "$ref": "#/$defs/applicationsResourceNetworkingInfo"
+        },
+        "resourceVersion": {
+          "type": "string",
+          "description": "ResourceVersion indicates the version of the resource, used to track changes."
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Images lists container images associated with the resource.\nThis is primarily useful for pods and other workload resources."
+        },
+        "health": {
+          "$ref": "#/$defs/applicationsHealthStatus"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/v1Time"
+        },
+        "createdAtTs": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "ResourceNode contains information about a live Kubernetes resource and its relationships with other resources."
+    },
+    "applicationsResourceRef": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      },
+      "title": "ResourceRef includes fields which uniquely identify a resource"
+    },
+    "v1LoadBalancerIngress": {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "string",
+          "title": "IP is set for load-balancer ingress points that are IP based\n(typically GCE or OpenStack load-balancers)\n+optional"
+        },
+        "hostname": {
+          "type": "string",
+          "title": "Hostname is set for load-balancer ingress points that are DNS based\n(typically AWS load-balancers)\n+optional"
+        },
+        "ipMode": {
+          "type": "string",
+          "title": "IPMode specifies how the load-balancer IP behaves, and may only be specified when the ip field is specified.\nSetting this to \"VIP\" indicates that traffic is delivered to the node with\nthe destination set to the load-balancer's IP and port.\nSetting this to \"Proxy\" indicates that traffic is delivered to the node or pod with\nthe destination set to the node's IP and node port or the pod's IP and port.\nService implementations may use this information to adjust traffic routing.\n+optional"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/v1PortStatus"
+          },
+          "title": "Ports is a list of records of service ports\nIf used, every port defined in the service should have an entry in it\n+listType=atomic\n+optional"
+        }
+      },
+      "description": "LoadBalancerIngress represents the status of a load-balancer ingress point:\ntraffic intended for the service should be sent to an ingress point."
+    },
+    "v1NodeSwapStatus": {
+      "type": "object",
+      "properties": {
+        "capacity": {
+          "type": "string",
+          "format": "int64",
+          "title": "Total amount of swap memory in bytes.\n+optional"
+        }
+      },
+      "description": "NodeSwapStatus represents swap memory information."
+    },
+    "v1NodeSystemInfo": {
+      "type": "object",
+      "properties": {
+        "machineID": {
+          "type": "string",
+          "title": "MachineID reported by the node. For unique machine identification\nin the cluster this field is preferred. Learn more from man(5)\nmachine-id: http://man7.org/linux/man-pages/man5/machine-id.5.html"
+        },
+        "systemUUID": {
+          "type": "string",
+          "title": "SystemUUID reported by the node. For unique machine identification\nMachineID is preferred. This field is specific to Red Hat hosts\nhttps://access.redhat.com/documentation/en-us/red_hat_subscription_management/1/html/rhsm/uuid"
+        },
+        "bootID": {
+          "type": "string",
+          "description": "Boot ID reported by the node."
+        },
+        "kernelVersion": {
+          "type": "string",
+          "description": "Kernel Version reported by the node from 'uname -r' (e.g. 3.16.0-0.bpo.4-amd64)."
+        },
+        "osImage": {
+          "type": "string",
+          "description": "OS Image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy))."
+        },
+        "containerRuntimeVersion": {
+          "type": "string",
+          "description": "ContainerRuntime Version reported by the node through runtime remote API (e.g. containerd://1.4.2)."
+        },
+        "kubeletVersion": {
+          "type": "string",
+          "description": "Kubelet Version reported by the node."
+        },
+        "kubeProxyVersion": {
+          "type": "string",
+          "description": "Deprecated: KubeProxy Version reported by the node."
+        },
+        "operatingSystem": {
+          "type": "string",
+          "title": "The Operating System reported by the node"
+        },
+        "architecture": {
+          "type": "string",
+          "title": "The Architecture reported by the node"
+        },
+        "swap": {
+          "$ref": "#/$defs/v1NodeSwapStatus"
+        }
+      },
+      "description": "NodeSystemInfo is a set of ids/uuids to uniquely identify the node."
+    },
+    "v1PortStatus": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Port is the port number of the service port of which status is recorded here"
+        },
+        "protocol": {
+          "type": "string",
+          "title": "Protocol is the protocol of the service port of which status is recorded here\nThe supported values are: \"TCP\", \"UDP\", \"SCTP\""
+        },
+        "error": {
+          "type": "string",
+          "title": "Error is to record the problem with the service port\nThe format of the error shall comply with the following rules:\n- built-in error values shall be specified in this file and those shall use\n  CamelCase names\n- cloud provider specific error values must have names that comply with the\n  format foo.example.com/CamelCase.\n---\nThe regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)\n+optional\n+kubebuilder:validation:Required\n+kubebuilder:validation:Pattern=`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$`\n+kubebuilder:validation:MaxLength=316"
+        }
+      },
+      "title": "PortStatus represents the error condition of a service port"
+    },
+    "v1Time": {
+      "type": "object",
+      "properties": {
+        "seconds": {
+          "type": "string",
+          "format": "int64",
+          "description": "Represents seconds of UTC time since Unix epoch\n1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to\n9999-12-31T23:59:59Z inclusive."
+        },
+        "nanos": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Non-negative fractions of a second at nanosecond resolution. Negative\nsecond values with fractions must still have non-negative nanos values\nthat count forward in time. Must be from 0 to 999,999,999\ninclusive. This field may be limited in precision depending on context."
+        }
+      },
+      "description": "Time is a wrapper around time.Time which supports correct\nmarshaling to YAML and JSON.  Wrappers are provided for many\nof the factory methods that the time package offers.\n\n+protobuf.options.marshal=false\n+protobuf.as=Timestamp\n+protobuf.options.(gogoproto.goproto_stringer)=false"
+    }
+  }
+}

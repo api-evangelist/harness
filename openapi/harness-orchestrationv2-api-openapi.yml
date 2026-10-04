@@ -159,13 +159,6 @@ paths:
       x-internal: true
 components:
   parameters:
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
     ProjectParam1:
       in: path
       required: true
@@ -173,6 +166,13 @@ components:
         type: string
       description: Harness project ID
       name: project
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
     AccountHeader6:
       name: Harness-Account
       in: header
@@ -190,6 +190,155 @@ components:
         sbom:
           type: string
       description: ''
+    ArtifactSbomDriftResponse:
+      title: ArtifactSbomDriftResponse
+      x-stoplight:
+        id: 8wtldj2bdrxbl
+      type: object
+      description: Response body for sbom drift calculation between 2 artifact versions.
+      required:
+      - drift_id
+      - tag
+      - base_tag
+      - artifact_name
+      - total_drifts
+      properties:
+        drift_id:
+          type: string
+          x-stoplight:
+            id: abkvlxxav7a0m
+          description: Drift ID to get the drift results
+        tag:
+          type: string
+          x-stoplight:
+            id: r8jspopjepniy
+          description: Tag on which drift was calculated
+        base_tag:
+          type: string
+          x-stoplight:
+            id: vp5s1sanmd26h
+          description: Base tag from which drift was calculated
+        artifact_name:
+          type: string
+          x-stoplight:
+            id: v2iqwtzrsb78d
+          description: Artifact name
+        total_drifts:
+          type: integer
+          x-stoplight:
+            id: qii5blwextc6b
+          description: Sum total of component and license drifts.
+        component_drift_summary:
+          $ref: '#/components/schemas/ComponentDriftSummary'
+        license_drift_summary:
+          $ref: '#/components/schemas/LicenseDriftSummary'
+    SaveOrchestrationRequest:
+      title: SaveOrchestrationRequest
+      x-stoplight:
+        id: 5tb5gd8m5ehto
+      type: object
+      required:
+      - artifact
+      - sbom_metadata
+      - attestation
+      properties:
+        components:
+          type: array
+          x-stoplight:
+            id: x8wtamg34sbym
+          items:
+            $ref: '#/components/schemas/SbomComponentRequestDTO'
+        artifact:
+          $ref: '#/components/schemas/Artifact1'
+        sbom_metadata:
+          $ref: '#/components/schemas/SbomMetadataV2'
+        attestation:
+          $ref: '#/components/schemas/Attestation'
+        execution_context:
+          $ref: '#/components/schemas/ExecutionContext'
+    SaveOrchestrationResponseBody:
+      title: SaveOrchestrationResponseBody
+      x-stoplight:
+        id: ud8owob6dy3nb
+      type: object
+      required:
+      - artifact_id
+      properties:
+        artifact_id:
+          type: string
+          x-stoplight:
+            id: wrz7jes211t3j
+    RepositoryPlatform:
+      type: string
+      title: RepositoryPlatform
+      x-stoplight:
+        id: prybalroyw6dc
+      enum:
+      - HARNESS
+      - GITHUB
+      - BITBUCKET
+      - GITLAB
+      - GIT
+      - AZURE
+    SbomMetadataV2:
+      title: SbomMetadataV2
+      x-stoplight:
+        id: 4na922okidtvc
+      type: object
+      required:
+      - name
+      - format
+      - tool_name
+      - tool_version
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: 0160bbgwts3sz
+        format:
+          type: string
+          minLength: 3
+          example: spdx-json
+        tool_name:
+          type: string
+          minLength: 3
+          example: synk
+          x-stoplight:
+            id: ic4qf7a3stbw7
+        tool_version:
+          type: string
+          x-stoplight:
+            id: 1mfkoo8p7i071
+        created:
+          type: number
+          x-stoplight:
+            id: ldh7rwijoj89o
+        sbom_version:
+          type: string
+          x-stoplight:
+            id: feovw69zekn4x
+        tool_vendor:
+          type: string
+          x-stoplight:
+            id: cbdqudq2dotry
+    OrchestrationStepDriftRequestBody:
+      title: OrchestrationStepDriftRequestBody
+      x-stoplight:
+        id: a10i10ic81mf2
+      type: object
+      properties:
+        base:
+          x-stoplight:
+            id: hpnybas76g36y
+          enum:
+          - baseline
+          - last_generated_sbom
+          - repository
+          description: Provide the baseline from which drift has to be calculated
+        variant:
+          $ref: '#/components/schemas/ArtifactVariant'
+      required:
+      - base
     ExecutionContext:
       title: ExecutionContext
       x-stoplight:
@@ -250,6 +399,86 @@ components:
           description: 'Stage type of the step
 
             '
+    Attestation:
+      title: Attestation
+      x-stoplight:
+        id: rzr5mk8z847jg
+      type: object
+      properties:
+        is_attested:
+          type: boolean
+          default: false
+          description: is the sbom attested or not
+        url:
+          type: string
+          description: url of the attested file
+          example: https://storage.googleapis.com/sbom_store_public/kmpySmUISimoRrJL6NL73w/default/SSCS_CI_Plugin_Demo/CKO_SSCA_Pipeline/Build/39/q940CvjoQj-GEInJQfWiwg/sbom
+    LicenseDriftSummary:
+      title: LicenseDriftSummary
+      x-stoplight:
+        id: xqrznhby6s5pm
+      type: object
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: rv3e26us1gpns
+          description: Total number of license drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: i712aeyzprqnp
+          description: Total number of licenses added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: 78xi96muf5dzy
+          description: Total number of licenses deleted
+      required:
+      - total
+      - added
+      - deleted
+      description: Provides License Drift Summary
+    ComponentDriftSummary:
+      title: ComponentDriftSummary
+      x-stoplight:
+        id: b32uzhtuywe2w
+      type: object
+      description: Component drift summary
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: hxyal6jm7n1op
+          description: Total number of component drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: r0v4mbai7xjnj
+          description: Number of components added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: cloho1oa3yqwg
+          description: Number of components deleted.
+        modified:
+          type: integer
+          x-stoplight:
+            id: eg71m292ud719
+          description: Number of components modified.
+      required:
+      - total
+      - added
+      - deleted
+      - modified
+    LayerType:
+      title: LayerType
+      enum:
+      - BASE
+      - APP
+      - DISTRO
+      x-stoplight:
+        id: 151c5cf8ekave
     SbomComponentRequestDTO:
       title: NormalizedSbomComponentDTO
       x-stoplight:
@@ -303,18 +532,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LayerType'
-    RepositoryPlatform:
-      type: string
-      title: RepositoryPlatform
-      x-stoplight:
-        id: prybalroyw6dc
-      enum:
-      - HARNESS
-      - GITHUB
-      - BITBUCKET
-      - GITLAB
-      - GIT
-      - AZURE
     Artifact1:
       title: Artifact
       x-go-name: ArtifactListItem
@@ -390,223 +607,6 @@ components:
           x-stoplight:
             id: hd1p3s7bugn88
           description: Value of the variant of the artifact.
-    SbomMetadataV2:
-      title: SbomMetadataV2
-      x-stoplight:
-        id: 4na922okidtvc
-      type: object
-      required:
-      - name
-      - format
-      - tool_name
-      - tool_version
-      properties:
-        name:
-          type: string
-          x-stoplight:
-            id: 0160bbgwts3sz
-        format:
-          type: string
-          minLength: 3
-          example: spdx-json
-        tool_name:
-          type: string
-          minLength: 3
-          example: synk
-          x-stoplight:
-            id: ic4qf7a3stbw7
-        tool_version:
-          type: string
-          x-stoplight:
-            id: 1mfkoo8p7i071
-        created:
-          type: number
-          x-stoplight:
-            id: ldh7rwijoj89o
-        sbom_version:
-          type: string
-          x-stoplight:
-            id: feovw69zekn4x
-        tool_vendor:
-          type: string
-          x-stoplight:
-            id: cbdqudq2dotry
-    SaveOrchestrationRequest:
-      title: SaveOrchestrationRequest
-      x-stoplight:
-        id: 5tb5gd8m5ehto
-      type: object
-      required:
-      - artifact
-      - sbom_metadata
-      - attestation
-      properties:
-        components:
-          type: array
-          x-stoplight:
-            id: x8wtamg34sbym
-          items:
-            $ref: '#/components/schemas/SbomComponentRequestDTO'
-        artifact:
-          $ref: '#/components/schemas/Artifact1'
-        sbom_metadata:
-          $ref: '#/components/schemas/SbomMetadataV2'
-        attestation:
-          $ref: '#/components/schemas/Attestation'
-        execution_context:
-          $ref: '#/components/schemas/ExecutionContext'
-    Attestation:
-      title: Attestation
-      x-stoplight:
-        id: rzr5mk8z847jg
-      type: object
-      properties:
-        is_attested:
-          type: boolean
-          default: false
-          description: is the sbom attested or not
-        url:
-          type: string
-          description: url of the attested file
-          example: https://storage.googleapis.com/sbom_store_public/kmpySmUISimoRrJL6NL73w/default/SSCS_CI_Plugin_Demo/CKO_SSCA_Pipeline/Build/39/q940CvjoQj-GEInJQfWiwg/sbom
-    LicenseDriftSummary:
-      title: LicenseDriftSummary
-      x-stoplight:
-        id: xqrznhby6s5pm
-      type: object
-      properties:
-        total:
-          type: integer
-          x-stoplight:
-            id: rv3e26us1gpns
-          description: Total number of license drifts.
-        added:
-          type: integer
-          x-stoplight:
-            id: i712aeyzprqnp
-          description: Total number of licenses added.
-        deleted:
-          type: integer
-          x-stoplight:
-            id: 78xi96muf5dzy
-          description: Total number of licenses deleted
-      required:
-      - total
-      - added
-      - deleted
-      description: Provides License Drift Summary
-    ComponentDriftSummary:
-      title: ComponentDriftSummary
-      x-stoplight:
-        id: b32uzhtuywe2w
-      type: object
-      description: Component drift summary
-      properties:
-        total:
-          type: integer
-          x-stoplight:
-            id: hxyal6jm7n1op
-          description: Total number of component drifts.
-        added:
-          type: integer
-          x-stoplight:
-            id: r0v4mbai7xjnj
-          description: Number of components added.
-        deleted:
-          type: integer
-          x-stoplight:
-            id: cloho1oa3yqwg
-          description: Number of components deleted.
-        modified:
-          type: integer
-          x-stoplight:
-            id: eg71m292ud719
-          description: Number of components modified.
-      required:
-      - total
-      - added
-      - deleted
-      - modified
-    OrchestrationStepDriftRequestBody:
-      title: OrchestrationStepDriftRequestBody
-      x-stoplight:
-        id: a10i10ic81mf2
-      type: object
-      properties:
-        base:
-          x-stoplight:
-            id: hpnybas76g36y
-          enum:
-          - baseline
-          - last_generated_sbom
-          - repository
-          description: Provide the baseline from which drift has to be calculated
-        variant:
-          $ref: '#/components/schemas/ArtifactVariant'
-      required:
-      - base
-    ArtifactSbomDriftResponse:
-      title: ArtifactSbomDriftResponse
-      x-stoplight:
-        id: 8wtldj2bdrxbl
-      type: object
-      description: Response body for sbom drift calculation between 2 artifact versions.
-      required:
-      - drift_id
-      - tag
-      - base_tag
-      - artifact_name
-      - total_drifts
-      properties:
-        drift_id:
-          type: string
-          x-stoplight:
-            id: abkvlxxav7a0m
-          description: Drift ID to get the drift results
-        tag:
-          type: string
-          x-stoplight:
-            id: r8jspopjepniy
-          description: Tag on which drift was calculated
-        base_tag:
-          type: string
-          x-stoplight:
-            id: vp5s1sanmd26h
-          description: Base tag from which drift was calculated
-        artifact_name:
-          type: string
-          x-stoplight:
-            id: v2iqwtzrsb78d
-          description: Artifact name
-        total_drifts:
-          type: integer
-          x-stoplight:
-            id: qii5blwextc6b
-          description: Sum total of component and license drifts.
-        component_drift_summary:
-          $ref: '#/components/schemas/ComponentDriftSummary'
-        license_drift_summary:
-          $ref: '#/components/schemas/LicenseDriftSummary'
-    SaveOrchestrationResponseBody:
-      title: SaveOrchestrationResponseBody
-      x-stoplight:
-        id: ud8owob6dy3nb
-      type: object
-      required:
-      - artifact_id
-      properties:
-        artifact_id:
-          type: string
-          x-stoplight:
-            id: wrz7jes211t3j
-    LayerType:
-      title: LayerType
-      enum:
-      - BASE
-      - APP
-      - DISTRO
-      x-stoplight:
-        id: 151c5cf8ekave
   responses:
     ArtifactSbomResponseBody:
       description: Response Body for Artifact Sbom
@@ -614,30 +614,30 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ArtifactSbomResponseBody'
-    OrchestrationStepDriftResponseBody:
-      description: Response body for calculating drift in step execution.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ArtifactSbomDriftResponse'
     SaveOrchestrationResponseBody:
       description: Example response
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/SaveOrchestrationResponseBody'
+    OrchestrationStepDriftResponseBody:
+      description: Response body for calculating drift in step execution.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ArtifactSbomDriftResponse'
   requestBodies:
+    SaveOrchestrationRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SaveOrchestrationRequest'
     OrchestrationStepDriftRequestBody:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/OrchestrationStepDriftRequestBody'
       description: Provide the base from which drift has to be calculated.
-    SaveOrchestrationRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SaveOrchestrationRequest'
   securitySchemes:
     x-api-key:
       name: x-api-key

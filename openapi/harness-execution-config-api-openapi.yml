@@ -182,43 +182,59 @@ paths:
       x-stoplight:
         id: n6q91b59w1kld
 components:
-  requestBodies:
-    ExecutionConfigUpdateRequest:
-      content:
-        application/json:
-          schema:
-            items:
-              $ref: '#/components/schemas/ExecutionConfigOperation'
-            type: array
-      description: Details of the Update Operations
-    PinImageRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/PinImageInput'
-      description: Raw DB DevOps image version override account setting
-      required: true
-  responses:
-    ExecutionConfigTagsResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ExecutionConfigTags'
-      description: Response Body for Execution Config for Image tags
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
-    ExecutionConfigSuccessResponse:
-      content:
-        application/json:
-          schema:
-            default: false
-            type: boolean
-      description: Boolean response for execution config response
   schemas:
+    PinImageInput:
+      additionalProperties: false
+      properties:
+        value:
+          description: Raw JSON value stored in the dbops_drone_image_version_override account setting
+          type:
+          - string
+          - 'null'
+          x-go-type: json.RawMessage
+          x-go-type-skip-optional-pointer: true
+      required:
+      - value
+      type: object
+    ExecutionConfigOperation:
+      additionalProperties: false
+      description: Operations to set the images tag to particular version
+      properties:
+        field:
+          description: Image tag field names which can be retrieved from get-default-config
+          example: gitCloneTag, defaultTag, mongoTag, etc
+          type: string
+          x-stoplight:
+            id: c4ao9gsw8bec7
+        value:
+          description: Value of the image tag
+          example: harness/drone-git:1.5.6-rootless
+          type: string
+          x-stoplight:
+            id: qvg6n55o8e6t7
+      required:
+      - field
+      - value
+      title: ExecutionConfigOperation
+      type: object
+      x-examples:
+        Example 1:
+          field: gitCloneTag
+          value: harness/drone-git:1.5.6-rootless
+      x-stoplight:
+        id: az6vxqusd38xv
+    DbOpsError:
+      description: Error Response
+      properties:
+        message:
+          description: error message detail
+          type: string
+      required:
+      - message
+      title: Error Response
+      type: object
+      x-stoplight:
+        id: 61cwtgnps2mpt
     ExecutionConfigTags:
       properties:
         artifactoryTag:
@@ -308,58 +324,6 @@ components:
           spannerTag: string
       x-stoplight:
         id: qezvgyoecifmt
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
-    ExecutionConfigOperation:
-      additionalProperties: false
-      description: Operations to set the images tag to particular version
-      properties:
-        field:
-          description: Image tag field names which can be retrieved from get-default-config
-          example: gitCloneTag, defaultTag, mongoTag, etc
-          type: string
-          x-stoplight:
-            id: c4ao9gsw8bec7
-        value:
-          description: Value of the image tag
-          example: harness/drone-git:1.5.6-rootless
-          type: string
-          x-stoplight:
-            id: qvg6n55o8e6t7
-      required:
-      - field
-      - value
-      title: ExecutionConfigOperation
-      type: object
-      x-examples:
-        Example 1:
-          field: gitCloneTag
-          value: harness/drone-git:1.5.6-rootless
-      x-stoplight:
-        id: az6vxqusd38xv
-    PinImageInput:
-      additionalProperties: false
-      properties:
-        value:
-          description: Raw JSON value stored in the dbops_drone_image_version_override account setting
-          type:
-          - string
-          - 'null'
-          x-go-type: json.RawMessage
-          x-go-type-skip-optional-pointer: true
-      required:
-      - value
-      type: object
   parameters:
     DbOpsAccountHeader:
       description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
@@ -367,6 +331,42 @@ components:
       name: Harness-Account
       schema:
         type: string
+  responses:
+    ExecutionConfigTagsResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExecutionConfigTags'
+      description: Response Body for Execution Config for Image tags
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
+    ExecutionConfigSuccessResponse:
+      content:
+        application/json:
+          schema:
+            default: false
+            type: boolean
+      description: Boolean response for execution config response
+  requestBodies:
+    ExecutionConfigUpdateRequest:
+      content:
+        application/json:
+          schema:
+            items:
+              $ref: '#/components/schemas/ExecutionConfigOperation'
+            type: array
+      description: Details of the Update Operations
+    PinImageRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PinImageInput'
+      description: Raw DB DevOps image version override account setting
+      required: true
   securitySchemes:
     x-api-key:
       name: x-api-key

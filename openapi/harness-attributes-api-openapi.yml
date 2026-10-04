@@ -156,7 +156,135 @@ paths:
       tags:
       - Attributes
 components:
+  responses:
+    NotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: The specified resource was not found
+    AttributesResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Attributes'
+      description: OK
+    AttributeEditResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AttributeResponseMetadata'
+      description: OK
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Bad request
+    AttributeResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Attribute'
+      description: OK
+    Conflict:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: The specified resource already exists
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Unauthorized
+    InternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Internal server error
+    Unauthenticated:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: Unauthenticated
+    GitSyncError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CfError'
+      description: An error with git syncing
+  requestBodies:
+    AttributePatchRequest:
+      content:
+        application/json:
+          example:
+            instructions:
+            - kind: updateAttribute
+              parameters:
+                key: Updated attributeKey
+          schema:
+            $ref: '#/components/schemas/GitSyncPatchOperation'
+    AttributeRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Attribute'
+      required: true
   parameters:
+    pageNumber:
+      description: PageNumber
+      in: query
+      name: pageNumber
+      schema:
+        type: integer
+    environmentQueryParam:
+      allowEmptyValue: true
+      description: Environment Identifier
+      in: query
+      name: environmentIdentifier
+      required: true
+      schema:
+        type: string
+    key:
+      description: Unique key for the attribute in the API.
+      in: path
+      name: key
+      required: true
+      schema:
+        type: string
+    customAttributeQueryParam:
+      description: Returns only custom attributes
+      in: query
+      name: customAttributes
+      schema:
+        type: boolean
+    projectQueryParam:
+      description: The Project identifier
+      in: query
+      name: projectIdentifier
+      required: true
+      schema:
+        type: string
+    attributeCounts:
+      description: Returns attribute
+      in: query
+      name: attributeCounts
+      schema:
+        type: boolean
+    orgQueryParam:
+      description: Organization Identifier
+      examples:
+        default:
+          value: default_org
+      in: query
+      name: orgIdentifier
+      required: true
+      schema:
+        type: string
     accountQueryParam:
       description: Account Identifier
       examples:
@@ -167,12 +295,6 @@ components:
       required: true
       schema:
         type: string
-    attributeCounts:
-      description: Returns attribute
-      in: query
-      name: attributeCounts
-      schema:
-        type: boolean
     sortOrder:
       description: SortOrder
       in: query
@@ -188,129 +310,24 @@ components:
       name: pageSize
       schema:
         type: integer
-    orgQueryParam:
-      description: Organization Identifier
-      examples:
-        default:
-          value: default_org
-      in: query
-      name: orgIdentifier
-      required: true
-      schema:
-        type: string
-    projectQueryParam:
-      description: The Project identifier
-      in: query
-      name: projectIdentifier
-      required: true
-      schema:
-        type: string
-    key:
-      description: Unique key for the attribute in the API.
-      in: path
-      name: key
-      required: true
-      schema:
-        type: string
-    environmentQueryParam:
-      allowEmptyValue: true
-      description: Environment Identifier
-      in: query
-      name: environmentIdentifier
-      required: true
-      schema:
-        type: string
-    pageNumber:
-      description: PageNumber
-      in: query
-      name: pageNumber
-      schema:
-        type: integer
-    customAttributeQueryParam:
-      description: Returns only custom attributes
-      in: query
-      name: customAttributes
-      schema:
-        type: boolean
-  responses:
-    AttributeResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Attribute'
-      description: OK
-    Unauthenticated:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Unauthenticated
-    Conflict:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: The specified resource already exists
-    AttributeEditResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AttributeResponseMetadata'
-      description: OK
-    NotFound:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: The specified resource was not found
-    Unauthorized:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Unauthorized
-    AttributesResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Attributes'
-      description: OK
-    InternalServerError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Internal server error
-    GitSyncError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: An error with git syncing
-    BadRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CfError'
-      description: Bad request
-  requestBodies:
-    AttributeRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Attribute'
-      required: true
-    AttributePatchRequest:
-      content:
-        application/json:
-          example:
-            instructions:
-            - kind: updateAttribute
-              parameters:
-                key: Updated attributeKey
-          schema:
-            $ref: '#/components/schemas/GitSyncPatchOperation'
   schemas:
+    PatchInstruction:
+      description: A list of Patch Instructions
+      items:
+        properties:
+          kind:
+            description: The name of the modification you would like to perform on a resource.
+            example: enableFeatureFlag
+            type: string
+          parameters:
+            example:
+              ruleId: TestRule
+              variationID: TestVariation
+            type: object
+        required:
+        - kind
+        - parameters
+      type: array
     Attributes:
       allOf:
       - $ref: '#/components/schemas/Pagination'
@@ -322,32 +339,6 @@ components:
       description: A list of Attributes
       required:
       - environment
-      type: object
-    AttributeResponseMetadata:
-      properties:
-        details:
-          description: Additional metadata about the request
-          properties:
-            governanceMetadata:
-              description: Summary of governance checks including any warnings
-              type: object
-          type: object
-      type: object
-    GitSyncPatchOperation:
-      properties:
-        comment:
-          description: A comment explaining the reason for this patch operation
-          example: This is a comment string
-          type: string
-        executionTime:
-          description: Time of execution in unix epoch milliseconds when the scheduled changes will be applied
-          type: integer
-        gitDetails:
-          $ref: '#/components/schemas/CfGitDetails'
-        instructions:
-          $ref: '#/components/schemas/PatchInstruction'
-      required:
-      - instructions
       type: object
     Pagination:
       properties:
@@ -377,32 +368,31 @@ components:
       - pageSize
       - pageIndex
       type: object
-    PatchInstruction:
-      description: A list of Patch Instructions
-      items:
-        properties:
-          kind:
-            description: The name of the modification you would like to perform on a resource.
-            example: enableFeatureFlag
-            type: string
-          parameters:
-            example:
-              ruleId: TestRule
-              variationID: TestVariation
-            type: object
-        required:
-        - kind
-        - parameters
-      type: array
-    CfGitDetails:
-      description: The commit message to use as part of a gitsync operation
+    AttributeResponseMetadata:
       properties:
-        commitMsg:
-          description: A description of the change or action
-          example: Turning on flag test-flag for production
+        details:
+          description: Additional metadata about the request
+          properties:
+            governanceMetadata:
+              description: Summary of governance checks including any warnings
+              type: object
+          type: object
+      type: object
+    GitSyncPatchOperation:
+      properties:
+        comment:
+          description: A comment explaining the reason for this patch operation
+          example: This is a comment string
           type: string
+        executionTime:
+          description: Time of execution in unix epoch milliseconds when the scheduled changes will be applied
+          type: integer
+        gitDetails:
+          $ref: '#/components/schemas/CfGitDetails'
+        instructions:
+          $ref: '#/components/schemas/PatchInstruction'
       required:
-      - commitMsg
+      - instructions
       type: object
     CfError:
       properties:
@@ -430,6 +420,16 @@ components:
           type: string
       required:
       - key
+      type: object
+    CfGitDetails:
+      description: The commit message to use as part of a gitsync operation
+      properties:
+        commitMsg:
+          description: A description of the change or action
+          example: Turning on flag test-flag for production
+          type: string
+      required:
+      - commitMsg
       type: object
   securitySchemes:
     x-api-key:

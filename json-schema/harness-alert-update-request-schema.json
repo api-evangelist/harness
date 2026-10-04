@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/harness/main/json-schema/harness-alert-update-request-schema.json",
+  "title": "AlertUpdateRequest",
+  "description": "Request payload for updating an existing alert. The alert ID is required.",
+  "x-generated": "2026-10-04",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/harness-autostopping-alerts-api-openapi.yml#/components/schemas/AlertUpdateRequest",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "entity_type",
+    "recipients",
+    "events",
+    "associated_entities"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of the alert to update. This field is required for update operations."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the alert"
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether the alert is enabled",
+      "default": true
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Type of entity the alert is associated with",
+      "enum": [
+        "autostopping_rule"
+      ]
+    },
+    "recipients": {
+      "type": "array",
+      "description": "List of notification recipients. At least one recipient is required.",
+      "items": {
+        "$ref": "#/$defs/AlertRecipient"
+      }
+    },
+    "events": {
+      "type": "array",
+      "description": "List of events that trigger the alert. At least one event is required.",
+      "items": {
+        "$ref": "#/$defs/AlertEvent"
+      }
+    },
+    "associated_entities": {
+      "type": "array",
+      "description": "List of entities associated with this alert. Use relation_type 'all' to apply to all AutoStopping rules, or 'specific' with entity_id to target specific rules.",
+      "items": {
+        "$ref": "#/$defs/AlertEntity"
+      }
+    }
+  },
+  "$defs": {
+    "AlertEntity": {
+      "description": "Defines which entities (AutoStopping rules) the alert applies to. Use 'all' to apply to all rules, or 'specific' with entity_id to target specific rules.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/AlertEntityAll"
+        },
+        {
+          "$ref": "#/$defs/AlertEntitySpecific"
+        }
+      ]
+    },
+    "AlertEntityAll": {
+      "type": "object",
+      "description": "Apply alert to all AutoStopping rules in the account",
+      "required": [
+        "relation_type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the alert entity (auto-generated, not required in requests)"
+        },
+        "alert_id": {
+          "type": "string",
+          "description": "ID of the parent alert (auto-generated, not required in requests)"
+        },
+        "relation_type": {
+          "type": "string",
+          "description": "Must be 'all' to apply alert to all AutoStopping rules",
+          "enum": [
+            "all"
+          ]
+        }
+      }
+    },
+    "AlertEntitySpecific": {
+      "type": "object",
+      "description": "Apply alert to a specific AutoStopping rule by ID",
+      "required": [
+        "relation_type",
+        "entity_id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the alert entity (auto-generated, not required in requests)"
+        },
+        "alert_id": {
+          "type": "string",
+          "description": "ID of the parent alert (auto-generated, not required in requests)"
+        },
+        "relation_type": {
+          "type": "string",
+          "description": "Must be 'specific' to target individual rules",
+          "enum": [
+            "specific"
+          ]
+        },
+        "entity_id": {
+          "type": "string",
+          "description": "ID of the specific AutoStopping rule. This is the rule ID (numeric string)."
+        }
+      }
+    },
+    "AlertEvent": {
+      "type": "object",
+      "required": [
+        "id",
+        "event"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this event configuration. Can be any string to identify this event entry."
+        },
+        "event": {
+          "type": "string",
+          "description": "Type of event that triggers the alert",
+          "enum": [
+            "autostopping_warmup_failed",
+            "autostopping_cooldown_failed",
+            "autostopping_rule_created",
+            "autostopping_rule_updated",
+            "autostopping_rule_deleted"
+          ]
+        }
+      }
+    },
+    "AlertRecipient": {
+      "type": "object",
+      "required": [
+        "type",
+        "ids"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of notification channel",
+          "enum": [
+            "email",
+            "slack"
+          ]
+        },
+        "ids": {
+          "type": "array",
+          "description": "List of recipient identifiers. For email: email addresses. For slack: Slack channel IDs or webhook URLs.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -397,6 +397,97 @@ components:
           - FORBIDDEN
           - NOT_FOUND
           - INTERNAL_SERVER_ERROR
+    RmPageable:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          $ref: '#/components/schemas/PageableSort'
+        offset:
+          type: integer
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+    OrchestrationProcessDTO:
+      title: OrchestrationProcessDTO
+      type: object
+      required:
+      - identifier
+      - name
+      - lastUpdatedAt
+      - lastUpdatedBy
+      - createdBy
+      - createdAt
+      - attachedReleaseGroupCount
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+          description: Created timestamp in milliseconds
+        lastUpdatedAt:
+          type: integer
+        lastUpdatedBy:
+          $ref: '#/components/schemas/LastUpdatedByDTO'
+        createdBy:
+          $ref: '#/components/schemas/CreatedByDTO'
+        attachedReleaseGroupCount:
+          type: integer
+          description: Number of releases attached to the process
+      x-stoplight:
+        id: q1hm7j6egaq7m
+    ProcessInputSummaryDTO:
+      title: ProcessInputSummaryDTO
+      type: object
+      required:
+      - identifier
+      - name
+      - lastUpdatedAt
+      - lastUpdatedBy
+      - status
+      properties:
+        identifier:
+          type: string
+          description: Identifier of the process input
+        name:
+          type: string
+          description: Name of the process input
+        description:
+          type: string
+          description: Description of the process input
+        status:
+          type: string
+          enum:
+          - Incomplete
+          - Configured
+          description: Status of the process input
+        lastUpdatedAt:
+          type: integer
+          format: int64
+          description: Last updated timestamp in milliseconds
+        lastUpdatedBy:
+          $ref: '#/components/schemas/LastUpdatedByDTO'
+      x-stoplight:
+        id: process-input-summary-dto
+    PageableSort:
+      type: object
+      x-go-name: PageableSort
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
     AttachedReleaseGroupDTO:
       title: AttachedReleaseGroupDTO
       type: object
@@ -444,54 +535,6 @@ components:
           description: Identifier of the user who created the event
       x-stoplight:
         id: created-by-dto
-    ProcessInputSummaryDTO:
-      title: ProcessInputSummaryDTO
-      type: object
-      required:
-      - identifier
-      - name
-      - lastUpdatedAt
-      - lastUpdatedBy
-      - status
-      properties:
-        identifier:
-          type: string
-          description: Identifier of the process input
-        name:
-          type: string
-          description: Name of the process input
-        description:
-          type: string
-          description: Description of the process input
-        status:
-          type: string
-          enum:
-          - Incomplete
-          - Configured
-          description: Status of the process input
-        lastUpdatedAt:
-          type: integer
-          format: int64
-          description: Last updated timestamp in milliseconds
-        lastUpdatedBy:
-          $ref: '#/components/schemas/LastUpdatedByDTO'
-      x-stoplight:
-        id: process-input-summary-dto
-    RmPageable:
-      type: object
-      properties:
-        pageNumber:
-          type: integer
-        pageSize:
-          type: integer
-        sort:
-          $ref: '#/components/schemas/PageableSort'
-        offset:
-          type: integer
-        paged:
-          type: boolean
-        unpaged:
-          type: boolean
     LastUpdatedByDTO:
       title: LastUpdatedByDTO
       type: object
@@ -506,52 +549,29 @@ components:
           type: string
       x-stoplight:
         id: q1hm7j6egaq6k
-    PageableSort:
-      type: object
-      x-go-name: PageableSort
-      properties:
-        empty:
-          type: boolean
-        sorted:
-          type: boolean
-        unsorted:
-          type: boolean
-    OrchestrationProcessDTO:
-      title: OrchestrationProcessDTO
-      type: object
-      required:
-      - identifier
-      - name
-      - lastUpdatedAt
-      - lastUpdatedBy
-      - createdBy
-      - createdAt
-      - attachedReleaseGroupCount
-      properties:
-        identifier:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        createdAt:
-          type: integer
-          format: int64
-          description: Created timestamp in milliseconds
-        lastUpdatedAt:
-          type: integer
-        lastUpdatedBy:
-          $ref: '#/components/schemas/LastUpdatedByDTO'
-        createdBy:
-          $ref: '#/components/schemas/CreatedByDTO'
-        attachedReleaseGroupCount:
-          type: integer
-          description: Number of releases attached to the process
-      x-stoplight:
-        id: q1hm7j6egaq7m
   responses:
-    CreateOrchestrationProcessResponse:
-      description: Response for successful orchestration process creation
+    UpdateOrchestrationProcessInputResponse:
+      description: Response for successful orchestration process input update
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - identifier
+            - yaml
+            - processIdentifier
+            properties:
+              identifier:
+                type: string
+                description: Identifier of the updated orchestration process input
+              yaml:
+                type: string
+                description: YAML configuration of the updated orchestration process input
+              processIdentifier:
+                type: string
+                description: Identifier of the orchestration process
+    CreateOrchestrationProcessInputResponse:
+      description: Response for successful orchestration process input creation
       content:
         application/json:
           schema:
@@ -562,12 +582,12 @@ components:
             properties:
               identifier:
                 type: string
-                description: Identifier of the created process
+                description: Identifier of the orchestration process
               yaml:
                 type: string
-                description: YAML configuration of the process
-    OrchestrationProcessInputSummaryResponse:
-      description: Paginated list of orchestration process inputs
+                description: YAML configuration of the process input
+    OrchestrationProcessSummaryResponse:
+      description: This wraps the list of all orchestration processes along with pagination
       content:
         application/json:
           schema:
@@ -576,7 +596,7 @@ components:
               content:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProcessInputSummaryDTO'
+                  $ref: '#/components/schemas/OrchestrationProcessDTO'
               pageable:
                 $ref: '#/components/schemas/RmPageable'
               totalPages:
@@ -609,8 +629,8 @@ components:
             - numberOfElements
             - first
             - empty
-    CreateOrchestrationProcessInputResponse:
-      description: Response for successful orchestration process input creation
+    UpdateOrchestrationProcessResponse:
+      description: Response for successful orchestration process update
       content:
         application/json:
           schema:
@@ -621,32 +641,12 @@ components:
             properties:
               identifier:
                 type: string
-                description: Identifier of the orchestration process
+                description: Identifier of the updated orchestration process
               yaml:
                 type: string
-                description: YAML configuration of the process input
-    UpdateOrchestrationProcessInputResponse:
-      description: Response for successful orchestration process input update
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - identifier
-            - yaml
-            - processIdentifier
-            properties:
-              identifier:
-                type: string
-                description: Identifier of the updated orchestration process input
-              yaml:
-                type: string
-                description: YAML configuration of the updated orchestration process input
-              processIdentifier:
-                type: string
-                description: Identifier of the orchestration process
-    OrchestrationProcessAttachedReleaseGroupsResponse:
-      description: Paginated list of release groups attached to orchestration processes
+                description: YAML configuration of the updated orchestration process
+    OrchestrationProcessInputSummaryResponse:
+      description: Paginated list of orchestration process inputs
       content:
         application/json:
           schema:
@@ -655,7 +655,7 @@ components:
               content:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AttachedReleaseGroupDTO'
+                  $ref: '#/components/schemas/ProcessInputSummaryDTO'
               pageable:
                 $ref: '#/components/schemas/RmPageable'
               totalPages:
@@ -708,8 +708,30 @@ components:
               processIdentifier:
                 type: string
                 description: Identifier of the orchestration process
-    OrchestrationProcessSummaryResponse:
-      description: This wraps the list of all orchestration processes along with pagination
+    RmErrorResponse:
+      description: Error Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RmError'
+    GetOrchestrationProcessResponse:
+      description: Response for Get Orchestration Process API
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - yaml
+            - identifier
+            properties:
+              yaml:
+                type: string
+                description: YAML representation of the orchestration process
+              identifier:
+                type: string
+                description: Identifier of the orchestration process
+    OrchestrationProcessAttachedReleaseGroupsResponse:
+      description: Paginated list of release groups attached to orchestration processes
       content:
         application/json:
           schema:
@@ -718,7 +740,7 @@ components:
               content:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrchestrationProcessDTO'
+                  $ref: '#/components/schemas/AttachedReleaseGroupDTO'
               pageable:
                 $ref: '#/components/schemas/RmPageable'
               totalPages:
@@ -751,14 +773,8 @@ components:
             - numberOfElements
             - first
             - empty
-    RmErrorResponse:
-      description: Error Response body
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RmError'
-    UpdateOrchestrationProcessResponse:
-      description: Response for successful orchestration process update
+    CreateOrchestrationProcessResponse:
+      description: Response for successful orchestration process creation
       content:
         application/json:
           schema:
@@ -769,26 +785,10 @@ components:
             properties:
               identifier:
                 type: string
-                description: Identifier of the updated orchestration process
+                description: Identifier of the created process
               yaml:
                 type: string
-                description: YAML configuration of the updated orchestration process
-    GetOrchestrationProcessResponse:
-      description: Response for Get Orchestration Process API
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - yaml
-            - identifier
-            properties:
-              yaml:
-                type: string
-                description: YAML representation of the orchestration process
-              identifier:
-                type: string
-                description: Identifier of the orchestration process
+                description: YAML configuration of the process
   parameters:
     Size:
       name: size
@@ -796,33 +796,19 @@ components:
       required: false
       schema:
         type: integer
-    AccountParam:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Account Identifier
     RmPage:
       name: page
       in: query
       required: false
       schema:
         type: integer
-    RmOrgParam:
-      name: orgIdentifier
+    SearchTermParam:
+      name: searchTerm
       in: query
+      description: Optional search string to filter releases by name.
       required: false
       schema:
         type: string
-      description: Organisation Identifier
-    RmProjectParam:
-      name: projectIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Project Identifier
     RmSort:
       name: sort
       in: query
@@ -851,40 +837,28 @@ components:
         example4:
           value:
           - end_ts,asc
-    SearchTermParam:
-      name: searchTerm
+    RmProjectParam:
+      name: projectIdentifier
       in: query
-      description: Optional search string to filter releases by name.
       required: false
       schema:
         type: string
-  requestBodies:
-    OrchestrationProcessAttachedReleaseGroupsRequest:
-      description: Request body for fetching attached release groups to orchestration processes
+      description: Project Identifier
+    RmOrgParam:
+      name: orgIdentifier
+      in: query
       required: false
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              filterOrgIdentifier:
-                type: string
-                description: Optional organization identifier to filter processes
-              filterProjectIdentifier:
-                type: string
-                description: Optional project identifier to filter processes
-    CreateOrchestrationProcessInputRequest:
-      description: Request to create a new orchestration process input
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - yaml
-            properties:
-              yaml:
-                type: string
-                description: YAML configuration for the orchestration process input
+      schema:
+        type: string
+      description: Organisation Identifier
+    AccountParam:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Account Identifier
+  requestBodies:
     UpdateOrchestrationProcessInputRequest:
       description: Request to update an orchestration process input
       content:
@@ -920,6 +894,32 @@ components:
               yaml:
                 type: string
                 description: YAML configuration for the orchestration process
+    CreateOrchestrationProcessInputRequest:
+      description: Request to create a new orchestration process input
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - yaml
+            properties:
+              yaml:
+                type: string
+                description: YAML configuration for the orchestration process input
+    OrchestrationProcessAttachedReleaseGroupsRequest:
+      description: Request body for fetching attached release groups to orchestration processes
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              filterOrgIdentifier:
+                type: string
+                description: Optional organization identifier to filter processes
+              filterProjectIdentifier:
+                type: string
+                description: Optional project identifier to filter processes
   securitySchemes:
     x-api-key:
       name: x-api-key

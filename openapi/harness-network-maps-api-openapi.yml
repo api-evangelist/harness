@@ -520,18 +520,18 @@ paths:
       - Network Maps
 components:
   schemas:
-    api.ResponseErrorCode:
+    v1.ServiceType:
       type: string
       enum:
-      - PIPELINE_NOT_FOUND
+      - ClusterIP
+      - NodePort
+      - LoadBalancer
+      - ExternalName
       x-enum-varnames:
-      - PipelineNotFound
-    database.ConnectionType:
-      type: string
-      enum:
-      - TCP
-      x-enum-varnames:
-      - ConnectionTypeTCP
+      - ServiceTypeClusterIP
+      - ServiceTypeNodePort
+      - ServiceTypeLoadBalancer
+      - ServiceTypeExternalName
     networkmap.GetTargetServiceResponse:
       type: object
       properties:
@@ -541,18 +541,619 @@ components:
           $ref: '#/components/schemas/database.ServiceCollection'
         workloadDetails:
           $ref: '#/components/schemas/database.DiscoveredServiceKubernetesSpec'
-    v1.ClientIPConfig:
+    database.NetworkMapEntity:
+      type: object
+      required:
+      - id
+      - kind
+      - name
+      properties:
+        id:
+          type: string
+        kind:
+          $ref: '#/components/schemas/database.NetworkMapResourceKind'
+        kubernetes:
+          $ref: '#/components/schemas/database.NetworkMapEntityKubernetesInfo'
+        name:
+          type: string
+        removed:
+          type: boolean
+        serviceIdentity:
+          $ref: '#/components/schemas/database.ServiceIdentity'
+    targetnetworkmap.Status:
+      type: string
+      enum:
+      - COMPLETED
+      - RUNNING
+      - PENDING
+      - ERRORED
+      x-enum-varnames:
+      - COMPLETED
+      - RUNNING
+      - PENDING
+      - ERRORED
+    v1.LoadBalancerStatus:
       type: object
       properties:
-        timeoutSeconds:
-          description: 'timeoutSeconds specifies the seconds of ClientIP type session sticky time.
+        ingress:
+          description: 'Ingress is a list containing ingress points for the load-balancer.
 
-            The value must be >0 && <=86400(for 1 day) if ServiceAffinity == "ClientIP".
+            Traffic intended for the service should be sent to these ingress points.
 
-            Default value is 10800(for 3 hours).
+            +optional'
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.LoadBalancerIngress'
+    networkmap.TargetServiceDetails:
+      type: object
+      required:
+      - id
+      - kind
+      - name
+      properties:
+        averageResiliencyScore:
+          type: number
+        id:
+          type: string
+        kind:
+          $ref: '#/components/schemas/database.NetworkMapResourceKind'
+        kubernetes:
+          $ref: '#/components/schemas/database.NetworkMapEntityKubernetesInfo'
+        name:
+          type: string
+        removed:
+          type: boolean
+        resiliencyCoverage:
+          type: number
+        serviceIdentity:
+          $ref: '#/components/schemas/database.ServiceIdentity'
+    v1.ServicePort:
+      type: object
+      properties:
+        appProtocol:
+          description: 'The application protocol for this port.
+
+            This field follows standard Kubernetes label syntax.
+
+            Un-prefixed names are reserved for IANA standard service names (as per
+
+            RFC-6335 and http://www.iana.org/assignments/service-names).
+
+            Non-standard protocols should use prefixed names such as
+
+            mycompany.com/my-custom-protocol.
+
+            This is a beta field that is guarded by the ServiceAppProtocol feature
+
+            gate and enabled by default.
+
+            +optional'
+          type: string
+        name:
+          description: 'The name of this port within the service. This must be a DNS_LABEL.
+
+            All ports within a ServiceSpec must have unique names. When considering
+
+            the endpoints for a Service, this must match the ''name'' field in the
+
+            EndpointPort.
+
+            Optional if only one ServicePort is defined on this service.
+
+            +optional'
+          type: string
+        nodePort:
+          description: 'The port on each node on which this service is exposed when type is
+
+            NodePort or LoadBalancer.  Usually assigned by the system. If a value is
+
+            specified, in-range, and not in use it will be used, otherwise the
+
+            operation will fail.  If not specified, a port will be allocated if this
+
+            Service requires one.  If this field is specified when creating a
+
+            Service which does not need it, creation will fail. This field will be
+
+            wiped when updating a Service to no longer need it (e.g. changing type
+
+            from NodePort to ClusterIP).
+
+            More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
 
             +optional'
           type: integer
+        port:
+          description: The port that will be exposed by this service.
+          type: integer
+        protocol:
+          description: 'The IP protocol for this port. Supports "TCP", "UDP", and "SCTP".
+
+            Default is TCP.
+
+            +default="TCP"
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.Protocol'
+        targetPort:
+          description: 'Number or name of the port to access on the pods targeted by the service.
+
+            Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+
+            If this is a string, it will be looked up as a named port in the
+
+            target Pod''s container ports. If this is not specified, the value
+
+            of the ''port'' field is used (an identity map).
+
+            This field is ignored for services with clusterIP=None, and should be
+
+            omitted or set equal to the ''port'' field.
+
+            More info: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/intstr.IntOrString'
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
+      type: object
+      properties:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    targetservice.TargetService:
+      type: object
+      required:
+      - accountID
+      - isRemoved
+      properties:
+        accountID:
+          type: string
+        averageResiliencyScore:
+          type: number
+        createdAt:
+          type: integer
+        createdBy:
+          type: string
+        environmentRef:
+          type: string
+        externalId:
+          type: string
+        id:
+          type: string
+        infrastructureId:
+          type: string
+        isRemoved:
+          type: boolean
+        licenseId:
+          type: string
+        name:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        resiliencyCoverage:
+          type: number
+        spec:
+          $ref: '#/components/schemas/targetservice.ServiceSpec'
+        totalExperimentCount:
+          type: integer
+        type:
+          $ref: '#/components/schemas/targetservice.ServiceType'
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
+    networkmap.RetryExperimentCreationRequest:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/targetnetworkmap.ExperimentCreationMode'
+    networkmap.GetTargetNetworkMapResponse:
+      type: object
+      required:
+      - accountID
+      - isRemoved
+      properties:
+        accountID:
+          type: string
+        agentIdentity:
+          type: string
+        averageResiliencyScore:
+          type: number
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/database.Connection'
+        createdAt:
+          type: integer
+        createdBy:
+          type: string
+        environmentRef:
+          type: string
+        errorMessage:
+          type: string
+        experimentCreationMode:
+          $ref: '#/components/schemas/targetnetworkmap.ExperimentCreationMode'
+        id:
+          type: string
+        identity:
+          type: string
+        infrastructureId:
+          type: string
+        isRemoved:
+          type: boolean
+        name:
+          type: string
+        onboardingID:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        recentExperimentRunsDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/targetnetworkmap.ExperimentRunDetail'
+        resiliencyCoverage:
+          type: number
+        serviceIDs:
+          type: array
+          items:
+            type: string
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/networkmap.TargetServiceDetails'
+        status:
+          $ref: '#/components/schemas/targetnetworkmap.Status'
+        targetNetworkMapID:
+          type: string
+        totalExperimentCount:
+          type: integer
+        totalExperimentRunCount:
+          type: integer
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
+    networkmap.ListTargetNetworkMapRequest:
+      type: object
+    v1.ServiceAffinity:
+      type: string
+      enum:
+      - ClientIP
+      - None
+      x-enum-varnames:
+      - ServiceAffinityClientIP
+      - ServiceAffinityNone
+    database.DiscoveredPod:
+      type: object
+      properties:
+        identity:
+          $ref: '#/components/schemas/v1.ObjectReference'
+        phase:
+          $ref: '#/components/schemas/v1.PodPhase'
+    database.DiscoveredKubernetesWorkload:
+      type: object
+      properties:
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        identity:
+          $ref: '#/components/schemas/v1.ObjectReference'
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        podAnnotations:
+          type: object
+          additionalProperties:
+            type: string
+        podLabels:
+          type: object
+          additionalProperties:
+            type: string
+        replicas:
+          type: array
+          items:
+            $ref: '#/components/schemas/database.DiscoveredPod'
+    database.DiscoveredServiceSpec:
+      type: object
+      properties:
+        fqdn:
+          type: array
+          items:
+            type: string
+        harnessEnvironmentIdentity:
+          $ref: '#/components/schemas/database.EnvironmentIdentity'
+        harnessServiceIdentity:
+          $ref: '#/components/schemas/database.ServiceIdentity'
+        ip:
+          type: array
+          items:
+            type: string
+        kubernetes:
+          $ref: '#/components/schemas/database.DiscoveredServiceKubernetesSpec'
+        port:
+          type: array
+          items:
+            type: string
+    database.EnvironmentIdentity:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+        identifier:
+          type: string
+        infraIdentifier:
+          type: string
+        organizationIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+    targetnetworkmap.ExperimentRunDetail:
+      type: object
+      required:
+      - isRemoved
+      properties:
+        completed:
+          type: boolean
+        createdAt:
+          type: integer
+        createdBy:
+          type: string
+        experimentRunID:
+          type: string
+        isRemoved:
+          type: boolean
+        name:
+          type: string
+        notifyID:
+          type: string
+        phase:
+          type: string
+        resiliencyScore:
+          type: number
+        targetService:
+          type: array
+          items:
+            $ref: '#/components/schemas/targetservice.ServiceMetadata'
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
+    v1.SessionAffinityConfig:
+      type: object
+      properties:
+        clientIP:
+          description: 'clientIP contains the configurations of Client IP based session affinity.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ClientIPConfig'
+    targetservice.ServiceType:
+      type: string
+      enum:
+      - DiscoveredService
+      - UnAccounted
+      x-enum-varnames:
+      - DiscoveredService
+      - UnAccounted
+    database.NetworkMapResourceKind:
+      type: string
+      enum:
+      - K8SCustomService
+      - discoveredservice
+      x-enum-varnames:
+      - NetworkMapResourceKindK8SCustomService
+      - NetworkMapResourceKindDiscoveredService
+    database.DiscoveredKubernetesService:
+      type: object
+      properties:
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        clusterIP:
+          type: string
+        clusterIPs:
+          type: array
+          items:
+            type: string
+        externalIPs:
+          type: array
+          items:
+            type: string
+        externalName:
+          type: string
+        identity:
+          $ref: '#/components/schemas/v1.ObjectReference'
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        loadBalancerIP:
+          type: string
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.ServicePort'
+        type:
+          $ref: '#/components/schemas/v1.ServiceType'
+    database.Connection:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/database.NetworkMapEntity'
+        manual:
+          type: boolean
+        params:
+          type: object
+          additionalProperties:
+            type: string
+        port:
+          type: string
+        to:
+          $ref: '#/components/schemas/database.NetworkMapEntity'
+        type:
+          $ref: '#/components/schemas/database.ConnectionType'
+    database.DiscoveredServiceKubernetesSpec:
+      type: object
+      properties:
+        kind:
+          type: string
+        name:
+          type: string
+        namespace:
+          type: string
+        service:
+          $ref: '#/components/schemas/database.DiscoveredKubernetesService'
+        uid:
+          type: string
+        workloads:
+          type: array
+          items:
+            $ref: '#/components/schemas/database.DiscoveredKubernetesWorkload'
+    v1.IPFamilyPolicyType:
+      type: string
+      enum:
+      - SingleStack
+      - PreferDualStack
+      - RequireDualStack
+      x-enum-varnames:
+      - IPFamilyPolicySingleStack
+      - IPFamilyPolicyPreferDualStack
+      - IPFamilyPolicyRequireDualStack
+    targetservice.DiscoveredServiceSpec:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+        label:
+          type: object
+          additionalProperties:
+            type: string
+        name:
+          type: string
+        namespace:
+          type: string
+        uuid:
+          type: string
+    intstr.Type:
+      type: integer
+      enum:
+      - 0
+      - 1
+      x-enum-comments:
+        Int: The IntOrString holds an int.
+        String: The IntOrString holds a string.
+      x-enum-varnames:
+      - Int
+      - String
+    targetservice.ServiceMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        namespace:
+          type: string
+        uid:
+          type: string
+    networkmap.ListTargetNetworkMapResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/targetnetworkmap.TargetNetworkMap'
+        page:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    networkmap.ListTargetService:
+      type: object
+      properties:
+        chaosDetails:
+          $ref: '#/components/schemas/targetservice.TargetService'
+        discoveryDetails:
+          $ref: '#/components/schemas/database.DiscoveredServiceCollection'
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
+          type: string
+    targetservice.ServiceSpec:
+      type: object
+      properties:
+        discoveredService:
+          $ref: '#/components/schemas/targetservice.DiscoveredServiceSpec'
+    v1.PortStatus:
+      type: object
+      properties:
+        error:
+          description: "Error is to record the problem with the service port\nThe format of the error shall comply with the following rules:\n- built-in error values shall be specified in this file and those shall use\n  CamelCase names\n- cloud provider specific error values must have names that comply with the\n  format foo.example.com/CamelCase.\n---\nThe regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)\n+optional\n+kubebuilder:validation:Required\n+kubebuilder:validation:Pattern=`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$`\n+kubebuilder:validation:MaxLength=316"
+          type: string
+        port:
+          description: Port is the port number of the service port of which status is recorded here
+          type: integer
+        protocol:
+          description: 'Protocol is the protocol of the service port of which status is recorded here
+
+            The supported values are: "TCP", "UDP", "SCTP"'
+          allOf:
+          - $ref: '#/components/schemas/v1.Protocol'
+    networkmap.RetryExperimentCreationResponse:
+      type: object
+    v1.IPFamily:
+      type: string
+      enum:
+      - IPv4
+      - IPv6
+      x-enum-varnames:
+      - IPv4Protocol
+      - IPv6Protocol
+    v1.ServiceExternalTrafficPolicyType:
+      type: string
+      enum:
+      - Local
+      - Cluster
+      x-enum-varnames:
+      - ServiceExternalTrafficPolicyTypeLocal
+      - ServiceExternalTrafficPolicyTypeCluster
+    database.ServiceIdentity:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+        identifier:
+          type: string
+        organizationIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+    v1.ServiceInternalTrafficPolicyType:
+      type: string
+      enum:
+      - Cluster
+      - Local
+      x-enum-varnames:
+      - ServiceInternalTrafficPolicyCluster
+      - ServiceInternalTrafficPolicyLocal
     database.ServiceCollection:
       type: object
       required:
@@ -624,103 +1225,27 @@ components:
           type: string
         updatedBy:
           type: string
-    v1.ServiceType:
+    v1.Protocol:
       type: string
       enum:
-      - ClusterIP
-      - NodePort
-      - LoadBalancer
-      - ExternalName
+      - TCP
+      - UDP
+      - SCTP
       x-enum-varnames:
-      - ServiceTypeClusterIP
-      - ServiceTypeNodePort
-      - ServiceTypeLoadBalancer
-      - ServiceTypeExternalName
-    database.NetworkMapEntity:
+      - ProtocolTCP
+      - ProtocolUDP
+      - ProtocolSCTP
+    networkmap.CanRetryExperimentCreationResponse:
       type: object
-      required:
-      - id
-      - kind
-      - name
       properties:
-        id:
-          type: string
-        kind:
-          $ref: '#/components/schemas/database.NetworkMapResourceKind'
-        kubernetes:
-          $ref: '#/components/schemas/database.NetworkMapEntityKubernetesInfo'
-        name:
-          type: string
-        removed:
+        result:
           type: boolean
-        serviceIdentity:
-          $ref: '#/components/schemas/database.ServiceIdentity'
-    networkmap.ListTargetNetworkMapRequest:
-      type: object
-    networkmap.TargetServiceDetails:
-      type: object
-      required:
-      - id
-      - kind
-      - name
-      properties:
-        averageResiliencyScore:
-          type: number
-        id:
-          type: string
-        kind:
-          $ref: '#/components/schemas/database.NetworkMapResourceKind'
-        kubernetes:
-          $ref: '#/components/schemas/database.NetworkMapEntityKubernetesInfo'
-        name:
-          type: string
-        removed:
-          type: boolean
-        resiliencyCoverage:
-          type: number
-        serviceIdentity:
-          $ref: '#/components/schemas/database.ServiceIdentity'
-    targetnetworkmap.ExperimentRunDetail:
-      type: object
-      required:
-      - isRemoved
-      properties:
-        completed:
-          type: boolean
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        experimentRunID:
-          type: string
-        isRemoved:
-          type: boolean
-        name:
-          type: string
-        notifyID:
-          type: string
-        phase:
-          type: string
-        resiliencyScore:
-          type: number
-        targetService:
-          type: array
-          items:
-            $ref: '#/components/schemas/targetservice.ServiceMetadata'
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
-    k8s_io_apimachinery_pkg_apis_meta_v1.ConditionStatus:
+    database.ConnectionType:
       type: string
       enum:
-      - 'True'
-      - 'False'
-      - Unknown
+      - TCP
       x-enum-varnames:
-      - ConditionTrue
-      - ConditionFalse
-      - ConditionUnknown
+      - ConnectionTypeTCP
     targetnetworkmap.TargetNetworkMap:
       type: object
       required:
@@ -781,483 +1306,6 @@ components:
           type: integer
         updatedBy:
           type: string
-    github_com_harness_hce-saas_graphql_server_api.Pagination:
-      type: object
-      properties:
-        index:
-          type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-    targetservice.ServiceType:
-      type: string
-      enum:
-      - DiscoveredService
-      - UnAccounted
-      x-enum-varnames:
-      - DiscoveredService
-      - UnAccounted
-    v1.Protocol:
-      type: string
-      enum:
-      - TCP
-      - UDP
-      - SCTP
-      x-enum-varnames:
-      - ProtocolTCP
-      - ProtocolUDP
-      - ProtocolSCTP
-    intstr.Type:
-      type: integer
-      enum:
-      - 0
-      - 1
-      x-enum-comments:
-        Int: The IntOrString holds an int.
-        String: The IntOrString holds a string.
-      x-enum-varnames:
-      - Int
-      - String
-    v1.IPFamily:
-      type: string
-      enum:
-      - IPv4
-      - IPv6
-      x-enum-varnames:
-      - IPv4Protocol
-      - IPv6Protocol
-    v1.ServiceExternalTrafficPolicyType:
-      type: string
-      enum:
-      - Local
-      - Cluster
-      x-enum-varnames:
-      - ServiceExternalTrafficPolicyTypeLocal
-      - ServiceExternalTrafficPolicyTypeCluster
-    v1.ServiceAffinity:
-      type: string
-      enum:
-      - ClientIP
-      - None
-      x-enum-varnames:
-      - ServiceAffinityClientIP
-      - ServiceAffinityNone
-    targetservice.ServiceMetadata:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        namespace:
-          type: string
-        uid:
-          type: string
-    networkmap.ListTargetService:
-      type: object
-      properties:
-        chaosDetails:
-          $ref: '#/components/schemas/targetservice.TargetService'
-        discoveryDetails:
-          $ref: '#/components/schemas/database.DiscoveredServiceCollection'
-    targetservice.TargetService:
-      type: object
-      required:
-      - accountID
-      - isRemoved
-      properties:
-        accountID:
-          type: string
-        averageResiliencyScore:
-          type: number
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        environmentRef:
-          type: string
-        externalId:
-          type: string
-        id:
-          type: string
-        infrastructureId:
-          type: string
-        isRemoved:
-          type: boolean
-        licenseId:
-          type: string
-        name:
-          type: string
-        orgID:
-          type: string
-        projectID:
-          type: string
-        resiliencyCoverage:
-          type: number
-        spec:
-          $ref: '#/components/schemas/targetservice.ServiceSpec'
-        totalExperimentCount:
-          type: integer
-        type:
-          $ref: '#/components/schemas/targetservice.ServiceType'
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
-    database.DiscoveredServiceSpec:
-      type: object
-      properties:
-        fqdn:
-          type: array
-          items:
-            type: string
-        harnessEnvironmentIdentity:
-          $ref: '#/components/schemas/database.EnvironmentIdentity'
-        harnessServiceIdentity:
-          $ref: '#/components/schemas/database.ServiceIdentity'
-        ip:
-          type: array
-          items:
-            type: string
-        kubernetes:
-          $ref: '#/components/schemas/database.DiscoveredServiceKubernetesSpec'
-        port:
-          type: array
-          items:
-            type: string
-    v1.ServiceStatus:
-      type: object
-      properties:
-        conditions:
-          description: 'Current service state
-
-            +optional
-
-            +patchMergeKey=type
-
-            +patchStrategy=merge
-
-            +listType=map
-
-            +listMapKey=type'
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.Condition'
-        loadBalancer:
-          description: 'LoadBalancer contains the current status of the load-balancer,
-
-            if one is present.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.LoadBalancerStatus'
-    database.DiscoveredKubernetesWorkload:
-      type: object
-      properties:
-        annotations:
-          type: object
-          additionalProperties:
-            type: string
-        identity:
-          $ref: '#/components/schemas/v1.ObjectReference'
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-        podAnnotations:
-          type: object
-          additionalProperties:
-            type: string
-        podLabels:
-          type: object
-          additionalProperties:
-            type: string
-        replicas:
-          type: array
-          items:
-            $ref: '#/components/schemas/database.DiscoveredPod'
-    database.ServiceIdentity:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-        identifier:
-          type: string
-        organizationIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-    database.NetworkMapResourceKind:
-      type: string
-      enum:
-      - K8SCustomService
-      - discoveredservice
-      x-enum-varnames:
-      - NetworkMapResourceKindK8SCustomService
-      - NetworkMapResourceKindDiscoveredService
-    targetservice.ServiceSpec:
-      type: object
-      properties:
-        discoveredService:
-          $ref: '#/components/schemas/targetservice.DiscoveredServiceSpec'
-    v1.IPFamilyPolicyType:
-      type: string
-      enum:
-      - SingleStack
-      - PreferDualStack
-      - RequireDualStack
-      x-enum-varnames:
-      - IPFamilyPolicySingleStack
-      - IPFamilyPolicyPreferDualStack
-      - IPFamilyPolicyRequireDualStack
-    v1.Condition:
-      type: object
-      properties:
-        lastTransitionTime:
-          description: 'lastTransitionTime is the last time the condition transitioned from one status to another.
-
-            This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
-
-            +required
-
-            +kubebuilder:validation:Required
-
-            +kubebuilder:validation:Type=string
-
-            +kubebuilder:validation:Format=date-time'
-          type: string
-        message:
-          description: 'message is a human readable message indicating details about the transition.
-
-            This may be an empty string.
-
-            +required
-
-            +kubebuilder:validation:Required
-
-            +kubebuilder:validation:MaxLength=32768'
-          type: string
-        observedGeneration:
-          description: 'observedGeneration represents the .metadata.generation that the condition was set based upon.
-
-            For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
-
-            with respect to the current state of the instance.
-
-            +optional
-
-            +kubebuilder:validation:Minimum=0'
-          type: integer
-        reason:
-          description: 'reason contains a programmatic identifier indicating the reason for the condition''s last transition.
-
-            Producers of specific condition types may define expected values and meanings for this field,
-
-            and whether the values are considered a guaranteed API.
-
-            The value should be a CamelCase string.
-
-            This field may not be empty.
-
-            +required
-
-            +kubebuilder:validation:Required
-
-            +kubebuilder:validation:MaxLength=1024
-
-            +kubebuilder:validation:MinLength=1
-
-            +kubebuilder:validation:Pattern=`^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$`'
-          type: string
-        status:
-          description: 'status of the condition, one of True, False, Unknown.
-
-            +required
-
-            +kubebuilder:validation:Required
-
-            +kubebuilder:validation:Enum=True;False;Unknown'
-          allOf:
-          - $ref: '#/components/schemas/k8s_io_apimachinery_pkg_apis_meta_v1.ConditionStatus'
-        type:
-          description: 'type of condition in CamelCase or in foo.example.com/CamelCase.
-
-            ---
-
-            Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
-
-            useful (see .node.status.conditions), the ability to deconflict is important.
-
-            The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
-
-            +required
-
-            +kubebuilder:validation:Required
-
-            +kubebuilder:validation:Pattern=`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$`
-
-            +kubebuilder:validation:MaxLength=316'
-          type: string
-    database.EnvironmentIdentity:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-        identifier:
-          type: string
-        infraIdentifier:
-          type: string
-        organizationIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-    api.RestError:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
-    networkmap.CanRetryExperimentCreationResponse:
-      type: object
-      properties:
-        result:
-          type: boolean
-    networkmap.ListTargetNetworkMapResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/targetnetworkmap.TargetNetworkMap'
-        page:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    v1.PodPhase:
-      type: string
-      enum:
-      - Pending
-      - Running
-      - Succeeded
-      - Failed
-      - Unknown
-      x-enum-varnames:
-      - PodPending
-      - PodRunning
-      - PodSucceeded
-      - PodFailed
-      - PodUnknown
-    database.Connection:
-      type: object
-      properties:
-        from:
-          $ref: '#/components/schemas/database.NetworkMapEntity'
-        manual:
-          type: boolean
-        params:
-          type: object
-          additionalProperties:
-            type: string
-        port:
-          type: string
-        to:
-          $ref: '#/components/schemas/database.NetworkMapEntity'
-        type:
-          $ref: '#/components/schemas/database.ConnectionType'
-    v1.ObjectReference:
-      type: object
-      properties:
-        apiVersion:
-          description: 'API version of the referent.
-
-            +optional'
-          type: string
-        fieldPath:
-          description: 'If referring to a piece of an object instead of an entire object, this string
-
-            should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
-
-            For example, if the object reference is to a container within a pod, this would take on a value like:
-
-            "spec.containers{name}" (where "name" refers to the name of the container that triggered
-
-            the event) or if no container name is specified "spec.containers[2]" (container with
-
-            index 2 in this pod). This syntax is chosen only to have some well-defined way of
-
-            referencing a part of an object.
-
-            TODO: this design is not final and this field is subject to change in the future.
-
-            +optional'
-          type: string
-        kind:
-          description: 'Kind of the referent.
-
-            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-
-            +optional'
-          type: string
-        name:
-          description: 'Name of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-
-            +optional'
-          type: string
-        namespace:
-          description: 'Namespace of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
-
-            +optional'
-          type: string
-        resourceVersion:
-          description: 'Specific resourceVersion to which this reference is made, if any.
-
-            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
-
-            +optional'
-          type: string
-        uid:
-          description: 'UID of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
-
-            +optional'
-          type: string
-    database.NetworkMapEntityKubernetesInfo:
-      type: object
-      properties:
-        hasWorkload:
-          type: boolean
-        kind:
-          type: string
-        namespace:
-          type: string
-    database.DiscoveredPod:
-      type: object
-      properties:
-        identity:
-          $ref: '#/components/schemas/v1.ObjectReference'
-        phase:
-          $ref: '#/components/schemas/v1.PodPhase'
-    v1.LoadBalancerStatus:
-      type: object
-      properties:
-        ingress:
-          description: 'Ingress is a list containing ingress points for the load-balancer.
-
-            Traffic intended for the service should be sent to these ingress points.
-
-            +optional'
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.LoadBalancerIngress'
     v1.ServiceSpec:
       type: object
       properties:
@@ -1703,164 +1751,94 @@ components:
             +optional'
           allOf:
           - $ref: '#/components/schemas/v1.ServiceType'
-    v1.OwnerReference:
+    v1.Condition:
       type: object
       properties:
-        apiVersion:
-          description: API version of the referent.
+        lastTransitionTime:
+          description: 'lastTransitionTime is the last time the condition transitioned from one status to another.
+
+            This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+
+            +required
+
+            +kubebuilder:validation:Required
+
+            +kubebuilder:validation:Type=string
+
+            +kubebuilder:validation:Format=date-time'
           type: string
-        blockOwnerDeletion:
-          description: 'If true, AND if the owner has the "foregroundDeletion" finalizer, then
+        message:
+          description: 'message is a human readable message indicating details about the transition.
 
-            the owner cannot be deleted from the key-value store until this
+            This may be an empty string.
 
-            reference is removed.
+            +required
 
-            Defaults to false.
+            +kubebuilder:validation:Required
 
-            To set this field, a user needs "delete" permission of the owner,
-
-            otherwise 422 (Unprocessable Entity) will be returned.
-
-            +optional'
-          type: boolean
-        controller:
-          description: 'If true, this reference points to the managing controller.
-
-            +optional'
-          type: boolean
-        kind:
-          description: 'Kind of the referent.
-
-            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            +kubebuilder:validation:MaxLength=32768'
           type: string
-        name:
-          description: 'Name of the referent.
+        observedGeneration:
+          description: 'observedGeneration represents the .metadata.generation that the condition was set based upon.
 
-            More info: http://kubernetes.io/docs/user-guide/identifiers#names'
-          type: string
-        uid:
-          description: 'UID of the referent.
+            For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
 
-            More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
-          type: string
-    v1.LoadBalancerIngress:
-      type: object
-      properties:
-        hostname:
-          description: 'Hostname is set for load-balancer ingress points that are DNS based
+            with respect to the current state of the instance.
 
-            (typically AWS load-balancers)
+            +optional
 
-            +optional'
-          type: string
-        ip:
-          description: 'IP is set for load-balancer ingress points that are IP based
-
-            (typically GCE or OpenStack load-balancers)
-
-            +optional'
-          type: string
-        ports:
-          description: 'Ports is a list of records of service ports
-
-            If used, every port defined in the service should have an entry in it
-
-            +listType=atomic
-
-            +optional'
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.PortStatus'
-    v1.ServicePort:
-      type: object
-      properties:
-        appProtocol:
-          description: 'The application protocol for this port.
-
-            This field follows standard Kubernetes label syntax.
-
-            Un-prefixed names are reserved for IANA standard service names (as per
-
-            RFC-6335 and http://www.iana.org/assignments/service-names).
-
-            Non-standard protocols should use prefixed names such as
-
-            mycompany.com/my-custom-protocol.
-
-            This is a beta field that is guarded by the ServiceAppProtocol feature
-
-            gate and enabled by default.
-
-            +optional'
-          type: string
-        name:
-          description: 'The name of this port within the service. This must be a DNS_LABEL.
-
-            All ports within a ServiceSpec must have unique names. When considering
-
-            the endpoints for a Service, this must match the ''name'' field in the
-
-            EndpointPort.
-
-            Optional if only one ServicePort is defined on this service.
-
-            +optional'
-          type: string
-        nodePort:
-          description: 'The port on each node on which this service is exposed when type is
-
-            NodePort or LoadBalancer.  Usually assigned by the system. If a value is
-
-            specified, in-range, and not in use it will be used, otherwise the
-
-            operation will fail.  If not specified, a port will be allocated if this
-
-            Service requires one.  If this field is specified when creating a
-
-            Service which does not need it, creation will fail. This field will be
-
-            wiped when updating a Service to no longer need it (e.g. changing type
-
-            from NodePort to ClusterIP).
-
-            More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
-
-            +optional'
+            +kubebuilder:validation:Minimum=0'
           type: integer
-        port:
-          description: The port that will be exposed by this service.
-          type: integer
-        protocol:
-          description: 'The IP protocol for this port. Supports "TCP", "UDP", and "SCTP".
+        reason:
+          description: 'reason contains a programmatic identifier indicating the reason for the condition''s last transition.
 
-            Default is TCP.
+            Producers of specific condition types may define expected values and meanings for this field,
 
-            +default="TCP"
+            and whether the values are considered a guaranteed API.
 
-            +optional'
+            The value should be a CamelCase string.
+
+            This field may not be empty.
+
+            +required
+
+            +kubebuilder:validation:Required
+
+            +kubebuilder:validation:MaxLength=1024
+
+            +kubebuilder:validation:MinLength=1
+
+            +kubebuilder:validation:Pattern=`^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$`'
+          type: string
+        status:
+          description: 'status of the condition, one of True, False, Unknown.
+
+            +required
+
+            +kubebuilder:validation:Required
+
+            +kubebuilder:validation:Enum=True;False;Unknown'
           allOf:
-          - $ref: '#/components/schemas/v1.Protocol'
-        targetPort:
-          description: 'Number or name of the port to access on the pods targeted by the service.
+          - $ref: '#/components/schemas/k8s_io_apimachinery_pkg_apis_meta_v1.ConditionStatus'
+        type:
+          description: 'type of condition in CamelCase or in foo.example.com/CamelCase.
 
-            Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+            ---
 
-            If this is a string, it will be looked up as a named port in the
+            Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
 
-            target Pod''s container ports. If this is not specified, the value
+            useful (see .node.status.conditions), the ability to deconflict is important.
 
-            of the ''port'' field is used (an identity map).
+            The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
 
-            This field is ignored for services with clusterIP=None, and should be
+            +required
 
-            omitted or set equal to the ''port'' field.
+            +kubebuilder:validation:Required
 
-            More info: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
+            +kubebuilder:validation:Pattern=`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$`
 
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/intstr.IntOrString'
+            +kubebuilder:validation:MaxLength=316'
+          type: string
     targetnetworkmap.ExperimentCreationMode:
       type: string
       enum:
@@ -1871,37 +1849,68 @@ components:
       - BasicExperimentCreation
       - IntermediateExperimentCreation
       - AdvancedExperimentCreation
-    networkmap.RetryExperimentCreationResponse:
-      type: object
-    v1.ServiceInternalTrafficPolicyType:
-      type: string
-      enum:
-      - Cluster
-      - Local
-      x-enum-varnames:
-      - ServiceInternalTrafficPolicyCluster
-      - ServiceInternalTrafficPolicyLocal
-    targetnetworkmap.Status:
-      type: string
-      enum:
-      - COMPLETED
-      - RUNNING
-      - PENDING
-      - ERRORED
-      x-enum-varnames:
-      - COMPLETED
-      - RUNNING
-      - PENDING
-      - ERRORED
-    networkmap.ListTargetServiceResponse:
+    v1.ObjectReference:
       type: object
       properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/networkmap.ListTargetService'
-        page:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+        apiVersion:
+          description: 'API version of the referent.
+
+            +optional'
+          type: string
+        fieldPath:
+          description: 'If referring to a piece of an object instead of an entire object, this string
+
+            should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
+
+            For example, if the object reference is to a container within a pod, this would take on a value like:
+
+            "spec.containers{name}" (where "name" refers to the name of the container that triggered
+
+            the event) or if no container name is specified "spec.containers[2]" (container with
+
+            index 2 in this pod). This syntax is chosen only to have some well-defined way of
+
+            referencing a part of an object.
+
+            TODO: this design is not final and this field is subject to change in the future.
+
+            +optional'
+          type: string
+        kind:
+          description: 'Kind of the referent.
+
+            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+
+            +optional'
+          type: string
+        name:
+          description: 'Name of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+
+            +optional'
+          type: string
+        namespace:
+          description: 'Namespace of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+
+            +optional'
+          type: string
+        resourceVersion:
+          description: 'Specific resourceVersion to which this reference is made, if any.
+
+            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
+
+            +optional'
+          type: string
+        uid:
+          description: 'UID of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
+
+            +optional'
+          type: string
     database.DiscoveredServiceCollection:
       type: object
       required:
@@ -1949,153 +1958,22 @@ components:
           type: string
         version:
           type: string
-    database.DiscoveredServiceKubernetesSpec:
-      type: object
-      properties:
-        kind:
-          type: string
-        name:
-          type: string
-        namespace:
-          type: string
-        service:
-          $ref: '#/components/schemas/database.DiscoveredKubernetesService'
-        uid:
-          type: string
-        workloads:
-          type: array
-          items:
-            $ref: '#/components/schemas/database.DiscoveredKubernetesWorkload'
-    v1.PortStatus:
-      type: object
-      properties:
-        error:
-          description: "Error is to record the problem with the service port\nThe format of the error shall comply with the following rules:\n- built-in error values shall be specified in this file and those shall use\n  CamelCase names\n- cloud provider specific error values must have names that comply with the\n  format foo.example.com/CamelCase.\n---\nThe regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)\n+optional\n+kubebuilder:validation:Required\n+kubebuilder:validation:Pattern=`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$`\n+kubebuilder:validation:MaxLength=316"
-          type: string
-        port:
-          description: Port is the port number of the service port of which status is recorded here
-          type: integer
-        protocol:
-          description: 'Protocol is the protocol of the service port of which status is recorded here
-
-            The supported values are: "TCP", "UDP", "SCTP"'
-          allOf:
-          - $ref: '#/components/schemas/v1.Protocol'
-    v1.SessionAffinityConfig:
-      type: object
-      properties:
-        clientIP:
-          description: 'clientIP contains the configurations of Client IP based session affinity.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ClientIPConfig'
-    networkmap.RetryExperimentCreationRequest:
-      type: object
-      properties:
-        mode:
-          $ref: '#/components/schemas/targetnetworkmap.ExperimentCreationMode'
-    database.DiscoveredKubernetesService:
-      type: object
-      properties:
-        annotations:
-          type: object
-          additionalProperties:
-            type: string
-        clusterIP:
-          type: string
-        clusterIPs:
-          type: array
-          items:
-            type: string
-        externalIPs:
-          type: array
-          items:
-            type: string
-        externalName:
-          type: string
-        identity:
-          $ref: '#/components/schemas/v1.ObjectReference'
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-        loadBalancerIP:
-          type: string
-        ports:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.ServicePort'
-        type:
-          $ref: '#/components/schemas/v1.ServiceType'
-    networkmap.GetTargetNetworkMapResponse:
-      type: object
-      required:
-      - accountID
-      - isRemoved
-      properties:
-        accountID:
-          type: string
-        agentIdentity:
-          type: string
-        averageResiliencyScore:
-          type: number
-        connections:
-          type: array
-          items:
-            $ref: '#/components/schemas/database.Connection'
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        environmentRef:
-          type: string
-        errorMessage:
-          type: string
-        experimentCreationMode:
-          $ref: '#/components/schemas/targetnetworkmap.ExperimentCreationMode'
-        id:
-          type: string
-        identity:
-          type: string
-        infrastructureId:
-          type: string
-        isRemoved:
-          type: boolean
-        name:
-          type: string
-        onboardingID:
-          type: string
-        orgID:
-          type: string
-        projectID:
-          type: string
-        recentExperimentRunsDetails:
-          type: array
-          items:
-            $ref: '#/components/schemas/targetnetworkmap.ExperimentRunDetail'
-        resiliencyCoverage:
-          type: number
-        serviceIDs:
-          type: array
-          items:
-            type: string
-        services:
-          type: array
-          items:
-            $ref: '#/components/schemas/networkmap.TargetServiceDetails'
-        status:
-          $ref: '#/components/schemas/targetnetworkmap.Status'
-        targetNetworkMapID:
-          type: string
-        totalExperimentCount:
-          type: integer
-        totalExperimentRunCount:
-          type: integer
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    k8s_io_apimachinery_pkg_apis_meta_v1.ConditionStatus:
+      type: string
+      enum:
+      - 'True'
+      - 'False'
+      - Unknown
+      x-enum-varnames:
+      - ConditionTrue
+      - ConditionFalse
+      - ConditionUnknown
     intstr.IntOrString:
       type: object
       properties:
@@ -2105,23 +1983,145 @@ components:
           type: string
         type:
           $ref: '#/components/schemas/intstr.Type'
-    targetservice.DiscoveredServiceSpec:
+    v1.LoadBalancerIngress:
       type: object
       properties:
-        id:
+        hostname:
+          description: 'Hostname is set for load-balancer ingress points that are DNS based
+
+            (typically AWS load-balancers)
+
+            +optional'
           type: string
+        ip:
+          description: 'IP is set for load-balancer ingress points that are IP based
+
+            (typically GCE or OpenStack load-balancers)
+
+            +optional'
+          type: string
+        ports:
+          description: 'Ports is a list of records of service ports
+
+            If used, every port defined in the service should have an entry in it
+
+            +listType=atomic
+
+            +optional'
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.PortStatus'
+    v1.PodPhase:
+      type: string
+      enum:
+      - Pending
+      - Running
+      - Succeeded
+      - Failed
+      - Unknown
+      x-enum-varnames:
+      - PodPending
+      - PodRunning
+      - PodSucceeded
+      - PodFailed
+      - PodUnknown
+    database.NetworkMapEntityKubernetesInfo:
+      type: object
+      properties:
+        hasWorkload:
+          type: boolean
         kind:
-          type: string
-        label:
-          type: object
-          additionalProperties:
-            type: string
-        name:
           type: string
         namespace:
           type: string
-        uuid:
+    v1.OwnerReference:
+      type: object
+      properties:
+        apiVersion:
+          description: API version of the referent.
           type: string
+        blockOwnerDeletion:
+          description: 'If true, AND if the owner has the "foregroundDeletion" finalizer, then
+
+            the owner cannot be deleted from the key-value store until this
+
+            reference is removed.
+
+            Defaults to false.
+
+            To set this field, a user needs "delete" permission of the owner,
+
+            otherwise 422 (Unprocessable Entity) will be returned.
+
+            +optional'
+          type: boolean
+        controller:
+          description: 'If true, this reference points to the managing controller.
+
+            +optional'
+          type: boolean
+        kind:
+          description: 'Kind of the referent.
+
+            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        name:
+          description: 'Name of the referent.
+
+            More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+          type: string
+        uid:
+          description: 'UID of the referent.
+
+            More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
+          type: string
+    v1.ServiceStatus:
+      type: object
+      properties:
+        conditions:
+          description: 'Current service state
+
+            +optional
+
+            +patchMergeKey=type
+
+            +patchStrategy=merge
+
+            +listType=map
+
+            +listMapKey=type'
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.Condition'
+        loadBalancer:
+          description: 'LoadBalancer contains the current status of the load-balancer,
+
+            if one is present.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.LoadBalancerStatus'
+    networkmap.ListTargetServiceResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/networkmap.ListTargetService'
+        page:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    v1.ClientIPConfig:
+      type: object
+      properties:
+        timeoutSeconds:
+          description: 'timeoutSeconds specifies the seconds of ClientIP type session sticky time.
+
+            The value must be >0 && <=86400(for 1 day) if ServiceAffinity == "ClientIP".
+
+            Default value is 10800(for 3 hours).
+
+            +optional'
+          type: integer
   securitySchemes:
     x-api-key:
       name: x-api-key

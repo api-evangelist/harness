@@ -688,164 +688,6 @@ paths:
                 $ref: '#/components/schemas/api.RestError'
 components:
   schemas:
-    faulttemplate.StatusCheckTimeout:
-      type: object
-      properties:
-        delay:
-          type: integer
-        timeout:
-          type: integer
-    v1.ResourceFieldSelector:
-      type: object
-      properties:
-        containerName:
-          description: 'Container name: required for volumes, optional for env vars
-
-            +optional'
-          type: string
-        divisor:
-          description: 'Specifies the output format of the exposed resources, defaults to "1"
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/resource.Quantity'
-        resource:
-          description: 'Required: resource to select'
-          type: string
-    faulttemplate.ConfigMapVolume:
-      type: object
-      properties:
-        mountMode:
-          type: integer
-        mountPath:
-          type: string
-        name:
-          type: string
-    template.InputCategory:
-      type: string
-      enum:
-      - FaultTarget
-      - FaultTunable
-      - TargetInfra
-      - ExperimentTunable
-      - ActionProperties
-      - ProbeProperties
-      - RunProperties
-      - FaultAuthentication
-      x-enum-varnames:
-      - CategoryFaultTarget
-      - CategoryFaultTunable
-      - CategoryTargetInfra
-      - CategoryExperimentTunable
-      - CategoryActionProperties
-      - CategoryProbeProperties
-      - CategoryRunProperties
-      - CategoryFaultAuthentication
-    v1.WindowsSecurityContextOptions:
-      type: object
-      properties:
-        gmsaCredentialSpec:
-          description: 'GMSACredentialSpec is where the GMSA admission webhook
-
-            (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
-
-            GMSA credential spec named by the GMSACredentialSpecName field.
-
-            +optional'
-          type: string
-        gmsaCredentialSpecName:
-          description: 'GMSACredentialSpecName is the name of the GMSA credential spec to use.
-
-            +optional'
-          type: string
-        runAsUserName:
-          description: 'The UserName in Windows to run the entrypoint of the container process.
-
-            Defaults to the user specified in image metadata if unspecified.
-
-            May also be set in PodSecurityContext. If set in both SecurityContext and
-
-            PodSecurityContext, the value specified in SecurityContext takes precedence.
-
-            +optional'
-          type: string
-    faulttemplate.TLS:
-      type: object
-      properties:
-        caFile:
-          type: string
-        certFile:
-          type: string
-        clientCertFile:
-          type: string
-        keyFile:
-          type: string
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
-    github_com_harness_hce-saas_graphql_server_graph_model.UserDetails:
-      type: object
-      properties:
-        email:
-          type: string
-        userID:
-          type: string
-        username:
-          type: string
-    faulttemplate.Spec:
-      type: object
-      properties:
-        chaos:
-          $ref: '#/components/schemas/faulttemplate.ChaosSpec'
-        target:
-          $ref: '#/components/schemas/faulttemplate.Target'
-    faulttemplate.KubernetesTarget:
-      type: object
-      properties:
-        kind:
-          type: string
-        labels:
-          type: string
-        names:
-          type: string
-        namespace:
-          type: string
-    template.Variable:
-      type: object
-      required:
-      - name
-      - value
-      properties:
-        allowedValues:
-          type: array
-          items: {}
-        category:
-          $ref: '#/components/schemas/template.InputCategory'
-        default: {}
-        description:
-          type: string
-        name:
-          type: string
-        path:
-          type: string
-        required:
-          type: boolean
-        stringify:
-          type: boolean
-        tags:
-          type: array
-          items:
-            type: string
-        tooltipId:
-          type: string
-        type:
-          $ref: '#/components/schemas/template.InputType'
-        validator:
-          type: string
-        value: {}
     template.VariableMinimum:
       type: object
       required:
@@ -855,180 +697,84 @@ components:
         name:
           type: string
         value: {}
-    v1.SeccompProfile:
+    v1.ProcMountType:
+      type: string
+      enum:
+      - Default
+      - Unmasked
+      x-enum-varnames:
+      - DefaultProcMount
+      - UnmaskedProcMount
+    faulttemplate.HostPathVolume:
       type: object
       properties:
-        localhostProfile:
-          description: 'localhostProfile indicates a profile defined in a file on the node should be used.
+        hostPath:
+          type: string
+        mountPath:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/v1.HostPathType'
+    v1.Toleration:
+      type: object
+      properties:
+        effect:
+          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
 
-            The profile must be preconfigured on the node to work.
+            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
 
-            Must be a descending path, relative to the kubelet''s configured seccomp profile location.
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.TaintEffect'
+        key:
+          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
 
-            Must only be set if type is "Localhost".
+            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
 
             +optional'
           type: string
-        type:
-          description: 'type indicates which kind of seccomp profile will be applied.
+        operator:
+          description: 'Operator represents a key''s relationship to the value.
 
-            Valid options are:
+            Valid operators are Exists and Equal. Defaults to Equal.
 
+            Exists is equivalent to wildcard for value, so that a pod can
 
-            Localhost - a profile defined in a file on the node should be used.
+            tolerate all taints of a particular category.
 
-            RuntimeDefault - the container runtime default profile should be used.
-
-            Unconfined - no profile should be applied.
-
-            +unionDiscriminator'
+            +optional'
           allOf:
-          - $ref: '#/components/schemas/v1.SeccompProfileType'
-    faulttemplate.ResourceRequirements:
+          - $ref: '#/components/schemas/v1.TolerationOperator'
+        tolerationSeconds:
+          description: 'TolerationSeconds represents the period of time the toleration (which must be
+
+            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+
+            it is not set, which means tolerate the taint forever (do not evict). Zero and
+
+            negative values will be treated as 0 (evict immediately) by the system.
+
+            +optional'
+          type: integer
+        value:
+          description: 'Value is the taint value the toleration matches to.
+
+            If the operator is Exists, the value should be empty, otherwise just a regular string.
+
+            +optional'
+          type: string
+    faulttemplate.ChaosParameter:
       type: object
       properties:
-        limits:
-          type: object
-          additionalProperties:
-            type: string
-        requests:
-          type: object
-          additionalProperties:
-            type: string
-    chaosfault.CreateFaultResponse:
-      type: object
-      required:
-      - identity
-      - name
-      properties:
-        apiVersion:
-          type: string
-        category:
-          type: array
-          items:
-            type: string
-        correlationID:
-          type: string
-        description:
-          type: string
-        id:
-          type: string
-        identity:
-          type: string
-        importType:
-          $ref: '#/components/schemas/common.ImportType'
-        infraType:
-          type: string
-        infras:
-          type: array
-          items:
-            type: string
-        inputs:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        kind:
-          type: string
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/fault.Link'
         name:
           type: string
-        permissionsRequired:
+        value:
           type: string
-        spec:
-          $ref: '#/components/schemas/faulttemplate.Spec'
-        tags:
-          type: array
-          items:
-            type: string
-        templateReference:
-          $ref: '#/components/schemas/fault.TemplateReference'
-        type:
-          type: string
-        updatedAt:
-          type: integer
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.VariableMinimum'
-        variables:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-    faulttemplate.Auth:
+    faulttemplate.GCPAuth:
       type: object
       properties:
-        aws:
-          $ref: '#/components/schemas/faulttemplate.AWSAuth'
-        azure:
-          $ref: '#/components/schemas/faulttemplate.AzureAuth'
-        gcp:
-          $ref: '#/components/schemas/faulttemplate.GCPAuth'
-        redis:
-          $ref: '#/components/schemas/faulttemplate.RedisAuth'
-        ssh:
-          $ref: '#/components/schemas/faulttemplate.SSHAuth'
-        vmware:
-          $ref: '#/components/schemas/faulttemplate.VMWareAuth'
-    shared.PaginationResponse:
-      type: object
-      properties:
-        index:
-          type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-    github_com_harness_hce-saas_graphql_server_models_shared.Metadata:
-      type: object
-      properties:
-        description:
-          type: string
-        identity:
-          type: string
-        name:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-    v1.SeccompProfileType:
-      type: string
-      enum:
-      - Unconfined
-      - RuntimeDefault
-      - Localhost
-      x-enum-varnames:
-      - SeccompProfileTypeUnconfined
-      - SeccompProfileTypeRuntimeDefault
-      - SeccompProfileTypeLocalhost
-    faulttemplate.ChaosSpec:
-      type: object
-      properties:
-        auth:
-          $ref: '#/components/schemas/faulttemplate.Auth'
-        faultName:
-          type: string
-        kubernetes:
-          $ref: '#/components/schemas/faulttemplate.ChaosKubernetesSpec'
-        params:
-          type: array
-          items:
-            $ref: '#/components/schemas/faulttemplate.ChaosParameter'
-        statusCheckTimeouts:
-          $ref: '#/components/schemas/faulttemplate.StatusCheckTimeout'
-        tls:
-          $ref: '#/components/schemas/faulttemplate.TLS'
-    faulttemplate.ApplicationTarget:
-      type: object
-      properties:
-        application:
-          type: string
-        entrypoint:
+        identifier:
           type: string
     v1.PodSecurityContext:
       type: object
@@ -1159,627 +905,6 @@ components:
             +optional'
           allOf:
           - $ref: '#/components/schemas/v1.WindowsSecurityContextOptions'
-    chaosfault.ChaosFault:
-      type: object
-      required:
-      - accountID
-      - identity
-      - isRemoved
-      - name
-      properties:
-        accountID:
-          type: string
-        category:
-          type: array
-          items:
-            type: string
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        createdByUserDetails:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
-        description:
-          type: string
-        experimentRunsCount:
-          type: integer
-        id:
-          description: Mongo ID (primary key)
-          type: string
-        identity:
-          description: Unique identifier (human-readable) immutable
-          type: string
-        importType:
-          $ref: '#/components/schemas/mongodb.ImportType'
-        infraType:
-          type: string
-        infras:
-          type: array
-          items:
-            type: string
-        inputs:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        isEnterprise:
-          type: boolean
-        isRemoved:
-          type: boolean
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/chaosfault.Link'
-        managedBy:
-          $ref: '#/components/schemas/mongodb.ManagedBy'
-        name:
-          type: string
-        orgID:
-          type: string
-        permissionsRequired:
-          type: string
-        projectID:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        template:
-          type: string
-        templateReference:
-          type: string
-        templateRevision:
-          type: string
-        templateUid:
-          type: string
-        type:
-          type: string
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
-        updatedByUserDetails:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
-        variables:
-          description: CHAOS-11100
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-    github_com_harness_hce-saas_graphql_server_api.Pagination:
-      type: object
-      properties:
-        index:
-          type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-    chaoshub.FaultCategoriesCount:
-      type: object
-      properties:
-        AWS:
-          type: integer
-        Azure:
-          type: integer
-        BYOC:
-          type: integer
-        Cloud Foundry:
-          type: integer
-        GCP:
-          type: integer
-        Kube Resilience:
-          type: integer
-        Kubernetes:
-          type: integer
-        Linux:
-          type: integer
-        Load:
-          type: integer
-        SSH:
-          type: integer
-        Spring Boot:
-          type: integer
-        VMWare:
-          type: integer
-        Windows:
-          type: integer
-    v1.Sysctl:
-      type: object
-      properties:
-        name:
-          description: Name of a property to set
-          type: string
-        value:
-          description: Value of a property to set
-          type: string
-    chaoshubresources.ChaosHubResource:
-      type: object
-      required:
-      - accountID
-      - isRemoved
-      properties:
-        accountID:
-          type: string
-        category:
-          description: Category of the fault (Kubernetes, KubernetesV2, Linux, Windows, PCF etc)
-          type: string
-        chaosType:
-          description: ChaosType
-          type: string
-        chartServiceVersion:
-          description: chartserviceversion yml in encoded form (chartserviceversion.yaml)
-          type: string
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        description:
-          description: Description of the resource
-          type: string
-        displayName:
-          description: Display name of the resource
-          type: string
-        engine:
-          description: ChaosEngine yml in encoded form (engine.yaml)
-          type: string
-        experiment:
-          description: experiment yml in encoded form (experiment.yaml)
-          type: string
-        experimentV2:
-          description: experiment-v2 yml in encoded form (experiment-v2.yaml)
-          type: string
-        fault:
-          description: Fault yml in encoded form (fault.yml)
-          type: string
-        hubID:
-          description: ID of the chaos hub
-          type: string
-        id:
-          description: Mongo ID (primary key)
-          type: string
-        identity:
-          description: 'TODO: identity changes move to chaosHub
-
-            Unique identifier (human-readable) immutable
-
-            Initially it will be same as name
-
-            Should be unique at hub level'
-          type: string
-        infras:
-          description: Infras represents supported infrastructures
-          type: array
-          items:
-            type: string
-        isDefaultHub:
-          description: IsDefaultHub represents if it is a default hub
-          type: boolean
-        isRemoved:
-          type: boolean
-        isTemplatised:
-          description: IsTemplatised denotes if template is available for the fault
-          type: boolean
-        k8SFault:
-          description: K8sFault yml in encoded form (k8s-fault.yaml)
-          type: string
-        keywords:
-          description: Keyword of the resource (kubernetes, VMWare etc)
-          type: array
-          items:
-            type: string
-        kind:
-          description: Kind of the resource
-          type: string
-        links:
-          description: Links are array of Link
-          type: array
-          items:
-            $ref: '#/components/schemas/chaoshubresources.Link'
-        name:
-          description: name of the resource
-          type: string
-        orgID:
-          type: string
-        permissionsRequired:
-          description: PermissionsRequired represents the level of permissions required for the resource
-          allOf:
-          - $ref: '#/components/schemas/chaoshubresources.PermissionLevel'
-        plan:
-          description: Plan
-          type: array
-          items:
-            type: string
-        platforms:
-          description: Platforms supported (GKE, Minikube, EKS, AKS etc)
-          type: array
-          items:
-            type: string
-        projectID:
-          type: string
-        resourceType:
-          description: 'Type: fault or experiment or probes'
-          type: string
-        tags:
-          description: tags for the resource
-          type: array
-          items:
-            type: string
-        template:
-          description: template yaml in encoded form (template.yaml)
-          type: string
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
-    faulttemplate.ChaosKubernetesSpec:
-      type: object
-      properties:
-        annotations:
-          type: object
-          additionalProperties:
-            type: string
-        args:
-          type: array
-          items:
-            type: string
-        command:
-          type: array
-          items:
-            type: string
-        configMapVolume:
-          type: array
-          items:
-            $ref: '#/components/schemas/faulttemplate.ConfigMapVolume'
-        containerSecurityContext:
-          $ref: '#/components/schemas/v1.SecurityContext'
-        env:
-          type: array
-          items:
-            $ref: '#/components/schemas/k8s_io_api_core_v1.EnvVar'
-        hostIPC:
-          type: boolean
-        hostNetwork:
-          type: boolean
-        hostPID:
-          type: boolean
-        hostPathVolume:
-          type: array
-          items:
-            $ref: '#/components/schemas/faulttemplate.HostPathVolume'
-        image:
-          type: string
-        imagePullPolicy:
-          $ref: '#/components/schemas/v1.PullPolicy'
-        imagePullSecrets:
-          type: array
-          items:
-            type: string
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-        nodeSelector:
-          type: object
-          additionalProperties:
-            type: string
-        podSecurityContext:
-          $ref: '#/components/schemas/v1.PodSecurityContext'
-        resourceRequirements:
-          $ref: '#/components/schemas/faulttemplate.ResourceRequirements'
-        secretVolume:
-          type: array
-          items:
-            $ref: '#/components/schemas/faulttemplate.SecretVolume'
-        toleration:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.Toleration'
-    k8s_io_api_core_v1.EnvVar:
-      type: object
-      properties:
-        name:
-          description: Name of the environment variable. Must be a C_IDENTIFIER.
-          type: string
-        value:
-          description: 'Variable references $(VAR_NAME) are expanded
-
-            using the previous defined environment variables in the container and
-
-            any service environment variables. If a variable cannot be resolved,
-
-            the reference in the input string will be unchanged. The $(VAR_NAME)
-
-            syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-
-            references will never be expanded, regardless of whether the variable
-
-            exists or not.
-
-            Defaults to "".
-
-            +optional'
-          type: string
-        valueFrom:
-          description: 'Source for the environment variable''s value. Cannot be used if value is not empty.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.EnvVarSource'
-    v1.EnvVarSource:
-      type: object
-      properties:
-        configMapKeyRef:
-          description: 'Selects a key of a ConfigMap.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ConfigMapKeySelector'
-        fieldRef:
-          description: 'Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`, `metadata.annotations[''<KEY>'']`,
-
-            spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ObjectFieldSelector'
-        resourceFieldRef:
-          description: 'Selects a resource of the container: only resources limits and requests
-
-            (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ResourceFieldSelector'
-        secretKeyRef:
-          description: 'Selects a key of a secret in the pod''s namespace
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.SecretKeySelector'
-    v1.ProcMountType:
-      type: string
-      enum:
-      - Default
-      - Unmasked
-      x-enum-varnames:
-      - DefaultProcMount
-      - UnmaskedProcMount
-    mongodb.ManagedBy:
-      type: string
-      enum:
-      - EXPERIMENT
-      x-enum-varnames:
-      - ManagedByExperiment
-    faulttemplate.SSHAuth:
-      type: object
-      properties:
-        key:
-          type: string
-        password:
-          type: string
-    targetservice.ServiceMetadata:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        namespace:
-          type: string
-        uid:
-          type: string
-    chaosfault.ListExperimentRunsInFaultResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/chaosfault.ExperimentRunOfFault'
-        pagination:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    faulttemplate.GCPAuth:
-      type: object
-      properties:
-        identifier:
-          type: string
-    chaosfault.Link:
-      type: object
-      properties:
-        name:
-          type: string
-        url:
-          type: string
-    v1.ConfigMapKeySelector:
-      type: object
-      properties:
-        key:
-          description: The key to select.
-          type: string
-        name:
-          description: 'Name of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-
-            TODO: Add other useful fields. apiVersion, kind, uid?
-
-            +optional'
-          type: string
-        optional:
-          description: 'Specify whether the ConfigMap or its key must be defined
-
-            +optional'
-          type: boolean
-    v1.TolerationOperator:
-      type: string
-      enum:
-      - Exists
-      - Equal
-      x-enum-varnames:
-      - TolerationOpExists
-      - TolerationOpEqual
-    chaoshubresources.PermissionLevel:
-      type: string
-      enum:
-      - Basic
-      - Advanced
-      x-enum-varnames:
-      - PermissionLevelBasic
-      - PermissionLevelAdvance
-    v1.PullPolicy:
-      type: string
-      enum:
-      - Always
-      - Never
-      - IfNotPresent
-      x-enum-varnames:
-      - PullAlways
-      - PullNever
-      - PullIfNotPresent
-    v1.HostPathType:
-      type: string
-      enum:
-      - ''
-      - DirectoryOrCreate
-      - Directory
-      - FileOrCreate
-      - File
-      - Socket
-      - CharDevice
-      - BlockDevice
-      x-enum-varnames:
-      - HostPathUnset
-      - HostPathDirectoryOrCreate
-      - HostPathDirectory
-      - HostPathFileOrCreate
-      - HostPathFile
-      - HostPathSocket
-      - HostPathCharDev
-      - HostPathBlockDev
-    chaosfault.ExperimentRunOfFault:
-      type: object
-      required:
-      - accountID
-      properties:
-        accountID:
-          type: string
-        completed:
-          type: boolean
-        createdAt:
-          type: integer
-        createdBy:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
-        experimentID:
-          type: string
-        experimentName:
-          type: string
-        experimentRunID:
-          type: string
-        faultIDs:
-          type: array
-          items:
-            type: string
-        infraID:
-          type: string
-        notifyID:
-          type: string
-        orgID:
-          type: string
-        phase:
-          type: string
-        projectID:
-          type: string
-        resiliencyScore:
-          type: number
-        runSequence:
-          type: integer
-        targetedServices:
-          type: array
-          items:
-            $ref: '#/components/schemas/targetservice.ServiceMetadata'
-        updatedAt:
-          type: integer
-        updatedBy:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
-    template.InputType:
-      type: string
-      enum:
-      - String
-      - Integer
-      - Boolean
-      - Number
-      - SecretFile
-      - SecretText
-      x-enum-varnames:
-      - StringInput
-      - IntegerInput
-      - BooleanInput
-      - NumberInput
-      - SecretFileInput
-      - SecretTextInput
-    v1.Capabilities:
-      type: object
-      properties:
-        add:
-          description: 'Added capabilities
-
-            +optional'
-          type: array
-          items:
-            type: string
-        drop:
-          description: 'Removed capabilities
-
-            +optional'
-          type: array
-          items:
-            type: string
-    v1.ObjectFieldSelector:
-      type: object
-      properties:
-        apiVersion:
-          description: 'Version of the schema the FieldPath is written in terms of, defaults to "v1".
-
-            +optional'
-          type: string
-        fieldPath:
-          description: Path of the field to select in the specified API version.
-          type: string
-    v1.SecretKeySelector:
-      type: object
-      properties:
-        key:
-          description: The key of the secret to select from.  Must be a valid secret key.
-          type: string
-        name:
-          description: 'Name of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-
-            TODO: Add other useful fields. apiVersion, kind, uid?
-
-            +optional'
-          type: string
-        optional:
-          description: 'Specify whether the Secret or its key must be defined
-
-            +optional'
-          type: boolean
-    fault.TemplateReference:
-      type: object
-      properties:
-        hubIdentity:
-          type: string
-        identity:
-          type: string
-        organizationIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-        revision:
-          type: string
     v1.SecurityContext:
       type: object
       properties:
@@ -1903,22 +1028,35 @@ components:
             +optional'
           allOf:
           - $ref: '#/components/schemas/v1.WindowsSecurityContextOptions'
-    v1.TaintEffect:
-      type: string
-      enum:
-      - NoSchedule
-      - PreferNoSchedule
-      - NoExecute
-      x-enum-varnames:
-      - TaintEffectNoSchedule
-      - TaintEffectPreferNoSchedule
-      - TaintEffectNoExecute
-    faulttemplate.RedisAuth:
+    v1.ResourceFieldSelector:
       type: object
       properties:
-        password:
+        containerName:
+          description: 'Container name: required for volumes, optional for env vars
+
+            +optional'
           type: string
-    chaosfault.CreateFaultRequest:
+        divisor:
+          description: 'Specifies the output format of the exposed resources, defaults to "1"
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/resource.Quantity'
+        resource:
+          description: 'Required: resource to select'
+          type: string
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
+      type: object
+      properties:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    chaosfault.CreateFaultResponse:
       type: object
       required:
       - identity
@@ -1930,7 +1068,11 @@ components:
           type: array
           items:
             type: string
+        correlationID:
+          type: string
         description:
+          type: string
+        id:
           type: string
         identity:
           type: string
@@ -1952,8 +1094,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/fault.Link'
-        managedBy:
-          $ref: '#/components/schemas/mongodb.ManagedBy'
         name:
           type: string
         permissionsRequired:
@@ -1978,6 +1118,105 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/template.Variable'
+    types.ListMetadataRequest:
+      type: object
+      properties:
+        identifiers:
+          type: array
+          items:
+            type: string
+    faulttemplate.AWSAuth:
+      type: object
+      properties:
+        identifier:
+          type: string
+    v1.TaintEffect:
+      type: string
+      enum:
+      - NoSchedule
+      - PreferNoSchedule
+      - NoExecute
+      x-enum-varnames:
+      - TaintEffectNoSchedule
+      - TaintEffectPreferNoSchedule
+      - TaintEffectNoExecute
+    fault.Link:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+    v1.Capabilities:
+      type: object
+      properties:
+        add:
+          description: 'Added capabilities
+
+            +optional'
+          type: array
+          items:
+            type: string
+        drop:
+          description: 'Removed capabilities
+
+            +optional'
+          type: array
+          items:
+            type: string
+    v1.SELinuxOptions:
+      type: object
+      properties:
+        level:
+          description: 'Level is SELinux level label that applies to the container.
+
+            +optional'
+          type: string
+        role:
+          description: 'Role is a SELinux role label that applies to the container.
+
+            +optional'
+          type: string
+        type:
+          description: 'Type is a SELinux type label that applies to the container.
+
+            +optional'
+          type: string
+        user:
+          description: 'User is a SELinux user label that applies to the container.
+
+            +optional'
+          type: string
+    faulttemplate.KubernetesTarget:
+      type: object
+      properties:
+        kind:
+          type: string
+        labels:
+          type: string
+        names:
+          type: string
+        namespace:
+          type: string
+    chaoshubresources.PermissionLevel:
+      type: string
+      enum:
+      - Basic
+      - Advanced
+      x-enum-varnames:
+      - PermissionLevelBasic
+      - PermissionLevelAdvance
+    targetservice.ServiceMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        namespace:
+          type: string
+        uid:
+          type: string
     chaosfault.ListFaultResponse:
       type: object
       properties:
@@ -1989,42 +1228,7 @@ components:
             $ref: '#/components/schemas/chaosfault.ChaosFault'
         pagination:
           $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    api.RestError:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
-    chaoshub.ListFaultsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/chaoshubresources.ChaosHubResource'
-        faultCategoriesCount:
-          $ref: '#/components/schemas/chaoshub.FaultCategoriesCount'
-        pagination:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    fault.Link:
-      type: object
-      properties:
-        name:
-          type: string
-        url:
-          type: string
-    v1.PodFSGroupChangePolicy:
-      type: string
-      enum:
-      - OnRootMismatch
-      - Always
-      x-enum-varnames:
-      - FSGroupChangeOnRootMismatch
-      - FSGroupChangeAlways
-    common.ImportType:
+    mongodb.ImportType:
       type: string
       enum:
       - LOCAL
@@ -2032,144 +1236,83 @@ components:
       x-enum-varnames:
       - ImportTypeLocal
       - ImportTypeReference
-    resource.Quantity:
-      type: object
-      properties:
-        Format:
-          type: string
-          enum:
-          - DecimalExponent
-          - BinarySI
-          - DecimalSI
-          x-enum-comments:
-            BinarySI: e.g., 12Mi (12 * 2^20)
-            DecimalExponent: e.g., 12e6
-            DecimalSI: e.g., 12M  (12 * 10^6)
-          x-enum-varnames:
-          - DecimalExponent
-          - BinarySI
-          - DecimalSI
-    chaoshubresources.Link:
+    chaosfault.Link:
       type: object
       properties:
         name:
           type: string
         url:
           type: string
-    chaosfault.FaultVariables:
+    v1.TolerationOperator:
+      type: string
+      enum:
+      - Exists
+      - Equal
+      x-enum-varnames:
+      - TolerationOpExists
+      - TolerationOpEqual
+    faulttemplate.Target:
+      type: object
+      properties:
+        application:
+          $ref: '#/components/schemas/faulttemplate.ApplicationTarget'
+        kubernetes:
+          type: array
+          items:
+            $ref: '#/components/schemas/faulttemplate.KubernetesTarget'
+    faulttemplate.TLS:
+      type: object
+      properties:
+        caFile:
+          type: string
+        certFile:
+          type: string
+        clientCertFile:
+          type: string
+        keyFile:
+          type: string
+    chaosfault.ListExperimentRunsInFaultResponse:
       type: object
       properties:
         correlationID:
           type: string
-        faultAuthentication:
+        data:
           type: array
           items:
-            $ref: '#/components/schemas/template.Variable'
-        faultTargets:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        faultTunable:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        inputs:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        variables:
-          description: CHAOS-11100
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-    faulttemplate.ChaosParameter:
+            $ref: '#/components/schemas/chaosfault.ExperimentRunOfFault'
+        pagination:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    k8s_io_api_core_v1.EnvVar:
       type: object
       properties:
         name:
+          description: Name of the environment variable. Must be a C_IDENTIFIER.
           type: string
         value:
-          type: string
-    faulttemplate.VMWareAuth:
-      type: object
-      properties:
-        govcPassword:
-          type: string
-        govcUrl:
-          type: string
-        govcUsername:
-          type: string
-        vCenterPassword:
-          type: string
-        vCenterServer:
-          type: string
-        vCenterUsername:
-          type: string
-        vmPassword:
-          type: string
-    faulttemplate.AzureAuth:
-      type: object
-      properties:
-        identifier:
-          type: string
-    faulttemplate.HostPathVolume:
-      type: object
-      properties:
-        hostPath:
-          type: string
-        mountPath:
-          type: string
-        name:
-          type: string
-        type:
-          $ref: '#/components/schemas/v1.HostPathType'
-    v1.Toleration:
-      type: object
-      properties:
-        effect:
-          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
+          description: 'Variable references $(VAR_NAME) are expanded
 
-            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+            using the previous defined environment variables in the container and
+
+            any service environment variables. If a variable cannot be resolved,
+
+            the reference in the input string will be unchanged. The $(VAR_NAME)
+
+            syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
+
+            references will never be expanded, regardless of whether the variable
+
+            exists or not.
+
+            Defaults to "".
+
+            +optional'
+          type: string
+        valueFrom:
+          description: 'Source for the environment variable''s value. Cannot be used if value is not empty.
 
             +optional'
           allOf:
-          - $ref: '#/components/schemas/v1.TaintEffect'
-        key:
-          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
-
-            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-
-            +optional'
-          type: string
-        operator:
-          description: 'Operator represents a key''s relationship to the value.
-
-            Valid operators are Exists and Equal. Defaults to Equal.
-
-            Exists is equivalent to wildcard for value, so that a pod can
-
-            tolerate all taints of a particular category.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.TolerationOperator'
-        tolerationSeconds:
-          description: 'TolerationSeconds represents the period of time the toleration (which must be
-
-            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
-
-            it is not set, which means tolerate the taint forever (do not evict). Zero and
-
-            negative values will be treated as 0 (evict immediately) by the system.
-
-            +optional'
-          type: integer
-        value:
-          description: 'Value is the taint value the toleration matches to.
-
-            If the operator is Exists, the value should be empty, otherwise just a regular string.
-
-            +optional'
-          type: string
+          - $ref: '#/components/schemas/v1.EnvVarSource'
     chaosfault.GetFaultResponse:
       type: object
       required:
@@ -2234,14 +1377,39 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/template.Variable'
-    mongodb.ImportType:
-      type: string
-      enum:
-      - LOCAL
-      - REFERENCE
-      x-enum-varnames:
-      - ImportTypeLocal
-      - ImportTypeReference
+    template.Variable:
+      type: object
+      required:
+      - name
+      - value
+      properties:
+        allowedValues:
+          type: array
+          items: {}
+        category:
+          $ref: '#/components/schemas/template.InputCategory'
+        default: {}
+        description:
+          type: string
+        name:
+          type: string
+        path:
+          type: string
+        required:
+          type: boolean
+        stringify:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        tooltipId:
+          type: string
+        type:
+          $ref: '#/components/schemas/template.InputType'
+        validator:
+          type: string
+        value: {}
     faulttemplate.SecretVolume:
       type: object
       properties:
@@ -2251,13 +1419,801 @@ components:
           type: string
         name:
           type: string
-    types.ListMetadataRequest:
+    chaoshubresources.ChaosHubResource:
       type: object
+      required:
+      - accountID
+      - isRemoved
       properties:
-        identifiers:
+        accountID:
+          type: string
+        category:
+          description: Category of the fault (Kubernetes, KubernetesV2, Linux, Windows, PCF etc)
+          type: string
+        chaosType:
+          description: ChaosType
+          type: string
+        chartServiceVersion:
+          description: chartserviceversion yml in encoded form (chartserviceversion.yaml)
+          type: string
+        createdAt:
+          type: integer
+        createdBy:
+          type: string
+        description:
+          description: Description of the resource
+          type: string
+        displayName:
+          description: Display name of the resource
+          type: string
+        engine:
+          description: ChaosEngine yml in encoded form (engine.yaml)
+          type: string
+        experiment:
+          description: experiment yml in encoded form (experiment.yaml)
+          type: string
+        experimentV2:
+          description: experiment-v2 yml in encoded form (experiment-v2.yaml)
+          type: string
+        fault:
+          description: Fault yml in encoded form (fault.yml)
+          type: string
+        hubID:
+          description: ID of the chaos hub
+          type: string
+        id:
+          description: Mongo ID (primary key)
+          type: string
+        identity:
+          description: 'TODO: identity changes move to chaosHub
+
+            Unique identifier (human-readable) immutable
+
+            Initially it will be same as name
+
+            Should be unique at hub level'
+          type: string
+        infras:
+          description: Infras represents supported infrastructures
           type: array
           items:
             type: string
+        isDefaultHub:
+          description: IsDefaultHub represents if it is a default hub
+          type: boolean
+        isRemoved:
+          type: boolean
+        isTemplatised:
+          description: IsTemplatised denotes if template is available for the fault
+          type: boolean
+        k8SFault:
+          description: K8sFault yml in encoded form (k8s-fault.yaml)
+          type: string
+        keywords:
+          description: Keyword of the resource (kubernetes, VMWare etc)
+          type: array
+          items:
+            type: string
+        kind:
+          description: Kind of the resource
+          type: string
+        links:
+          description: Links are array of Link
+          type: array
+          items:
+            $ref: '#/components/schemas/chaoshubresources.Link'
+        name:
+          description: name of the resource
+          type: string
+        orgID:
+          type: string
+        permissionsRequired:
+          description: PermissionsRequired represents the level of permissions required for the resource
+          allOf:
+          - $ref: '#/components/schemas/chaoshubresources.PermissionLevel'
+        plan:
+          description: Plan
+          type: array
+          items:
+            type: string
+        platforms:
+          description: Platforms supported (GKE, Minikube, EKS, AKS etc)
+          type: array
+          items:
+            type: string
+        projectID:
+          type: string
+        resourceType:
+          description: 'Type: fault or experiment or probes'
+          type: string
+        tags:
+          description: tags for the resource
+          type: array
+          items:
+            type: string
+        template:
+          description: template yaml in encoded form (template.yaml)
+          type: string
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
+    faulttemplate.ResourceRequirements:
+      type: object
+      properties:
+        limits:
+          type: object
+          additionalProperties:
+            type: string
+        requests:
+          type: object
+          additionalProperties:
+            type: string
+    chaoshub.FaultCategoriesCount:
+      type: object
+      properties:
+        AWS:
+          type: integer
+        Azure:
+          type: integer
+        BYOC:
+          type: integer
+        Cloud Foundry:
+          type: integer
+        GCP:
+          type: integer
+        Kube Resilience:
+          type: integer
+        Kubernetes:
+          type: integer
+        Linux:
+          type: integer
+        Load:
+          type: integer
+        SSH:
+          type: integer
+        Spring Boot:
+          type: integer
+        VMWare:
+          type: integer
+        Windows:
+          type: integer
+    v1.EnvVarSource:
+      type: object
+      properties:
+        configMapKeyRef:
+          description: 'Selects a key of a ConfigMap.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ConfigMapKeySelector'
+        fieldRef:
+          description: 'Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`, `metadata.annotations[''<KEY>'']`,
+
+            spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ObjectFieldSelector'
+        resourceFieldRef:
+          description: 'Selects a resource of the container: only resources limits and requests
+
+            (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ResourceFieldSelector'
+        secretKeyRef:
+          description: 'Selects a key of a secret in the pod''s namespace
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.SecretKeySelector'
+    chaosfault.CreateFaultRequest:
+      type: object
+      required:
+      - identity
+      - name
+      properties:
+        apiVersion:
+          type: string
+        category:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        identity:
+          type: string
+        importType:
+          $ref: '#/components/schemas/common.ImportType'
+        infraType:
+          type: string
+        infras:
+          type: array
+          items:
+            type: string
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        kind:
+          type: string
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/fault.Link'
+        managedBy:
+          $ref: '#/components/schemas/mongodb.ManagedBy'
+        name:
+          type: string
+        permissionsRequired:
+          type: string
+        spec:
+          $ref: '#/components/schemas/faulttemplate.Spec'
+        tags:
+          type: array
+          items:
+            type: string
+        templateReference:
+          $ref: '#/components/schemas/fault.TemplateReference'
+        type:
+          type: string
+        updatedAt:
+          type: integer
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.VariableMinimum'
+        variables:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+    chaosfault.FaultVariables:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        faultAuthentication:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        faultTargets:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        faultTunable:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        variables:
+          description: CHAOS-11100
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+    faulttemplate.ApplicationTarget:
+      type: object
+      properties:
+        application:
+          type: string
+        entrypoint:
+          type: string
+    faulttemplate.AzureAuth:
+      type: object
+      properties:
+        identifier:
+          type: string
+    faulttemplate.StatusCheckTimeout:
+      type: object
+      properties:
+        delay:
+          type: integer
+        timeout:
+          type: integer
+    template.InputType:
+      type: string
+      enum:
+      - String
+      - Integer
+      - Boolean
+      - Number
+      - SecretFile
+      - SecretText
+      x-enum-varnames:
+      - StringInput
+      - IntegerInput
+      - BooleanInput
+      - NumberInput
+      - SecretFileInput
+      - SecretTextInput
+    faulttemplate.RedisAuth:
+      type: object
+      properties:
+        password:
+          type: string
+    resource.Quantity:
+      type: object
+      properties:
+        Format:
+          type: string
+          enum:
+          - DecimalExponent
+          - BinarySI
+          - DecimalSI
+          x-enum-comments:
+            BinarySI: e.g., 12Mi (12 * 2^20)
+            DecimalExponent: e.g., 12e6
+            DecimalSI: e.g., 12M  (12 * 10^6)
+          x-enum-varnames:
+          - DecimalExponent
+          - BinarySI
+          - DecimalSI
+    chaoshubresources.Link:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+    v1.HostPathType:
+      type: string
+      enum:
+      - ''
+      - DirectoryOrCreate
+      - Directory
+      - FileOrCreate
+      - File
+      - Socket
+      - CharDevice
+      - BlockDevice
+      x-enum-varnames:
+      - HostPathUnset
+      - HostPathDirectoryOrCreate
+      - HostPathDirectory
+      - HostPathFileOrCreate
+      - HostPathFile
+      - HostPathSocket
+      - HostPathCharDev
+      - HostPathBlockDev
+    shared.PaginationResponse:
+      type: object
+      properties:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    chaosfault.FaultYaml:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        template:
+          type: string
+    faulttemplate.ChaosKubernetesSpec:
+      type: object
+      properties:
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        args:
+          type: array
+          items:
+            type: string
+        command:
+          type: array
+          items:
+            type: string
+        configMapVolume:
+          type: array
+          items:
+            $ref: '#/components/schemas/faulttemplate.ConfigMapVolume'
+        containerSecurityContext:
+          $ref: '#/components/schemas/v1.SecurityContext'
+        env:
+          type: array
+          items:
+            $ref: '#/components/schemas/k8s_io_api_core_v1.EnvVar'
+        hostIPC:
+          type: boolean
+        hostNetwork:
+          type: boolean
+        hostPID:
+          type: boolean
+        hostPathVolume:
+          type: array
+          items:
+            $ref: '#/components/schemas/faulttemplate.HostPathVolume'
+        image:
+          type: string
+        imagePullPolicy:
+          $ref: '#/components/schemas/v1.PullPolicy'
+        imagePullSecrets:
+          type: array
+          items:
+            type: string
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        nodeSelector:
+          type: object
+          additionalProperties:
+            type: string
+        podSecurityContext:
+          $ref: '#/components/schemas/v1.PodSecurityContext'
+        resourceRequirements:
+          $ref: '#/components/schemas/faulttemplate.ResourceRequirements'
+        secretVolume:
+          type: array
+          items:
+            $ref: '#/components/schemas/faulttemplate.SecretVolume'
+        toleration:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.Toleration'
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
+          type: string
+    chaosfault.ExperimentRunOfFault:
+      type: object
+      required:
+      - accountID
+      properties:
+        accountID:
+          type: string
+        completed:
+          type: boolean
+        createdAt:
+          type: integer
+        createdBy:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
+        experimentID:
+          type: string
+        experimentName:
+          type: string
+        experimentRunID:
+          type: string
+        faultIDs:
+          type: array
+          items:
+            type: string
+        infraID:
+          type: string
+        notifyID:
+          type: string
+        orgID:
+          type: string
+        phase:
+          type: string
+        projectID:
+          type: string
+        resiliencyScore:
+          type: number
+        runSequence:
+          type: integer
+        targetedServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/targetservice.ServiceMetadata'
+        updatedAt:
+          type: integer
+        updatedBy:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
+    v1.WindowsSecurityContextOptions:
+      type: object
+      properties:
+        gmsaCredentialSpec:
+          description: 'GMSACredentialSpec is where the GMSA admission webhook
+
+            (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
+
+            GMSA credential spec named by the GMSACredentialSpecName field.
+
+            +optional'
+          type: string
+        gmsaCredentialSpecName:
+          description: 'GMSACredentialSpecName is the name of the GMSA credential spec to use.
+
+            +optional'
+          type: string
+        runAsUserName:
+          description: 'The UserName in Windows to run the entrypoint of the container process.
+
+            Defaults to the user specified in image metadata if unspecified.
+
+            May also be set in PodSecurityContext. If set in both SecurityContext and
+
+            PodSecurityContext, the value specified in SecurityContext takes precedence.
+
+            +optional'
+          type: string
+    faulttemplate.VMWareAuth:
+      type: object
+      properties:
+        govcPassword:
+          type: string
+        govcUrl:
+          type: string
+        govcUsername:
+          type: string
+        vCenterPassword:
+          type: string
+        vCenterServer:
+          type: string
+        vCenterUsername:
+          type: string
+        vmPassword:
+          type: string
+    faulttemplate.SSHAuth:
+      type: object
+      properties:
+        key:
+          type: string
+        password:
+          type: string
+    v1.PullPolicy:
+      type: string
+      enum:
+      - Always
+      - Never
+      - IfNotPresent
+      x-enum-varnames:
+      - PullAlways
+      - PullNever
+      - PullIfNotPresent
+    faulttemplate.ChaosSpec:
+      type: object
+      properties:
+        auth:
+          $ref: '#/components/schemas/faulttemplate.Auth'
+        faultName:
+          type: string
+        kubernetes:
+          $ref: '#/components/schemas/faulttemplate.ChaosKubernetesSpec'
+        params:
+          type: array
+          items:
+            $ref: '#/components/schemas/faulttemplate.ChaosParameter'
+        statusCheckTimeouts:
+          $ref: '#/components/schemas/faulttemplate.StatusCheckTimeout'
+        tls:
+          $ref: '#/components/schemas/faulttemplate.TLS'
+    common.ImportType:
+      type: string
+      enum:
+      - LOCAL
+      - REFERENCE
+      x-enum-varnames:
+      - ImportTypeLocal
+      - ImportTypeReference
+    template.InputCategory:
+      type: string
+      enum:
+      - FaultTarget
+      - FaultTunable
+      - TargetInfra
+      - ExperimentTunable
+      - ActionProperties
+      - ProbeProperties
+      - RunProperties
+      - FaultAuthentication
+      x-enum-varnames:
+      - CategoryFaultTarget
+      - CategoryFaultTunable
+      - CategoryTargetInfra
+      - CategoryExperimentTunable
+      - CategoryActionProperties
+      - CategoryProbeProperties
+      - CategoryRunProperties
+      - CategoryFaultAuthentication
+    github_com_harness_hce-saas_graphql_server_graph_model.UserDetails:
+      type: object
+      properties:
+        email:
+          type: string
+        userID:
+          type: string
+        username:
+          type: string
+    v1.ObjectFieldSelector:
+      type: object
+      properties:
+        apiVersion:
+          description: 'Version of the schema the FieldPath is written in terms of, defaults to "v1".
+
+            +optional'
+          type: string
+        fieldPath:
+          description: Path of the field to select in the specified API version.
+          type: string
+    faulttemplate.Spec:
+      type: object
+      properties:
+        chaos:
+          $ref: '#/components/schemas/faulttemplate.ChaosSpec'
+        target:
+          $ref: '#/components/schemas/faulttemplate.Target'
+    chaosfault.ChaosFault:
+      type: object
+      required:
+      - accountID
+      - identity
+      - isRemoved
+      - name
+      properties:
+        accountID:
+          type: string
+        category:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: integer
+        createdBy:
+          type: string
+        createdByUserDetails:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
+        description:
+          type: string
+        experimentRunsCount:
+          type: integer
+        id:
+          description: Mongo ID (primary key)
+          type: string
+        identity:
+          description: Unique identifier (human-readable) immutable
+          type: string
+        importType:
+          $ref: '#/components/schemas/mongodb.ImportType'
+        infraType:
+          type: string
+        infras:
+          type: array
+          items:
+            type: string
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        isEnterprise:
+          type: boolean
+        isRemoved:
+          type: boolean
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosfault.Link'
+        managedBy:
+          $ref: '#/components/schemas/mongodb.ManagedBy'
+        name:
+          type: string
+        orgID:
+          type: string
+        permissionsRequired:
+          type: string
+        projectID:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        template:
+          type: string
+        templateReference:
+          type: string
+        templateRevision:
+          type: string
+        templateUid:
+          type: string
+        type:
+          type: string
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
+        updatedByUserDetails:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_graph_model.UserDetails'
+        variables:
+          description: CHAOS-11100
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+    v1.SeccompProfileType:
+      type: string
+      enum:
+      - Unconfined
+      - RuntimeDefault
+      - Localhost
+      x-enum-varnames:
+      - SeccompProfileTypeUnconfined
+      - SeccompProfileTypeRuntimeDefault
+      - SeccompProfileTypeLocalhost
+    faulttemplate.ConfigMapVolume:
+      type: object
+      properties:
+        mountMode:
+          type: integer
+        mountPath:
+          type: string
+        name:
+          type: string
+    fault.TemplateReference:
+      type: object
+      properties:
+        hubIdentity:
+          type: string
+        identity:
+          type: string
+        organizationIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+        revision:
+          type: string
+    v1.SeccompProfile:
+      type: object
+      properties:
+        localhostProfile:
+          description: 'localhostProfile indicates a profile defined in a file on the node should be used.
+
+            The profile must be preconfigured on the node to work.
+
+            Must be a descending path, relative to the kubelet''s configured seccomp profile location.
+
+            Must only be set if type is "Localhost".
+
+            +optional'
+          type: string
+        type:
+          description: 'type indicates which kind of seccomp profile will be applied.
+
+            Valid options are:
+
+
+            Localhost - a profile defined in a file on the node should be used.
+
+            RuntimeDefault - the container runtime default profile should be used.
+
+            Unconfined - no profile should be applied.
+
+            +unionDiscriminator'
+          allOf:
+          - $ref: '#/components/schemas/v1.SeccompProfileType'
+    v1.SecretKeySelector:
+      type: object
+      properties:
+        key:
+          description: The key of the secret to select from.  Must be a valid secret key.
+          type: string
+        name:
+          description: 'Name of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+
+            TODO: Add other useful fields. apiVersion, kind, uid?
+
+            +optional'
+          type: string
+        optional:
+          description: 'Specify whether the Secret or its key must be defined
+
+            +optional'
+          type: boolean
     shared.ListMetadataResponse:
       type: object
       properties:
@@ -2269,50 +2225,94 @@ components:
             $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_models_shared.Metadata'
         pagination:
           $ref: '#/components/schemas/shared.PaginationResponse'
-    faulttemplate.AWSAuth:
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    chaoshub.ListFaultsResponse:
       type: object
       properties:
-        identifier:
-          type: string
-    v1.SELinuxOptions:
-      type: object
-      properties:
-        level:
-          description: 'Level is SELinux level label that applies to the container.
-
-            +optional'
-          type: string
-        role:
-          description: 'Role is a SELinux role label that applies to the container.
-
-            +optional'
-          type: string
-        type:
-          description: 'Type is a SELinux type label that applies to the container.
-
-            +optional'
-          type: string
-        user:
-          description: 'User is a SELinux user label that applies to the container.
-
-            +optional'
-          type: string
-    chaosfault.FaultYaml:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        template:
-          type: string
-    faulttemplate.Target:
-      type: object
-      properties:
-        application:
-          $ref: '#/components/schemas/faulttemplate.ApplicationTarget'
-        kubernetes:
+        data:
           type: array
           items:
-            $ref: '#/components/schemas/faulttemplate.KubernetesTarget'
+            $ref: '#/components/schemas/chaoshubresources.ChaosHubResource'
+        faultCategoriesCount:
+          $ref: '#/components/schemas/chaoshub.FaultCategoriesCount'
+        pagination:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    mongodb.ManagedBy:
+      type: string
+      enum:
+      - EXPERIMENT
+      x-enum-varnames:
+      - ManagedByExperiment
+    github_com_harness_hce-saas_graphql_server_models_shared.Metadata:
+      type: object
+      properties:
+        description:
+          type: string
+        identity:
+          type: string
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    v1.PodFSGroupChangePolicy:
+      type: string
+      enum:
+      - OnRootMismatch
+      - Always
+      x-enum-varnames:
+      - FSGroupChangeOnRootMismatch
+      - FSGroupChangeAlways
+    v1.Sysctl:
+      type: object
+      properties:
+        name:
+          description: Name of a property to set
+          type: string
+        value:
+          description: Value of a property to set
+          type: string
+    faulttemplate.Auth:
+      type: object
+      properties:
+        aws:
+          $ref: '#/components/schemas/faulttemplate.AWSAuth'
+        azure:
+          $ref: '#/components/schemas/faulttemplate.AzureAuth'
+        gcp:
+          $ref: '#/components/schemas/faulttemplate.GCPAuth'
+        redis:
+          $ref: '#/components/schemas/faulttemplate.RedisAuth'
+        ssh:
+          $ref: '#/components/schemas/faulttemplate.SSHAuth'
+        vmware:
+          $ref: '#/components/schemas/faulttemplate.VMWareAuth'
+    v1.ConfigMapKeySelector:
+      type: object
+      properties:
+        key:
+          description: The key to select.
+          type: string
+        name:
+          description: 'Name of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+
+            TODO: Add other useful fields. apiVersion, kind, uid?
+
+            +optional'
+          type: string
+        optional:
+          description: 'Specify whether the ConfigMap or its key must be defined
+
+            +optional'
+          type: boolean
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -395,31 +395,35 @@ paths:
       - Chaos Recommendations
 components:
   schemas:
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
-    recommendations.RunActionResponse:
+    recommendations.ListRecommendationsResponse:
       type: object
       properties:
-        experimentID:
+        pagination:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Recommendation'
+    recommendation.FaultFilters:
+      type: object
+      properties:
+        criticality:
+          type: integer
+        faultName:
           type: string
-        notifyID:
+        targets:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Target'
+    recommendation.PipelineFilters:
+      type: object
+      properties:
+        pipelineID:
           type: string
-    recommendation.RecommendationType:
-      type: string
-      enum:
-      - CREATE
-      - RUN
-      - FIX
-      - ADD_TO_PIPELINE
-      x-enum-varnames:
-      - CreateRecommendation
-      - RunRecommendation
-      - FixRecommendation
-      - AddToPipelineRecommendation
+        pipelineName:
+          type: string
+        serviceID:
+          type: string
+        serviceName:
+          type: string
     github_com_harness_hce-saas_graphql_server_api.Pagination:
       type: object
       properties:
@@ -431,12 +435,16 @@ components:
           type: integer
         totalPages:
           type: integer
-    recommendation.Fixes:
+    recommendation.ProbeFilters:
       type: object
       properties:
-        description:
+        experimentRunID:
           type: string
-        name:
+        probeID:
+          type: string
+        probeName:
+          type: string
+        probeType:
           type: string
     github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Node:
       type: object
@@ -452,6 +460,134 @@ components:
           type: string
         experimentName:
           type: string
+    recommendations.RunActionResponse:
+      type: object
+      properties:
+        experimentID:
+          type: string
+        notifyID:
+          type: string
+    recommendation.RecommendationCategory:
+      type: string
+      enum:
+      - FAULT
+      - PIPELINE
+      - PROBE
+      x-enum-varnames:
+      - FaultRecommendation
+      - PipelineRecommendation
+      - ProbeRecommendation
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
+          type: string
+    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Workload:
+      type: object
+      properties:
+        kind:
+          type: string
+        labels:
+          type: string
+        name:
+          type: string
+        namespace:
+          type: string
+    recommendation.Suggestions:
+      type: object
+      properties:
+        count:
+          type: integer
+        error:
+          type: string
+        fixes:
+          type: array
+          items:
+            $ref: '#/components/schemas/recommendation.Fixes'
+        ignoreCounter:
+          type: integer
+        reason:
+          type: string
+        recommendationType:
+          $ref: '#/components/schemas/recommendation.RecommendationType'
+        status:
+          $ref: '#/components/schemas/recommendation.RecommendationStatus'
+        updatedAt:
+          type: integer
+    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Target:
+      type: object
+      properties:
+        node:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Node'
+        type:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.RecommendationTargetType'
+        workload:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Workload'
+    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.RecommendationTargetType:
+      type: string
+      enum:
+      - Workload
+      - Node
+      x-enum-varnames:
+      - WorkloadType
+      - NodeType
+    recommendation.RecommendationSource:
+      type: string
+      enum:
+      - ConfigScanner
+      - K8sWatcher
+      - InternalWatcher
+      x-enum-varnames:
+      - ConfigScanner
+      - K8sWatcher
+      - InternalWatcher
+    recommendations.PipelineAddExperimentResponse:
+      type: object
+      properties:
+        pipelineID:
+          type: string
+        pipelineName:
+          type: string
+        stageID:
+          type: string
+    recommendation.RecommendationType:
+      type: string
+      enum:
+      - CREATE
+      - RUN
+      - FIX
+      - ADD_TO_PIPELINE
+      x-enum-varnames:
+      - CreateRecommendation
+      - RunRecommendation
+      - FixRecommendation
+      - AddToPipelineRecommendation
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    recommendations.ListRecommendationsRequest:
+      type: object
+      properties:
+        filters:
+          $ref: '#/components/schemas/recommendations.Filters'
+    recommendations.Filters:
+      type: object
+      properties:
+        category:
+          type: array
+          items:
+            type: string
+        source:
+          $ref: '#/components/schemas/recommendation.RecommendationSource'
+        status:
+          $ref: '#/components/schemas/recommendation.RecommendationStatus'
     github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Recommendation:
       type: object
       required:
@@ -503,124 +639,13 @@ components:
             type: string
         updatedAt:
           type: integer
-    recommendations.Filters:
+    recommendation.Fixes:
       type: object
       properties:
-        category:
-          type: array
-          items:
-            type: string
-        source:
-          $ref: '#/components/schemas/recommendation.RecommendationSource'
-        status:
-          $ref: '#/components/schemas/recommendation.RecommendationStatus'
-    recommendation.Suggestions:
-      type: object
-      properties:
-        count:
-          type: integer
-        error:
-          type: string
-        fixes:
-          type: array
-          items:
-            $ref: '#/components/schemas/recommendation.Fixes'
-        ignoreCounter:
-          type: integer
-        reason:
-          type: string
-        recommendationType:
-          $ref: '#/components/schemas/recommendation.RecommendationType'
-        status:
-          $ref: '#/components/schemas/recommendation.RecommendationStatus'
-        updatedAt:
-          type: integer
-    recommendation.FaultFilters:
-      type: object
-      properties:
-        criticality:
-          type: integer
-        faultName:
-          type: string
-        targets:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Target'
-    recommendation.RecommendationSource:
-      type: string
-      enum:
-      - ConfigScanner
-      - K8sWatcher
-      - InternalWatcher
-      x-enum-varnames:
-      - ConfigScanner
-      - K8sWatcher
-      - InternalWatcher
-    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Workload:
-      type: object
-      properties:
-        kind:
-          type: string
-        labels:
+        description:
           type: string
         name:
           type: string
-        namespace:
-          type: string
-    api.RestError:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
-    recommendations.ListRecommendationsResponse:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-        recommendations:
-          type: array
-          items:
-            $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Recommendation'
-    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Target:
-      type: object
-      properties:
-        node:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Node'
-        type:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.RecommendationTargetType'
-        workload:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.Workload'
-    recommendation.RecommendationCategory:
-      type: string
-      enum:
-      - FAULT
-      - PIPELINE
-      - PROBE
-      x-enum-varnames:
-      - FaultRecommendation
-      - PipelineRecommendation
-      - ProbeRecommendation
-    recommendation.PipelineFilters:
-      type: object
-      properties:
-        pipelineID:
-          type: string
-        pipelineName:
-          type: string
-        serviceID:
-          type: string
-        serviceName:
-          type: string
-    github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_recommendation.RecommendationTargetType:
-      type: string
-      enum:
-      - Workload
-      - Node
-      x-enum-varnames:
-      - WorkloadType
-      - NodeType
     recommendation.RecommendationStatus:
       type: string
       enum:
@@ -633,31 +658,6 @@ components:
       - IgnoredRecommendation
       - AcknowledgedRecommendation
       - TrackingRecommendation
-    recommendations.ListRecommendationsRequest:
-      type: object
-      properties:
-        filters:
-          $ref: '#/components/schemas/recommendations.Filters'
-    recommendation.ProbeFilters:
-      type: object
-      properties:
-        experimentRunID:
-          type: string
-        probeID:
-          type: string
-        probeName:
-          type: string
-        probeType:
-          type: string
-    recommendations.PipelineAddExperimentResponse:
-      type: object
-      properties:
-        pipelineID:
-          type: string
-        pipelineName:
-          type: string
-        stageID:
-          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

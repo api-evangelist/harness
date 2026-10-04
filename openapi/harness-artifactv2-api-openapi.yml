@@ -80,6 +80,79 @@ paths:
         id: vei5bhkpoktdd
 components:
   schemas:
+    ComponentFilter:
+      title: ComponentFilter
+      type: object
+      properties:
+        field_name:
+          type: string
+          enum:
+          - ComponentVersion
+          - ComponentName
+        value:
+          type: string
+        operator:
+          $ref: '#/components/schemas/Operator'
+      required:
+      - field_name
+      - value
+      - operator
+      x-stoplight:
+        id: p0u8koyls0i0c
+    Operator:
+      title: Operator
+      x-stoplight:
+        id: nxhoa45ajna2q
+      enum:
+      - Equals
+      - StartsWith
+      - Contains
+      - NotEquals
+      - GreaterThan
+      - GreaterThanEquals
+      - LessThan
+      - LessThanEquals
+    LicenseFilter:
+      title: LicenseFilter
+      type: object
+      properties:
+        value:
+          type: string
+        operator:
+          $ref: '#/components/schemas/Operator'
+      required:
+      - value
+      - operator
+      x-stoplight:
+        id: ae7ieb3d1qze1
+    ArtifactListingRequestBody:
+      type: object
+      x-examples: {}
+      properties:
+        search_term:
+          type: string
+        component_filter:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentFilter'
+        license_filter:
+          $ref: '#/components/schemas/LicenseFilter'
+        policy_violation:
+          type: string
+          enum:
+          - ALLOW
+          - DENY
+          - ANY
+          - NONE
+        environment_type:
+          type: string
+          enum:
+          - Prod
+          - NonProd
+          - None
+          - All
+      x-stoplight:
+        id: 9ddio8k8n5fia
     StoIssueCount:
       title: StoIssueCount
       x-stoplight:
@@ -283,81 +356,6 @@ components:
               description: Build pipeline execution Id used for orchestration of the artifact
         sto_issue_count:
           $ref: '#/components/schemas/StoIssueCount'
-    LicenseFilter:
-      title: LicenseFilter
-      type: object
-      properties:
-        value:
-          type: string
-        operator:
-          $ref: '#/components/schemas/Operator'
-      required:
-      - value
-      - operator
-      x-stoplight:
-        id: ae7ieb3d1qze1
-    Operator:
-      title: Operator
-      x-stoplight:
-        id: nxhoa45ajna2q
-      enum:
-      - Equals
-      - StartsWith
-      - Contains
-      - NotEquals
-      - GreaterThan
-      - GreaterThanEquals
-      - LessThan
-      - LessThanEquals
-    ArtifactListingRequestBody:
-      type: object
-      x-examples: {}
-      properties:
-        search_term:
-          type: string
-        component_filter:
-          type: array
-          items:
-            $ref: '#/components/schemas/ComponentFilter'
-        license_filter:
-          $ref: '#/components/schemas/LicenseFilter'
-        policy_violation:
-          type: string
-          enum:
-          - ALLOW
-          - DENY
-          - ANY
-          - NONE
-        environment_type:
-          type: string
-          enum:
-          - Prod
-          - NonProd
-          - None
-          - All
-      x-stoplight:
-        id: 9ddio8k8n5fia
-    ArtifactVariant:
-      title: ArtifactVariant
-      x-stoplight:
-        id: uyb3jwhgs9wjh
-      type: object
-      properties:
-        type:
-          type: string
-          x-stoplight:
-            id: 2r8lmxejmwqbf
-          enum:
-          - tag
-          - branch
-          - gitTag
-          - commit
-          description: type of the variant of the artifact.
-        value:
-          type: string
-          x-stoplight:
-            id: hd1p3s7bugn88
-          description: Value of the variant of the artifact.
     PipelineDetails:
       title: PipelineDetails
       x-stoplight:
@@ -431,25 +429,27 @@ components:
           - BUILD
           - DEPLOY
           - SECURITY
-    ComponentFilter:
-      title: ComponentFilter
+    ArtifactVariant:
+      title: ArtifactVariant
+      x-stoplight:
+        id: uyb3jwhgs9wjh
       type: object
       properties:
-        field_name:
+        type:
           type: string
+          x-stoplight:
+            id: 2r8lmxejmwqbf
           enum:
-          - ComponentVersion
-          - ComponentName
+          - tag
+          - branch
+          - gitTag
+          - commit
+          description: type of the variant of the artifact.
         value:
           type: string
-        operator:
-          $ref: '#/components/schemas/Operator'
-      required:
-      - field_name
-      - value
-      - operator
-      x-stoplight:
-        id: p0u8koyls0i0c
+          x-stoplight:
+            id: hd1p3s7bugn88
+          description: Value of the variant of the artifact.
   requestBodies:
     ArtifactListingRequestBody:
       content:
@@ -466,15 +466,20 @@ components:
         default: 0
         minimum: 0
       description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
-    Limit6:
-      name: limit
-      in: query
+    ProjectParam1:
+      in: path
+      required: true
       schema:
-        type: integer
-        default: 30
-        maximum: 1000
-        minimum: 1
-      description: Number of items to return per page.
+        type: string
+      description: Harness project ID
+      name: project
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
     AccountHeader6:
       name: Harness-Account
       in: header
@@ -493,20 +498,15 @@ components:
         - DESC
         default: ASC
       description: Order on the basis of which sorting is done.
-    ProjectParam1:
-      in: path
-      required: true
+    Limit6:
+      name: limit
+      in: query
       schema:
-        type: string
-      description: Harness project ID
-      name: project
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
+        type: integer
+        default: 30
+        maximum: 1000
+        minimum: 1
+      description: Number of items to return per page.
   responses:
     ArtifactListingResponseBodyV2:
       description: Example response
@@ -524,14 +524,14 @@ components:
         X-Page-Size:
           $ref: '#/components/headers/X-Page-Size'
   headers:
-    X-Page-Size:
-      schema:
-        type: integer
-      description: Maximum page size in Paginated response.
     X-Page-Number:
       schema:
         type: integer
       description: Page number in Paginated response.
+    X-Page-Size:
+      schema:
+        type: integer
+      description: Maximum page size in Paginated response.
     X-Total-Elements:
       schema:
         type: integer

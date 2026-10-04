@@ -943,6 +943,11 @@ paths:
       - Onboarding
 components:
   schemas:
+    pipelineonboarding.InfrastructuresStatus:
+      type: object
+      properties:
+        isChaosEnabled:
+          type: boolean
     v2_onboarding.V2OnboardingStatus:
       type: string
       enum:
@@ -959,34 +964,54 @@ components:
       - QUEUED
       - NA
       - ERRORED
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
-    database.MTLSConfiguration:
+    v1.Toleration:
       type: object
       properties:
-        certPath:
+        effect:
+          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
+
+            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.TaintEffect'
+        key:
+          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
+
+            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+
+            +optional'
           type: string
-        keyPath:
-          type: string
-        secretName:
-          type: string
-        url:
-          type: string
-    v2_onboarding.RunSafeExperimentStatus:
-      type: object
-      properties:
-        experiments:
-          type: array
-          items:
-            $ref: '#/components/schemas/v2_onboarding.Experiments'
-        status:
-          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
-        totalSafeExperiment:
+        operator:
+          description: 'Operator represents a key''s relationship to the value.
+
+            Valid operators are Exists and Equal. Defaults to Equal.
+
+            Exists is equivalent to wildcard for value, so that a pod can
+
+            tolerate all taints of a particular category.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.TolerationOperator'
+        tolerationSeconds:
+          description: 'TolerationSeconds represents the period of time the toleration (which must be
+
+            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+
+            it is not set, which means tolerate the taint forever (do not evict). Zero and
+
+            negative values will be treated as 0 (evict immediately) by the system.
+
+            +optional'
           type: integer
+        value:
+          description: 'Value is the taint value the toleration matches to.
+
+            If the operator is Exists, the value should be empty, otherwise just a regular string.
+
+            +optional'
+          type: string
     v2_onboarding.AutoCreatedNetworkMapStatus:
       type: object
       properties:
@@ -994,626 +1019,35 @@ components:
           $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
         totalNetworkMaps:
           type: integer
-    v2_onboarding.Experiments:
-      type: object
-      properties:
-        category:
-          type: string
-        delegateTaskId:
-          type: string
-        description:
-          type: string
-        experimentID:
-          type: string
-        name:
-          type: string
-        notifyID:
-          type: string
-        status:
-          $ref: '#/components/schemas/model.WorkflowRunStatus'
-        targetNetworkMapID:
-          type: string
-        targetNetworkMapName:
-          type: string
-        targetServices:
-          type: array
-          items:
-            $ref: '#/components/schemas/v2_onboarding.TargetServiceDetails'
-    KubeconfigUploadResponse:
-      type: object
-      properties:
-        currentContext:
-          type: string
-          description: The current-context declared in the uploaded kubeconfig
-        contexts:
-          type: array
-          description: Per-context connector-creation hints reverse-engineered from the kubeconfig
-          items:
-            $ref: '#/components/schemas/KubeconfigContextDescriptor'
-      description: Result of a kubeconfig onboarding upload
-    infra_v2.Env:
-      type: object
-      properties:
-        key:
-          type: string
-        name:
-          type: string
-        value:
-          type: string
-        valueFrom:
-          $ref: '#/components/schemas/infra_v2.EnvValueFrom'
-    v2_onboarding.ChaosInfraAdvanceConfiguration:
-      type: object
-      properties:
-        annotation:
-          type: object
-          additionalProperties:
-            type: string
-        autopilotEnabled:
-          type: boolean
-        containers:
-          type: string
-        env:
-          type: array
-          items:
-            $ref: '#/components/schemas/infra_v2.Env'
-        imagePullPolicy:
-          $ref: '#/components/schemas/v1.PullPolicy'
-        insecureSkipVerify:
-          type: boolean
-        label:
-          type: object
-          additionalProperties:
-            type: string
-        mtls:
-          $ref: '#/components/schemas/infra_v2.MTLSConfiguration'
-        nodeSelector:
-          type: object
-          additionalProperties:
-            type: string
-        proxy:
-          $ref: '#/components/schemas/infra_v2.ProxyConfiguration'
-        runAsGroup:
-          type: integer
-        runAsUser:
-          type: integer
-        tolerations:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.Toleration'
-        volumeMounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1.VolumeMount'
-        volumes:
-          type: array
-          items:
-            $ref: '#/components/schemas/infra_v2.Volumes'
-    pipelineonboarding.PipelineOnboarding:
-      type: object
-      required:
-      - accountID
-      - isRemoved
-      properties:
-        accountID:
-          type: string
-        chaosAdvanceConfiguration:
-          description: Advance Configurations
-          allOf:
-          - $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
-        createdAt:
-          type: integer
-        createdBy:
-          type: string
-        discoveryAdvanceConfiguration:
-          $ref: '#/components/schemas/database.AgentConfiguration'
-        infrastructures:
-          type: object
-          additionalProperties:
-            type: object
-            additionalProperties:
-              type: object
-        isAiEnabled:
-          type: boolean
-        isRemoved:
-          type: boolean
-        message:
-          type: string
-        orgID:
-          type: string
-        pipelineIdentity:
-          type: string
-        pipelineName:
-          type: string
-        projectID:
-          type: string
-        selectedExperiments:
-          type: array
-          items:
-            $ref: '#/components/schemas/pipelineonboarding.SelectedExperiment'
-        services:
-          type: object
-          additionalProperties:
-            type: object
-        singleClickOnboardings:
-          type: array
-          items:
-            type: string
-        status:
-          $ref: '#/components/schemas/pipelineonboarding.Status'
-        updatedAt:
-          type: integer
-        updatedBy:
-          type: string
-    OnboardingInput:
-      type: object
-      properties:
-        context:
-          $ref: '#/components/schemas/OnboardingContext'
-      description: Envelope carrying the onboarding context (extensible)
-    v2_onboarding.AgentData:
-      type: object
-      properties:
-        clusterAgent:
-          $ref: '#/components/schemas/v2_onboarding.AgentDetails'
-        nodeAgent:
-          type: array
-          items:
-            $ref: '#/components/schemas/v2_onboarding.AgentDetails'
-    pipelineonboarding.InfrastructuresStatus:
-      type: object
-      properties:
-        isChaosEnabled:
-          type: boolean
-    github_com_harness_hce-saas_graphql_server_api.Pagination:
-      type: object
-      properties:
-        index:
-          type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    v2_onboarding.NetworkMapCreationMode:
+    targetnetworkmap.Status:
       type: string
       enum:
-      - Manual
-      - Automatic
+      - COMPLETED
+      - RUNNING
+      - PENDING
+      - ERRORED
       x-enum-varnames:
-      - NetworkMapCreationManual
-      - NetworkMapCreationAutomatic
-    Error1:
+      - COMPLETED
+      - RUNNING
+      - PENDING
+      - ERRORED
+    pipelineonboarding.PipelineChaosOnboardingTaskRequest:
       type: object
       properties:
-        status:
+        chaosAdvanceConfiguration:
+          $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
+        discoveryAdvanceConfiguration:
+          $ref: '#/components/schemas/database.AgentConfiguration'
+        isAIEnabled:
+          type: boolean
+        pipelineIdentity:
           type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        code:
-          type: string
-          enum:
-          - DEFAULT_ERROR_CODE
-          - INVALID_ARGUMENT
-          - INVALID_EMAIL
-          - DOMAIN_NOT_ALLOWED_TO_REGISTER
-          - COMMNITY_EDITION_NOT_FOUND
-          - DEPLOY_MODE_IS_NOT_ON_PREM
-          - USER_ALREADY_REGISTERED
-          - USER_INVITATION_DOES_NOT_EXIST
-          - USER_DOES_NOT_EXIST
-          - USER_INVITE_OPERATION_FAILED
-          - USER_DISABLED
-          - ACCOUNT_DOES_NOT_EXIST
-          - INACTIVE_ACCOUNT
-          - ACCOUNT_MIGRATED
-          - ACCOUNT_MIGRATED_TO_NEXT_GEN
-          - USER_DOMAIN_NOT_ALLOWED
-          - MAX_FAILED_ATTEMPT_COUNT_EXCEEDED
-          - RESOURCE_NOT_FOUND
-          - INVALID_FORMAT
-          - ROLE_DOES_NOT_EXIST
-          - EMAIL_NOT_VERIFIED
-          - EMAIL_VERIFICATION_TOKEN_NOT_FOUND
-          - INVALID_TOKEN
-          - REVOKED_TOKEN
-          - INVALID_CAPTCHA_TOKEN
-          - NOT_ACCOUNT_MGR_NOR_HAS_ALL_APP_ACCESS
-          - EXPIRED_TOKEN
-          - INVALID_AGENT_MTLS_AUTHORITY
-          - TOKEN_ALREADY_REFRESHED_ONCE
-          - ACCESS_DENIED
-          - NG_ACCESS_DENIED
-          - INVALID_CREDENTIAL
-          - INVALID_CREDENTIALS_THIRD_PARTY
-          - INVALID_KEY
-          - INVALID_CONNECTOR_TYPE
-          - INVALID_KEYPATH
-          - INVALID_VARIABLE
-          - UNKNOWN_HOST
-          - UNREACHABLE_HOST
-          - INVALID_PORT
-          - SSH_SESSION_TIMEOUT
-          - ALGORITHM_NEGOTIATION_ERROR
-          - SOCKET_CONNECTION_ERROR
-          - CONNECTION_ERROR
-          - COULD_NOT_PROCESS_ERROR
-          - SOCKET_CONNECTION_TIMEOUT
-          - WINRM_COMMAND_EXECUTION_TIMEOUT
-          - CONNECTION_TIMEOUT
-          - SSH_CONNECTION_ERROR
-          - USER_GROUP_ERROR
-          - INVALID_EXECUTION_ID
-          - ERROR_IN_GETTING_CHANNEL_STREAMS
-          - UNEXPECTED
-          - UNKNOWN_ERROR
-          - UNKNOWN_EXECUTOR_TYPE_ERROR
-          - DUPLICATE_STATE_NAMES
-          - TRANSITION_NOT_LINKED
-          - TRANSITION_TO_INCORRECT_STATE
-          - TRANSITION_TYPE_NULL
-          - STATES_WITH_DUP_TRANSITIONS
-          - BARRIERS_NOT_RUNNING_CONCURRENTLY
-          - NON_FORK_STATES
-          - NON_REPEAT_STATES
-          - INITIAL_STATE_NOT_DEFINED
-          - FILE_INTEGRITY_CHECK_FAILED
-          - INVALID_URL
-          - FILE_DOWNLOAD_FAILED
-          - PLATFORM_SOFTWARE_DELETE_ERROR
-          - INVALID_CSV_FILE
-          - INVALID_REQUEST
-          - SCHEMA_VALIDATION_FAILED
-          - FILTER_CREATION_ERROR
-          - INVALID_YAML_ERROR
-          - PLAN_CREATION_ERROR
-          - INVALID_INFRA_STATE
-          - PIPELINE_ALREADY_TRIGGERED
-          - NON_EXISTING_PIPELINE
-          - DUPLICATE_COMMAND_NAMES
-          - INVALID_PIPELINE
-          - COMMAND_DOES_NOT_EXIST
-          - DUPLICATE_ARTIFACTSTREAM_NAMES
-          - DUPLICATE_HOST_NAMES
-          - STATE_NOT_FOR_TYPE
-          - STATE_MACHINE_ISSUE
-          - STATE_DISCONTINUE_FAILED
-          - STATE_PAUSE_FAILED
-          - PAUSE_ALL_ALREADY
-          - RESUME_ALL_ALREADY
-          - ROLLBACK_ALREADY
-          - ABORT_ALL_ALREADY
-          - EXPIRE_ALL_ALREADY
-          - RETRY_FAILED
-          - UNKNOWN_ARTIFACT_TYPE
-          - UNKNOWN_STAGE_ELEMENT_WRAPPER_TYPE
-          - INIT_TIMEOUT
-          - LICENSE_EXPIRED
-          - NOT_LICENSED
-          - REQUEST_TIMEOUT
-          - SCM_REQUEST_TIMEOUT
-          - WORKFLOW_ALREADY_TRIGGERED
-          - JENKINS_ERROR
-          - INVALID_ARTIFACT_SOURCE
-          - INVALID_ARTIFACT_SERVER
-          - INVALID_CLOUD_PROVIDER
-          - UPDATE_NOT_ALLOWED
-          - DELETE_NOT_ALLOWED
-          - APPDYNAMICS_CONFIGURATION_ERROR
-          - APM_CONFIGURATION_ERROR
-          - SPLUNK_CONFIGURATION_ERROR
-          - ELK_CONFIGURATION_ERROR
-          - LOGZ_CONFIGURATION_ERROR
-          - SUMO_CONFIGURATION_ERROR
-          - INSTANA_CONFIGURATION_ERROR
-          - APPDYNAMICS_ERROR
-          - STACKDRIVER_ERROR
-          - STACKDRIVER_CONFIGURATION_ERROR
-          - NEWRELIC_CONFIGURATION_ERROR
-          - NEWRELIC_ERROR
-          - DYNA_TRACE_CONFIGURATION_ERROR
-          - DYNA_TRACE_ERROR
-          - CLOUDWATCH_ERROR
-          - CLOUDWATCH_CONFIGURATION_ERROR
-          - PROMETHEUS_CONFIGURATION_ERROR
-          - DATA_DOG_CONFIGURATION_ERROR
-          - SERVICE_GUARD_CONFIGURATION_ERROR
-          - ENCRYPTION_NOT_CONFIGURED
-          - UNAVAILABLE_DELEGATES
-          - WORKFLOW_EXECUTION_IN_PROGRESS
-          - PIPELINE_EXECUTION_IN_PROGRESS
-          - AWS_ACCESS_DENIED
-          - AWS_CLUSTER_NOT_FOUND
-          - AWS_SERVICE_NOT_FOUND
-          - IMAGE_NOT_FOUND
-          - ILLEGAL_ARGUMENT
-          - IMAGE_TAG_NOT_FOUND
-          - DELEGATE_NOT_AVAILABLE
-          - INVALID_YAML_PAYLOAD
-          - AUTHENTICATION_ERROR
-          - AUTHORIZATION_ERROR
-          - UNRECOGNIZED_YAML_FIELDS
-          - COULD_NOT_MAP_BEFORE_YAML
-          - MISSING_BEFORE_YAML
-          - MISSING_YAML
-          - NON_EMPTY_DELETIONS
-          - GENERAL_YAML_ERROR
-          - GENERAL_YAML_INFO
-          - YAML_GIT_SYNC_ERROR
-          - GIT_CONNECTION_ERROR
-          - GIT_ERROR
-          - ARTIFACT_SERVER_ERROR
-          - ENCRYPT_DECRYPT_ERROR
-          - SECRET_MANAGEMENT_ERROR
-          - SECRET_NOT_FOUND
-          - KMS_OPERATION_ERROR
-          - GCP_KMS_OPERATION_ERROR
-          - VAULT_OPERATION_ERROR
-          - AWS_SECRETS_MANAGER_OPERATION_ERROR
-          - AZURE_KEY_VAULT_OPERATION_ERROR
-          - AZURE_KEY_VAULT_INTERRUPT_ERROR
-          - UNSUPPORTED_OPERATION_EXCEPTION
-          - FEATURE_UNAVAILABLE
-          - GENERAL_ERROR
-          - BASELINE_CONFIGURATION_ERROR
-          - SAML_IDP_CONFIGURATION_NOT_AVAILABLE
-          - INVALID_AUTHENTICATION_MECHANISM
-          - INVALID_SAML_CONFIGURATION
-          - INVALID_OAUTH_CONFIGURATION
-          - INVALID_LDAP_CONFIGURATION
-          - USER_GROUP_SYNC_FAILURE
-          - USER_GROUP_ALREADY_EXIST
-          - INVALID_TWO_FACTOR_AUTHENTICATION_CONFIGURATION
-          - EXPLANATION
-          - HINT
-          - NOT_WHITELISTED_IP
-          - INVALID_TOTP_TOKEN
-          - EMAIL_FAILED
-          - SSL_HANDSHAKE_FAILED
-          - NO_APPS_ASSIGNED
-          - INVALID_INFRA_CONFIGURATION
-          - TEMPLATES_LINKED
-          - USER_HAS_NO_PERMISSIONS
-          - USER_NOT_AUTHORIZED
-          - USER_ALREADY_PRESENT
-          - EMAIL_ERROR
-          - INVALID_USAGE_RESTRICTION
-          - USAGE_RESTRICTION_ERROR
-          - STATE_EXECUTION_INSTANCE_NOT_FOUND
-          - DELEGATE_TASK_RETRY
-          - KUBERNETES_API_TASK_EXCEPTION
-          - KUBERNETES_TASK_EXCEPTION
-          - KUBERNETES_YAML_ERROR
-          - SAVE_FILE_INTO_AWS_STORAGE_FAILED
-          - READ_FILE_FROM_AWS_STORAGE_FAILED
-          - SAVE_FILE_INTO_GCP_STORAGE_FAILED
-          - READ_FILE_FROM_GCP_STORAGE_FAILED
-          - FILE_NOT_FOUND_ERROR
-          - USAGE_LIMITS_EXCEEDED
-          - EVENT_PUBLISH_FAILED
-          - CUSTOM_APPROVAL_ERROR
-          - JIRA_ERROR
-          - EXPRESSION_EVALUATION_FAILED
-          - KUBERNETES_VALUES_ERROR
-          - KUBERNETES_CLUSTER_ERROR
-          - INCORRECT_SIGN_IN_MECHANISM
-          - OAUTH_LOGIN_FAILED
-          - INVALID_TERRAFORM_TARGETS_REQUEST
-          - TERRAFORM_EXECUTION_ERROR
-          - FILE_READ_FAILED
-          - FILE_SIZE_EXCEEDS_LIMIT
-          - CLUSTER_NOT_FOUND
-          - MARKETPLACE_TOKEN_NOT_FOUND
-          - INVALID_MARKETPLACE_TOKEN
-          - INVALID_TICKETING_SERVER
-          - SERVICENOW_ERROR
-          - PASSWORD_EXPIRED
-          - USER_LOCKED
-          - PASSWORD_STRENGTH_CHECK_FAILED
-          - ACCOUNT_DISABLED
-          - INVALID_ACCOUNT_PERMISSION
-          - PAGERDUTY_ERROR
-          - HEALTH_ERROR
-          - SAML_TEST_SUCCESS_MECHANISM_NOT_ENABLED
-          - DOMAIN_WHITELIST_FILTER_CHECK_FAILED
-          - INVALID_DASHBOARD_UPDATE_REQUEST
-          - DUPLICATE_FIELD
-          - INVALID_AZURE_VAULT_CONFIGURATION
-          - USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS
-          - INVALID_ROLLBACK
-          - DATA_COLLECTION_ERROR
-          - SUMO_DATA_COLLECTION_ERROR
-          - DEPLOYMENT_GOVERNANCE_ERROR
-          - BATCH_PROCESSING_ERROR
-          - GRAPHQL_ERROR
-          - FILE_CREATE_ERROR
-          - ILLEGAL_STATE
-          - GIT_DIFF_COMMIT_NOT_IN_ORDER
-          - FAILED_TO_ACQUIRE_PERSISTENT_LOCK
-          - FAILED_TO_ACQUIRE_NON_PERSISTENT_LOCK
-          - POD_NOT_FOUND_ERROR
-          - COMMAND_EXECUTION_ERROR
-          - REGISTRY_EXCEPTION
-          - ENGINE_INTERRUPT_PROCESSING_EXCEPTION
-          - ENGINE_IO_EXCEPTION
-          - ENGINE_OUTCOME_EXCEPTION
-          - ENGINE_SWEEPING_OUTPUT_EXCEPTION
-          - CACHE_NOT_FOUND_EXCEPTION
-          - ENGINE_ENTITY_UPDATE_EXCEPTION
-          - SHELL_EXECUTION_EXCEPTION
-          - TEMPLATE_NOT_FOUND
-          - AZURE_SERVICE_EXCEPTION
-          - AZURE_CLIENT_EXCEPTION
-          - GIT_UNSEEN_REMOTE_HEAD_COMMIT
-          - TIMEOUT_ENGINE_EXCEPTION
-          - NO_AVAILABLE_DELEGATES
-          - NO_GLOBAL_DELEGATE_ACCOUNT
-          - NO_INSTALLED_DELEGATES
-          - DUPLICATE_DELEGATE_EXCEPTION
-          - GCP_MARKETPLACE_EXCEPTION
-          - MISSING_DEFAULT_GOOGLE_CREDENTIALS
-          - INCORRECT_DEFAULT_GOOGLE_CREDENTIALS
-          - OPTIMISTIC_LOCKING_EXCEPTION
-          - NG_PIPELINE_EXECUTION_EXCEPTION
-          - NG_PIPELINE_CREATE_EXCEPTION
-          - RESOURCE_NOT_FOUND_EXCEPTION
-          - PMS_INITIALIZE_SDK_EXCEPTION
-          - UNEXPECTED_SNIPPET_EXCEPTION
-          - UNEXPECTED_SCHEMA_EXCEPTION
-          - CONNECTOR_VALIDATION_EXCEPTION
-          - TIMESCALE_NOT_AVAILABLE
-          - MIGRATION_EXCEPTION
-          - REQUEST_PROCESSING_INTERRUPTED
-          - SECRET_MANAGER_ID_NOT_FOUND
-          - GCP_SECRET_MANAGER_OPERATION_ERROR
-          - GCP_SECRET_OPERATION_ERROR
-          - GIT_OPERATION_ERROR
-          - TASK_FAILURE_ERROR
-          - INSTANCE_STATS_PROCESS_ERROR
-          - INSTANCE_STATS_MIGRATION_ERROR
-          - DEPLOYMENT_MIGRATION_ERROR
-          - CG_LICENSE_USAGE_ERROR
-          - INSTANCE_STATS_AGGREGATION_ERROR
-          - UNRESOLVED_EXPRESSIONS_ERROR
-          - KRYO_HANDLER_NOT_FOUND_ERROR
-          - DELEGATE_ERROR_HANDLER_EXCEPTION
-          - DELEGATE_SERVICE_DRIVER_EXCEPTION
-          - DELEGATE_INSTALLATION_COMMAND_NOT_SUPPORTED_EXCEPTION
-          - UNEXPECTED_TYPE_ERROR
-          - EXCEPTION_HANDLER_NOT_FOUND
-          - CONNECTOR_NOT_FOUND_EXCEPTION
-          - GCP_SERVER_ERROR
-          - HTTP_RESPONSE_EXCEPTION
-          - SCM_NOT_FOUND_ERROR
-          - SCM_CONFLICT_ERROR
-          - SCM_CONFLICT_ERROR_V2
-          - SCM_UNPROCESSABLE_ENTITY
-          - PROCESS_EXECUTION_EXCEPTION
-          - SCM_UNAUTHORIZED
-          - SCM_BAD_REQUEST
-          - SCM_INTERNAL_SERVER_ERROR
-          - DATA
-          - CONTEXT
-          - PR_CREATION_ERROR
-          - URL_NOT_REACHABLE
-          - URL_NOT_PROVIDED
-          - ENGINE_EXPRESSION_EVALUATION_ERROR
-          - ENGINE_FUNCTOR_ERROR
-          - JIRA_CLIENT_ERROR
-          - SCM_NOT_MODIFIED
-          - APPROVAL_STEP_NG_ERROR
-          - BUCKET_SERVER_ERROR
-          - GIT_SYNC_ERROR
-          - TEMPLATE_EXCEPTION
-          - TEMPLATE_ALREADY_EXISTS_EXCEPTION
-          - ENTITY_REFERENCE_EXCEPTION
-          - ACTIVE_SERVICE_INSTANCES_PRESENT_EXCEPTION
-          - INVALID_INPUT_SET
-          - INVALID_OVERLAY_INPUT_SET
-          - RESOURCE_ALREADY_EXISTS
-          - INVALID_JSON_PAYLOAD
-          - POLICY_EVALUATION_FAILURE
-          - POLICY_SET_ERROR
-          - INVALID_ARTIFACTORY_REGISTRY_REQUEST
-          - INVALID_NEXUS_REGISTRY_REQUEST
-          - ENTITY_NOT_FOUND
-          - GITX_OAUTH_NOT_SET
-          - INVALID_AZURE_CONTAINER_REGISTRY_REQUEST
-          - AZURE_AUTHENTICATION_ERROR
-          - AZURE_CONFIG_ERROR
-          - DATA_PROCESSING_ERROR
-          - INVALID_AZURE_AKS_REQUEST
-          - AWS_IAM_ERROR
-          - AWS_CF_ERROR
-          - AWS_INSTANCE_ERROR
-          - AWS_VPC_ERROR
-          - AWS_TAG_ERROR
-          - AWS_ASG_ERROR
-          - AWS_LOAD_BALANCER_ERROR
-          - SCM_INTERNAL_SERVER_ERROR_V2
-          - SCM_FAILED_DEPENDENCY_ERROR
-          - SCM_UNAUTHORIZED_ERROR_V2
-          - TOO_MANY_REQUESTS
-          - SCM_RATE_LIMIT_ERROR
-          - INVALID_IDENTIFIER_REF
-          - SPOTINST_NULL_ERROR
-          - SPOTNIST_REST_EXCEPTION
-          - SCM_UNEXPECTED_ERROR
-          - DUPLICATE_FILE_IMPORT
-          - AZURE_APP_SERVICES_TASK_EXCEPTION
-          - AZURE_ARM_TASK_EXCEPTION
-          - AZURE_BP_TASK_EXCEPTION
-          - MEDIA_NOT_SUPPORTED
-          - AWS_ECS_ERROR
-          - AWS_APPLICATION_AUTO_SCALING
-          - AWS_ECS_SERVICE_NOT_ACTIVE
-          - AWS_ECS_CLIENT_ERROR
-          - AWS_STS_ERROR
-          - FREEZE_EXCEPTION
-          - MISSING_EXCEPTION
-          - DELEGATE_TASK_EXPIRED
-          - DELEGATE_TASK_VALIDATION_FAILED
-          - MONGO_EXECUTION_TIMEOUT_EXCEPTION
-          - DELEGATE_NOT_REGISTERED
-          - TERRAFORM_VAULT_SECRET_CLEANUP_FAILURE
-          - APPROVAL_REJECTION
-          - TERRAGRUNT_EXECUTION_ERROR
-          - ADFS_ERROR
-          - TERRAFORM_CLOUD_ERROR
-          - CLUSTER_CREDENTIALS_NOT_FOUND
-          - SCM_API_ERROR
-          - INTERNAL_SERVER_ERROR
-          - SCM_FORBIDDEN
-          - AWS_EKS_ERROR
-          - OPA_POLICY_EVALUATION_ERROR
-          - USER_MARKED_FAILURE
-          - SSH_RETRY
-          - HTTP_CLIENT_ERROR_RESPONSE
-          - HTTP_INTERNAL_SERVER_ERROR
-          - HTTP_BAD_GATEWAY
-          - HTTP_SERVICE_UNAVAILABLE
-          - HTTP_GATEWAY_TIMEOUT
-          - HTTP_SERVER_ERROR_RESPONSE
-          - PIPELINE_UPDATE_EXCEPTION
-          - SERVICENOW_REFRESH_TOKEN_ERROR
-          - PARAMETER_FIELD_CAST_ERROR
-          - ABORT_ALL_ALREADY_NG
-          - WEBHOOK_EXCEPTION
-          - INVALID_OIDC_CONFIGURATION
-          - INVALID_CREDENTIALS
-          - INVALID_OR_PRIVATE_REPO
-          - BARRIER_FAILED_ERROR
-          - ELASTICSEARCH_NOT_AVAILABLE
-          - OBJECT_STORE_NOT_AVAILABLE
-          - NO_ELIGIBLE_RUNNERS
-          - NO_AVAILABLE_RUNNERS
-          - RUNNER_DISCONNECTED
-          - EVENT_LISTENER_STEP_FAILURE
-          - TRANSACTION_ABORTED
-          - UNRESOLVED_EXPRESSIONS_WITH_CONTEXT_ERROR
-        message:
-          type: string
-        correlationId:
-          type: string
-        detailedMessage:
-          type: string
-        responseMessages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResponseMessage'
-        metadata:
-          $ref: '#/components/schemas/ErrorMetadata2'
-      description: This is Error entity as defined in Harness
+    OnboardingExecuteRequest:
+      type: object
+      properties:
+        input:
+          $ref: '#/components/schemas/OnboardingInput'
+      description: Top-level onboarding execute request
     ResponseMessage:
       type: object
       properties:
@@ -2204,345 +1638,81 @@ components:
           type: object
           additionalProperties:
             type: string
-    infra_v2.EnvValueFrom:
-      type: string
-      enum:
-      - configMapKeyRef
-      - secretKeyRef
-      - value
-      - valueFrom
-      x-enum-varnames:
-      - EnvValueFromConfigMapKeyRef
-      - EnvValueFromSecretKeyRef
-      - EnvValueFromValue
-      - EnvValueFromValueFrom
-    v2_onboarding.OnboardingMode:
-      type: string
-      enum:
-      - Manual
-      - Automatic
-      x-enum-varnames:
-      - ManualMode
-      - AutomaticMode
-    v1.TolerationOperator:
-      type: string
-      enum:
-      - Exists
-      - Equal
-      x-enum-varnames:
-      - TolerationOpExists
-      - TolerationOpEqual
-    v2_onboarding.AgentDetails:
+    v2_onboarding.ChaosInfraAdvanceConfiguration:
       type: object
       properties:
-        name:
-          type: string
-        status:
-          $ref: '#/components/schemas/v1.PodPhase'
-    v2_onboarding.ConfirmNetworkMapRequest:
-      type: object
-      properties:
-        mode:
-          $ref: '#/components/schemas/v2_onboarding.NetworkMapCreationMode'
-    v1.PullPolicy:
-      type: string
-      enum:
-      - Always
-      - Never
-      - IfNotPresent
-      x-enum-varnames:
-      - PullAlways
-      - PullNever
-      - PullIfNotPresent
-    OnboardingContext:
-      type: object
-      properties:
-        strategy:
-          type: string
-          description: Deployment strategy. When set, the call renders a ready-to-run pipeline for this strategy (returned as pipelineYaml) instead of provisioning resources. Accepts 'rolling', 'canary' or 'bluegreen'.
-          enum:
-          - rolling
-          - canary
-          - bluegreen
-        deployment_type:
-          type: string
-          description: Deployment type for the generated pipeline. Required when 'strategy' is set; together with 'strategy' it selects the pipeline template. Accepts only 'Kubernetes'.
-          enum:
-          - kubernetes
-        environment_identifier:
-          type: string
-          description: Environment identifier to reference in the generated pipeline. Required when 'strategy' is set.
-        infrastructure_identifier:
-          type: string
-          description: Infrastructure identifier to reference in the generated pipeline. Required when 'strategy' is set.
-        service_type:
-          type: string
-          description: Service deployment type. Supports 'kubernetes' only. Required when creating a service; may be omitted when updating an existing one (service_id matches an existing service).
-        service_identifier:
-          type: string
-          description: 'Service identifier. In provisioning requests: when it matches an existing service, that service is UPDATED (the manifest and/or artifact sections in this request are merged in and all other sections are preserved); when absent (create), an identifier is generated. In strategy-based requests: the service identifier referenced in the generated pipeline (required).'
-        service_name:
-          type: string
-          description: Name to use for the created service.
-        manifest_type:
-          type: string
-          description: Manifest store type. Supports 'github' or 'harnessCode'.
-        manifest_id:
-          type: string
-          description: Identifier for the created GitHub (manifest) connector.
-        manifest_authType:
-          type: string
-          description: GitHub auth type. Accepts only 'UsernameToken' or 'OAuth'.
-          enum:
-          - UsernameToken
-          - OAuth
-        manifest_username:
-          type: string
-          description: GitHub username for the manifest connector.
-        manifest_token:
-          type: string
-          description: GitHub password/token value for the manifest connector; stored as a secret.
-        manifest_tokenRef:
-          type: string
-          description: Reference to an existing secret holding the GitHub OAuth access token (used when manifest_authType is 'oauth'). Bare id = project scope; prefix 'org.'/'account.' for those scopes. Wired to both authentication and apiAccess; no new secret is created.
-        manifest_repoUrl:
-          type: string
-          description: Full GitHub repository URL (REPO-type connector).
-        manifest_fetchType:
-          type: string
-          description: Git fetch type. Accepts only 'branch' or 'commit'.
-          enum:
-          - branch
-          - commit
-        manifest_branch:
-          type: string
-          description: Git branch to fetch the manifest from (used when manifest_fetchType is 'branch').
-        manifest_commitId:
-          type: string
-          description: Git commit id to fetch the manifest from (used when manifest_fetchType is 'commit').
-        manifest_repoName:
-          type: string
-          description: Repository name within the manifest store. Used by 'harnessCode' (the Harness Code repo) and by account-level Git connectors.
-        manifest_paths:
-          type: string
-          description: Manifest file path(s) / folder(s) within the repository. Accepts multiple, comma-separated (e.g. 'k8s/deployment.yaml, k8s/service.yaml'); each is added to the manifest store.
-        artifact_type:
-          type: string
-          description: Artifact source type. Supports 'DockerRegistry'.
-        artifact_id:
-          type: string
-          description: Identifier for the created Docker (artifact) connector.
-        artifact_username:
-          type: string
-          description: Docker registry username for the artifact connector.
-        artifact_password:
-          type: string
-          description: Docker registry password/token value for the artifact connector; stored as a secret.
-        artifact_imagePath:
-          type: string
-          description: Docker image path, e.g. 'library/nginx'.
-        artifact_tag:
-          type: string
-          description: Docker image tag.
-        env_id:
-          type: string
-          description: Environment identifier. When it matches an existing environment, that environment is reused and the infrastructure is attached to it. When absent, an identifier is generated.
-        env_name:
-          type: string
-          description: Environment display name. Defaults to the environment identifier when absent.
-        env_type:
-          type: string
-          description: Environment type. Supports 'PreProduction' (default) or 'Production'.
-        infra_type:
-          type: string
-          description: Infrastructure type. Supports 'KubernetesDirect' only.
-        infra_id:
-          type: string
-          description: Infrastructure identifier. When absent, an identifier is generated.
-        infra_name:
-          type: string
-          description: Infrastructure display name. Defaults to the infrastructure identifier when absent.
-        infra_namespace:
-          type: string
-          description: Kubernetes namespace the infrastructure deploys into.
-        infra_releaseName:
-          type: string
-          description: Harness release name expression. When absent, a unique 'release-'-prefixed name is generated.
-        infra_connectorType:
-          type: string
-          description: Cluster connector type. Supports 'K8sCluster' only.
-        infra_clusterUrl:
-          type: string
-          description: Kubernetes cluster master URL for the connector.
-        infra_credentialType:
-          type: string
-          description: Cluster credential type. Supports 'ManualConfig' only.
-        infra_authType:
-          type: string
-          description: Cluster auth type. Supports 'ServiceAccount' only.
-        infra_serviceAccountToken:
-          type: string
-          description: Kubernetes service-account token value; stored as a secret and referenced by the connector.
-      description: Declarative context describing the resources to onboard
-    infra_v2.MTLSConfiguration:
-      type: object
-      properties:
-        certPath:
-          type: string
-        keyPath:
-          type: string
-        secretName:
-          type: string
-        url:
-          type: string
-    KubeconfigContextDescriptor:
-      type: object
-      properties:
-        name:
-          type: string
-          description: kubeconfig context name
-        clusterName:
-          type: string
-          description: Resolved cluster name referenced by the context
-        namespace:
-          type: string
-          description: Namespace declared on the context, if any
-        type:
-          type: string
-          description: Detected Harness auth type; UNKNOWN when unsupported (one of SERVICE_ACCOUNT, USER_PASSWORD, CLIENT_KEY_CERT, OPEN_ID_CONNECT, UNKNOWN)
-        importStatus:
-          type: string
-          description: Whether the descriptor can create a connector as-is (COMPLETE or UNSUPPORTED)
-          enum:
-          - COMPLETE
-          - UNSUPPORTED
-        spec:
+        annotation:
           type: object
           additionalProperties:
-            type: object
-            description: Auth-type-specific fields, keyed to connector credential-DTO field names
-          description: Auth-type-specific fields, keyed to connector credential-DTO field names
-        secrets:
-          type: array
-          description: spec keys whose values are secrets and must become Harness secret refs
-          items:
             type: string
-            description: spec keys whose values are secrets and must become Harness secret refs
-        errors:
+        autopilotEnabled:
+          type: boolean
+        containers:
+          type: string
+        env:
           type: array
-          description: Blocking reasons this context cannot be imported (present when importStatus is UNSUPPORTED)
           items:
+            $ref: '#/components/schemas/infra_v2.Env'
+        imagePullPolicy:
+          $ref: '#/components/schemas/v1.PullPolicy'
+        insecureSkipVerify:
+          type: boolean
+        label:
+          type: object
+          additionalProperties:
             type: string
-            description: Blocking reasons this context cannot be imported (present when importStatus is UNSUPPORTED)
-        warnings:
+        mtls:
+          $ref: '#/components/schemas/infra_v2.MTLSConfiguration'
+        nodeSelector:
+          type: object
+          additionalProperties:
+            type: string
+        proxy:
+          $ref: '#/components/schemas/infra_v2.ProxyConfiguration'
+        runAsGroup:
+          type: integer
+        runAsUser:
+          type: integer
+        tolerations:
           type: array
-          description: Lossy / non-portable notes for an importable context
           items:
-            type: string
-            description: Lossy / non-portable notes for an importable context
-      description: Per-context connector-creation hint reverse-engineered from a kubeconfig
-    v2_onboarding.V2OnboardingRequest:
-      type: object
-      required:
-      - environmentRef
-      - infrastructureRef
-      - mode
-      properties:
-        chaosAdvanceConfiguration:
-          $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
-        discoveryAdvanceConfiguration:
-          $ref: '#/components/schemas/database.AgentConfiguration'
-        environmentRef:
-          type: string
-        infrastructureRef:
-          type: string
-        isAIEnabled:
-          type: boolean
-        mode:
-          $ref: '#/components/schemas/v2_onboarding.OnboardingMode'
-        serviceAccount:
-          type: string
-    OnboardingExecuteResponse:
-      type: object
-      properties:
-        secret_identifiers:
+            $ref: '#/components/schemas/v1.Toleration'
+        volumeMounts:
           type: array
-          description: Identifiers of the secrets created (credentials materialized from the context).
           items:
-            type: string
-            description: Identifiers of the secrets created (credentials materialized from the context).
-        manifest_identifier:
-          type: string
-          description: Identifier of the manifest attached to the service. Populated whenever a manifest is provisioned, including providers (e.g. Harness Code) that need no connector.
-        manifest_connector_identifier:
-          type: string
-          description: Identifier of the created manifest connector. Null for providers whose connection is built-in (e.g. Harness Code) and therefore create no connector.
-        artifact_identifier:
-          type: string
-          description: Identifier of the artifact attached to the service. Populated whenever an artifact is provisioned.
-        artifact_connector_identifier:
-          type: string
-          description: Identifier of the created Docker (artifact) connector.
-        service_identifier:
-          type: string
-          description: Identifier of the created service.
-        environment_identifier:
-          type: string
-          description: Identifier of the environment created (or reused) to hold the infrastructure. Populated whenever an infrastructure is provisioned.
-        infrastructure_identifier:
-          type: string
-          description: Identifier of the created infrastructure definition. Populated whenever an infrastructure is provisioned.
-        infra_connector_identifier:
-          type: string
-          description: Identifier of the created Kubernetes cluster connector referenced by the infrastructure.
-        pipeline_yaml:
-          type: string
-          description: Rendered pipeline YAML for the requested deployment strategy. Populated only for strategy-based requests; the caller can display it and run the pipeline as-is.
-      description: Identifiers of the resources created during onboarding
-    database.CronConfig:
+            $ref: '#/components/schemas/v1.VolumeMount'
+        volumes:
+          type: array
+          items:
+            $ref: '#/components/schemas/infra_v2.Volumes'
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
       type: object
       properties:
-        expression:
-          type: string
-    database.ProxyConfiguration:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    v1.TaintEffect:
+      type: string
+      enum:
+      - NoSchedule
+      - PreferNoSchedule
+      - NoExecute
+      x-enum-varnames:
+      - TaintEffectNoSchedule
+      - TaintEffectPreferNoSchedule
+      - TaintEffectNoExecute
+    v2_onboarding.ConfirmNetworkMapResponse:
       type: object
       properties:
-        httpProxy:
-          type: string
-        httpsProxy:
-          type: string
-        noProxy:
-          description: 'SecretName string `bson:"secretName" json:"secretName"`
-
-            CAPath     string `bson:"caPath" json:"caPath"`'
-          type: string
-        url:
-          type: string
-    api.RestError:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
-    infra_v2.Volumes:
-      type: object
-      properties:
-        name:
-          type: string
-        sizeLimit:
-          type: string
-    v2_onboarding.ConfirmDiscoveryResponse:
-      type: object
-      properties:
-        agentCreated:
-          type: boolean
-        agentLinked:
-          type: boolean
-        discoveryCompleted:
-          type: boolean
+        networkMapCount:
+          type: integer
+        serviceCount:
+          type: integer
     Failure:
       type: object
       properties:
@@ -2962,27 +2132,6 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    v1.TaintEffect:
-      type: string
-      enum:
-      - NoSchedule
-      - PreferNoSchedule
-      - NoExecute
-      x-enum-varnames:
-      - TaintEffectNoSchedule
-      - TaintEffectPreferNoSchedule
-      - TaintEffectNoExecute
-    infra_v2.ProxyConfiguration:
-      type: object
-      properties:
-        httpProxy:
-          type: string
-        httpsProxy:
-          type: string
-        noProxy:
-          type: string
-        url:
-          type: string
     pipelineonboarding.Status:
       type: string
       enum:
@@ -2995,20 +2144,6 @@ components:
       - RUNNING
       - ERRORED
       - SKIPPED
-    v1.PodPhase:
-      type: string
-      enum:
-      - Pending
-      - Running
-      - Succeeded
-      - Failed
-      - Unknown
-      x-enum-varnames:
-      - PodPending
-      - PodRunning
-      - PodSucceeded
-      - PodFailed
-      - PodUnknown
     v2_onboarding.OnboardingExperimentResponse:
       type: object
       properties:
@@ -3020,32 +2155,31 @@ components:
           type: boolean
         pagination:
           $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    database.ResourceRequirements:
+    v2_onboarding.Experiments:
       type: object
       properties:
-        limits:
-          $ref: '#/components/schemas/database.ResourceList'
-        requests:
-          $ref: '#/components/schemas/database.ResourceList'
-    pipelineonboarding.PipelineChaosOnboardingCheckResponse:
-      type: object
-      properties:
-        check:
-          type: boolean
-        infrastructures:
-          type: object
-          additionalProperties:
-            type: object
-            additionalProperties:
-              $ref: '#/components/schemas/pipelineonboarding.InfrastructuresStatus'
-        message:
+        category:
+          type: string
+        delegateTaskId:
+          type: string
+        description:
+          type: string
+        experimentID:
           type: string
         name:
           type: string
-        services:
-          type: object
-          additionalProperties:
-            type: object
+        notifyID:
+          type: string
+        status:
+          $ref: '#/components/schemas/model.WorkflowRunStatus'
+        targetNetworkMapID:
+          type: string
+        targetNetworkMapName:
+          type: string
+        targetServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/v2_onboarding.TargetServiceDetails'
     v2_onboarding.OnboardingTargetExperiment:
       type: object
       properties:
@@ -3059,13 +2193,110 @@ components:
           type: integer
         totalServiceCount:
           type: integer
-    v2_onboarding.TargetServiceDetails:
+    infra_v2.MTLSConfiguration:
       type: object
       properties:
-        id:
+        certPath:
+          type: string
+        keyPath:
+          type: string
+        secretName:
+          type: string
+        url:
+          type: string
+    database.KubernetesAgentConfiguration:
+      type: object
+      properties:
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        disableNamespaceCreation:
+          type: boolean
+        imagePullPolicy:
+          $ref: '#/components/schemas/v1.PullPolicy'
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        namespace:
+          type: string
+        namespaced:
+          type: boolean
+        nodeSelector:
+          type: object
+          additionalProperties:
+            type: string
+        resources:
+          $ref: '#/components/schemas/database.ResourceRequirements'
+        runAsGroup:
+          type: integer
+        runAsUser:
+          type: integer
+        serviceAccount:
+          type: string
+        tolerations:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1.Toleration'
+        useStaticNameForConfigmapAndSecret:
+          type: boolean
+    pipelineonboarding.SelectedExperiment:
+      type: object
+      properties:
+        environmentIdentity:
+          type: string
+        experimentId:
+          type: string
+        identity:
+          type: string
+        infraId:
+          type: string
+        infrastructureIdentity:
           type: string
         name:
           type: string
+        serviceNames:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+    v1.TolerationOperator:
+      type: string
+      enum:
+      - Exists
+      - Equal
+      x-enum-varnames:
+      - TolerationOpExists
+      - TolerationOpEqual
+    ErrorMetadata2:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    OnboardingInput:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/OnboardingContext'
+      description: Envelope carrying the onboarding context (extensible)
+    v2_onboarding.RunSafeExperimentStatus:
+      type: object
+      properties:
+        experiments:
+          type: array
+          items:
+            $ref: '#/components/schemas/v2_onboarding.Experiments'
+        status:
+          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
+        totalSafeExperiment:
+          type: integer
     model.WorkflowRunStatus:
       type: string
       enum:
@@ -3094,26 +2325,30 @@ components:
       - WorkflowRunStatusNa
       - WorkflowRunStatusQueued
       - WorkflowRunStatusBlocked
-    v2_onboarding.ConfirmNetworkMapResponse:
+    v2_onboarding.ConfirmExperimentRunResponse:
       type: object
       properties:
-        networkMapCount:
-          type: integer
-        serviceCount:
-          type: integer
-    v2_onboarding.TargetNetworkMapStatus:
+        completed:
+          type: boolean
+    v2_onboarding.ConfirmNetworkMapRequest:
       type: object
       properties:
-        status:
-          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
-        targetNetworkMapStatus:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/targetnetworkmap.Status'
-        totalTargetNetworkMaps:
-          type: integer
-        totalTargetNetworkMapsExperiments:
-          type: integer
+        mode:
+          $ref: '#/components/schemas/v2_onboarding.NetworkMapCreationMode'
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    infra_v2.Volumes:
+      type: object
+      properties:
+        name:
+          type: string
+        sizeLimit:
+          type: string
     database.DataCollectionConfiguration:
       type: object
       properties:
@@ -3139,53 +2374,54 @@ components:
           type: array
           items:
             type: string
-    v1.Toleration:
+    v2_onboarding.AgentDetails:
       type: object
       properties:
-        effect:
-          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
-
-            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.TaintEffect'
-        key:
-          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
-
-            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-
-            +optional'
+        name:
           type: string
-        operator:
-          description: 'Operator represents a key''s relationship to the value.
-
-            Valid operators are Exists and Equal. Defaults to Equal.
-
-            Exists is equivalent to wildcard for value, so that a pod can
-
-            tolerate all taints of a particular category.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.TolerationOperator'
-        tolerationSeconds:
-          description: 'TolerationSeconds represents the period of time the toleration (which must be
-
-            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
-
-            it is not set, which means tolerate the taint forever (do not evict). Zero and
-
-            negative values will be treated as 0 (evict immediately) by the system.
-
-            +optional'
-          type: integer
+        status:
+          $ref: '#/components/schemas/v1.PodPhase'
+    v2_onboarding.ConfirmExperimentCreationRequest:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/targetnetworkmap.ExperimentCreationMode'
+    github_com_harness_hce-saas_graphql_server_api.Empty:
+      type: object
+    pipelineonboarding.PipelineChaosOnboardingTaskResponse:
+      type: object
+    infra_v2.Env:
+      type: object
+      properties:
+        key:
+          type: string
+        name:
+          type: string
         value:
-          description: 'Value is the taint value the toleration matches to.
-
-            If the operator is Exists, the value should be empty, otherwise just a regular string.
-
-            +optional'
+          type: string
+        valueFrom:
+          $ref: '#/components/schemas/infra_v2.EnvValueFrom'
+    v2_onboarding.TargetNetworkMapStatus:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
+        targetNetworkMapStatus:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/targetnetworkmap.Status'
+        totalTargetNetworkMaps:
+          type: integer
+        totalTargetNetworkMapsExperiments:
+          type: integer
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
           type: string
     v2_onboarding.V2Onboarding:
       type: object
@@ -3237,129 +2473,857 @@ components:
           type: integer
         updatedBy:
           type: string
-    ErrorMetadata2:
+    pipelineonboarding.PipelineOnboarding:
       type: object
+      required:
+      - accountID
+      - isRemoved
       properties:
-        type:
+        accountID:
           type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    v1.VolumeMount:
-      type: object
-      properties:
-        mountPath:
-          description: 'Path within the container at which the volume should be mounted.  Must
-
-            not contain '':''.'
-          type: string
-        mountPropagation:
-          description: 'mountPropagation determines how mounts are propagated from the host
-
-            to container and the other way around.
-
-            When not set, MountPropagationNone is used.
-
-            This field is beta in 1.10.
-
-            +optional'
+        chaosAdvanceConfiguration:
+          description: Advance Configurations
           allOf:
-          - $ref: '#/components/schemas/v1.MountPropagationMode'
-        name:
-          description: This must match the Name of a Volume.
+          - $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
+        createdAt:
+          type: integer
+        createdBy:
           type: string
-        readOnly:
-          description: 'Mounted read-only if true, read-write otherwise (false or unspecified).
-
-            Defaults to false.
-
-            +optional'
+        discoveryAdvanceConfiguration:
+          $ref: '#/components/schemas/database.AgentConfiguration'
+        infrastructures:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+        isAiEnabled:
           type: boolean
-        subPath:
-          description: 'Path within the volume from which the container''s volume should be mounted.
-
-            Defaults to "" (volume''s root).
-
-            +optional'
+        isRemoved:
+          type: boolean
+        message:
           type: string
-        subPathExpr:
-          description: 'Expanded path within the volume from which the container''s volume should be mounted.
-
-            Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container''s environment.
-
-            Defaults to "" (volume''s root).
-
-            SubPathExpr and SubPath are mutually exclusive.
-
-            +optional'
+        orgID:
           type: string
-    targetnetworkmap.ExperimentCreationMode:
-      type: string
-      enum:
-      - Basic
-      - Intermediate
-      - Advanced
-      x-enum-varnames:
-      - BasicExperimentCreation
-      - IntermediateExperimentCreation
-      - AdvancedExperimentCreation
-    pipelineonboarding.SelectedExperiment:
-      type: object
-      properties:
-        environmentIdentity:
+        pipelineIdentity:
           type: string
-        experimentId:
+        pipelineName:
           type: string
-        identity:
+        projectID:
           type: string
-        infraId:
-          type: string
-        infrastructureIdentity:
-          type: string
-        name:
-          type: string
-        serviceNames:
+        selectedExperiments:
+          type: array
+          items:
+            $ref: '#/components/schemas/pipelineonboarding.SelectedExperiment'
+        services:
+          type: object
+          additionalProperties:
+            type: object
+        singleClickOnboardings:
           type: array
           items:
             type: string
-        tags:
+        status:
+          $ref: '#/components/schemas/pipelineonboarding.Status'
+        updatedAt:
+          type: integer
+        updatedBy:
+          type: string
+    database.AgentConfiguration:
+      type: object
+      required:
+      - data
+      properties:
+        collectorImage:
+          type: string
+        data:
+          $ref: '#/components/schemas/database.DataCollectionConfiguration'
+        imagePullSecrets:
           type: array
           items:
             type: string
-    OnboardingExecuteRequest:
-      type: object
-      properties:
-        input:
-          $ref: '#/components/schemas/OnboardingInput'
-      description: Top-level onboarding execute request
-    v2_onboarding.ConfirmExperimentRunResponse:
-      type: object
-      properties:
-        completed:
+        kubernetes:
+          $ref: '#/components/schemas/database.KubernetesAgentConfiguration'
+        logWatcherImage:
+          type: string
+        mtls:
+          $ref: '#/components/schemas/database.MTLSConfiguration'
+        proxy:
+          $ref: '#/components/schemas/database.ProxyConfiguration'
+        skipSecureVerify:
           type: boolean
-    targetnetworkmap.Status:
-      type: string
-      enum:
-      - COMPLETED
-      - RUNNING
-      - PENDING
-      - ERRORED
-      x-enum-varnames:
-      - COMPLETED
-      - RUNNING
-      - PENDING
-      - ERRORED
-    pipelineonboarding.PipelineChaosOnboardingTaskRequest:
+    v2_onboarding.AgentData:
       type: object
+      properties:
+        clusterAgent:
+          $ref: '#/components/schemas/v2_onboarding.AgentDetails'
+        nodeAgent:
+          type: array
+          items:
+            $ref: '#/components/schemas/v2_onboarding.AgentDetails'
+    OnboardingExecuteResponse:
+      type: object
+      properties:
+        secret_identifiers:
+          type: array
+          description: Identifiers of the secrets created (credentials materialized from the context).
+          items:
+            type: string
+            description: Identifiers of the secrets created (credentials materialized from the context).
+        manifest_identifier:
+          type: string
+          description: Identifier of the manifest attached to the service. Populated whenever a manifest is provisioned, including providers (e.g. Harness Code) that need no connector.
+        manifest_connector_identifier:
+          type: string
+          description: Identifier of the created manifest connector. Null for providers whose connection is built-in (e.g. Harness Code) and therefore create no connector.
+        artifact_identifier:
+          type: string
+          description: Identifier of the artifact attached to the service. Populated whenever an artifact is provisioned.
+        artifact_connector_identifier:
+          type: string
+          description: Identifier of the created Docker (artifact) connector.
+        service_identifier:
+          type: string
+          description: Identifier of the created service.
+        environment_identifier:
+          type: string
+          description: Identifier of the environment created (or reused) to hold the infrastructure. Populated whenever an infrastructure is provisioned.
+        infrastructure_identifier:
+          type: string
+          description: Identifier of the created infrastructure definition. Populated whenever an infrastructure is provisioned.
+        infra_connector_identifier:
+          type: string
+          description: Identifier of the created Kubernetes cluster connector referenced by the infrastructure.
+        pipeline_yaml:
+          type: string
+          description: Rendered pipeline YAML for the requested deployment strategy. Populated only for strategy-based requests; the caller can display it and run the pipeline as-is.
+      description: Identifiers of the resources created during onboarding
+    Error1:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        code:
+          type: string
+          enum:
+          - DEFAULT_ERROR_CODE
+          - INVALID_ARGUMENT
+          - INVALID_EMAIL
+          - DOMAIN_NOT_ALLOWED_TO_REGISTER
+          - COMMNITY_EDITION_NOT_FOUND
+          - DEPLOY_MODE_IS_NOT_ON_PREM
+          - USER_ALREADY_REGISTERED
+          - USER_INVITATION_DOES_NOT_EXIST
+          - USER_DOES_NOT_EXIST
+          - USER_INVITE_OPERATION_FAILED
+          - USER_DISABLED
+          - ACCOUNT_DOES_NOT_EXIST
+          - INACTIVE_ACCOUNT
+          - ACCOUNT_MIGRATED
+          - ACCOUNT_MIGRATED_TO_NEXT_GEN
+          - USER_DOMAIN_NOT_ALLOWED
+          - MAX_FAILED_ATTEMPT_COUNT_EXCEEDED
+          - RESOURCE_NOT_FOUND
+          - INVALID_FORMAT
+          - ROLE_DOES_NOT_EXIST
+          - EMAIL_NOT_VERIFIED
+          - EMAIL_VERIFICATION_TOKEN_NOT_FOUND
+          - INVALID_TOKEN
+          - REVOKED_TOKEN
+          - INVALID_CAPTCHA_TOKEN
+          - NOT_ACCOUNT_MGR_NOR_HAS_ALL_APP_ACCESS
+          - EXPIRED_TOKEN
+          - INVALID_AGENT_MTLS_AUTHORITY
+          - TOKEN_ALREADY_REFRESHED_ONCE
+          - ACCESS_DENIED
+          - NG_ACCESS_DENIED
+          - INVALID_CREDENTIAL
+          - INVALID_CREDENTIALS_THIRD_PARTY
+          - INVALID_KEY
+          - INVALID_CONNECTOR_TYPE
+          - INVALID_KEYPATH
+          - INVALID_VARIABLE
+          - UNKNOWN_HOST
+          - UNREACHABLE_HOST
+          - INVALID_PORT
+          - SSH_SESSION_TIMEOUT
+          - ALGORITHM_NEGOTIATION_ERROR
+          - SOCKET_CONNECTION_ERROR
+          - CONNECTION_ERROR
+          - COULD_NOT_PROCESS_ERROR
+          - SOCKET_CONNECTION_TIMEOUT
+          - WINRM_COMMAND_EXECUTION_TIMEOUT
+          - CONNECTION_TIMEOUT
+          - SSH_CONNECTION_ERROR
+          - USER_GROUP_ERROR
+          - INVALID_EXECUTION_ID
+          - ERROR_IN_GETTING_CHANNEL_STREAMS
+          - UNEXPECTED
+          - UNKNOWN_ERROR
+          - UNKNOWN_EXECUTOR_TYPE_ERROR
+          - DUPLICATE_STATE_NAMES
+          - TRANSITION_NOT_LINKED
+          - TRANSITION_TO_INCORRECT_STATE
+          - TRANSITION_TYPE_NULL
+          - STATES_WITH_DUP_TRANSITIONS
+          - BARRIERS_NOT_RUNNING_CONCURRENTLY
+          - NON_FORK_STATES
+          - NON_REPEAT_STATES
+          - INITIAL_STATE_NOT_DEFINED
+          - FILE_INTEGRITY_CHECK_FAILED
+          - INVALID_URL
+          - FILE_DOWNLOAD_FAILED
+          - PLATFORM_SOFTWARE_DELETE_ERROR
+          - INVALID_CSV_FILE
+          - INVALID_REQUEST
+          - SCHEMA_VALIDATION_FAILED
+          - FILTER_CREATION_ERROR
+          - INVALID_YAML_ERROR
+          - PLAN_CREATION_ERROR
+          - INVALID_INFRA_STATE
+          - PIPELINE_ALREADY_TRIGGERED
+          - NON_EXISTING_PIPELINE
+          - DUPLICATE_COMMAND_NAMES
+          - INVALID_PIPELINE
+          - COMMAND_DOES_NOT_EXIST
+          - DUPLICATE_ARTIFACTSTREAM_NAMES
+          - DUPLICATE_HOST_NAMES
+          - STATE_NOT_FOR_TYPE
+          - STATE_MACHINE_ISSUE
+          - STATE_DISCONTINUE_FAILED
+          - STATE_PAUSE_FAILED
+          - PAUSE_ALL_ALREADY
+          - RESUME_ALL_ALREADY
+          - ROLLBACK_ALREADY
+          - ABORT_ALL_ALREADY
+          - EXPIRE_ALL_ALREADY
+          - RETRY_FAILED
+          - UNKNOWN_ARTIFACT_TYPE
+          - UNKNOWN_STAGE_ELEMENT_WRAPPER_TYPE
+          - INIT_TIMEOUT
+          - LICENSE_EXPIRED
+          - NOT_LICENSED
+          - REQUEST_TIMEOUT
+          - SCM_REQUEST_TIMEOUT
+          - WORKFLOW_ALREADY_TRIGGERED
+          - JENKINS_ERROR
+          - INVALID_ARTIFACT_SOURCE
+          - INVALID_ARTIFACT_SERVER
+          - INVALID_CLOUD_PROVIDER
+          - UPDATE_NOT_ALLOWED
+          - DELETE_NOT_ALLOWED
+          - APPDYNAMICS_CONFIGURATION_ERROR
+          - APM_CONFIGURATION_ERROR
+          - SPLUNK_CONFIGURATION_ERROR
+          - ELK_CONFIGURATION_ERROR
+          - LOGZ_CONFIGURATION_ERROR
+          - SUMO_CONFIGURATION_ERROR
+          - INSTANA_CONFIGURATION_ERROR
+          - APPDYNAMICS_ERROR
+          - STACKDRIVER_ERROR
+          - STACKDRIVER_CONFIGURATION_ERROR
+          - NEWRELIC_CONFIGURATION_ERROR
+          - NEWRELIC_ERROR
+          - DYNA_TRACE_CONFIGURATION_ERROR
+          - DYNA_TRACE_ERROR
+          - CLOUDWATCH_ERROR
+          - CLOUDWATCH_CONFIGURATION_ERROR
+          - PROMETHEUS_CONFIGURATION_ERROR
+          - DATA_DOG_CONFIGURATION_ERROR
+          - SERVICE_GUARD_CONFIGURATION_ERROR
+          - ENCRYPTION_NOT_CONFIGURED
+          - UNAVAILABLE_DELEGATES
+          - WORKFLOW_EXECUTION_IN_PROGRESS
+          - PIPELINE_EXECUTION_IN_PROGRESS
+          - AWS_ACCESS_DENIED
+          - AWS_CLUSTER_NOT_FOUND
+          - AWS_SERVICE_NOT_FOUND
+          - IMAGE_NOT_FOUND
+          - ILLEGAL_ARGUMENT
+          - IMAGE_TAG_NOT_FOUND
+          - DELEGATE_NOT_AVAILABLE
+          - INVALID_YAML_PAYLOAD
+          - AUTHENTICATION_ERROR
+          - AUTHORIZATION_ERROR
+          - UNRECOGNIZED_YAML_FIELDS
+          - COULD_NOT_MAP_BEFORE_YAML
+          - MISSING_BEFORE_YAML
+          - MISSING_YAML
+          - NON_EMPTY_DELETIONS
+          - GENERAL_YAML_ERROR
+          - GENERAL_YAML_INFO
+          - YAML_GIT_SYNC_ERROR
+          - GIT_CONNECTION_ERROR
+          - GIT_ERROR
+          - ARTIFACT_SERVER_ERROR
+          - ENCRYPT_DECRYPT_ERROR
+          - SECRET_MANAGEMENT_ERROR
+          - SECRET_NOT_FOUND
+          - KMS_OPERATION_ERROR
+          - GCP_KMS_OPERATION_ERROR
+          - VAULT_OPERATION_ERROR
+          - AWS_SECRETS_MANAGER_OPERATION_ERROR
+          - AZURE_KEY_VAULT_OPERATION_ERROR
+          - AZURE_KEY_VAULT_INTERRUPT_ERROR
+          - UNSUPPORTED_OPERATION_EXCEPTION
+          - FEATURE_UNAVAILABLE
+          - GENERAL_ERROR
+          - BASELINE_CONFIGURATION_ERROR
+          - SAML_IDP_CONFIGURATION_NOT_AVAILABLE
+          - INVALID_AUTHENTICATION_MECHANISM
+          - INVALID_SAML_CONFIGURATION
+          - INVALID_OAUTH_CONFIGURATION
+          - INVALID_LDAP_CONFIGURATION
+          - USER_GROUP_SYNC_FAILURE
+          - USER_GROUP_ALREADY_EXIST
+          - INVALID_TWO_FACTOR_AUTHENTICATION_CONFIGURATION
+          - EXPLANATION
+          - HINT
+          - NOT_WHITELISTED_IP
+          - INVALID_TOTP_TOKEN
+          - EMAIL_FAILED
+          - SSL_HANDSHAKE_FAILED
+          - NO_APPS_ASSIGNED
+          - INVALID_INFRA_CONFIGURATION
+          - TEMPLATES_LINKED
+          - USER_HAS_NO_PERMISSIONS
+          - USER_NOT_AUTHORIZED
+          - USER_ALREADY_PRESENT
+          - EMAIL_ERROR
+          - INVALID_USAGE_RESTRICTION
+          - USAGE_RESTRICTION_ERROR
+          - STATE_EXECUTION_INSTANCE_NOT_FOUND
+          - DELEGATE_TASK_RETRY
+          - KUBERNETES_API_TASK_EXCEPTION
+          - KUBERNETES_TASK_EXCEPTION
+          - KUBERNETES_YAML_ERROR
+          - SAVE_FILE_INTO_AWS_STORAGE_FAILED
+          - READ_FILE_FROM_AWS_STORAGE_FAILED
+          - SAVE_FILE_INTO_GCP_STORAGE_FAILED
+          - READ_FILE_FROM_GCP_STORAGE_FAILED
+          - FILE_NOT_FOUND_ERROR
+          - USAGE_LIMITS_EXCEEDED
+          - EVENT_PUBLISH_FAILED
+          - CUSTOM_APPROVAL_ERROR
+          - JIRA_ERROR
+          - EXPRESSION_EVALUATION_FAILED
+          - KUBERNETES_VALUES_ERROR
+          - KUBERNETES_CLUSTER_ERROR
+          - INCORRECT_SIGN_IN_MECHANISM
+          - OAUTH_LOGIN_FAILED
+          - INVALID_TERRAFORM_TARGETS_REQUEST
+          - TERRAFORM_EXECUTION_ERROR
+          - FILE_READ_FAILED
+          - FILE_SIZE_EXCEEDS_LIMIT
+          - CLUSTER_NOT_FOUND
+          - MARKETPLACE_TOKEN_NOT_FOUND
+          - INVALID_MARKETPLACE_TOKEN
+          - INVALID_TICKETING_SERVER
+          - SERVICENOW_ERROR
+          - PASSWORD_EXPIRED
+          - USER_LOCKED
+          - PASSWORD_STRENGTH_CHECK_FAILED
+          - ACCOUNT_DISABLED
+          - INVALID_ACCOUNT_PERMISSION
+          - PAGERDUTY_ERROR
+          - HEALTH_ERROR
+          - SAML_TEST_SUCCESS_MECHANISM_NOT_ENABLED
+          - DOMAIN_WHITELIST_FILTER_CHECK_FAILED
+          - INVALID_DASHBOARD_UPDATE_REQUEST
+          - DUPLICATE_FIELD
+          - INVALID_AZURE_VAULT_CONFIGURATION
+          - USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS
+          - INVALID_ROLLBACK
+          - DATA_COLLECTION_ERROR
+          - SUMO_DATA_COLLECTION_ERROR
+          - DEPLOYMENT_GOVERNANCE_ERROR
+          - BATCH_PROCESSING_ERROR
+          - GRAPHQL_ERROR
+          - FILE_CREATE_ERROR
+          - ILLEGAL_STATE
+          - GIT_DIFF_COMMIT_NOT_IN_ORDER
+          - FAILED_TO_ACQUIRE_PERSISTENT_LOCK
+          - FAILED_TO_ACQUIRE_NON_PERSISTENT_LOCK
+          - POD_NOT_FOUND_ERROR
+          - COMMAND_EXECUTION_ERROR
+          - REGISTRY_EXCEPTION
+          - ENGINE_INTERRUPT_PROCESSING_EXCEPTION
+          - ENGINE_IO_EXCEPTION
+          - ENGINE_OUTCOME_EXCEPTION
+          - ENGINE_SWEEPING_OUTPUT_EXCEPTION
+          - CACHE_NOT_FOUND_EXCEPTION
+          - ENGINE_ENTITY_UPDATE_EXCEPTION
+          - SHELL_EXECUTION_EXCEPTION
+          - TEMPLATE_NOT_FOUND
+          - AZURE_SERVICE_EXCEPTION
+          - AZURE_CLIENT_EXCEPTION
+          - GIT_UNSEEN_REMOTE_HEAD_COMMIT
+          - TIMEOUT_ENGINE_EXCEPTION
+          - NO_AVAILABLE_DELEGATES
+          - NO_GLOBAL_DELEGATE_ACCOUNT
+          - NO_INSTALLED_DELEGATES
+          - DUPLICATE_DELEGATE_EXCEPTION
+          - GCP_MARKETPLACE_EXCEPTION
+          - MISSING_DEFAULT_GOOGLE_CREDENTIALS
+          - INCORRECT_DEFAULT_GOOGLE_CREDENTIALS
+          - OPTIMISTIC_LOCKING_EXCEPTION
+          - NG_PIPELINE_EXECUTION_EXCEPTION
+          - NG_PIPELINE_CREATE_EXCEPTION
+          - RESOURCE_NOT_FOUND_EXCEPTION
+          - PMS_INITIALIZE_SDK_EXCEPTION
+          - UNEXPECTED_SNIPPET_EXCEPTION
+          - UNEXPECTED_SCHEMA_EXCEPTION
+          - CONNECTOR_VALIDATION_EXCEPTION
+          - TIMESCALE_NOT_AVAILABLE
+          - MIGRATION_EXCEPTION
+          - REQUEST_PROCESSING_INTERRUPTED
+          - SECRET_MANAGER_ID_NOT_FOUND
+          - GCP_SECRET_MANAGER_OPERATION_ERROR
+          - GCP_SECRET_OPERATION_ERROR
+          - GIT_OPERATION_ERROR
+          - TASK_FAILURE_ERROR
+          - INSTANCE_STATS_PROCESS_ERROR
+          - INSTANCE_STATS_MIGRATION_ERROR
+          - DEPLOYMENT_MIGRATION_ERROR
+          - CG_LICENSE_USAGE_ERROR
+          - INSTANCE_STATS_AGGREGATION_ERROR
+          - UNRESOLVED_EXPRESSIONS_ERROR
+          - KRYO_HANDLER_NOT_FOUND_ERROR
+          - DELEGATE_ERROR_HANDLER_EXCEPTION
+          - DELEGATE_SERVICE_DRIVER_EXCEPTION
+          - DELEGATE_INSTALLATION_COMMAND_NOT_SUPPORTED_EXCEPTION
+          - UNEXPECTED_TYPE_ERROR
+          - EXCEPTION_HANDLER_NOT_FOUND
+          - CONNECTOR_NOT_FOUND_EXCEPTION
+          - GCP_SERVER_ERROR
+          - HTTP_RESPONSE_EXCEPTION
+          - SCM_NOT_FOUND_ERROR
+          - SCM_CONFLICT_ERROR
+          - SCM_CONFLICT_ERROR_V2
+          - SCM_UNPROCESSABLE_ENTITY
+          - PROCESS_EXECUTION_EXCEPTION
+          - SCM_UNAUTHORIZED
+          - SCM_BAD_REQUEST
+          - SCM_INTERNAL_SERVER_ERROR
+          - DATA
+          - CONTEXT
+          - PR_CREATION_ERROR
+          - URL_NOT_REACHABLE
+          - URL_NOT_PROVIDED
+          - ENGINE_EXPRESSION_EVALUATION_ERROR
+          - ENGINE_FUNCTOR_ERROR
+          - JIRA_CLIENT_ERROR
+          - SCM_NOT_MODIFIED
+          - APPROVAL_STEP_NG_ERROR
+          - BUCKET_SERVER_ERROR
+          - GIT_SYNC_ERROR
+          - TEMPLATE_EXCEPTION
+          - TEMPLATE_ALREADY_EXISTS_EXCEPTION
+          - ENTITY_REFERENCE_EXCEPTION
+          - ACTIVE_SERVICE_INSTANCES_PRESENT_EXCEPTION
+          - INVALID_INPUT_SET
+          - INVALID_OVERLAY_INPUT_SET
+          - RESOURCE_ALREADY_EXISTS
+          - INVALID_JSON_PAYLOAD
+          - POLICY_EVALUATION_FAILURE
+          - POLICY_SET_ERROR
+          - INVALID_ARTIFACTORY_REGISTRY_REQUEST
+          - INVALID_NEXUS_REGISTRY_REQUEST
+          - ENTITY_NOT_FOUND
+          - GITX_OAUTH_NOT_SET
+          - INVALID_AZURE_CONTAINER_REGISTRY_REQUEST
+          - AZURE_AUTHENTICATION_ERROR
+          - AZURE_CONFIG_ERROR
+          - DATA_PROCESSING_ERROR
+          - INVALID_AZURE_AKS_REQUEST
+          - AWS_IAM_ERROR
+          - AWS_CF_ERROR
+          - AWS_INSTANCE_ERROR
+          - AWS_VPC_ERROR
+          - AWS_TAG_ERROR
+          - AWS_ASG_ERROR
+          - AWS_LOAD_BALANCER_ERROR
+          - SCM_INTERNAL_SERVER_ERROR_V2
+          - SCM_FAILED_DEPENDENCY_ERROR
+          - SCM_UNAUTHORIZED_ERROR_V2
+          - TOO_MANY_REQUESTS
+          - SCM_RATE_LIMIT_ERROR
+          - INVALID_IDENTIFIER_REF
+          - SPOTINST_NULL_ERROR
+          - SPOTNIST_REST_EXCEPTION
+          - SCM_UNEXPECTED_ERROR
+          - DUPLICATE_FILE_IMPORT
+          - AZURE_APP_SERVICES_TASK_EXCEPTION
+          - AZURE_ARM_TASK_EXCEPTION
+          - AZURE_BP_TASK_EXCEPTION
+          - MEDIA_NOT_SUPPORTED
+          - AWS_ECS_ERROR
+          - AWS_APPLICATION_AUTO_SCALING
+          - AWS_ECS_SERVICE_NOT_ACTIVE
+          - AWS_ECS_CLIENT_ERROR
+          - AWS_STS_ERROR
+          - FREEZE_EXCEPTION
+          - MISSING_EXCEPTION
+          - DELEGATE_TASK_EXPIRED
+          - DELEGATE_TASK_VALIDATION_FAILED
+          - MONGO_EXECUTION_TIMEOUT_EXCEPTION
+          - DELEGATE_NOT_REGISTERED
+          - TERRAFORM_VAULT_SECRET_CLEANUP_FAILURE
+          - APPROVAL_REJECTION
+          - TERRAGRUNT_EXECUTION_ERROR
+          - ADFS_ERROR
+          - TERRAFORM_CLOUD_ERROR
+          - CLUSTER_CREDENTIALS_NOT_FOUND
+          - SCM_API_ERROR
+          - INTERNAL_SERVER_ERROR
+          - SCM_FORBIDDEN
+          - AWS_EKS_ERROR
+          - OPA_POLICY_EVALUATION_ERROR
+          - USER_MARKED_FAILURE
+          - SSH_RETRY
+          - HTTP_CLIENT_ERROR_RESPONSE
+          - HTTP_INTERNAL_SERVER_ERROR
+          - HTTP_BAD_GATEWAY
+          - HTTP_SERVICE_UNAVAILABLE
+          - HTTP_GATEWAY_TIMEOUT
+          - HTTP_SERVER_ERROR_RESPONSE
+          - PIPELINE_UPDATE_EXCEPTION
+          - SERVICENOW_REFRESH_TOKEN_ERROR
+          - PARAMETER_FIELD_CAST_ERROR
+          - ABORT_ALL_ALREADY_NG
+          - WEBHOOK_EXCEPTION
+          - INVALID_OIDC_CONFIGURATION
+          - INVALID_CREDENTIALS
+          - INVALID_OR_PRIVATE_REPO
+          - BARRIER_FAILED_ERROR
+          - ELASTICSEARCH_NOT_AVAILABLE
+          - OBJECT_STORE_NOT_AVAILABLE
+          - NO_ELIGIBLE_RUNNERS
+          - NO_AVAILABLE_RUNNERS
+          - RUNNER_DISCONNECTED
+          - EVENT_LISTENER_STEP_FAILURE
+          - TRANSACTION_ABORTED
+          - UNRESOLVED_EXPRESSIONS_WITH_CONTEXT_ERROR
+        message:
+          type: string
+        correlationId:
+          type: string
+        detailedMessage:
+          type: string
+        responseMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseMessage'
+        metadata:
+          $ref: '#/components/schemas/ErrorMetadata2'
+      description: This is Error entity as defined in Harness
+    infra_v2.ProxyConfiguration:
+      type: object
+      properties:
+        httpProxy:
+          type: string
+        httpsProxy:
+          type: string
+        noProxy:
+          type: string
+        url:
+          type: string
+    v2_onboarding.V2OnboardingRequest:
+      type: object
+      required:
+      - environmentRef
+      - infrastructureRef
+      - mode
       properties:
         chaosAdvanceConfiguration:
           $ref: '#/components/schemas/v2_onboarding.ChaosInfraAdvanceConfiguration'
         discoveryAdvanceConfiguration:
           $ref: '#/components/schemas/database.AgentConfiguration'
+        environmentRef:
+          type: string
+        infrastructureRef:
+          type: string
         isAIEnabled:
           type: boolean
-        pipelineIdentity:
+        mode:
+          $ref: '#/components/schemas/v2_onboarding.OnboardingMode'
+        serviceAccount:
           type: string
+    v2_onboarding.NetworkMapCreationMode:
+      type: string
+      enum:
+      - Manual
+      - Automatic
+      x-enum-varnames:
+      - NetworkMapCreationManual
+      - NetworkMapCreationAutomatic
+    OnboardingContext:
+      type: object
+      properties:
+        strategy:
+          type: string
+          description: Deployment strategy. When set, the call renders a ready-to-run pipeline for this strategy (returned as pipelineYaml) instead of provisioning resources. Accepts 'rolling', 'canary' or 'bluegreen'.
+          enum:
+          - rolling
+          - canary
+          - bluegreen
+        deployment_type:
+          type: string
+          description: Deployment type for the generated pipeline. Required when 'strategy' is set; together with 'strategy' it selects the pipeline template. Accepts only 'Kubernetes'.
+          enum:
+          - kubernetes
+        environment_identifier:
+          type: string
+          description: Environment identifier to reference in the generated pipeline. Required when 'strategy' is set.
+        infrastructure_identifier:
+          type: string
+          description: Infrastructure identifier to reference in the generated pipeline. Required when 'strategy' is set.
+        service_type:
+          type: string
+          description: Service deployment type. Supports 'kubernetes' only. Required when creating a service; may be omitted when updating an existing one (service_id matches an existing service).
+        service_identifier:
+          type: string
+          description: 'Service identifier. In provisioning requests: when it matches an existing service, that service is UPDATED (the manifest and/or artifact sections in this request are merged in and all other sections are preserved); when absent (create), an identifier is generated. In strategy-based requests: the service identifier referenced in the generated pipeline (required).'
+        service_name:
+          type: string
+          description: Name to use for the created service.
+        manifest_type:
+          type: string
+          description: Manifest store type. Supports 'github' or 'harnessCode'.
+        manifest_id:
+          type: string
+          description: Identifier for the created GitHub (manifest) connector.
+        manifest_authType:
+          type: string
+          description: GitHub auth type. Accepts only 'UsernameToken' or 'OAuth'.
+          enum:
+          - UsernameToken
+          - OAuth
+        manifest_username:
+          type: string
+          description: GitHub username for the manifest connector.
+        manifest_token:
+          type: string
+          description: GitHub password/token value for the manifest connector; stored as a secret.
+        manifest_tokenRef:
+          type: string
+          description: Reference to an existing secret holding the GitHub OAuth access token (used when manifest_authType is 'oauth'). Bare id = project scope; prefix 'org.'/'account.' for those scopes. Wired to both authentication and apiAccess; no new secret is created.
+        manifest_repoUrl:
+          type: string
+          description: Full GitHub repository URL (REPO-type connector).
+        manifest_fetchType:
+          type: string
+          description: Git fetch type. Accepts only 'branch' or 'commit'.
+          enum:
+          - branch
+          - commit
+        manifest_branch:
+          type: string
+          description: Git branch to fetch the manifest from (used when manifest_fetchType is 'branch').
+        manifest_commitId:
+          type: string
+          description: Git commit id to fetch the manifest from (used when manifest_fetchType is 'commit').
+        manifest_repoName:
+          type: string
+          description: Repository name within the manifest store. Used by 'harnessCode' (the Harness Code repo) and by account-level Git connectors.
+        manifest_paths:
+          type: string
+          description: Manifest file path(s) / folder(s) within the repository. Accepts multiple, comma-separated (e.g. 'k8s/deployment.yaml, k8s/service.yaml'); each is added to the manifest store.
+        artifact_type:
+          type: string
+          description: Artifact source type. Supports 'DockerRegistry'.
+        artifact_id:
+          type: string
+          description: Identifier for the created Docker (artifact) connector.
+        artifact_username:
+          type: string
+          description: Docker registry username for the artifact connector.
+        artifact_password:
+          type: string
+          description: Docker registry password/token value for the artifact connector; stored as a secret.
+        artifact_imagePath:
+          type: string
+          description: Docker image path, e.g. 'library/nginx'.
+        artifact_tag:
+          type: string
+          description: Docker image tag.
+        env_id:
+          type: string
+          description: Environment identifier. When it matches an existing environment, that environment is reused and the infrastructure is attached to it. When absent, an identifier is generated.
+        env_name:
+          type: string
+          description: Environment display name. Defaults to the environment identifier when absent.
+        env_type:
+          type: string
+          description: Environment type. Supports 'PreProduction' (default) or 'Production'.
+        infra_type:
+          type: string
+          description: Infrastructure type. Supports 'KubernetesDirect' only.
+        infra_id:
+          type: string
+          description: Infrastructure identifier. When absent, an identifier is generated.
+        infra_name:
+          type: string
+          description: Infrastructure display name. Defaults to the infrastructure identifier when absent.
+        infra_namespace:
+          type: string
+          description: Kubernetes namespace the infrastructure deploys into.
+        infra_releaseName:
+          type: string
+          description: Harness release name expression. When absent, a unique 'release-'-prefixed name is generated.
+        infra_connectorType:
+          type: string
+          description: Cluster connector type. Supports 'K8sCluster' only.
+        infra_clusterUrl:
+          type: string
+          description: Kubernetes cluster master URL for the connector.
+        infra_credentialType:
+          type: string
+          description: Cluster credential type. Supports 'ManualConfig' only.
+        infra_authType:
+          type: string
+          description: Cluster auth type. Supports 'ServiceAccount' only.
+        infra_serviceAccountToken:
+          type: string
+          description: Kubernetes service-account token value; stored as a secret and referenced by the connector.
+      description: Declarative context describing the resources to onboard
+    database.ResourceRequirements:
+      type: object
+      properties:
+        limits:
+          $ref: '#/components/schemas/database.ResourceList'
+        requests:
+          $ref: '#/components/schemas/database.ResourceList'
+    v2_onboarding.DiscoveredService:
+      type: object
+      properties:
+        agentDetails:
+          $ref: '#/components/schemas/v2_onboarding.AgentData'
+        completedAgentCount:
+          type: integer
+        discoveredServiceCount:
+          type: integer
+        erroredAgentCount:
+          type: integer
+        isTracingEnabled:
+          type: boolean
+        pendingAgentCount:
+          type: integer
+        sDAgentID:
+          type: string
+        sDAgentIdentity:
+          type: string
+        status:
+          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
+        totalAgentCount:
+          type: integer
+    database.CronConfig:
+      type: object
+      properties:
+        expression:
+          type: string
+    v1.PullPolicy:
+      type: string
+      enum:
+      - Always
+      - Never
+      - IfNotPresent
+      x-enum-varnames:
+      - PullAlways
+      - PullNever
+      - PullIfNotPresent
+    v2_onboarding.TargetServiceDetails:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    pipelineonboarding.ListPipelineOnboardingResponse:
+      type: object
+      properties:
+        pipelineOnboardings:
+          type: array
+          items:
+            $ref: '#/components/schemas/pipelineonboarding.PipelineOnboarding'
+    pipelineonboarding.PipelineChaosOnboardingCheckResponse:
+      type: object
+      properties:
+        check:
+          type: boolean
+        infrastructures:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/pipelineonboarding.InfrastructuresStatus'
+        message:
+          type: string
+        name:
+          type: string
+        services:
+          type: object
+          additionalProperties:
+            type: object
+    v2_onboarding.ConfirmExperimentCreationResponse:
+      type: object
+      properties:
+        completed:
+          type: boolean
+        targetNetworkMapStatus:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/targetnetworkmap.Status'
+    KubeconfigContextDescriptor:
+      type: object
+      properties:
+        name:
+          type: string
+          description: kubeconfig context name
+        clusterName:
+          type: string
+          description: Resolved cluster name referenced by the context
+        namespace:
+          type: string
+          description: Namespace declared on the context, if any
+        type:
+          type: string
+          description: Detected Harness auth type; UNKNOWN when unsupported (one of SERVICE_ACCOUNT, USER_PASSWORD, CLIENT_KEY_CERT, OPEN_ID_CONNECT, UNKNOWN)
+        importStatus:
+          type: string
+          description: Whether the descriptor can create a connector as-is (COMPLETE or UNSUPPORTED)
+          enum:
+          - COMPLETE
+          - UNSUPPORTED
+        spec:
+          type: object
+          additionalProperties:
+            type: object
+            description: Auth-type-specific fields, keyed to connector credential-DTO field names
+          description: Auth-type-specific fields, keyed to connector credential-DTO field names
+        secrets:
+          type: array
+          description: spec keys whose values are secrets and must become Harness secret refs
+          items:
+            type: string
+            description: spec keys whose values are secrets and must become Harness secret refs
+        errors:
+          type: array
+          description: Blocking reasons this context cannot be imported (present when importStatus is UNSUPPORTED)
+          items:
+            type: string
+            description: Blocking reasons this context cannot be imported (present when importStatus is UNSUPPORTED)
+        warnings:
+          type: array
+          description: Lossy / non-portable notes for an importable context
+          items:
+            type: string
+            description: Lossy / non-portable notes for an importable context
+      description: Per-context connector-creation hint reverse-engineered from a kubeconfig
     pipelineonboarding.PipelineChaosOnboardingStatusResponse:
       type: object
       required:
@@ -3420,66 +3384,18 @@ components:
           type: integer
         updatedBy:
           type: string
-    database.KubernetesAgentConfiguration:
+    KubeconfigUploadResponse:
       type: object
       properties:
-        annotations:
-          type: object
-          additionalProperties:
-            type: string
-        disableNamespaceCreation:
-          type: boolean
-        imagePullPolicy:
-          $ref: '#/components/schemas/v1.PullPolicy'
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-        namespace:
+        currentContext:
           type: string
-        namespaced:
-          type: boolean
-        nodeSelector:
-          type: object
-          additionalProperties:
-            type: string
-        resources:
-          $ref: '#/components/schemas/database.ResourceRequirements'
-        runAsGroup:
-          type: integer
-        runAsUser:
-          type: integer
-        serviceAccount:
-          type: string
-        tolerations:
+          description: The current-context declared in the uploaded kubeconfig
+        contexts:
           type: array
+          description: Per-context connector-creation hints reverse-engineered from the kubeconfig
           items:
-            $ref: '#/components/schemas/v1.Toleration'
-        useStaticNameForConfigmapAndSecret:
-          type: boolean
-    v2_onboarding.DiscoveredService:
-      type: object
-      properties:
-        agentDetails:
-          $ref: '#/components/schemas/v2_onboarding.AgentData'
-        completedAgentCount:
-          type: integer
-        discoveredServiceCount:
-          type: integer
-        erroredAgentCount:
-          type: integer
-        isTracingEnabled:
-          type: boolean
-        pendingAgentCount:
-          type: integer
-        sDAgentID:
-          type: string
-        sDAgentIdentity:
-          type: string
-        status:
-          $ref: '#/components/schemas/v2_onboarding.V2OnboardingStatus'
-        totalAgentCount:
-          type: integer
+            $ref: '#/components/schemas/KubeconfigContextDescriptor'
+      description: Result of a kubeconfig onboarding upload
     v2_onboarding.V2OnboardingList:
       type: object
       properties:
@@ -3489,6 +3405,15 @@ components:
             $ref: '#/components/schemas/v2_onboarding.V2Onboarding'
         page:
           $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    v2_onboarding.ConfirmDiscoveryResponse:
+      type: object
+      properties:
+        agentCreated:
+          type: boolean
+        agentLinked:
+          type: boolean
+        discoveryCompleted:
+          type: boolean
     pipelineonboarding.InfrastructureOnboardingMapping:
       type: object
       properties:
@@ -3500,22 +3425,129 @@ components:
           type: string
         status:
           type: string
-    pipelineonboarding.ListPipelineOnboardingResponse:
+    targetnetworkmap.ExperimentCreationMode:
+      type: string
+      enum:
+      - Basic
+      - Intermediate
+      - Advanced
+      x-enum-varnames:
+      - BasicExperimentCreation
+      - IntermediateExperimentCreation
+      - AdvancedExperimentCreation
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    v1.PodPhase:
+      type: string
+      enum:
+      - Pending
+      - Running
+      - Succeeded
+      - Failed
+      - Unknown
+      x-enum-varnames:
+      - PodPending
+      - PodRunning
+      - PodSucceeded
+      - PodFailed
+      - PodUnknown
+    v1.VolumeMount:
       type: object
       properties:
-        pipelineOnboardings:
-          type: array
-          items:
-            $ref: '#/components/schemas/pipelineonboarding.PipelineOnboarding'
-    v2_onboarding.ConfirmExperimentCreationRequest:
+        mountPath:
+          description: 'Path within the container at which the volume should be mounted.  Must
+
+            not contain '':''.'
+          type: string
+        mountPropagation:
+          description: 'mountPropagation determines how mounts are propagated from the host
+
+            to container and the other way around.
+
+            When not set, MountPropagationNone is used.
+
+            This field is beta in 1.10.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.MountPropagationMode'
+        name:
+          description: This must match the Name of a Volume.
+          type: string
+        readOnly:
+          description: 'Mounted read-only if true, read-write otherwise (false or unspecified).
+
+            Defaults to false.
+
+            +optional'
+          type: boolean
+        subPath:
+          description: 'Path within the volume from which the container''s volume should be mounted.
+
+            Defaults to "" (volume''s root).
+
+            +optional'
+          type: string
+        subPathExpr:
+          description: 'Expanded path within the volume from which the container''s volume should be mounted.
+
+            Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container''s environment.
+
+            Defaults to "" (volume''s root).
+
+            SubPathExpr and SubPath are mutually exclusive.
+
+            +optional'
+          type: string
+    database.MTLSConfiguration:
       type: object
       properties:
-        mode:
-          $ref: '#/components/schemas/targetnetworkmap.ExperimentCreationMode'
-    github_com_harness_hce-saas_graphql_server_api.Empty:
+        certPath:
+          type: string
+        keyPath:
+          type: string
+        secretName:
+          type: string
+        url:
+          type: string
+    database.ProxyConfiguration:
       type: object
-    pipelineonboarding.PipelineChaosOnboardingTaskResponse:
-      type: object
+      properties:
+        httpProxy:
+          type: string
+        httpsProxy:
+          type: string
+        noProxy:
+          description: 'SecretName string `bson:"secretName" json:"secretName"`
+
+            CAPath     string `bson:"caPath" json:"caPath"`'
+          type: string
+        url:
+          type: string
+    v2_onboarding.OnboardingMode:
+      type: string
+      enum:
+      - Manual
+      - Automatic
+      x-enum-varnames:
+      - ManualMode
+      - AutomaticMode
+    infra_v2.EnvValueFrom:
+      type: string
+      enum:
+      - configMapKeyRef
+      - secretKeyRef
+      - value
+      - valueFrom
+      x-enum-varnames:
+      - EnvValueFromConfigMapKeyRef
+      - EnvValueFromSecretKeyRef
+      - EnvValueFromValue
+      - EnvValueFromValueFrom
     v1.MountPropagationMode:
       type: string
       enum:
@@ -3526,15 +3558,6 @@ components:
       - MountPropagationNone
       - MountPropagationHostToContainer
       - MountPropagationBidirectional
-    v2_onboarding.ConfirmExperimentCreationResponse:
-      type: object
-      properties:
-        completed:
-          type: boolean
-        targetNetworkMapStatus:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/targetnetworkmap.Status'
     database.ResourceList:
       type: object
       properties:
@@ -3542,29 +3565,6 @@ components:
           type: string
         memory:
           type: string
-    database.AgentConfiguration:
-      type: object
-      required:
-      - data
-      properties:
-        collectorImage:
-          type: string
-        data:
-          $ref: '#/components/schemas/database.DataCollectionConfiguration'
-        imagePullSecrets:
-          type: array
-          items:
-            type: string
-        kubernetes:
-          $ref: '#/components/schemas/database.KubernetesAgentConfiguration'
-        logWatcherImage:
-          type: string
-        mtls:
-          $ref: '#/components/schemas/database.MTLSConfiguration'
-        proxy:
-          $ref: '#/components/schemas/database.ProxyConfiguration'
-        skipSecureVerify:
-          type: boolean
   securitySchemes:
     x-api-key:
       name: x-api-key

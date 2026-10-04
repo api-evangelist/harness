@@ -110,6 +110,13 @@ paths:
       x-internal: true
 components:
   requestBodies:
+    ExecuteLlmAuthoringPipelineRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineRequestBody'
+      description: Request body for v1-execute-llm-authoring-pipeline
+      required: true
     ChangeSetExistenceRequest:
       content:
         application/json:
@@ -124,13 +131,6 @@ components:
             $ref: '#/components/schemas/ChangeAuthoringEventIn'
       description: Request body for creating a change authoring execution event
       required: true
-    ExecuteLlmAuthoringPipelineRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ExecuteLlmAuthoringPipelineRequestBody'
-      description: Request body for v1-execute-llm-authoring-pipeline
-      required: true
   schemas:
     ChangeSetExistenceOut:
       properties:
@@ -143,6 +143,30 @@ components:
       - existence
       title: ChangeSetExistenceOut
       type: object
+    ChangeSetExistenceIn:
+      properties:
+        changeSets:
+          items:
+            $ref: '#/components/schemas/ChangeSetIdInput'
+          maxItems: 100
+          minItems: 1
+          type: array
+      required:
+      - changeSets
+      title: ChangeSetExistenceIn
+      type: object
+    DbOpsError:
+      description: Error Response
+      properties:
+        message:
+          description: error message detail
+          type: string
+      required:
+      - message
+      title: Error Response
+      type: object
+      x-stoplight:
+        id: 61cwtgnps2mpt
     ExecuteLlmAuthoringPipelineRequestBody:
       properties:
         changeset:
@@ -200,39 +224,6 @@ components:
       - instanceId
       - changeset
       type: object
-    ChangeSetExistenceIn:
-      properties:
-        changeSets:
-          items:
-            $ref: '#/components/schemas/ChangeSetIdInput'
-          maxItems: 100
-          minItems: 1
-          type: array
-      required:
-      - changeSets
-      title: ChangeSetExistenceIn
-      type: object
-    ExecuteLlmAuthoringPipelineResponseBody:
-      properties:
-        executionId:
-          description: Pipeline execution id returned by pipeline-service.
-          type: string
-        openInHarness:
-          description: Deep link to the live execution in the Harness UI.
-          type: string
-        pipelineIdentifier:
-          description: 'Identifier of the pipeline that was actually executed (the value of
-
-            the `pipelineIdentifier` request field, or the default identifier
-
-            when `useDefaultPipeline=true`).
-
-            '
-          type: string
-      required:
-      - executionId
-      - pipelineIdentifier
-      type: object
     ChangeAuthoringEventIn:
       description: Request body for creating a change authoring execution event
       properties:
@@ -263,6 +254,27 @@ components:
       - pipelineExecutionId
       title: Change Authoring Event Request
       type: object
+    ExecuteLlmAuthoringPipelineResponseBody:
+      properties:
+        executionId:
+          description: Pipeline execution id returned by pipeline-service.
+          type: string
+        openInHarness:
+          description: Deep link to the live execution in the Harness UI.
+          type: string
+        pipelineIdentifier:
+          description: 'Identifier of the pipeline that was actually executed (the value of
+
+            the `pipelineIdentifier` request field, or the default identifier
+
+            when `useDefaultPipeline=true`).
+
+            '
+          type: string
+      required:
+      - executionId
+      - pipelineIdentifier
+      type: object
     ChangeSetIdInput:
       properties:
         id:
@@ -273,19 +285,13 @@ components:
       - id
       title: ChangeSetIdInput
       type: object
-    DbOpsError:
-      description: Error Response
-      properties:
-        message:
-          description: error message detail
-          type: string
-      required:
-      - message
-      title: Error Response
-      type: object
-      x-stoplight:
-        id: 61cwtgnps2mpt
   responses:
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbOpsError'
+      description: Error Response body
     ChangeSetExistenceResponse:
       content:
         application/json:
@@ -300,28 +306,7 @@ components:
       description: Pipeline execution triggered and event persisted.
     ChangeAuthoringEventResponse:
       description: Change authoring execution event created successfully
-    ErrorResponse:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DbOpsError'
-      description: Error Response body
   parameters:
-    DBSchemaParam:
-      description: Identifier of the database schema
-      in: path
-      name: dbschema
-      required: true
-      schema:
-        maxLength: 128
-        type: string
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
     DbOpsAccountHeader:
       description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
       in: header
@@ -334,6 +319,21 @@ components:
       name: org
       required: true
       schema:
+        type: string
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    DBSchemaParam:
+      description: Identifier of the database schema
+      in: path
+      name: dbschema
+      required: true
+      schema:
+        maxLength: 128
         type: string
   securitySchemes:
     x-api-key:

@@ -185,6 +185,30 @@ paths:
       x-internal: true
 components:
   schemas:
+    GitXWebhookResponse:
+      title: GitXWebhookResponse
+      x-stoplight:
+        id: vkv1a5drhxln9
+      type: object
+      description: 'Contains information about the GitX webhooks '
+      properties:
+        webhook_identifier:
+          type: string
+        webhook_name:
+          type: string
+        connector_ref:
+          type: string
+        repo_name:
+          type: string
+        folder_paths:
+          type: array
+          items:
+            type: string
+        is_enabled:
+          type: boolean
+        event_trigger_time:
+          type: integer
+          format: int64
     UpdateGitXWebhookRequest:
       title: UpdateGitXWebhookRequest
       x-stoplight:
@@ -203,6 +227,15 @@ components:
         is_enabled:
           type: boolean
         connector_ref:
+          type: string
+    CreateGitXWebhookResponse:
+      title: CreateGitXWebhookResponse
+      x-stoplight:
+        id: x9148732e2m4l
+      type: object
+      description: 'Contains information about the GitX webhook creation '
+      properties:
+        webhook_identifier:
           type: string
     GitXWebhookEventResponse:
       title: GitXWebhookEventResponse
@@ -258,15 +291,26 @@ components:
           type: string
           x-stoplight:
             id: yaxr6jkdztqyq
-    CreateGitXWebhookResponse:
-      title: CreateGitXWebhookResponse
+    EventStatusMessageBody:
+      title: EventStatusMessageBody
       x-stoplight:
-        id: x9148732e2m4l
+        id: 9rwghea2of8m2
       type: object
-      description: 'Contains information about the GitX webhook creation '
+      description: Contains the gitx webhook event status message
+      x-internal: true
       properties:
-        webhook_identifier:
+        message:
           type: string
+          x-stoplight:
+            id: la8fj2wtlye08
+        hint:
+          type: string
+          x-stoplight:
+            id: mhi6zemt7yl03
+        explanation:
+          type: string
+          x-stoplight:
+            id: 1ptlj7jmeljqe
     CreateGitXWebhookRequest:
       title: CreateGitXWebhookRequest
       x-stoplight:
@@ -297,51 +341,70 @@ components:
       properties:
         webhook_identifier:
           type: string
-    EventStatusMessageBody:
-      title: EventStatusMessageBody
-      x-stoplight:
-        id: 9rwghea2of8m2
-      type: object
-      description: Contains the gitx webhook event status message
-      x-internal: true
-      properties:
-        message:
-          type: string
-          x-stoplight:
-            id: la8fj2wtlye08
-        hint:
-          type: string
-          x-stoplight:
-            id: mhi6zemt7yl03
-        explanation:
-          type: string
-          x-stoplight:
-            id: 1ptlj7jmeljqe
-    GitXWebhookResponse:
-      title: GitXWebhookResponse
-      x-stoplight:
-        id: vkv1a5drhxln9
-      type: object
-      description: 'Contains information about the GitX webhooks '
-      properties:
-        webhook_identifier:
-          type: string
-        webhook_name:
-          type: string
-        connector_ref:
-          type: string
-        repo_name:
-          type: string
-        folder_paths:
-          type: array
-          items:
-            type: string
-        is_enabled:
-          type: boolean
-        event_trigger_time:
-          type: integer
-          format: int64
+  parameters:
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+    GitXWebhookIdentifier:
+      name: gitx-webhook
+      in: path
+      required: true
+      schema:
+        type: string
+      description: GitX webhook identifier
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
   responses:
+    CreateGitXWebhookResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateGitXWebhookResponse'
+          examples:
+            Example 1:
+              value:
+                webhook_identifier: <IDENTIFIER>
+    ListGitXWebhookEventResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/GitXWebhookEventResponse'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
     GetGitXWebhookResponse:
       description: Example response
       content:
@@ -359,6 +422,16 @@ components:
                 - <FOLDER_PATH>
                 is_enabled: true
                 event_trigger_time: 0
+    UpdateGitXWebhookResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateGitXWebhookResponse'
+          examples:
+            Example 1:
+              value:
+                webhook_identifier: <IDENTIFIER>
     ListGitXWebhookResponse:
       description: Example response
       content:
@@ -391,95 +464,7 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
-    UpdateGitXWebhookResponse:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/UpdateGitXWebhookResponse'
-          examples:
-            Example 1:
-              value:
-                webhook_identifier: <IDENTIFIER>
-    ListGitXWebhookEventResponse:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/GitXWebhookEventResponse'
-      headers:
-        X-Total-Elements:
-          schema:
-            type: integer
-          description: Total number of elements returned in Paginated response.
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Page number in Paginated response.
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum page size in Paginated response.
-    CreateGitXWebhookResponse:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CreateGitXWebhookResponse'
-          examples:
-            Example 1:
-              value:
-                webhook_identifier: <IDENTIFIER>
-  parameters:
-    GitXWebhookIdentifier:
-      name: gitx-webhook
-      in: path
-      required: true
-      schema:
-        type: string
-      description: GitX webhook identifier
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
   requestBodies:
-    UpdateGitXWebhookRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/UpdateGitXWebhookRequest'
-          examples:
-            Example 1:
-              value:
-                repo_name: <REPO_NAME>
-                connector_ref: <CONNECTOR_REF>
-                webhook_name: <NAME>
-                folder_paths:
-                - <FOLDER_PATH>
-                is_enabled: true
-      description: Update GitX webhook request
     CreateGitXWebhookRequest:
       content:
         application/json:
@@ -495,6 +480,21 @@ components:
                 - <FOLDER_PATH>
                 webhook_name: <NAME>
       description: Create GitX webhook request
+    UpdateGitXWebhookRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateGitXWebhookRequest'
+          examples:
+            Example 1:
+              value:
+                repo_name: <REPO_NAME>
+                connector_ref: <CONNECTOR_REF>
+                webhook_name: <NAME>
+                folder_paths:
+                - <FOLDER_PATH>
+                is_enabled: true
+      description: Update GitX webhook request
   securitySchemes:
     x-api-key:
       name: x-api-key

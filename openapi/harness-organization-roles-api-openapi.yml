@@ -109,6 +109,13 @@ paths:
       - Organization Roles
 components:
   parameters:
+    SearchTerm:
+      name: search_term
+      in: query
+      required: false
+      schema:
+        type: string
+      description: This would be used to filter resources having attributes matching the search term.
     Sort:
       name: sort
       in: query
@@ -121,6 +128,37 @@ components:
         - created
         - updated
       description: Parameter on the basis of which sorting is done.
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+        maximum: 100
+      description: 'Pagination: Number of items to return.'
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    PageIndex:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+    RoleParam:
+      name: role
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Role identifier
     Order:
       name: order
       in: query
@@ -138,44 +176,88 @@ components:
       schema:
         type: string
       description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    SearchTerm:
-      name: search_term
-      in: query
-      required: false
-      schema:
-        type: string
-      description: This would be used to filter resources having attributes matching the search term.
-    PageIndex:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-    RoleParam:
-      name: role
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Role identifier
-    Limit:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 30
-        maximum: 100
-      description: 'Pagination: Number of items to return.'
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
+  responses:
+    RolesListResponse:
+      description: Roles List Response body
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/RolesResponse'
+          examples:
+            role-list-response:
+              value:
+              - identifier: example_role
+                name: Example_Role
+                permissions:
+                - core_resource_view
+                allowed_scope_levels:
+                - account
+                description: This is an Example Role
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                scope:
+                  account: sample_account
+                  org: sample_organization
+                  project: sample_project
+                created: 1234567890
+                updated: 1234567890
+                harness_managed: true
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/RolesResponse'
+          examples:
+            role-list-response:
+              value: "- identifier: example_role\n  name: Example_Role\n  permissions:\n    - core_resource_view\n  allowed_scope_levels:\n    - account\n  description: This is an Example Role\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n  scope:\n    account: sample_account\n    org: sample_organization\n    project: sample_project\n  created: 1234567890\n  updated: 1234567890\n  harness_managed: true\n"
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+    RoleResponse:
+      description: Role Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RolesResponse'
+          examples:
+            role-response:
+              value:
+                identifier: example_role
+                name: Example_Role
+                permissions:
+                - core_resource_view
+                allowed_scope_levels:
+                - account
+                description: This is an Example Role
+                tags:
+                  example-tag-1: example-tag-1-value
+                  example-tag-2: example-tag-2-value
+                scope:
+                  account: sample_account
+                  org: sample_organization
+                  project: sample_project
+                created: 1234567890
+                updated: 1234567890
+                harness_managed: true
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/RolesResponse'
+          examples:
+            role-response:
+              value: "identifier: example_role\nname: Example_Role\npermissions:\n  - core_resource_view\nallowed_scope_levels:\n  - account\ndescription: This is an Example Role\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nscope:\n  account: sample_account\n  org: sample_organization\n  project: sample_project\ncreated: 1234567890\nupdated: 1234567890\nharness_managed: true\n"
   schemas:
     RolesResponse:
       title: RolesResponse
@@ -326,88 +408,6 @@ components:
           account: sample_account
           org: sample_organization
           project: sample_project
-  responses:
-    RoleResponse:
-      description: Role Response body
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RolesResponse'
-          examples:
-            role-response:
-              value:
-                identifier: example_role
-                name: Example_Role
-                permissions:
-                - core_resource_view
-                allowed_scope_levels:
-                - account
-                description: This is an Example Role
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                scope:
-                  account: sample_account
-                  org: sample_organization
-                  project: sample_project
-                created: 1234567890
-                updated: 1234567890
-                harness_managed: true
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/RolesResponse'
-          examples:
-            role-response:
-              value: "identifier: example_role\nname: Example_Role\npermissions:\n  - core_resource_view\nallowed_scope_levels:\n  - account\ndescription: This is an Example Role\ntags:\n  example-tag-1: example-tag-1-value\n  example-tag-2: example-tag-2-value\nscope:\n  account: sample_account\n  org: sample_organization\n  project: sample_project\ncreated: 1234567890\nupdated: 1234567890\nharness_managed: true\n"
-    RolesListResponse:
-      description: Roles List Response body
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/RolesResponse'
-          examples:
-            role-list-response:
-              value:
-              - identifier: example_role
-                name: Example_Role
-                permissions:
-                - core_resource_view
-                allowed_scope_levels:
-                - account
-                description: This is an Example Role
-                tags:
-                  example-tag-1: example-tag-1-value
-                  example-tag-2: example-tag-2-value
-                scope:
-                  account: sample_account
-                  org: sample_organization
-                  project: sample_project
-                created: 1234567890
-                updated: 1234567890
-                harness_managed: true
-        application/yaml:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/RolesResponse'
-          examples:
-            role-list-response:
-              value: "- identifier: example_role\n  name: Example_Role\n  permissions:\n    - core_resource_view\n  allowed_scope_levels:\n    - account\n  description: This is an Example Role\n  tags:\n    example-tag-1: example-tag-1-value\n    example-tag-2: example-tag-2-value\n  scope:\n    account: sample_account\n    org: sample_organization\n    project: sample_project\n  created: 1234567890\n  updated: 1234567890\n  harness_managed: true\n"
-      headers:
-        X-Total-Elements:
-          schema:
-            type: integer
-          description: Total number of elements returned in Paginated response.
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Page number in Paginated response.
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum page size in Paginated response.
   requestBodies:
     CreateRoleRequest:
       content:

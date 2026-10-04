@@ -762,23 +762,212 @@ paths:
                 $ref: '#/components/schemas/api.RestError'
 components:
   schemas:
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
-    shared.PaginationResponse:
+    risks.Risk:
+      type: object
+      required:
+      - accountID
+      - name
+      properties:
+        accountID:
+          type: string
+        activeRisk:
+          $ref: '#/components/schemas/risks.ActiveRiskCounter'
+        category:
+          type: string
+        description:
+          type: string
+        identity:
+          type: string
+        isDefault:
+          type: boolean
+        lastDetectedAt:
+          description: 'PassiveRiskCounter      PassiveRiskCounter `bson:"passiveRisk" json:"passiveRisk"` //TODO: To be added later'
+          type: integer
+        name:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        supportedInfra:
+          type: array
+          items:
+            $ref: '#/components/schemas/risks.Infrastructure'
+        tags:
+          type: array
+          items:
+            type: string
+    chaosserviceusage.OverallServiceUsageStats:
       type: object
       properties:
-        index:
+        accountID:
+          type: string
+        licenseServiceMapping:
+          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
+        serviceStats:
+          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
+        totalUsage:
+          type: number
+    risks.ExecutionType:
+      type: string
+      enum:
+      - CHAOS_EXECUTION
+      - DR_EXECUTION
+      x-enum-varnames:
+      - ExecutionTypeChaosExecutionNode
+      - ExecutionTypeDRComponentNode
+    risks.ListExecutionResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/risks.ActiveExecutionResponse'
+        pagination:
+          $ref: '#/components/schemas/shared.PaginationResponse'
+    risks.CreateRequest:
+      type: object
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        identity:
+          type: string
+        isDefault:
+          type: boolean
+        name:
+          type: string
+        supportedInfra:
+          type: array
+          items:
+            $ref: '#/components/schemas/risks.Infrastructure'
+        tags:
+          type: array
+          items:
+            type: string
+    chaosserviceusage.StatsByType:
+      type: object
+      properties:
+        Cloud Resources:
+          type: number
+        Container Services:
+          type: number
+        Kubernetes:
+          type: number
+        Linux:
+          type: number
+        Others:
+          type: number
+        Serverless:
+          type: number
+        Windows:
+          type: number
+    risks.ActiveRiskCounter:
+      type: object
+      properties:
+        failedProbes:
           type: integer
-        limit:
+        passedProbes:
           type: integer
-        totalItems:
+    risks.Infrastructure:
+      type: string
+      enum:
+      - Kubernetes
+      - KubernetesV2
+      - Windows
+      - Linux
+      - CloudFoundry
+      - Container
+      x-enum-varnames:
+      - InfrastructureTypeKubernetes
+      - InfrastructureTypeKubernetesV2
+      - InfrastructureTypeWindows
+      - InfrastructureTypeLinux
+      - InfrastructureTypeCloudFoundry
+      - InfrastructureTypeContainer
+    chaosserviceusage.PeriodicStats:
+      type: object
+      properties:
+        experimentStatsByType:
+          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
+        serviceStatsByType:
+          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
+        timestamp:
           type: integer
-        totalPages:
-          type: integer
+        totalConsumption:
+          type: number
+        totalExperimentRunsConsumption:
+          type: number
+    risks.UpdateRequest:
+      type: object
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        identity:
+          type: string
+        isDefault:
+          type: boolean
+        name:
+          type: string
+        supportedInfra:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+    execution.ChaosStepStatus:
+      type: string
+      enum:
+      - Queued
+      - Error
+      - Completed_With_Probe_Failure
+      - Completed_With_Probe_Absent
+      - Pending
+      - Running
+      - Stopped
+      - Completed
+      - Failed
+      - Passed
+      - Skipped
+      - Interrupted
+      x-enum-varnames:
+      - Queued
+      - Error
+      - CompletedWithProbeFailure
+      - CompletedWithProbeAbsent
+      - Pending
+      - Running
+      - Stopped
+      - Completed
+      - Failed
+      - Passed
+      - Skipped
+      - Interrupted
+    chaosserviceusage.ServiceType:
+      type: string
+      enum:
+      - Kubernetes
+      - Linux
+      - Windows
+      - Serverless
+      - ContainerServices
+      - CloudResources
+      - Others
+      x-enum-varnames:
+      - ServiceTypeKubernetes
+      - ServiceTypeLinux
+      - ServiceTypeWindows
+      - ServiceTypeServerless
+      - ServiceTypeContainerServices
+      - ServiceTypeCloudResources
+      - ServiceTypeOthers
     risks.ActiveExecutionResponse:
       type: object
       properties:
@@ -806,47 +995,66 @@ components:
           type: integer
         status:
           $ref: '#/components/schemas/execution.ChaosStepStatus'
-    chaosserviceusage.PeriodicStats:
+    shared.PaginationResponse:
       type: object
       properties:
-        experimentStatsByType:
-          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
-        serviceStatsByType:
-          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
-        timestamp:
+        index:
           type: integer
-        totalConsumption:
-          type: number
-        totalExperimentRunsConsumption:
-          type: number
-    risks.CreateRequest:
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    api.RestError:
       type: object
       properties:
-        category:
-          type: string
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
         description:
           type: string
-        identity:
+        message:
           type: string
-        isDefault:
-          type: boolean
-        name:
-          type: string
-        supportedInfra:
-          type: array
-          items:
-            $ref: '#/components/schemas/risks.Infrastructure'
-        tags:
-          type: array
-          items:
-            type: string
-    risks.ActiveRiskCounter:
+    hcesdk.UserDetails:
       type: object
       properties:
-        failedProbes:
+        email:
+          type: string
+        userID:
+          type: string
+        username:
+          type: string
+    chaosserviceusage.ServiceData:
+      type: object
+      properties:
+        experimentRuns:
           type: integer
-        passedProbes:
+        experiments:
           type: integer
+        faultsRan:
+          type: integer
+        infraStructure:
+          type: string
+        infraType:
+          $ref: '#/components/schemas/chaosserviceusage.InfrastructureType'
+        licenseUtilisation:
+          type: number
+        namespace:
+          type: string
+        orgID:
+          type: string
+        projectID:
+          type: string
+        resource:
+          type: string
+        service:
+          type: string
+        serviceID:
+          type: string
+        subType:
+          type: string
+        type:
+          $ref: '#/components/schemas/chaosserviceusage.ServiceType'
     risks.RiskResponse:
       type: object
       required:
@@ -886,15 +1094,33 @@ components:
             type: string
         updatedBy:
           $ref: '#/components/schemas/hcesdk.UserDetails'
-    chaosserviceusage.UsageStats:
+    shared.Error:
       type: object
       properties:
-        accountID:
+        code:
+          type: integer
+        correlationID:
           type: string
-        periodicStats:
+        message:
+          type: string
+    risks.ListRiskResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        data:
           type: array
           items:
-            $ref: '#/components/schemas/chaosserviceusage.PeriodicStats'
+            $ref: '#/components/schemas/risks.RiskResponse'
+        pagination:
+          $ref: '#/components/schemas/shared.PaginationResponse'
+    risks.DeleteResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        success:
+          type: boolean
     chaosserviceusage.InfrastructureType:
       type: string
       enum:
@@ -920,247 +1146,21 @@ components:
             type: string
         total:
           type: integer
-    chaosserviceusage.ServiceData:
-      type: object
-      properties:
-        experimentRuns:
-          type: integer
-        experiments:
-          type: integer
-        faultsRan:
-          type: integer
-        infraStructure:
-          type: string
-        infraType:
-          $ref: '#/components/schemas/chaosserviceusage.InfrastructureType'
-        licenseUtilisation:
-          type: number
-        namespace:
-          type: string
-        orgID:
-          type: string
-        projectID:
-          type: string
-        resource:
-          type: string
-        service:
-          type: string
-        serviceID:
-          type: string
-        subType:
-          type: string
-        type:
-          $ref: '#/components/schemas/chaosserviceusage.ServiceType'
-    risks.Risk:
-      type: object
-      required:
-      - accountID
-      - name
-      properties:
-        accountID:
-          type: string
-        activeRisk:
-          $ref: '#/components/schemas/risks.ActiveRiskCounter'
-        category:
-          type: string
-        description:
-          type: string
-        identity:
-          type: string
-        isDefault:
-          type: boolean
-        lastDetectedAt:
-          description: 'PassiveRiskCounter      PassiveRiskCounter `bson:"passiveRisk" json:"passiveRisk"` //TODO: To be added later'
-          type: integer
-        name:
-          type: string
-        orgID:
-          type: string
-        projectID:
-          type: string
-        supportedInfra:
-          type: array
-          items:
-            $ref: '#/components/schemas/risks.Infrastructure'
-        tags:
-          type: array
-          items:
-            type: string
-    risks.ExecutionType:
+    api.ResponseErrorCode:
       type: string
       enum:
-      - CHAOS_EXECUTION
-      - DR_EXECUTION
+      - PIPELINE_NOT_FOUND
       x-enum-varnames:
-      - ExecutionTypeChaosExecutionNode
-      - ExecutionTypeDRComponentNode
-    risks.UpdateRequest:
-      type: object
-      properties:
-        category:
-          type: string
-        description:
-          type: string
-        identity:
-          type: string
-        isDefault:
-          type: boolean
-        name:
-          type: string
-        supportedInfra:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-    chaosserviceusage.OverallServiceUsageStats:
+      - PipelineNotFound
+    chaosserviceusage.UsageStats:
       type: object
       properties:
         accountID:
           type: string
-        licenseServiceMapping:
-          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
-        serviceStats:
-          $ref: '#/components/schemas/chaosserviceusage.StatsByType'
-        totalUsage:
-          type: number
-    risks.Infrastructure:
-      type: string
-      enum:
-      - Kubernetes
-      - KubernetesV2
-      - Windows
-      - Linux
-      - CloudFoundry
-      - Container
-      x-enum-varnames:
-      - InfrastructureTypeKubernetes
-      - InfrastructureTypeKubernetesV2
-      - InfrastructureTypeWindows
-      - InfrastructureTypeLinux
-      - InfrastructureTypeCloudFoundry
-      - InfrastructureTypeContainer
-    api.RestError:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
-    risks.ListExecutionResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        data:
+        periodicStats:
           type: array
           items:
-            $ref: '#/components/schemas/risks.ActiveExecutionResponse'
-        pagination:
-          $ref: '#/components/schemas/shared.PaginationResponse'
-    chaosserviceusage.StatsByType:
-      type: object
-      properties:
-        Cloud Resources:
-          type: number
-        Container Services:
-          type: number
-        Kubernetes:
-          type: number
-        Linux:
-          type: number
-        Others:
-          type: number
-        Serverless:
-          type: number
-        Windows:
-          type: number
-    execution.ChaosStepStatus:
-      type: string
-      enum:
-      - Queued
-      - Error
-      - Completed_With_Probe_Failure
-      - Completed_With_Probe_Absent
-      - Pending
-      - Running
-      - Stopped
-      - Completed
-      - Failed
-      - Passed
-      - Skipped
-      - Interrupted
-      x-enum-varnames:
-      - Queued
-      - Error
-      - CompletedWithProbeFailure
-      - CompletedWithProbeAbsent
-      - Pending
-      - Running
-      - Stopped
-      - Completed
-      - Failed
-      - Passed
-      - Skipped
-      - Interrupted
-    risks.ListRiskResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/risks.RiskResponse'
-        pagination:
-          $ref: '#/components/schemas/shared.PaginationResponse'
-    hcesdk.UserDetails:
-      type: object
-      properties:
-        email:
-          type: string
-        userID:
-          type: string
-        username:
-          type: string
-    chaosserviceusage.ServiceType:
-      type: string
-      enum:
-      - Kubernetes
-      - Linux
-      - Windows
-      - Serverless
-      - ContainerServices
-      - CloudResources
-      - Others
-      x-enum-varnames:
-      - ServiceTypeKubernetes
-      - ServiceTypeLinux
-      - ServiceTypeWindows
-      - ServiceTypeServerless
-      - ServiceTypeContainerServices
-      - ServiceTypeCloudResources
-      - ServiceTypeOthers
-    shared.Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        correlationID:
-          type: string
-        message:
-          type: string
-    risks.DeleteResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        success:
-          type: boolean
+            $ref: '#/components/schemas/chaosserviceusage.PeriodicStats'
   securitySchemes:
     x-api-key:
       name: x-api-key

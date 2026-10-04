@@ -108,28 +108,6 @@ paths:
       x-stoplight:
         id: freeze-details-get
 components:
-  parameters:
-    RmProjectParam:
-      name: projectIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Project Identifier
-    AccountParam:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Account Identifier
-    RmOrgParam:
-      name: orgIdentifier
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Organisation Identifier
   schemas:
     RmError:
       title: Error Response
@@ -154,6 +132,103 @@ components:
           - FORBIDDEN
           - NOT_FOUND
           - INTERNAL_SERVER_ERROR
+    FreezeListItemDTO:
+      type: object
+      description: Basic freeze information for list view
+      required:
+      - name
+      - expectedStartTs
+      - expectedEndTs
+      - orgIdentifier
+      - projectIdentifier
+      - identifier
+      properties:
+        name:
+          type: string
+          description: Freeze name
+        expectedStartTs:
+          type: integer
+          format: int64
+          description: Expected start timestamp
+        expectedEndTs:
+          type: integer
+          format: int64
+          description: Expected end timestamp
+        orgIdentifier:
+          type: string
+          description: Organization identifier
+        projectIdentifier:
+          type: string
+          description: Project identifier
+        identifier:
+          type: string
+          description: Freeze identifier
+    FreezeEntitiesDTO:
+      type: object
+      description: Entity information extracted from freeze YAML configuration
+      required:
+      - services
+      - environments
+      - environmentTypes
+      - projects
+      - organizations
+      - pipelines
+      properties:
+        services:
+          type: array
+          items:
+            type: string
+          description: Service identifiers extracted from YAML. Contains "__ALL__" marker if all services are frozen (filterType="All").
+        environments:
+          type: array
+          items:
+            type: string
+          description: Environment identifiers extracted from YAML. Contains "__ALL__" marker if all environments are frozen (filterType="All").
+        environmentTypes:
+          type: array
+          items:
+            type: string
+          description: Environment type identifiers extracted from YAML. Contains "__ALL__" marker if all environment types are frozen (filterType="All").
+        projects:
+          type: array
+          items:
+            type: string
+          description: Project identifiers extracted from YAML. Contains "__ALL__" marker if all projects are frozen (filterType="All").
+        organizations:
+          type: array
+          items:
+            type: string
+          description: Organization identifiers extracted from YAML. Contains "__ALL__" marker if all organizations are frozen (filterType="All").
+        pipelines:
+          type: array
+          items:
+            type: string
+          description: Pipeline identifiers extracted from YAML. Contains "__ALL__" marker if all pipelines are frozen (filterType="All").
+    NextRequest:
+      type: object
+      properties:
+        cursor:
+          type: string
+        limit:
+          type: integer
+    FreezeListResponseDTO:
+      type: object
+      description: Paginated response containing freeze list items
+      required:
+      - freezes
+      - nextRequest
+      - last
+      properties:
+        freezes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreezeListItemDTO'
+          description: List of freeze items
+        nextRequest:
+          $ref: '#/components/schemas/NextRequest'
+        last:
+          type: boolean
+          description: Whether this is the last page of results
     FreezeDetailsDTO:
       type: object
       description: Detailed freeze information with entity extraction
@@ -197,110 +272,7 @@ components:
           type: integer
           format: int64
           description: Expected end timestamp
-    NextRequest:
-      type: object
-      properties:
-        cursor:
-          type: string
-        limit:
-          type: integer
-    FreezeEntitiesDTO:
-      type: object
-      description: Entity information extracted from freeze YAML configuration
-      required:
-      - services
-      - environments
-      - environmentTypes
-      - projects
-      - organizations
-      - pipelines
-      properties:
-        services:
-          type: array
-          items:
-            type: string
-          description: Service identifiers extracted from YAML. Contains "__ALL__" marker if all services are frozen (filterType="All").
-        environments:
-          type: array
-          items:
-            type: string
-          description: Environment identifiers extracted from YAML. Contains "__ALL__" marker if all environments are frozen (filterType="All").
-        environmentTypes:
-          type: array
-          items:
-            type: string
-          description: Environment type identifiers extracted from YAML. Contains "__ALL__" marker if all environment types are frozen (filterType="All").
-        projects:
-          type: array
-          items:
-            type: string
-          description: Project identifiers extracted from YAML. Contains "__ALL__" marker if all projects are frozen (filterType="All").
-        organizations:
-          type: array
-          items:
-            type: string
-          description: Organization identifiers extracted from YAML. Contains "__ALL__" marker if all organizations are frozen (filterType="All").
-        pipelines:
-          type: array
-          items:
-            type: string
-          description: Pipeline identifiers extracted from YAML. Contains "__ALL__" marker if all pipelines are frozen (filterType="All").
-    FreezeListItemDTO:
-      type: object
-      description: Basic freeze information for list view
-      required:
-      - name
-      - expectedStartTs
-      - expectedEndTs
-      - orgIdentifier
-      - projectIdentifier
-      - identifier
-      properties:
-        name:
-          type: string
-          description: Freeze name
-        expectedStartTs:
-          type: integer
-          format: int64
-          description: Expected start timestamp
-        expectedEndTs:
-          type: integer
-          format: int64
-          description: Expected end timestamp
-        orgIdentifier:
-          type: string
-          description: Organization identifier
-        projectIdentifier:
-          type: string
-          description: Project identifier
-        identifier:
-          type: string
-          description: Freeze identifier
-    FreezeListResponseDTO:
-      type: object
-      description: Paginated response containing freeze list items
-      required:
-      - freezes
-      - nextRequest
-      - last
-      properties:
-        freezes:
-          type: array
-          items:
-            $ref: '#/components/schemas/FreezeListItemDTO'
-          description: List of freeze items
-        nextRequest:
-          $ref: '#/components/schemas/NextRequest'
-        last:
-          type: boolean
-          description: Whether this is the last page of results
   responses:
-    RmErrorResponse:
-      description: Error Response body
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RmError'
     FreezeListResponse:
       description: Paginated list of freeze information
       content:
@@ -313,6 +285,34 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/FreezeDetailsDTO'
+    RmErrorResponse:
+      description: Error Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RmError'
+  parameters:
+    RmOrgParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Organisation Identifier
+    AccountParam:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Account Identifier
+    RmProjectParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Project Identifier
   securitySchemes:
     x-api-key:
       name: x-api-key

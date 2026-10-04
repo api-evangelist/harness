@@ -98,25 +98,142 @@ paths:
       security:
       - x-api-key: []
 components:
-  schemas:
+  responses:
     RoleAssignmentResponse:
-      title: RoleAssignmentResponse
-      type: object
-      description: Role assignment response model
-      properties:
-        role-assignment:
-          $ref: '#/components/schemas/RoleAssignment'
-        created:
-          type: integer
-          description: Creation timestamp for Role.
-          format: int64
-        updated:
-          type: integer
-          description: Last modification timestamp for Role.
-          format: int64
-        harness_managed:
-          type: boolean
-          description: Is harness managed
+      description: Role assignment response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RoleAssignmentResponse'
+          examples:
+            role-assignment-response-json:
+              value:
+                role-assignment:
+                  identifier: example_role_assignment
+                  resource_group: example_resource_group_identifier
+                  role: example_role_identifier
+                  principal:
+                    scope: ACCOUNT
+                    identifier: example_principal_identifier
+                    type: USER
+                  disabled: false
+                  managed: false
+                created: 1234567890
+                updated: 1234567890
+                harness_managaed: false
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/RoleAssignmentResponse'
+          examples:
+            role-assignment-response-yaml:
+              value: "role-assignment:\n  identifier: example_role_assignment\n  resource_group: example_resource_group_identifier\n  role: example_role_identifier\n  principal:\n    scope: ACCOUNT\n    identifier: example_principal_identifier\n    type: USER\n  disabled: false\n  managed: false\ncreated: 1234567890\nupdated: 1234567890\nharness_managaed: false\n"
+    RoleAssignmentListResponse:
+      description: Role Assignment List Response body
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/RoleAssignmentResponse'
+          examples:
+            role-assignment-response-json:
+              value:
+              - role-assignment:
+                  identifier: example_role_assignment
+                  resource_group: example_resource_group_identifier
+                  role: example_role_identifier
+                  principal:
+                    scope: ACCOUNT
+                    identifier: example_principal_identifier
+                    type: USER
+                  disabled: false
+                  managed: false
+                created: 1234567890
+                updated: 1234567890
+                harness_managaed: false
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/RoleAssignmentResponse'
+          examples:
+            role-assignment-response-json:
+              value: "- role-assignment:\n    identifier: example_role_assignment\n    resource_group: example_resource_group_identifier\n    role: example_role_identifier\n    principal:\n      scope: ACCOUNT\n      identifier: example_principal_identifier\n      type: USER\n    disabled: false\n    managed: false\n  created: 1234567890\n  updated: 1234567890\n  harness_managaed: false\n"
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+  parameters:
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - identifier
+        - name
+        - created
+        - updated
+      description: Parameter on the basis of which sorting is done.
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+        maximum: 100
+      description: 'Pagination: Number of items to return.'
+    OrgParam:
+      description: Organization identifier
+      in: path
+      name: org
+      required: true
+      schema:
+        type: string
+    PageIndex:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
+    ProjectParam:
+      description: Project identifier
+      in: path
+      name: project
+      required: true
+      schema:
+        type: string
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
+    AccountHeader:
+      name: Harness-Account
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+  schemas:
     RoleAssignment:
       title: RoleAssignment
       type: object
@@ -181,141 +298,24 @@ components:
       required:
       - scope_level
       - identifier
-  parameters:
-    Sort:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - identifier
-        - name
-        - created
-        - updated
-      description: Parameter on the basis of which sorting is done.
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    PageIndex:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: 'Pagination page number strategy: Specify the page number within the paginated collection related to the number of items on each page.'
-    AccountHeader:
-      name: Harness-Account
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    ProjectParam:
-      description: Project identifier
-      in: path
-      name: project
-      required: true
-      schema:
-        type: string
-    Limit:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 30
-        maximum: 100
-      description: 'Pagination: Number of items to return.'
-    OrgParam:
-      description: Organization identifier
-      in: path
-      name: org
-      required: true
-      schema:
-        type: string
-  responses:
-    RoleAssignmentListResponse:
-      description: Role Assignment List Response body
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/RoleAssignmentResponse'
-          examples:
-            role-assignment-response-json:
-              value:
-              - role-assignment:
-                  identifier: example_role_assignment
-                  resource_group: example_resource_group_identifier
-                  role: example_role_identifier
-                  principal:
-                    scope: ACCOUNT
-                    identifier: example_principal_identifier
-                    type: USER
-                  disabled: false
-                  managed: false
-                created: 1234567890
-                updated: 1234567890
-                harness_managaed: false
-        application/yaml:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/RoleAssignmentResponse'
-          examples:
-            role-assignment-response-json:
-              value: "- role-assignment:\n    identifier: example_role_assignment\n    resource_group: example_resource_group_identifier\n    role: example_role_identifier\n    principal:\n      scope: ACCOUNT\n      identifier: example_principal_identifier\n      type: USER\n    disabled: false\n    managed: false\n  created: 1234567890\n  updated: 1234567890\n  harness_managaed: false\n"
-      headers:
-        X-Total-Elements:
-          schema:
-            type: integer
-          description: Total number of elements returned in Paginated response.
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Page number in Paginated response.
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum page size in Paginated response.
     RoleAssignmentResponse:
-      description: Role assignment response body
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RoleAssignmentResponse'
-          examples:
-            role-assignment-response-json:
-              value:
-                role-assignment:
-                  identifier: example_role_assignment
-                  resource_group: example_resource_group_identifier
-                  role: example_role_identifier
-                  principal:
-                    scope: ACCOUNT
-                    identifier: example_principal_identifier
-                    type: USER
-                  disabled: false
-                  managed: false
-                created: 1234567890
-                updated: 1234567890
-                harness_managaed: false
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/RoleAssignmentResponse'
-          examples:
-            role-assignment-response-yaml:
-              value: "role-assignment:\n  identifier: example_role_assignment\n  resource_group: example_resource_group_identifier\n  role: example_role_identifier\n  principal:\n    scope: ACCOUNT\n    identifier: example_principal_identifier\n    type: USER\n  disabled: false\n  managed: false\ncreated: 1234567890\nupdated: 1234567890\nharness_managaed: false\n"
+      title: RoleAssignmentResponse
+      type: object
+      description: Role assignment response model
+      properties:
+        role-assignment:
+          $ref: '#/components/schemas/RoleAssignment'
+        created:
+          type: integer
+          description: Creation timestamp for Role.
+          format: int64
+        updated:
+          type: integer
+          description: Last modification timestamp for Role.
+          format: int64
+        harness_managed:
+          type: boolean
+          description: Is harness managed
   requestBodies:
     RoleAssignmentRequest:
       content:

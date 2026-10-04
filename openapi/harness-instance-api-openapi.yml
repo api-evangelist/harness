@@ -487,6 +487,48 @@ paths:
       - x-api-key: []
 components:
   schemas:
+    InstanceEvent:
+      type: object
+      properties:
+        createdAt:
+          type: string
+        event:
+          $ref: '#/components/schemas/State'
+        id:
+          type: string
+        infrastructureId:
+          type: string
+        infrastructureRevision:
+          type: integer
+          format: int64
+        instanceId:
+          type: string
+    InstanceProgress:
+      type: object
+      properties:
+        progress:
+          type: string
+          enum:
+          - unknown
+          - pending
+          - running
+          - done
+          - failed
+          - aborted
+          - skipped
+      required:
+      - progress
+    ForceStateRequestBody:
+      type: object
+      properties:
+        infrastructureID:
+          type: string
+          description: ID of the infrastructure
+        state:
+          $ref: '#/components/schemas/State'
+      description: Scope for the request, including account, org and project.
+      required:
+      - infrastructureID
     InstanceEventList:
       type: object
       properties:
@@ -494,6 +536,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InstanceEvent'
+        total:
+          type: integer
+          format: int64
+    InstanceList:
+      type: object
+      properties:
+        instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Instance'
         total:
           type: integer
           format: int64
@@ -534,43 +586,6 @@ components:
           type: string
         url:
           type: string
-    ForceStateRequestBody:
-      type: object
-      properties:
-        infrastructureID:
-          type: string
-          description: ID of the infrastructure
-        state:
-          $ref: '#/components/schemas/State'
-      description: Scope for the request, including account, org and project.
-      required:
-      - infrastructureID
-    InstanceEvent:
-      type: object
-      properties:
-        createdAt:
-          type: string
-        event:
-          $ref: '#/components/schemas/State'
-        id:
-          type: string
-        infrastructureId:
-          type: string
-        infrastructureRevision:
-          type: integer
-          format: int64
-        instanceId:
-          type: string
-    InstanceList:
-      type: object
-      properties:
-        instances:
-          type: array
-          items:
-            $ref: '#/components/schemas/Instance'
-        total:
-          type: integer
-          format: int64
     InstanceStep:
       type: object
       properties:
@@ -586,6 +601,19 @@ components:
           - resume
       required:
       - step
+    State:
+      type: object
+      properties:
+        state:
+          type: string
+          enum:
+          - unknown
+          - inactive
+          - instantiated
+          - running
+          - paused
+      required:
+      - state
     Error:
       type: object
       properties:
@@ -602,34 +630,6 @@ components:
       required:
       - name
       - message
-    State:
-      type: object
-      properties:
-        state:
-          type: string
-          enum:
-          - unknown
-          - inactive
-          - instantiated
-          - running
-          - paused
-      required:
-      - state
-    InstanceProgress:
-      type: object
-      properties:
-        progress:
-          type: string
-          enum:
-          - unknown
-          - pending
-          - running
-          - done
-          - failed
-          - aborted
-          - skipped
-      required:
-      - progress
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -122,6 +122,23 @@ paths:
       - Org Project
 components:
   parameters:
+    OrgPathParam:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the organization the resource is scoped to
+    Order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+      description: Order on the basis of which sorting is done.
     ProjectsQueryParam:
       name: project
       in: query
@@ -131,13 +148,22 @@ components:
         items:
           type: string
       description: Identifier field of the projects the resource is scoped to
-    ProjectPathParam:
-      name: project
-      in: path
-      required: true
+    onlyFavorites:
+      name: only_favorites
+      in: query
+      required: false
       schema:
-        type: string
-      description: Identifier field of the project the resource is scoped to
+        type: boolean
+      description: Enable this field to fetch only the entities that are marked as favorites.
+    Limit1:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        maximum: 1000
+      description: Number of items to return per page.
     SearchTerm1:
       name: search_term
       in: query
@@ -145,6 +171,14 @@ components:
       schema:
         type: string
       description: This would be used to filter resources having attributes matching with search term.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
     Sort1:
       name: sort
       in: query
@@ -157,32 +191,6 @@ components:
         - created
         - updated
       description: Parameter on the basis of which sorting is done.
-    Order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-      description: Order on the basis of which sorting is done.
-    OrgPathParam:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the organization the resource is scoped to
-    Limit1:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 20
-        maximum: 1000
-      description: Number of items to return per page.
     AccountHeader:
       name: Harness-Account
       in: header
@@ -190,55 +198,14 @@ components:
       schema:
         type: string
       description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    onlyFavorites:
-      name: only_favorites
-      in: query
-      required: false
+    ProjectPathParam:
+      name: project
+      in: path
+      required: true
       schema:
-        type: boolean
-      description: Enable this field to fetch only the entities that are marked as favorites.
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-      description: "Pagination page number strategy: Specify the page number within the paginated collection related to the number of items in each page\t"
+        type: string
+      description: Identifier field of the project the resource is scoped to
   schemas:
-    CreateProjectRequest:
-      description: Create project request
-      type: object
-      properties:
-        project:
-          $ref: '#/components/schemas/ProjectRequest'
-      required:
-      - project
-    ProjectResponse:
-      description: Project response model
-      type: object
-      properties:
-        project:
-          $ref: '#/components/schemas/Project'
-        created:
-          type: integer
-          format: int64
-          description: Creation timestamp for the project
-        updated:
-          type: integer
-          format: int64
-          description: Updated timestamp for the project
-        isFavorite:
-          type: boolean
-          description: True if its your favorite project
-    UpdateProjectRequest:
-      description: Update project request
-      type: object
-      properties:
-        project:
-          $ref: '#/components/schemas/ProjectRequest'
-      required:
-      - project
     Project:
       description: Project model
       type: object
@@ -292,27 +259,14 @@ components:
       required:
       - identifier
       - name
-    ModuleType:
-      type: string
-      description: Type of Modules
-      enum:
-      - CD
-      - CI
-      - CV
-      - CF
-      - CE
-      - STO
-      - CORE
-      - PMS
-      - TEMPLATESERVICE
-      - GOVERNANCE
-      - CHAOS
-      - CET
-      - IDP
-      - SSCA
-      - SEI
-      - CODE
-      - HAR
+    CreateProjectRequest:
+      description: Create project request
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/ProjectRequest'
+      required:
+      - project
     ProjectRequest:
       description: Project model
       type: object
@@ -362,33 +316,53 @@ components:
       required:
       - identifier
       - name
-  requestBodies:
+    ProjectResponse:
+      description: Project response model
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for the project
+        updated:
+          type: integer
+          format: int64
+          description: Updated timestamp for the project
+        isFavorite:
+          type: boolean
+          description: True if its your favorite project
     UpdateProjectRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/UpdateProjectRequest'
-          examples:
-            example-project-update-request-json:
-              value:
-                project:
-                  identifier: example_project_identifier
-                  name: example-project-name
-                  color: '#0063F7'
-                  modules:
-                  - CD
-                  description: This is a example project
-                  tags:
-                    property1: value1
-                    property2: value2
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/UpdateProjectRequest'
-          examples:
-            example-project-update-request-yaml:
-              value: "project:\n  identifier: example_project_identifier\n  name: example-project-name\n  color: '#0063F7'\n  modules:\n    - CD\n  description: This is a example project\n  tags:\n    property1: value1\n    property2: value2\n"
-      description: Put the necessary fields for the API to update a Project.
-      required: true
+      description: Update project request
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/ProjectRequest'
+      required:
+      - project
+    ModuleType:
+      type: string
+      description: Type of Modules
+      enum:
+      - CD
+      - CI
+      - CV
+      - CF
+      - CE
+      - STO
+      - CORE
+      - PMS
+      - TEMPLATESERVICE
+      - GOVERNANCE
+      - CHAOS
+      - CET
+      - IDP
+      - SSCA
+      - SEI
+      - CODE
+      - HAR
+  requestBodies:
     CreateProjectRequest:
       content:
         application/json:
@@ -415,18 +389,15 @@ components:
               value: "project:\n  identifier: example_project_identifier\n  name: example-project-name\n  color: '#0063F7'\n  modules:\n    - CD\n  description: This is a example project\n  tags:\n    property1: value1\n    property2: value2\n"
       description: Post the necessary fields for the API to create a project.
       required: true
-  responses:
-    ProjectResponse:
-      description: Project response
+    UpdateProjectRequest:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ProjectResponse'
+            $ref: '#/components/schemas/UpdateProjectRequest'
           examples:
-            example-project-response-json:
+            example-project-update-request-json:
               value:
                 project:
-                  org: example_org_identifier
                   identifier: example_project_identifier
                   name: example-project-name
                   color: '#0063F7'
@@ -436,15 +407,15 @@ components:
                   tags:
                     property1: value1
                     property2: value2
-                created: 1234567890
-                updated: 1234567890
-                isFavorite: true
         application/yaml:
           schema:
-            $ref: '#/components/schemas/ProjectResponse'
+            $ref: '#/components/schemas/UpdateProjectRequest'
           examples:
-            example-project-response-yaml:
-              value: "project:\n  org: example_org_identifier\n  identifier: example_project_identifier\n  name: example-project-name\n  color: '#0063F7'\n  modules:\n    - CD\n  description: This is a example project\n  tags:\n    property1: value1\n    property2: value2\ncreated: 1234567890\nupdated: 1234567890\nisFavorite: true\n"
+            example-project-update-request-yaml:
+              value: "project:\n  identifier: example_project_identifier\n  name: example-project-name\n  color: '#0063F7'\n  modules:\n    - CD\n  description: This is a example project\n  tags:\n    property1: value1\n    property2: value2\n"
+      description: Put the necessary fields for the API to update a Project.
+      required: true
+  responses:
     ProjectListResponse:
       description: Project list response
       content:
@@ -491,6 +462,35 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
+    ProjectResponse:
+      description: Project response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProjectResponse'
+          examples:
+            example-project-response-json:
+              value:
+                project:
+                  org: example_org_identifier
+                  identifier: example_project_identifier
+                  name: example-project-name
+                  color: '#0063F7'
+                  modules:
+                  - CD
+                  description: This is a example project
+                  tags:
+                    property1: value1
+                    property2: value2
+                created: 1234567890
+                updated: 1234567890
+                isFavorite: true
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ProjectResponse'
+          examples:
+            example-project-response-yaml:
+              value: "project:\n  org: example_org_identifier\n  identifier: example_project_identifier\n  name: example-project-name\n  color: '#0063F7'\n  modules:\n    - CD\n  description: This is a example project\n  tags:\n    property1: value1\n    property2: value2\ncreated: 1234567890\nupdated: 1234567890\nisFavorite: true\n"
   securitySchemes:
     x-api-key:
       name: x-api-key

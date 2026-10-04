@@ -72,6 +72,25 @@ components:
       name: project_identifier
       schema:
         type: string
+    SearchTermV3:
+      description: 'Search term for filtering results.
+
+
+        Example: `search_term=prod` might match keys like "production", "prod-env", etc.
+
+        '
+      in: query
+      name: search_term
+      schema:
+        type: string
+    PrincipalTypeFilterParamV3:
+      description: filter by principal type
+      in: query
+      name: principal_type
+      schema:
+        enum:
+        - USER
+        type: string
     OrgIdentifierV3:
       description: 'Unique identifier for the organization within the account.
 
@@ -83,13 +102,14 @@ components:
       name: org_identifier
       schema:
         type: string
-    PrincipalTypeFilterParamV3:
-      description: filter by principal type
+    AccountIdentifierV3:
+      description: 'Unique identifier for the Harness account.
+
+        '
       in: query
-      name: principal_type
+      name: account_identifier
+      required: true
       schema:
-        enum:
-        - USER
         type: string
     PageNumberV3:
       description: 'The page number for pagination (0-indexed).
@@ -109,26 +129,6 @@ components:
         default: 0
         format: int64
         type: integer
-    SearchTermV3:
-      description: 'Search term for filtering results.
-
-
-        Example: `search_term=prod` might match keys like "production", "prod-env", etc.
-
-        '
-      in: query
-      name: search_term
-      schema:
-        type: string
-    AccountIdentifierV3:
-      description: 'Unique identifier for the Harness account.
-
-        '
-      in: query
-      name: account_identifier
-      required: true
-      schema:
-        type: string
   schemas:
     ErrorV3:
       description: An error response
@@ -138,58 +138,17 @@ components:
       required:
       - error
       type: object
-    PrincipalV3:
-      description: Principal information (user or service account)
-      properties:
-        createdAt:
-          $ref: '#/components/schemas/ModifiedAtMsV3'
-        displayName:
-          example: John Doe
-          type: string
-        email:
-          type: string
-        id:
-          example: 123
-          format: int64
-          type: integer
-        type:
-          $ref: '#/components/schemas/PrincipalTypeV3'
-        uid:
-          type: string
-        updatedAt:
-          $ref: '#/components/schemas/ModifiedAtMsV3'
-      required:
-      - id
-      - type
-      - uid
-      - createdAt
-      - updatedAt
-    ApiErrorsV3:
-      properties:
-        code:
-          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
-          maxLength: 5000
-          type: string
-        message:
-          description: A human-readable message providing more details about the error. These messages can be shown to users.
-          maxLength: 40000
-          type: string
-        param:
-          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
-          maxLength: 5000
-          type: string
-        type:
-          description: The type of error returned.
-          enum:
-          - INVALID_REQUEST_ERROR
-          - AUTHENTICATION_ERROR
-          - PERMISSION_ERROR
-          - API_ERROR
-          type: string
-      required:
-      - type
-      title: APIErrors
-      type: object
+    ListPrincipalsResponseBodyV3:
+      allOf:
+      - $ref: '#/components/schemas/PageInfoV3'
+      - properties:
+          items:
+            items:
+              $ref: '#/components/schemas/PrincipalV3'
+            type: array
+        required:
+        - items
+        type: object
     PageInfoV3:
       description: 'Pagination metadata.
 
@@ -220,6 +179,32 @@ components:
       - size
       - hasMore
       type: object
+    PrincipalV3:
+      description: Principal information (user or service account)
+      properties:
+        createdAt:
+          $ref: '#/components/schemas/ModifiedAtMsV3'
+        displayName:
+          example: John Doe
+          type: string
+        email:
+          type: string
+        id:
+          example: 123
+          format: int64
+          type: integer
+        type:
+          $ref: '#/components/schemas/PrincipalTypeV3'
+        uid:
+          type: string
+        updatedAt:
+          $ref: '#/components/schemas/ModifiedAtMsV3'
+      required:
+      - id
+      - type
+      - uid
+      - createdAt
+      - updatedAt
     PrincipalTypeV3:
       description: 'Principal type. Known values include: USER.
 
@@ -228,6 +213,32 @@ components:
       - USER
       example: USER
       type: string
+    ApiErrorsV3:
+      properties:
+        code:
+          description: For some errors that could be handled programmatically, a short string indicating the [error code](https://docs.stripe.com/error-codes) reported.
+          maxLength: 5000
+          type: string
+        message:
+          description: A human-readable message providing more details about the error. These messages can be shown to users.
+          maxLength: 40000
+          type: string
+        param:
+          description: If the error is parameter-specific, the parameter related to the error. For example, we can use this to display a message near the correct form field.
+          maxLength: 5000
+          type: string
+        type:
+          description: The type of error returned.
+          enum:
+          - INVALID_REQUEST_ERROR
+          - AUTHENTICATION_ERROR
+          - PERMISSION_ERROR
+          - API_ERROR
+          type: string
+      required:
+      - type
+      title: APIErrors
+      type: object
     ModifiedAtMsV3:
       description: Unix timestamp in milliseconds when the resource was last modified
       example: 1736360000123
@@ -235,17 +246,6 @@ components:
       type:
       - integer
       - 'null'
-    ListPrincipalsResponseBodyV3:
-      allOf:
-      - $ref: '#/components/schemas/PageInfoV3'
-      - properties:
-          items:
-            items:
-              $ref: '#/components/schemas/PrincipalV3'
-            type: array
-        required:
-        - items
-        type: object
   responses:
     ListPrincipalsResponseV3:
       content:

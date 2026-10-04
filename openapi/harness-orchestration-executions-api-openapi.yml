@@ -963,38 +963,21 @@ components:
           - FORBIDDEN
           - NOT_FOUND
           - INTERNAL_SERVER_ERROR
-    EventMetadata:
+    RmPageable:
       type: object
-      description: Metadata for an event
-      required:
-      - from
-      - to
       properties:
-        from:
-          type: string
-          description: The previous state/value
-        to:
-          type: string
-          description: The new state/value
-    ActivityRetryHistoryResponse:
-      type: object
-      description: Response containing the retry history for an activity execution
-      required:
-      - retries
-      - last
-      - nextRequest
-      properties:
-        retries:
-          type: array
-          items:
-            $ref: '#/components/schemas/ActivityRetryInfo'
-          description: List of retry attempts for the activity
-        last:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          $ref: '#/components/schemas/PageableSort'
+        offset:
+          type: integer
+        paged:
           type: boolean
-          description: Whether this is the last page of results
-        nextRequest:
-          $ref: '#/components/schemas/NextRequest'
-          description: Information for the next page request
+        unpaged:
+          type: boolean
     OrchestrationExecutionActivity:
       type: object
       description: Represents an activity in the orchestration execution
@@ -1047,6 +1030,509 @@ components:
           description: Subprocess execution information for activities
         failureInfo:
           $ref: '#/components/schemas/RmFailureInfo'
+    SubprocessActivityInfo:
+      type: object
+      description: Subprocess execution information for activities
+      required:
+      - releaseId
+      - identifier
+      properties:
+        releaseId:
+          type: string
+          description: ID of the subprocess release
+        identifier:
+          type: string
+          description: Process identifier for SUBPROCESS type activities
+    EventEntity:
+      type: string
+      enum:
+      - Task
+      description: Type of entity for events
+    PageableSort:
+      type: object
+      x-go-name: PageableSort
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    CommentedByDTO:
+      type: object
+      required:
+      - email
+      - name
+      properties:
+        name:
+          type: string
+          description: Name of the person who approved the step.
+        email:
+          type: string
+          description: Email of the person who approved the step.
+    ActivityExecutionInputDTO:
+      type: object
+      description: Input value for an activity execution
+      required:
+      - name
+      - value
+      - type
+      properties:
+        name:
+          type: string
+          description: Name of the input parameter
+        value:
+          $ref: '#/components/schemas/AnyValue'
+          description: Value of the input parameter (can be string, number, boolean, object, array, etc.)
+        type:
+          $ref: '#/components/schemas/InputVariableType'
+          description: Type of the input parameter
+    TaskCommentsListResponseDTO:
+      type: object
+      description: Paginated response containing task comments
+      required:
+      - comments
+      - nextRequest
+      - last
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskCommentDTO'
+          description: List of task comments
+        nextRequest:
+          $ref: '#/components/schemas/NextRequest'
+        last:
+          type: boolean
+          description: Whether this is the last page of results
+      x-stoplight:
+        id: task-comments-list-response-dto
+    EventType:
+      type: string
+      enum:
+      - Status
+      description: Type of event
+    ExecutionOutputDTO:
+      type: object
+      description: Output value for a phase execution
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+          description: Name of the output parameter
+        value:
+          $ref: '#/components/schemas/AnyValue'
+          description: Value of the output parameter (can be string, number, boolean, object, array, etc.)
+    OrchestrationExecutionPhase:
+      type: object
+      description: Represents a phase in the orchestration execution
+      required:
+      - name
+      - identifier
+      - status
+      - completed_activities
+      - total_activities
+      - activityCounts
+      properties:
+        name:
+          type: string
+          description: Name of the phase
+        identifier:
+          type: string
+          description: Unique identifier of the phase
+        description:
+          type: string
+          description: Description of the phase
+        owners:
+          type: array
+          items:
+            type: string
+          description: List of owners for the phase
+        depends_on:
+          type: array
+          items:
+            type: string
+          description: List of phase identifiers this phase depends on
+        status:
+          $ref: '#/components/schemas/OrchestrationStatus'
+        start_ts:
+          type: integer
+          format: int64
+          description: Start timestamp in milliseconds
+        end_ts:
+          type: integer
+          format: int64
+          description: End timestamp in milliseconds
+        phase_execution_id:
+          type: string
+          description: ID of the phase execution
+        completed_activities:
+          type: integer
+          description: Number of completed activities in the phase
+        total_activities:
+          type: integer
+          description: Total number of activities in the phase
+        activityCounts:
+          $ref: '#/components/schemas/ActivityCounts'
+          description: Activity counts for this phase grouped by type and status
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+    ActivityCounts:
+      type: object
+      description: Activity counts grouped by type and status
+      required:
+      - pipeline
+      - subprocess
+      - manual
+      properties:
+        pipeline:
+          $ref: '#/components/schemas/ActivityTypeCounts'
+          description: Pipeline activity counts
+        subprocess:
+          $ref: '#/components/schemas/ActivityTypeCounts'
+          description: Subprocess activity counts
+        manual:
+          $ref: '#/components/schemas/ActivityTypeCounts'
+          description: Manual activity counts
+    ManualActivityInfo:
+      type: object
+      description: Manual activity execution information
+      properties:
+        taskCount:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          description: Total number of tasks in this manual activity
+    EventDTO:
+      type: object
+      description: Represents an event for an entity
+      required:
+      - entityId
+      - entityType
+      - type
+      - eventMetadata
+      - createdBy
+      - createdAt
+      properties:
+        entityId:
+          type: string
+          description: The ID of the entity
+        entityType:
+          $ref: '#/components/schemas/EventEntity'
+          description: The type of entity
+        type:
+          $ref: '#/components/schemas/EventType'
+          description: The type of event
+        eventMetadata:
+          $ref: '#/components/schemas/EventMetadata'
+          description: Event metadata containing from and to fields
+        createdBy:
+          $ref: '#/components/schemas/CreatedByDTO'
+          description: Information about the user who created the event
+        createdAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the event was created
+    ExecutionTaskStatus:
+      type: string
+      description: Current status of the execution task
+      enum:
+      - TODO
+      - IN_PROGRESS
+      - SUCCEEDED
+      - FAILED
+      - BLOCKED
+      x-oapi-codegen-extra-tags:
+        validate: required
+    CreatedByDTO:
+      type: object
+      description: Details of the user who created the event
+      required:
+      - name
+      - email
+      properties:
+        name:
+          type: string
+          description: Name of the user who created the event
+        email:
+          type: string
+          description: Email of the user who created the event
+        identifier:
+          type: string
+          description: Identifier of the user who created the event
+      x-stoplight:
+        id: created-by-dto
+    StringOrBool:
+      oneOf:
+      - type: boolean
+        description: Boolean value
+      - type: string
+        description: String value
+      description: Flexible type that accepts either a boolean or a string
+    NextRequest:
+      type: object
+      properties:
+        cursor:
+          type: string
+        limit:
+          type: integer
+    EventMetadata:
+      type: object
+      description: Metadata for an event
+      required:
+      - from
+      - to
+      properties:
+        from:
+          type: string
+          description: The previous state/value
+        to:
+          type: string
+          description: The new state/value
+    StringOrStringArray:
+      oneOf:
+      - type: string
+        description: Reference as a string
+      - type: array
+        items:
+          type: string
+        description: Array of references as strings
+      description: Flexible type that accepts either a single string or an array of strings for user references
+    ActivityTriggerInfo:
+      type: object
+      description: Trigger information for an activity
+      properties:
+        identifier:
+          type:
+          - string
+          - 'null'
+          description: Identifier of the person who triggered the activity
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the person who triggered the activity
+        email:
+          type:
+          - string
+          - 'null'
+          description: Email of the person who triggered the activity
+    RmFailureInfo:
+      type: object
+      description: Information about a failure that occurred
+      required:
+      - msg
+      properties:
+        msg:
+          type: string
+          description: The failure message describing what went wrong
+        code:
+          type: string
+          description: The failure code indicating the type of failure
+    PipelineActivityInfo:
+      type: object
+      description: Pipeline execution information for activities
+      required:
+      - executionId
+      - identifier
+      properties:
+        executionId:
+          type: string
+          description: ID of the pipeline execution
+        identifier:
+          type: string
+          description: Pipeline identifier for PIPELINE type activities in format org/project/pipelineIdentifier
+    OrchestrationStatus:
+      type: string
+      description: Status of orchestration execution activities
+      enum:
+      - SCHEDULED
+      - RUNNING
+      - OUTPUT_WAITING
+      - SUCCEEDED
+      - FAILED
+      - ABORTED
+      - ON_HOLD
+      - RETRIED
+      - IGNORED
+      - SKIPPED
+      - QUEUED
+    InputVariableType:
+      type: string
+      description: Type of an input variable for parameters and process inputs.
+      enum:
+      - string
+      - list
+      - boolean
+      - number
+      - object
+      - service
+      - multiService
+      - environment
+      - multiEnvironment
+      - infrastructure
+      - multiInfrastructure
+      - connector
+    ExecutionTaskDTO:
+      type: object
+      description: Represents an execution task for a specific activity
+      required:
+      - identifier
+      - name
+      - status
+      - required
+      - userGroups
+      - expectedDuration
+      properties:
+        identifier:
+          type: string
+          description: Unique identifier of the task
+        name:
+          type: string
+          description: Name of the task
+        description:
+          type: string
+          description: Description of the task
+        status:
+          $ref: '#/components/schemas/ExecutionTaskStatus'
+        required:
+          $ref: '#/components/schemas/StringOrBool'
+          description: Whether this task is required
+        userGroups:
+          $ref: '#/components/schemas/StringOrStringArray'
+          description: List of user group identifiers assigned to this task
+        expectedDuration:
+          type: string
+          description: Expected duration for the task (e.g., "1d 12h")
+        actualDuration:
+          type: string
+          description: Actual duration taken for the task (e.g., "7h")
+        createdAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the task was created
+        lastUpdatedAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the task was last updated
+        taskExecutionId:
+          type: string
+          description: ID of the task execution
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+    ActivityRetryInfo:
+      type: object
+      description: Information about a single retry attempt
+      required:
+      - activityExecutionId
+      - retryIndex
+      - status
+      - createdAt
+      - activityName
+      - identifier
+      - yaml
+      properties:
+        activityExecutionId:
+          type: string
+          description: The ID of the activity execution
+        phaseId:
+          type: string
+          description: The ID of the phase this activity belongs to
+        activityName:
+          type: string
+          description: The name of the activity
+        identifier:
+          type: string
+          description: The identifier of the activity
+        retryIndex:
+          type: integer
+          format: int32
+          description: The retry index (0 for original, 1+ for retries)
+        status:
+          $ref: '#/components/schemas/OrchestrationStatus'
+          description: The status of this retry attempt
+        createdAt:
+          type: integer
+          format: int64
+          description: Creation timestamp in milliseconds
+        startTs:
+          type: integer
+          format: int64
+          description: Start timestamp in milliseconds
+        endTs:
+          type: integer
+          format: int64
+          description: End timestamp in milliseconds
+        failureInfo:
+          $ref: '#/components/schemas/RmFailureInfo'
+          description: Information about a failure that occurred during the retry
+        canRetry:
+          type: boolean
+          description: Whether this activity can be retried (true if status is not RETRIED, false otherwise)
+        yaml:
+          type: string
+          description: YAML representation of the activity
+        triggerInfo:
+          $ref: '#/components/schemas/ActivityTriggerInfo'
+          description: Trigger information for the activity
+        pipeline:
+          $ref: '#/components/schemas/PipelineActivityInfo'
+          description: Pipeline execution information for activities
+        subprocess:
+          $ref: '#/components/schemas/SubprocessActivityInfo'
+          description: Subprocess execution information for activities
+    ActivityTypeCounts:
+      type: object
+      description: Counts of activities by status for a specific activity type
+      required:
+      - running
+      - userAction
+      properties:
+        running:
+          type: integer
+          default: 0
+          description: Number of running activities of this type
+        userAction:
+          type: integer
+          default: 0
+          description: Number of activities of this type requiring user action
+    TaskCommentDTO:
+      title: TaskCommentDTO
+      type: object
+      description: Represents a comment on an execution task
+      required:
+      - commentId
+      - comment
+      - commentedBy
+      - createdAt
+      - lastUpdatedAt
+      - isEdited
+      properties:
+        commentId:
+          type: string
+          description: UUID of the comment
+        comment:
+          type: string
+          description: The comment text
+        commentedBy:
+          description: Details of the person who created the comment
+          $ref: '#/components/schemas/CommentedByDTO'
+        createdAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the comment was created
+        lastUpdatedAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the comment was last updated
+        isEdited:
+          type: boolean
+          description: Whether the comment has been edited since creation
+      x-stoplight:
+        id: task-comment-dto
     AnyValue:
       oneOf:
       - type: string
@@ -1059,11 +1545,6 @@ components:
           type: object
       x-go-type: interface{}
       description: Flexible type that accepts any JSON value (string, number, boolean, object, or array)
-    EventEntity:
-      type: string
-      enum:
-      - Task
-      description: Type of entity for events
     OrchestrationExecutionActivityPaginated:
       type: object
       description: Represents an activity in the paginated orchestration execution activities response
@@ -1152,319 +1633,25 @@ components:
         manual:
           $ref: '#/components/schemas/ManualActivityInfo'
           description: Manual activity execution information
-    SubprocessActivityInfo:
+    ActivityRetryHistoryResponse:
       type: object
-      description: Subprocess execution information for activities
+      description: Response containing the retry history for an activity execution
       required:
-      - releaseId
-      - identifier
-      properties:
-        releaseId:
-          type: string
-          description: ID of the subprocess release
-        identifier:
-          type: string
-          description: Process identifier for SUBPROCESS type activities
-    OrchestrationExecutionPhase:
-      type: object
-      description: Represents a phase in the orchestration execution
-      required:
-      - name
-      - identifier
-      - status
-      - completed_activities
-      - total_activities
-      - activityCounts
-      properties:
-        name:
-          type: string
-          description: Name of the phase
-        identifier:
-          type: string
-          description: Unique identifier of the phase
-        description:
-          type: string
-          description: Description of the phase
-        owners:
-          type: array
-          items:
-            type: string
-          description: List of owners for the phase
-        depends_on:
-          type: array
-          items:
-            type: string
-          description: List of phase identifiers this phase depends on
-        status:
-          $ref: '#/components/schemas/OrchestrationStatus'
-        start_ts:
-          type: integer
-          format: int64
-          description: Start timestamp in milliseconds
-        end_ts:
-          type: integer
-          format: int64
-          description: End timestamp in milliseconds
-        phase_execution_id:
-          type: string
-          description: ID of the phase execution
-        completed_activities:
-          type: integer
-          description: Number of completed activities in the phase
-        total_activities:
-          type: integer
-          description: Total number of activities in the phase
-        activityCounts:
-          $ref: '#/components/schemas/ActivityCounts'
-          description: Activity counts for this phase grouped by type and status
-        failureInfo:
-          $ref: '#/components/schemas/RmFailureInfo'
-    ActivityExecutionInputDTO:
-      type: object
-      description: Input value for an activity execution
-      required:
-      - name
-      - value
-      - type
-      properties:
-        name:
-          type: string
-          description: Name of the input parameter
-        value:
-          $ref: '#/components/schemas/AnyValue'
-          description: Value of the input parameter (can be string, number, boolean, object, array, etc.)
-        type:
-          $ref: '#/components/schemas/InputVariableType'
-          description: Type of the input parameter
-    StringOrBool:
-      oneOf:
-      - type: boolean
-        description: Boolean value
-      - type: string
-        description: String value
-      description: Flexible type that accepts either a boolean or a string
-    ActivityTypeCounts:
-      type: object
-      description: Counts of activities by status for a specific activity type
-      required:
-      - running
-      - userAction
-      properties:
-        running:
-          type: integer
-          default: 0
-          description: Number of running activities of this type
-        userAction:
-          type: integer
-          default: 0
-          description: Number of activities of this type requiring user action
-    PipelineActivityInfo:
-      type: object
-      description: Pipeline execution information for activities
-      required:
-      - executionId
-      - identifier
-      properties:
-        executionId:
-          type: string
-          description: ID of the pipeline execution
-        identifier:
-          type: string
-          description: Pipeline identifier for PIPELINE type activities in format org/project/pipelineIdentifier
-    EventType:
-      type: string
-      enum:
-      - Status
-      description: Type of event
-    ActivityRetryInfo:
-      type: object
-      description: Information about a single retry attempt
-      required:
-      - activityExecutionId
-      - retryIndex
-      - status
-      - createdAt
-      - activityName
-      - identifier
-      - yaml
-      properties:
-        activityExecutionId:
-          type: string
-          description: The ID of the activity execution
-        phaseId:
-          type: string
-          description: The ID of the phase this activity belongs to
-        activityName:
-          type: string
-          description: The name of the activity
-        identifier:
-          type: string
-          description: The identifier of the activity
-        retryIndex:
-          type: integer
-          format: int32
-          description: The retry index (0 for original, 1+ for retries)
-        status:
-          $ref: '#/components/schemas/OrchestrationStatus'
-          description: The status of this retry attempt
-        createdAt:
-          type: integer
-          format: int64
-          description: Creation timestamp in milliseconds
-        startTs:
-          type: integer
-          format: int64
-          description: Start timestamp in milliseconds
-        endTs:
-          type: integer
-          format: int64
-          description: End timestamp in milliseconds
-        failureInfo:
-          $ref: '#/components/schemas/RmFailureInfo'
-          description: Information about a failure that occurred during the retry
-        canRetry:
-          type: boolean
-          description: Whether this activity can be retried (true if status is not RETRIED, false otherwise)
-        yaml:
-          type: string
-          description: YAML representation of the activity
-        triggerInfo:
-          $ref: '#/components/schemas/ActivityTriggerInfo'
-          description: Trigger information for the activity
-        pipeline:
-          $ref: '#/components/schemas/PipelineActivityInfo'
-          description: Pipeline execution information for activities
-        subprocess:
-          $ref: '#/components/schemas/SubprocessActivityInfo'
-          description: Subprocess execution information for activities
-    ActivityCounts:
-      type: object
-      description: Activity counts grouped by type and status
-      required:
-      - pipeline
-      - subprocess
-      - manual
-      properties:
-        pipeline:
-          $ref: '#/components/schemas/ActivityTypeCounts'
-          description: Pipeline activity counts
-        subprocess:
-          $ref: '#/components/schemas/ActivityTypeCounts'
-          description: Subprocess activity counts
-        manual:
-          $ref: '#/components/schemas/ActivityTypeCounts'
-          description: Manual activity counts
-    CreatedByDTO:
-      type: object
-      description: Details of the user who created the event
-      required:
-      - name
-      - email
-      properties:
-        name:
-          type: string
-          description: Name of the user who created the event
-        email:
-          type: string
-          description: Email of the user who created the event
-        identifier:
-          type: string
-          description: Identifier of the user who created the event
-      x-stoplight:
-        id: created-by-dto
-    TaskCommentsListResponseDTO:
-      type: object
-      description: Paginated response containing task comments
-      required:
-      - comments
-      - nextRequest
+      - retries
       - last
+      - nextRequest
       properties:
-        comments:
+        retries:
           type: array
           items:
-            $ref: '#/components/schemas/TaskCommentDTO'
-          description: List of task comments
-        nextRequest:
-          $ref: '#/components/schemas/NextRequest'
+            $ref: '#/components/schemas/ActivityRetryInfo'
+          description: List of retry attempts for the activity
         last:
           type: boolean
           description: Whether this is the last page of results
-      x-stoplight:
-        id: task-comments-list-response-dto
-    TaskCommentDTO:
-      title: TaskCommentDTO
-      type: object
-      description: Represents a comment on an execution task
-      required:
-      - commentId
-      - comment
-      - commentedBy
-      - createdAt
-      - lastUpdatedAt
-      - isEdited
-      properties:
-        commentId:
-          type: string
-          description: UUID of the comment
-        comment:
-          type: string
-          description: The comment text
-        commentedBy:
-          description: Details of the person who created the comment
-          $ref: '#/components/schemas/CommentedByDTO'
-        createdAt:
-          type: integer
-          format: int64
-          description: Unix timestamp when the comment was created
-        lastUpdatedAt:
-          type: integer
-          format: int64
-          description: Unix timestamp when the comment was last updated
-        isEdited:
-          type: boolean
-          description: Whether the comment has been edited since creation
-      x-stoplight:
-        id: task-comment-dto
-    RmFailureInfo:
-      type: object
-      description: Information about a failure that occurred
-      required:
-      - msg
-      properties:
-        msg:
-          type: string
-          description: The failure message describing what went wrong
-        code:
-          type: string
-          description: The failure code indicating the type of failure
-    OrchestrationStatus:
-      type: string
-      description: Status of orchestration execution activities
-      enum:
-      - SCHEDULED
-      - RUNNING
-      - OUTPUT_WAITING
-      - SUCCEEDED
-      - FAILED
-      - ABORTED
-      - ON_HOLD
-      - RETRIED
-      - IGNORED
-      - SKIPPED
-      - QUEUED
-    CommentedByDTO:
-      type: object
-      required:
-      - email
-      - name
-      properties:
-        name:
-          type: string
-          description: Name of the person who approved the step.
-        email:
-          type: string
-          description: Email of the person who approved the step.
+        nextRequest:
+          $ref: '#/components/schemas/NextRequest'
+          description: Information for the next page request
     OrchestrationExecutionActivityDetail:
       type: object
       description: Detailed information about an activity execution
@@ -1534,229 +1721,9 @@ components:
           description: Subprocess execution information for activities
         failureInfo:
           $ref: '#/components/schemas/RmFailureInfo'
-    ManualActivityInfo:
-      type: object
-      description: Manual activity execution information
-      properties:
-        taskCount:
-          type:
-          - integer
-          - 'null'
-          format: int32
-          description: Total number of tasks in this manual activity
-    ExecutionTaskStatus:
-      type: string
-      description: Current status of the execution task
-      enum:
-      - TODO
-      - IN_PROGRESS
-      - SUCCEEDED
-      - FAILED
-      - BLOCKED
-      x-oapi-codegen-extra-tags:
-        validate: required
-    InputVariableType:
-      type: string
-      description: Type of an input variable for parameters and process inputs.
-      enum:
-      - string
-      - list
-      - boolean
-      - number
-      - object
-      - service
-      - multiService
-      - environment
-      - multiEnvironment
-      - infrastructure
-      - multiInfrastructure
-      - connector
-    RmPageable:
-      type: object
-      properties:
-        pageNumber:
-          type: integer
-        pageSize:
-          type: integer
-        sort:
-          $ref: '#/components/schemas/PageableSort'
-        offset:
-          type: integer
-        paged:
-          type: boolean
-        unpaged:
-          type: boolean
-    NextRequest:
-      type: object
-      properties:
-        cursor:
-          type: string
-        limit:
-          type: integer
-    StringOrStringArray:
-      oneOf:
-      - type: string
-        description: Reference as a string
-      - type: array
-        items:
-          type: string
-        description: Array of references as strings
-      description: Flexible type that accepts either a single string or an array of strings for user references
-    PageableSort:
-      type: object
-      x-go-name: PageableSort
-      properties:
-        empty:
-          type: boolean
-        sorted:
-          type: boolean
-        unsorted:
-          type: boolean
-    ActivityTriggerInfo:
-      type: object
-      description: Trigger information for an activity
-      properties:
-        identifier:
-          type:
-          - string
-          - 'null'
-          description: Identifier of the person who triggered the activity
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of the person who triggered the activity
-        email:
-          type:
-          - string
-          - 'null'
-          description: Email of the person who triggered the activity
-    ExecutionOutputDTO:
-      type: object
-      description: Output value for a phase execution
-      required:
-      - name
-      - value
-      properties:
-        name:
-          type: string
-          description: Name of the output parameter
-        value:
-          $ref: '#/components/schemas/AnyValue'
-          description: Value of the output parameter (can be string, number, boolean, object, array, etc.)
-    EventDTO:
-      type: object
-      description: Represents an event for an entity
-      required:
-      - entityId
-      - entityType
-      - type
-      - eventMetadata
-      - createdBy
-      - createdAt
-      properties:
-        entityId:
-          type: string
-          description: The ID of the entity
-        entityType:
-          $ref: '#/components/schemas/EventEntity'
-          description: The type of entity
-        type:
-          $ref: '#/components/schemas/EventType'
-          description: The type of event
-        eventMetadata:
-          $ref: '#/components/schemas/EventMetadata'
-          description: Event metadata containing from and to fields
-        createdBy:
-          $ref: '#/components/schemas/CreatedByDTO'
-          description: Information about the user who created the event
-        createdAt:
-          type: integer
-          format: int64
-          description: Unix timestamp when the event was created
-    ExecutionTaskDTO:
-      type: object
-      description: Represents an execution task for a specific activity
-      required:
-      - identifier
-      - name
-      - status
-      - required
-      - userGroups
-      - expectedDuration
-      properties:
-        identifier:
-          type: string
-          description: Unique identifier of the task
-        name:
-          type: string
-          description: Name of the task
-        description:
-          type: string
-          description: Description of the task
-        status:
-          $ref: '#/components/schemas/ExecutionTaskStatus'
-        required:
-          $ref: '#/components/schemas/StringOrBool'
-          description: Whether this task is required
-        userGroups:
-          $ref: '#/components/schemas/StringOrStringArray'
-          description: List of user group identifiers assigned to this task
-        expectedDuration:
-          type: string
-          description: Expected duration for the task (e.g., "1d 12h")
-        actualDuration:
-          type: string
-          description: Actual duration taken for the task (e.g., "7h")
-        createdAt:
-          type: integer
-          format: int64
-          description: Unix timestamp when the task was created
-        lastUpdatedAt:
-          type: integer
-          format: int64
-          description: Unix timestamp when the task was last updated
-        taskExecutionId:
-          type: string
-          description: ID of the task execution
-        failureInfo:
-          $ref: '#/components/schemas/RmFailureInfo'
   responses:
-    UpdateExecutionTaskStatusResponse:
-      description: Response for successful task status update
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - taskExecutionId
-            - status
-            properties:
-              taskExecutionId:
-                type: string
-                description: UUID of the updated task
-              status:
-                $ref: '#/components/schemas/ExecutionTaskStatus'
-    TaskCommentsListResponse:
-      description: Paginated list of task comments
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/TaskCommentsListResponseDTO'
-    UpdateExecutionTaskMetadataResponse:
-      description: Response for successful task metadata update
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - taskExecutionId
-            properties:
-              taskExecutionId:
-                type: string
-                description: UUID of the updated task
-    UpdateTaskCommentResponse:
-      description: Response for successful task comment update
+    CreateTaskCommentResponse:
+      description: Response for successful task comment creation
       content:
         application/json:
           schema:
@@ -1766,28 +1733,7 @@ components:
             properties:
               commentId:
                 type: string
-                description: UUID of the updated comment
-    EventsResponse:
-      description: Successful response for events
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - events
-            - nextRequest
-            - last
-            properties:
-              events:
-                type: array
-                description: List of events
-                items:
-                  $ref: '#/components/schemas/EventDTO'
-              nextRequest:
-                $ref: '#/components/schemas/NextRequest'
-              last:
-                type: boolean
-                description: Whether this is the last page of results
+                description: UUID of the created comment
     OrchestrationExecutionActivitiesPaginatedResponse:
       description: Paginated orchestration execution activities
       content:
@@ -1839,52 +1785,6 @@ components:
               sort:
                 $ref: '#/components/schemas/PageableSort'
                 description: Sorting information
-    ExecutionTasksListResponse:
-      description: Response containing list of execution tasks
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - tasks
-            properties:
-              tasks:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExecutionTaskDTO'
-                description: List of execution tasks
-    ActivityExecutionInputsResponse:
-      description: Response containing list of activity execution input values
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - inputs
-            properties:
-              inputs:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityExecutionInputDTO'
-                description: List of input values for the activity execution
-    RmErrorResponse:
-      description: Error Response body
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RmError'
-    CreateTaskCommentResponse:
-      description: Response for successful task comment creation
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - commentId
-            properties:
-              commentId:
-                type: string
-                description: UUID of the created comment
     ExecutionOutputsResponse:
       description: Response containing list of phase execution output values
       content:
@@ -1899,30 +1799,115 @@ components:
                 items:
                   $ref: '#/components/schemas/ExecutionOutputDTO'
                 description: List of output values for the phase execution
+    TaskCommentsListResponse:
+      description: Paginated list of task comments
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TaskCommentsListResponseDTO'
+    RmErrorResponse:
+      description: Error Response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RmError'
+    EventsResponse:
+      description: Successful response for events
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - events
+            - nextRequest
+            - last
+            properties:
+              events:
+                type: array
+                description: List of events
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+              nextRequest:
+                $ref: '#/components/schemas/NextRequest'
+              last:
+                type: boolean
+                description: Whether this is the last page of results
+    ActivityExecutionInputsResponse:
+      description: Response containing list of activity execution input values
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - inputs
+            properties:
+              inputs:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityExecutionInputDTO'
+                description: List of input values for the activity execution
+    ExecutionTasksListResponse:
+      description: Response containing list of execution tasks
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - tasks
+            properties:
+              tasks:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExecutionTaskDTO'
+                description: List of execution tasks
+    UpdateTaskCommentResponse:
+      description: Response for successful task comment update
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - commentId
+            properties:
+              commentId:
+                type: string
+                description: UUID of the updated comment
+    UpdateExecutionTaskMetadataResponse:
+      description: Response for successful task metadata update
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - taskExecutionId
+            properties:
+              taskExecutionId:
+                type: string
+                description: UUID of the updated task
+    UpdateExecutionTaskStatusResponse:
+      description: Response for successful task status update
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - taskExecutionId
+            - status
+            properties:
+              taskExecutionId:
+                type: string
+                description: UUID of the updated task
+              status:
+                $ref: '#/components/schemas/ExecutionTaskStatus'
   parameters:
-    RmLimit:
-      name: limit
+    Cursor:
+      name: cursor
       in: query
-      schema:
-        type: number
-        default: 500
-        maximum: 500
-      description: The number of records expected
-    Size:
-      name: size
-      in: query
-      required: false
-      schema:
-        type: integer
-    AccountParam:
-      name: Harness-Account
-      in: header
-      required: true
       schema:
         type: string
-      description: Account Identifier
-    RmPage:
-      name: page
+      description: Cursor Based Pagination
+    Size:
+      name: size
       in: query
       required: false
       schema:
@@ -1953,28 +1938,12 @@ components:
         Valid values: SCHEDULED, QUEUED, RUNNING, OUTPUT_WAITING, SUCCEEDED, FAILED, ABORTED, ON_HOLD, RETRIED, IGNORED, SKIPPED.
 
         '
-    EventEntityTypeParam:
-      name: entityType
-      in: path
-      required: true
-      schema:
-        type: string
-        enum:
-        - Task
-      description: Type of entity for events
-    RmOrgParam:
-      name: orgIdentifier
+    RmPage:
+      name: page
       in: query
       required: false
       schema:
-        type: string
-      description: Organisation Identifier
-    Cursor:
-      name: cursor
-      in: query
-      schema:
-        type: string
-      description: Cursor Based Pagination
+        type: integer
     EventTypeParam:
       name: eventType
       in: query
@@ -1982,13 +1951,14 @@ components:
       schema:
         type: string
       description: Optional filter by event type
-    RmProjectParam:
-      name: projectIdentifier
+    RmLimit:
+      name: limit
       in: query
-      required: false
       schema:
-        type: string
-      description: Project Identifier
+        type: number
+        default: 500
+        maximum: 500
+      description: The number of records expected
     RmSort:
       name: sort
       in: query
@@ -2017,6 +1987,29 @@ components:
         example4:
           value:
           - end_ts,asc
+    EventEntityTypeParam:
+      name: entityType
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - Task
+      description: Type of entity for events
+    RmProjectParam:
+      name: projectIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Project Identifier
+    RmOrgParam:
+      name: orgIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Organisation Identifier
     EventEntityIdParam:
       name: entityId
       in: path
@@ -2024,6 +2017,13 @@ components:
       schema:
         type: string
       description: The ID of the entity
+    AccountParam:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Account Identifier
   securitySchemes:
     x-api-key:
       name: x-api-key

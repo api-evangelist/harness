@@ -374,58 +374,130 @@ paths:
       - Probe Templates
 components:
   schemas:
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.DynatraceApmProbeInputs:
+    probe.SyntheticsTestTemplate:
+      type: object
+      properties:
+        publicId:
+          type: string
+        testType:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.DatadogSyntheticsTestType'
+    v1.HostPathVolumeSource:
+      type: object
+      properties:
+        path:
+          description: 'Path of the directory on the host.
+
+            If the path is a symlink, it will follow the link to the real path.
+
+            More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath'
+          type: string
+        type:
+          description: 'Type for HostPath Volume
+
+            Defaults to ""
+
+            More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.HostPathType'
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.SplunkObservabilityProbeInputs:
       type: object
       properties:
         connectorID:
           type: string
-        durationInMin: {}
-        metrics:
-          $ref: '#/components/schemas/probe.DynatraceMetricsTemplate'
-    v1.WindowsSecurityContextOptions:
+        splunkObservabilityMetrics:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SplunkObservabilityMetrics'
+    v1.ResourceFieldSelector:
       type: object
       properties:
-        gmsaCredentialSpec:
-          description: 'GMSACredentialSpec is where the GMSA admission webhook
-
-            (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
-
-            GMSA credential spec named by the GMSACredentialSpecName field.
+        containerName:
+          description: 'Container name: required for volumes, optional for env vars
 
             +optional'
           type: string
-        gmsaCredentialSpecName:
-          description: 'GMSACredentialSpecName is the name of the GMSA credential spec to use.
+        divisor:
+          description: 'Specifies the output format of the exposed resources, defaults to "1"
 
             +optional'
+          allOf:
+          - $ref: '#/components/schemas/resource.Quantity'
+        resource:
+          description: 'Required: resource to select'
           type: string
-        runAsUserName:
-          description: 'The UserName in Windows to run the entrypoint of the container process.
-
-            Defaults to the user specified in image metadata if unspecified.
-
-            May also be set in PodSecurityContext. If set in both SecurityContext and
-
-            PodSecurityContext, the value specified in SecurityContext takes precedence.
-
-            +optional'
-          type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.ENV:
+    probe.SLOSourceMetadataTemplate:
       type: object
       properties:
-        name:
+        apiTokenSecret:
           type: string
-        value:
+        scope:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.Identifier'
+    v1.Capabilities:
+      type: object
+      properties:
+        add:
+          description: 'Added capabilities
+
+            +optional'
+          type: array
+          items:
+            type: string
+        drop:
+          description: 'Removed capabilities
+
+            +optional'
+          type: array
+          items:
+            type: string
+    v1.SELinuxOptions:
+      type: object
+      properties:
+        level:
+          description: 'Level is SELinux level label that applies to the container.
+
+            +optional'
           type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.PrometheusProbeInputs:
+        role:
+          description: 'Role is a SELinux role label that applies to the container.
+
+            +optional'
+          type: string
+        type:
+          description: 'Type is a SELinux type label that applies to the container.
+
+            +optional'
+          type: string
+        user:
+          description: 'User is a SELinux user label that applies to the container.
+
+            +optional'
+          type: string
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.NewRelicProbeInputs:
       type: object
       properties:
         connectorID:
           type: string
-        query:
+        newRelicMetric:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.NewRelicMetric'
+    probe.K8SProbeTemplate:
+      type: object
+      properties:
+        fieldSelector:
           type: string
-        tlsConfig:
-          $ref: '#/components/schemas/probe.TLSConfigSM'
+        group:
+          type: string
+        labelSelector:
+          type: string
+        namespace:
+          type: string
+        operation:
+          type: string
+        resource:
+          type: string
+        resourceNames:
+          type: string
+        version:
+          type: string
     common.ResourceRequirements:
       type: object
       properties:
@@ -437,81 +509,78 @@ components:
           type: object
           additionalProperties:
             type: string
-    chaosprobetemplate.ListProbeTemplateResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        countDetails:
-          type: array
-          items:
-            $ref: '#/components/schemas/chaosprobetemplate.ProbeTemplateCount'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_chaosprobetemplate.ChaosProbeTemplate'
-        pagination:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.NewRelicMetric:
-      type: object
-      properties:
-        query:
-          type: string
-        queryMetric:
-          type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.SplunkObservabilityProbeInputs:
-      type: object
-      properties:
-        connectorID:
-          type: string
-        splunkObservabilityMetrics:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SplunkObservabilityMetrics'
-    probe.DynatraceProbeTemplate:
-      type: object
-      properties:
-        apiTokenSecretName:
-          type: string
-        comparator:
-          $ref: '#/components/schemas/probe.ComparatorTemplate'
-        endpoint:
-          type: string
-        metrics:
-          $ref: '#/components/schemas/probe.DynatraceMetricsTemplate'
-        timeFrame:
-          type: string
-    v1.SeccompProfileType:
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.DatadogSyntheticsTestType:
       type: string
       enum:
-      - Unconfined
-      - RuntimeDefault
-      - Localhost
+      - api
+      - browser
       x-enum-varnames:
-      - SeccompProfileTypeUnconfined
-      - SeccompProfileTypeRuntimeDefault
-      - SeccompProfileTypeLocalhost
-    probe.SLOProbeTemplate:
+      - API
+      - Browser
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.GcpCloudMonitoringProbeInputs:
       type: object
       properties:
+        projectID:
+          type: string
+        query:
+          type: string
+        serviceAccountKey:
+          type: string
+    probe.ComparatorTemplate:
+      type: object
+      properties:
+        criteria:
+          type: string
+        type:
+          type: string
+        value:
+          type: string
+    probe.APMProbeTemplate:
+      type: object
+      properties:
+        appDynamicsProbeInputs:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.AppDynamicsProbeInputs'
         comparator:
           $ref: '#/components/schemas/probe.ComparatorTemplate'
-        evaluationTimeout:
-          type: string
-        evaluationWindow:
-          $ref: '#/components/schemas/probe.EvaluationWindowTemplate'
-        insecureSkipVerify:
-          type: boolean
-        platformEndpoint:
-          type: string
-        sloIdentifier:
-          type: string
-        sloSourceMetadata:
-          $ref: '#/components/schemas/probe.SLOSourceMetadataTemplate'
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.AppDynamicsProbeInputs:
+        datadogApmProbeInputs:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.DatadogApmProbeInputs'
+        dynatraceApmProbeInputs:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.DynatraceApmProbeInputs'
+        gcpCloudMonitoringProbeInputs:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.GcpCloudMonitoringProbeInputs'
+        newRelicProbeInputs:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.NewRelicProbeInputs'
+        prometheusProbeInputs:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.PrometheusProbeInputs'
+        splunkObservabilityProbeInputs:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SplunkObservabilityProbeInputs'
+        type:
+          $ref: '#/components/schemas/probe.APMProbeType'
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.GET:
       type: object
       properties:
-        appdMetrics:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.AppdMetrics'
-        connectorID:
+        criteria:
+          type: string
+        responseBody:
+          type: string
+        responseCode:
+          type: string
+    probe.ProbeTemplateRunProperties:
+      type: object
+      properties:
+        attempt: {}
+        initialDelay:
+          type: string
+        interval:
+          type: string
+        pollingInterval:
+          type: string
+        retry: {}
+        stopOnFailure:
+          type: boolean
+        timeout:
+          type: string
+        verbosity:
           type: string
     probe.ContainerProbeTemplate:
       type: object
@@ -578,131 +647,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/common.Volume'
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.AppdMetrics:
+    probe.APMProbeType:
+      type: string
+      enum:
+      - Prometheus
+      - AppDynamics
+      - SplunkObservability
+      - Dynatrace
+      - NewRelic
+      - GcpCloudMonitoring
+      - Datadog
+      x-enum-varnames:
+      - APMPrometheusProbe
+      - APMAppDynamicsProbe
+      - APMSplunkObservabilityProbe
+      - APMDynatraceProbe
+      - APMNewRelicProbe
+      - APMGcpCloudMonitoringProbe
+      - APMDatadogProbe
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.DynatraceApmProbeInputs:
       type: object
       properties:
-        applicationName:
+        connectorID:
           type: string
         durationInMin: {}
-        metricsFullPath:
-          type: string
-    v1.HostPathVolumeSource:
-      type: object
-      properties:
-        path:
-          description: 'Path of the directory on the host.
-
-            If the path is a symlink, it will follow the link to the real path.
-
-            More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath'
-          type: string
-        type:
-          description: 'Type for HostPath Volume
-
-            Defaults to ""
-
-            More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.HostPathType'
-    resource.Quantity:
-      type: object
-      properties:
-        Format:
-          type: string
-          enum:
-          - DecimalExponent
-          - BinarySI
-          - DecimalSI
-          x-enum-comments:
-            BinarySI: e.g., 12Mi (12 * 2^20)
-            DecimalExponent: e.g., 12e6
-            DecimalSI: e.g., 12M  (12 * 10^6)
-          x-enum-varnames:
-          - DecimalExponent
-          - BinarySI
-          - DecimalSI
-    probe.PromProbeTemplate:
-      type: object
-      properties:
-        auth:
-          $ref: '#/components/schemas/probe.AuthorizationTemplate'
-        comparator:
-          $ref: '#/components/schemas/probe.ComparatorTemplate'
-        endpoint:
-          type: string
-        query:
-          type: string
-        queryPath:
-          type: string
-        tlsConfig:
-          $ref: '#/components/schemas/probe.TLSConfigTemplate'
-    common.Volume:
-      type: object
-      properties:
-        configMap:
-          $ref: '#/components/schemas/common.VolumeInputTemplate'
-        emptyDir:
-          $ref: '#/components/schemas/v1.EmptyDirVolumeSource'
-        hostPath:
-          $ref: '#/components/schemas/v1.HostPathVolumeSource'
-        name:
-          type: string
-        persistentVolumeClaim:
-          $ref: '#/components/schemas/v1.PersistentVolumeClaimVolumeSource'
-        secret:
-          $ref: '#/components/schemas/common.VolumeInputTemplate'
-        type:
-          $ref: '#/components/schemas/common.VolumeType'
-    v1.VolumeMount:
-      type: object
-      properties:
-        mountPath:
-          description: 'Path within the container at which the volume should be mounted.  Must
-
-            not contain '':''.'
-          type: string
-        mountPropagation:
-          description: 'mountPropagation determines how mounts are propagated from the host
-
-            to container and the other way around.
-
-            When not set, MountPropagationNone is used.
-
-            This field is beta in 1.10.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.MountPropagationMode'
-        name:
-          description: This must match the Name of a Volume.
-          type: string
-        readOnly:
-          description: 'Mounted read-only if true, read-write otherwise (false or unspecified).
-
-            Defaults to false.
-
-            +optional'
-          type: boolean
-        subPath:
-          description: 'Path within the volume from which the container''s volume should be mounted.
-
-            Defaults to "" (volume''s root).
-
-            +optional'
-          type: string
-        subPathExpr:
-          description: 'Expanded path within the volume from which the container''s volume should be mounted.
-
-            Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container''s environment.
-
-            Defaults to "" (volume''s root).
-
-            SubPathExpr and SubPath are mutually exclusive.
-
-            +optional'
-          type: string
+        metrics:
+          $ref: '#/components/schemas/probe.DynatraceMetricsTemplate'
     github_com_harness_hce-saas_hce-sdk_template_schema_probe.Headers:
       type: object
       properties:
@@ -710,204 +680,86 @@ components:
           type: string
         value:
           type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.NewRelicProbeInputs:
+    v1.SecretKeySelector:
       type: object
       properties:
-        connectorID:
-          type: string
-        newRelicMetric:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.NewRelicMetric'
-    probe.DynatraceMetricsTemplate:
-      type: object
-      properties:
-        entitySelector:
-          type: string
-        metricsSelector:
-          type: string
-    template.InputCategory:
-      type: string
-      enum:
-      - FaultTarget
-      - FaultTunable
-      - TargetInfra
-      - ExperimentTunable
-      - ActionProperties
-      - ProbeProperties
-      - RunProperties
-      - FaultAuthentication
-      x-enum-varnames:
-      - CategoryFaultTarget
-      - CategoryFaultTunable
-      - CategoryTargetInfra
-      - CategoryExperimentTunable
-      - CategoryActionProperties
-      - CategoryProbeProperties
-      - CategoryRunProperties
-      - CategoryFaultAuthentication
-    template.Variable:
-      type: object
-      required:
-      - name
-      - value
-      properties:
-        allowedValues:
-          type: array
-          items: {}
-        category:
-          $ref: '#/components/schemas/template.InputCategory'
-        default: {}
-        description:
+        key:
+          description: The key of the secret to select from.  Must be a valid secret key.
           type: string
         name:
+          description: 'Name of the referent.
+
+            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+
+            TODO: Add other useful fields. apiVersion, kind, uid?
+
+            +optional'
           type: string
-        path:
-          type: string
-        required:
+        optional:
+          description: 'Specify whether the Secret or its key must be defined
+
+            +optional'
           type: boolean
-        stringify:
-          type: boolean
-        tags:
-          type: array
-          items:
-            type: string
-        tooltipId:
+    v1.SeccompProfile:
+      type: object
+      properties:
+        localhostProfile:
+          description: 'localhostProfile indicates a profile defined in a file on the node should be used.
+
+            The profile must be preconfigured on the node to work.
+
+            Must be a descending path, relative to the kubelet''s configured seccomp profile location.
+
+            Must only be set if type is "Localhost".
+
+            +optional'
           type: string
         type:
-          $ref: '#/components/schemas/template.InputType'
-        validator:
-          type: string
-        value: {}
-    probe.ProbeTemplateRunProperties:
+          description: 'type indicates which kind of seccomp profile will be applied.
+
+            Valid options are:
+
+
+            Localhost - a profile defined in a file on the node should be used.
+
+            RuntimeDefault - the container runtime default profile should be used.
+
+            Unconfined - no profile should be applied.
+
+            +unionDiscriminator'
+          allOf:
+          - $ref: '#/components/schemas/v1.SeccompProfileType'
+    v1.EmptyDirVolumeSource:
       type: object
       properties:
-        attempt: {}
-        initialDelay:
-          type: string
-        interval:
-          type: string
-        pollingInterval:
-          type: string
-        retry: {}
-        stopOnFailure:
-          type: boolean
-        timeout:
-          type: string
-        verbosity:
-          type: string
-    probe.DatadogMetricsTemplate:
-      type: object
-      properties:
-        comparator:
-          $ref: '#/components/schemas/probe.ComparatorTemplate'
-        query:
-          type: string
-        timeFrame:
-          type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.POST:
-      type: object
-      properties:
-        body:
-          type: string
-        bodyPath:
-          type: string
-        contentType:
-          type: string
-        criteria:
-          type: string
-        responseBody:
-          type: string
-        responseCode:
-          type: string
-    v1.StorageMedium:
-      type: string
-      enum:
-      - ''
-      - Memory
-      - HugePages
-      - HugePages-
-      x-enum-comments:
-        StorageMediumDefault: use whatever the default is for the node, assume anything we don't explicitly handle is this
-        StorageMediumHugePages: use hugepages
-        StorageMediumHugePagesPrefix: prefix for full medium notation HugePages-<size>
-        StorageMediumMemory: use memory (e.g. tmpfs on linux)
-      x-enum-varnames:
-      - StorageMediumDefault
-      - StorageMediumMemory
-      - StorageMediumHugePages
-      - StorageMediumHugePagesPrefix
-    v1.EnvVarSource:
-      type: object
-      properties:
-        configMapKeyRef:
-          description: 'Selects a key of a ConfigMap.
+        medium:
+          description: 'What type of storage medium should back this directory.
+
+            The default is "" which means to use the node''s default medium.
+
+            Must be an empty string (default) or Memory.
+
+            More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
 
             +optional'
           allOf:
-          - $ref: '#/components/schemas/v1.ConfigMapKeySelector'
-        fieldRef:
-          description: 'Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`, `metadata.annotations[''<KEY>'']`,
+          - $ref: '#/components/schemas/v1.StorageMedium'
+        sizeLimit:
+          description: 'Total amount of local storage required for this EmptyDir volume.
 
-            spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+            The size limit is also applicable for memory medium.
 
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ObjectFieldSelector'
-        resourceFieldRef:
-          description: 'Selects a resource of the container: only resources limits and requests
+            The maximum usage on memory medium EmptyDir would be the minimum value between
 
-            (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+            the SizeLimit specified here and the sum of memory limits of all containers in a pod.
 
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.ResourceFieldSelector'
-        secretKeyRef:
-          description: 'Selects a key of a secret in the pod''s namespace
+            The default is nil which means that the limit is undefined.
+
+            More info: http://kubernetes.io/docs/user-guide/volumes#emptydir
 
             +optional'
           allOf:
-          - $ref: '#/components/schemas/v1.SecretKeySelector'
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.SecretManager:
-      type: object
-      properties:
-        identifier:
-          type: string
-    common.NodeAffinity:
-      type: object
-      properties:
-        preferred:
-          type: array
-          items:
-            $ref: '#/components/schemas/common.PreferredNodeSelector'
-        required:
-          type: array
-          items:
-            $ref: '#/components/schemas/common.RequiredNodeSelector'
-    probe.K8SProbeTemplate:
-      type: object
-      properties:
-        fieldSelector:
-          type: string
-        group:
-          type: string
-        labelSelector:
-          type: string
-        namespace:
-          type: string
-        operation:
-          type: string
-        resource:
-          type: string
-        resourceNames:
-          type: string
-        version:
-          type: string
-    chaosprobetemplate.GetProbeTemplateResponse:
-      type: object
-      properties:
-        correlationID:
-          type: string
-        data:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_chaosprobetemplate.ChaosProbeTemplate'
+          - $ref: '#/components/schemas/resource.Quantity'
     github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_chaosprobetemplate.ChaosProbeTemplate:
       type: object
       required:
@@ -981,181 +833,72 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/template.Variable'
-    probe.AuthorizationTemplate:
-      type: object
-      properties:
-        credentials:
-          type: string
-        type:
-          type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.DatadogSyntheticsTestType:
+    v1.MountPropagationMode:
       type: string
       enum:
-      - api
-      - browser
+      - None
+      - HostToContainer
+      - Bidirectional
       x-enum-varnames:
-      - API
-      - Browser
-    v1.Capabilities:
+      - MountPropagationNone
+      - MountPropagationHostToContainer
+      - MountPropagationBidirectional
+    v1.ProcMountType:
+      type: string
+      enum:
+      - Default
+      - Unmasked
+      x-enum-varnames:
+      - DefaultProcMount
+      - UnmaskedProcMount
+    v1.Toleration:
       type: object
       properties:
-        add:
-          description: 'Added capabilities
+        effect:
+          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
 
-            +optional'
-          type: array
-          items:
-            type: string
-        drop:
-          description: 'Removed capabilities
-
-            +optional'
-          type: array
-          items:
-            type: string
-    v1.ObjectFieldSelector:
-      type: object
-      properties:
-        apiVersion:
-          description: 'Version of the schema the FieldPath is written in terms of, defaults to "v1".
-
-            +optional'
-          type: string
-        fieldPath:
-          description: Path of the field to select in the specified API version.
-          type: string
-    probe.TLSConfigTemplate:
-      type: object
-      properties:
-        caFile:
-          type: string
-        certFile:
-          type: string
-        insecureSkipVerify:
-          type: boolean
-        keyFile:
-          type: string
-    common.VolumeInputTemplate:
-      type: object
-      properties:
-        defaultMode:
-          type: string
-        items:
-          type: object
-          additionalProperties:
-            type: string
-        name:
-          type: string
-        optional:
-          type: boolean
-    v1.ResourceFieldSelector:
-      type: object
-      properties:
-        containerName:
-          description: 'Container name: required for volumes, optional for env vars
-
-            +optional'
-          type: string
-        divisor:
-          description: 'Specifies the output format of the exposed resources, defaults to "1"
+            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
 
             +optional'
           allOf:
-          - $ref: '#/components/schemas/resource.Quantity'
-        resource:
-          description: 'Required: resource to select'
-          type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.SplunkObservabilityMetrics:
-      type: object
-      properties:
-        durationInMin: {}
-        query:
-          type: string
-    github_com_harness_hce-saas_graphql_server_graph_model.UserDetails:
-      type: object
-      properties:
-        email:
-          type: string
-        userID:
-          type: string
-        username:
-          type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.GET:
-      type: object
-      properties:
-        criteria:
-          type: string
-        responseBody:
-          type: string
-        responseCode:
-          type: string
-    v1.SeccompProfile:
-      type: object
-      properties:
-        localhostProfile:
-          description: 'localhostProfile indicates a profile defined in a file on the node should be used.
+          - $ref: '#/components/schemas/v1.TaintEffect'
+        key:
+          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
 
-            The profile must be preconfigured on the node to work.
-
-            Must be a descending path, relative to the kubelet''s configured seccomp profile location.
-
-            Must only be set if type is "Localhost".
+            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
 
             +optional'
           type: string
-        type:
-          description: 'type indicates which kind of seccomp profile will be applied.
+        operator:
+          description: 'Operator represents a key''s relationship to the value.
 
-            Valid options are:
+            Valid operators are Exists and Equal. Defaults to Equal.
 
+            Exists is equivalent to wildcard for value, so that a pod can
 
-            Localhost - a profile defined in a file on the node should be used.
+            tolerate all taints of a particular category.
 
-            RuntimeDefault - the container runtime default profile should be used.
-
-            Unconfined - no profile should be applied.
-
-            +unionDiscriminator'
+            +optional'
           allOf:
-          - $ref: '#/components/schemas/v1.SeccompProfileType'
-    chaosprobetemplate.ProbeTemplate:
-      type: object
-      required:
-      - name
-      properties:
-        description:
-          type: string
-        hubRef:
-          type: string
-        identity:
-          type: string
-        infrastructureType:
-          $ref: '#/components/schemas/probe.InfrastructureType'
-        inputs:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        isDefault:
-          type: boolean
-        name:
-          type: string
-        probeProperties:
-          $ref: '#/components/schemas/probe.ProbeTemplateProperties'
-        revision:
+          - $ref: '#/components/schemas/v1.TolerationOperator'
+        tolerationSeconds:
+          description: 'TolerationSeconds represents the period of time the toleration (which must be
+
+            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+
+            it is not set, which means tolerate the taint forever (do not evict). Zero and
+
+            negative values will be treated as 0 (evict immediately) by the system.
+
+            +optional'
           type: integer
-        runProperties:
-          $ref: '#/components/schemas/probe.ProbeTemplateRunProperties'
-        tags:
-          type: array
-          items:
-            type: string
-        type:
-          $ref: '#/components/schemas/probe.ProbeType'
-        variables:
-          description: CHAOS-11100
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
+        value:
+          description: 'Value is the taint value the toleration matches to.
+
+            If the operator is Exists, the value should be empty, otherwise just a regular string.
+
+            +optional'
+          type: string
     v1.PodSecurityContext:
       type: object
       properties:
@@ -1285,53 +1028,267 @@ components:
             +optional'
           allOf:
           - $ref: '#/components/schemas/v1.WindowsSecurityContextOptions'
-    github_com_harness_hce-saas_graphql_server_api.Pagination:
+    chaosprobetemplate.ProbeTemplateCount:
       type: object
       properties:
-        index:
+        count:
           type: integer
-        limit:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-    probe.HttpProbeTemplate:
+        type:
+          $ref: '#/components/schemas/probe.ProbeType'
+    v1.StorageMedium:
+      type: string
+      enum:
+      - ''
+      - Memory
+      - HugePages
+      - HugePages-
+      x-enum-comments:
+        StorageMediumDefault: use whatever the default is for the node, assume anything we don't explicitly handle is this
+        StorageMediumHugePages: use hugepages
+        StorageMediumHugePagesPrefix: prefix for full medium notation HugePages-<size>
+        StorageMediumMemory: use memory (e.g. tmpfs on linux)
+      x-enum-varnames:
+      - StorageMediumDefault
+      - StorageMediumMemory
+      - StorageMediumHugePages
+      - StorageMediumHugePagesPrefix
+    v1.TaintEffect:
+      type: string
+      enum:
+      - NoSchedule
+      - PreferNoSchedule
+      - NoExecute
+      x-enum-varnames:
+      - TaintEffectNoSchedule
+      - TaintEffectPreferNoSchedule
+      - TaintEffectNoExecute
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.POST:
       type: object
       properties:
-        auth:
-          $ref: '#/components/schemas/probe.AuthorizationTemplate'
-        headers:
+        body:
+          type: string
+        bodyPath:
+          type: string
+        contentType:
+          type: string
+        criteria:
+          type: string
+        responseBody:
+          type: string
+        responseCode:
+          type: string
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.PrometheusProbeInputs:
+      type: object
+      properties:
+        connectorID:
+          type: string
+        query:
+          type: string
+        tlsConfig:
+          $ref: '#/components/schemas/probe.TLSConfigSM'
+    common.RequiredNodeSelector:
+      type: object
+      properties:
+        key:
+          type: string
+        operator:
+          description: 'default: In'
+          type: string
+        values:
+          type: string
+    probe.DynatraceMetricsTemplate:
+      type: object
+      properties:
+        entitySelector:
+          type: string
+        metricsSelector:
+          type: string
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.ENV:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    api.RestError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/api.ResponseErrorCode'
+        description:
+          type: string
+        message:
+          type: string
+    v1.WindowsSecurityContextOptions:
+      type: object
+      properties:
+        gmsaCredentialSpec:
+          description: 'GMSACredentialSpec is where the GMSA admission webhook
+
+            (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
+
+            GMSA credential spec named by the GMSACredentialSpecName field.
+
+            +optional'
+          type: string
+        gmsaCredentialSpecName:
+          description: 'GMSACredentialSpecName is the name of the GMSA credential spec to use.
+
+            +optional'
+          type: string
+        runAsUserName:
+          description: 'The UserName in Windows to run the entrypoint of the container process.
+
+            Defaults to the user specified in image metadata if unspecified.
+
+            May also be set in PodSecurityContext. If set in both SecurityContext and
+
+            PodSecurityContext, the value specified in SecurityContext takes precedence.
+
+            +optional'
+          type: string
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.Identifier:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+        orgIdentifier:
+          type: string
+        projectIdentifier:
+          type: string
+    v1.PullPolicy:
+      type: string
+      enum:
+      - Always
+      - Never
+      - IfNotPresent
+      x-enum-varnames:
+      - PullAlways
+      - PullNever
+      - PullIfNotPresent
+    chaosprobetemplate.GetProbeTemplateResponse:
+      type: object
+      properties:
+        correlationID:
+          type: string
+        data:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_chaosprobetemplate.ChaosProbeTemplate'
+    github_com_harness_hce-saas_graphql_server_graph_model.UserDetails:
+      type: object
+      properties:
+        email:
+          type: string
+        userID:
+          type: string
+        username:
+          type: string
+    api.ResponseErrorCode:
+      type: string
+      enum:
+      - PIPELINE_NOT_FOUND
+      x-enum-varnames:
+      - PipelineNotFound
+    common.VolumeInputTemplate:
+      type: object
+      properties:
+        defaultMode:
+          type: string
+        items:
+          type: object
+          additionalProperties:
+            type: string
+        name:
+          type: string
+        optional:
+          type: boolean
+    v1.Sysctl:
+      type: object
+      properties:
+        name:
+          description: Name of a property to set
+          type: string
+        value:
+          description: Value of a property to set
+          type: string
+    v1.PodFSGroupChangePolicy:
+      type: string
+      enum:
+      - OnRootMismatch
+      - Always
+      x-enum-varnames:
+      - FSGroupChangeOnRootMismatch
+      - FSGroupChangeAlways
+    v1.PersistentVolumeClaimVolumeSource:
+      type: object
+      properties:
+        claimName:
+          description: 'ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume.
+
+            More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims'
+          type: string
+        readOnly:
+          description: 'Will force the ReadOnly setting in VolumeMounts.
+
+            Default false.
+
+            +optional'
+          type: boolean
+    probe.EvaluationWindowTemplate:
+      type: object
+      properties:
+        evaluationEndTime: {}
+        evaluationStartTime: {}
+    chaosprobetemplate.ProbeTemplate:
+      type: object
+      required:
+      - name
+      properties:
+        description:
+          type: string
+        hubRef:
+          type: string
+        identity:
+          type: string
+        infrastructureType:
+          $ref: '#/components/schemas/probe.InfrastructureType'
+        inputs:
           type: array
           items:
-            $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.Headers'
-        method:
-          $ref: '#/components/schemas/probe.MethodTemplate'
-        tlsConfig:
-          $ref: '#/components/schemas/probe.TLSConfigTemplate'
-        url:
+            $ref: '#/components/schemas/template.Variable'
+        isDefault:
+          type: boolean
+        name:
           type: string
-    probe.ProbeTemplateProperties:
+        probeProperties:
+          $ref: '#/components/schemas/probe.ProbeTemplateProperties'
+        revision:
+          type: integer
+        runProperties:
+          $ref: '#/components/schemas/probe.ProbeTemplateRunProperties'
+        tags:
+          type: array
+          items:
+            type: string
+        type:
+          $ref: '#/components/schemas/probe.ProbeType'
+        variables:
+          description: CHAOS-11100
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+    probe.DynatraceProbeTemplate:
       type: object
       properties:
-        apmProbe:
-          $ref: '#/components/schemas/probe.APMProbeTemplate'
-        cmdProbe:
-          $ref: '#/components/schemas/probe.CmdProbeTemplate'
-        containerProbe:
-          $ref: '#/components/schemas/probe.ContainerProbeTemplate'
-        datadogProbe:
-          $ref: '#/components/schemas/probe.DatadogProbeTemplate'
-        dynatraceProbe:
-          $ref: '#/components/schemas/probe.DynatraceProbeTemplate'
-        httpProbe:
-          $ref: '#/components/schemas/probe.HttpProbeTemplate'
-        k8sProbe:
-          $ref: '#/components/schemas/probe.K8SProbeTemplate'
-        promProbe:
-          $ref: '#/components/schemas/probe.PromProbeTemplate'
-        sloProbe:
-          $ref: '#/components/schemas/probe.SLOProbeTemplate'
+        apiTokenSecretName:
+          type: string
+        comparator:
+          $ref: '#/components/schemas/probe.ComparatorTemplate'
+        endpoint:
+          type: string
+        metrics:
+          $ref: '#/components/schemas/probe.DynatraceMetricsTemplate'
+        timeFrame:
+          type: string
     k8s_io_api_core_v1.EnvVar:
       type: object
       properties:
@@ -1363,27 +1320,46 @@ components:
             +optional'
           allOf:
           - $ref: '#/components/schemas/v1.EnvVarSource'
-    v1.ProcMountType:
-      type: string
-      enum:
-      - Default
-      - Unmasked
-      x-enum-varnames:
-      - DefaultProcMount
-      - UnmaskedProcMount
-    probe.CmdProbeTemplate:
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.NewRelicMetric:
       type: object
       properties:
-        command:
+        query:
           type: string
-        comparator:
-          $ref: '#/components/schemas/probe.ComparatorTemplate'
-        env:
+        queryMetric:
+          type: string
+    template.Variable:
+      type: object
+      required:
+      - name
+      - value
+      properties:
+        allowedValues:
+          type: array
+          items: {}
+        category:
+          $ref: '#/components/schemas/template.InputCategory'
+        default: {}
+        description:
+          type: string
+        name:
+          type: string
+        path:
+          type: string
+        required:
+          type: boolean
+        stringify:
+          type: boolean
+        tags:
           type: array
           items:
-            $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.ENV'
-        source:
+            type: string
+        tooltipId:
           type: string
+        type:
+          $ref: '#/components/schemas/template.InputType'
+        validator:
+          type: string
+        value: {}
     probe.InfrastructureType:
       type: string
       enum:
@@ -1400,309 +1376,65 @@ components:
       - InfrastructureTypeLinux
       - InfrastructureTypeCloudFoundry
       - InfrastructureTypeContainer
-    probe.SyntheticsTestTemplate:
-      type: object
-      properties:
-        publicId:
-          type: string
-        testType:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.DatadogSyntheticsTestType'
-    probe.SLOSourceMetadataTemplate:
-      type: object
-      properties:
-        apiTokenSecret:
-          type: string
-        scope:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.Identifier'
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.GcpCloudMonitoringProbeInputs:
-      type: object
-      properties:
-        projectID:
-          type: string
-        query:
-          type: string
-        serviceAccountKey:
-          type: string
-    v1.TolerationOperator:
+    template.InputType:
       type: string
       enum:
-      - Exists
-      - Equal
+      - String
+      - Integer
+      - Boolean
+      - Number
+      - SecretFile
+      - SecretText
       x-enum-varnames:
-      - TolerationOpExists
-      - TolerationOpEqual
-    probe.ComparatorTemplate:
+      - StringInput
+      - IntegerInput
+      - BooleanInput
+      - NumberInput
+      - SecretFileInput
+      - SecretTextInput
+    probe.DatadogProbeTemplate:
       type: object
       properties:
-        criteria:
+        datadogCredentialsSecretName:
           type: string
-        type:
+        datadogSite:
           type: string
-        value:
-          type: string
-    v1.PullPolicy:
-      type: string
-      enum:
-      - Always
-      - Never
-      - IfNotPresent
-      x-enum-varnames:
-      - PullAlways
-      - PullNever
-      - PullIfNotPresent
-    api.RestError:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/api.ResponseErrorCode'
-        description:
-          type: string
-        message:
-          type: string
-    v1.TaintEffect:
-      type: string
-      enum:
-      - NoSchedule
-      - PreferNoSchedule
-      - NoExecute
-      x-enum-varnames:
-      - TaintEffectNoSchedule
-      - TaintEffectPreferNoSchedule
-      - TaintEffectNoExecute
-    v1.PodFSGroupChangePolicy:
-      type: string
-      enum:
-      - OnRootMismatch
-      - Always
-      x-enum-varnames:
-      - FSGroupChangeOnRootMismatch
-      - FSGroupChangeAlways
-    v1.SELinuxOptions:
-      type: object
-      properties:
-        level:
-          description: 'Level is SELinux level label that applies to the container.
-
-            +optional'
-          type: string
-        role:
-          description: 'Role is a SELinux role label that applies to the container.
-
-            +optional'
-          type: string
-        type:
-          description: 'Type is a SELinux type label that applies to the container.
-
-            +optional'
-          type: string
-        user:
-          description: 'User is a SELinux user label that applies to the container.
-
-            +optional'
-          type: string
-    api.ResponseErrorCode:
-      type: string
-      enum:
-      - PIPELINE_NOT_FOUND
-      x-enum-varnames:
-      - PipelineNotFound
-    chaosprobetemplate.ProbeTemplateVariables:
-      type: object
-      properties:
-        inputs:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        probeProperties:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        probeRunProperty:
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-        variables:
-          description: CHAOS-11100
-          type: array
-          items:
-            $ref: '#/components/schemas/template.Variable'
-    chaosprobetemplate.ProbeTemplateCount:
-      type: object
-      properties:
-        count:
-          type: integer
-        type:
-          $ref: '#/components/schemas/probe.ProbeType'
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.DatadogApmProbeInputs:
-      type: object
-      properties:
-        connectorID:
-          type: string
-        durationInMin: {}
-        query:
-          type: string
+        metrics:
+          $ref: '#/components/schemas/probe.DatadogMetricsTemplate'
         syntheticsTest:
           $ref: '#/components/schemas/probe.SyntheticsTestTemplate'
-    v1.PersistentVolumeClaimVolumeSource:
+    chaosprobetemplate.ListProbeTemplateResponse:
       type: object
       properties:
-        claimName:
-          description: 'ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume.
-
-            More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims'
+        correlationID:
           type: string
-        readOnly:
-          description: 'Will force the ReadOnly setting in VolumeMounts.
-
-            Default false.
-
-            +optional'
-          type: boolean
-    probe.MethodTemplate:
+        countDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/chaosprobetemplate.ProbeTemplateCount'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_pkg_database_mongodb_chaosprobetemplate.ChaosProbeTemplate'
+        pagination:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_graphql_server_api.Pagination'
+    resource.Quantity:
       type: object
       properties:
-        get:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.GET'
-        post:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.POST'
-    v1.Sysctl:
-      type: object
-      properties:
-        name:
-          description: Name of a property to set
+        Format:
           type: string
-        value:
-          description: Value of a property to set
-          type: string
-    github_com_harness_hce-saas_hce-sdk_template_schema_probe.Identifier:
-      type: object
-      properties:
-        accountIdentifier:
-          type: string
-        orgIdentifier:
-          type: string
-        projectIdentifier:
-          type: string
-    v1.EmptyDirVolumeSource:
-      type: object
-      properties:
-        medium:
-          description: 'What type of storage medium should back this directory.
-
-            The default is "" which means to use the node''s default medium.
-
-            Must be an empty string (default) or Memory.
-
-            More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.StorageMedium'
-        sizeLimit:
-          description: 'Total amount of local storage required for this EmptyDir volume.
-
-            The size limit is also applicable for memory medium.
-
-            The maximum usage on memory medium EmptyDir would be the minimum value between
-
-            the SizeLimit specified here and the sum of memory limits of all containers in a pod.
-
-            The default is nil which means that the limit is undefined.
-
-            More info: http://kubernetes.io/docs/user-guide/volumes#emptydir
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/resource.Quantity'
-    common.VolumeType:
-      type: string
-      enum:
-      - HostPath
-      - EmptyDir
-      - Secret
-      - PersistentVolumeClaim
-      - ConfigMap
-      x-enum-varnames:
-      - VolumeTypeHostPath
-      - VolumeTypeEmptyDir
-      - VolumeTypeSecret
-      - VolumeTypePersistentVolumeClaim
-      - VolumeTypeConfigMap
-    probe.TLSConfigSM:
-      type: object
-      properties:
-        caCrt:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SecretManager'
-        clientCrt:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SecretManager'
-        insecureSkipVerify: {}
-        key:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SecretManager'
-    probe.APMProbeType:
-      type: string
-      enum:
-      - Prometheus
-      - AppDynamics
-      - SplunkObservability
-      - Dynatrace
-      - NewRelic
-      - GcpCloudMonitoring
-      - Datadog
-      x-enum-varnames:
-      - APMPrometheusProbe
-      - APMAppDynamicsProbe
-      - APMSplunkObservabilityProbe
-      - APMDynatraceProbe
-      - APMNewRelicProbe
-      - APMGcpCloudMonitoringProbe
-      - APMDatadogProbe
-    probe.EvaluationWindowTemplate:
-      type: object
-      properties:
-        evaluationEndTime: {}
-        evaluationStartTime: {}
-    probe.ProbeType:
-      type: string
-      enum:
-      - httpProbe
-      - cmdProbe
-      - promProbe
-      - k8sProbe
-      - sloProbe
-      - datadogProbe
-      - dynatraceProbe
-      - containerProbe
-      - apmProbe
-      x-enum-varnames:
-      - ProbeTypeHTTPProbe
-      - ProbeTypeCmdProbe
-      - ProbeTypePromProbe
-      - ProbeTypeK8sProbe
-      - ProbeTypeSloProbe
-      - ProbeTypeDatadogProbe
-      - ProbeTypeDynatraceProbe
-      - ProbeTypeContainerProbe
-      - ProbeTypeAPMProbe
-    v1.ConfigMapKeySelector:
-      type: object
-      properties:
-        key:
-          description: The key to select.
-          type: string
-        name:
-          description: 'Name of the referent.
-
-            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-
-            TODO: Add other useful fields. apiVersion, kind, uid?
-
-            +optional'
-          type: string
-        optional:
-          description: 'Specify whether the ConfigMap or its key must be defined
-
-            +optional'
-          type: boolean
+          enum:
+          - DecimalExponent
+          - BinarySI
+          - DecimalSI
+          x-enum-comments:
+            BinarySI: e.g., 12Mi (12 * 2^20)
+            DecimalExponent: e.g., 12e6
+            DecimalSI: e.g., 12M  (12 * 10^6)
+          x-enum-varnames:
+          - DecimalExponent
+          - BinarySI
+          - DecimalSI
     v1.HostPathType:
       type: string
       enum:
@@ -1723,6 +1455,23 @@ components:
       - HostPathSocket
       - HostPathCharDev
       - HostPathBlockDev
+    probe.SLOProbeTemplate:
+      type: object
+      properties:
+        comparator:
+          $ref: '#/components/schemas/probe.ComparatorTemplate'
+        evaluationTimeout:
+          type: string
+        evaluationWindow:
+          $ref: '#/components/schemas/probe.EvaluationWindowTemplate'
+        insecureSkipVerify:
+          type: boolean
+        platformEndpoint:
+          type: string
+        sloIdentifier:
+          type: string
+        sloSourceMetadata:
+          $ref: '#/components/schemas/probe.SLOSourceMetadataTemplate'
     common.PreferredNodeSelector:
       type: object
       properties:
@@ -1735,22 +1484,77 @@ components:
           type: string
         weight:
           type: string
-    template.InputType:
+    probe.HttpProbeTemplate:
+      type: object
+      properties:
+        auth:
+          $ref: '#/components/schemas/probe.AuthorizationTemplate'
+        headers:
+          type: array
+          items:
+            $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.Headers'
+        method:
+          $ref: '#/components/schemas/probe.MethodTemplate'
+        tlsConfig:
+          $ref: '#/components/schemas/probe.TLSConfigTemplate'
+        url:
+          type: string
+    template.InputCategory:
       type: string
       enum:
-      - String
-      - Integer
-      - Boolean
-      - Number
-      - SecretFile
-      - SecretText
+      - FaultTarget
+      - FaultTunable
+      - TargetInfra
+      - ExperimentTunable
+      - ActionProperties
+      - ProbeProperties
+      - RunProperties
+      - FaultAuthentication
       x-enum-varnames:
-      - StringInput
-      - IntegerInput
-      - BooleanInput
-      - NumberInput
-      - SecretFileInput
-      - SecretTextInput
+      - CategoryFaultTarget
+      - CategoryFaultTunable
+      - CategoryTargetInfra
+      - CategoryExperimentTunable
+      - CategoryActionProperties
+      - CategoryProbeProperties
+      - CategoryRunProperties
+      - CategoryFaultAuthentication
+    probe.DatadogMetricsTemplate:
+      type: object
+      properties:
+        comparator:
+          $ref: '#/components/schemas/probe.ComparatorTemplate'
+        query:
+          type: string
+        timeFrame:
+          type: string
+    probe.MethodTemplate:
+      type: object
+      properties:
+        get:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.GET'
+        post:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.POST'
+    chaosprobetemplate.ProbeTemplateVariables:
+      type: object
+      properties:
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        probeProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        probeRunProperty:
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
+        variables:
+          description: CHAOS-11100
+          type: array
+          items:
+            $ref: '#/components/schemas/template.Variable'
     v1.SecurityContext:
       type: object
       properties:
@@ -1874,11 +1678,300 @@ components:
             +optional'
           allOf:
           - $ref: '#/components/schemas/v1.WindowsSecurityContextOptions'
-    v1.SecretKeySelector:
+    github_com_harness_hce-saas_graphql_server_api.Pagination:
+      type: object
+      properties:
+        index:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+    probe.AuthorizationTemplate:
+      type: object
+      properties:
+        credentials:
+          type: string
+        type:
+          type: string
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.SecretManager:
+      type: object
+      properties:
+        identifier:
+          type: string
+    v1.TolerationOperator:
+      type: string
+      enum:
+      - Exists
+      - Equal
+      x-enum-varnames:
+      - TolerationOpExists
+      - TolerationOpEqual
+    probe.TLSConfigSM:
+      type: object
+      properties:
+        caCrt:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SecretManager'
+        clientCrt:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SecretManager'
+        insecureSkipVerify: {}
+        key:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SecretManager'
+    v1.EnvVarSource:
+      type: object
+      properties:
+        configMapKeyRef:
+          description: 'Selects a key of a ConfigMap.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ConfigMapKeySelector'
+        fieldRef:
+          description: 'Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`, `metadata.annotations[''<KEY>'']`,
+
+            spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ObjectFieldSelector'
+        resourceFieldRef:
+          description: 'Selects a resource of the container: only resources limits and requests
+
+            (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.ResourceFieldSelector'
+        secretKeyRef:
+          description: 'Selects a key of a secret in the pod''s namespace
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.SecretKeySelector'
+    probe.TLSConfigTemplate:
+      type: object
+      properties:
+        caFile:
+          type: string
+        certFile:
+          type: string
+        insecureSkipVerify:
+          type: boolean
+        keyFile:
+          type: string
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.AppdMetrics:
+      type: object
+      properties:
+        applicationName:
+          type: string
+        durationInMin: {}
+        metricsFullPath:
+          type: string
+    common.VolumeType:
+      type: string
+      enum:
+      - HostPath
+      - EmptyDir
+      - Secret
+      - PersistentVolumeClaim
+      - ConfigMap
+      x-enum-varnames:
+      - VolumeTypeHostPath
+      - VolumeTypeEmptyDir
+      - VolumeTypeSecret
+      - VolumeTypePersistentVolumeClaim
+      - VolumeTypeConfigMap
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.SplunkObservabilityMetrics:
+      type: object
+      properties:
+        durationInMin: {}
+        query:
+          type: string
+    probe.PromProbeTemplate:
+      type: object
+      properties:
+        auth:
+          $ref: '#/components/schemas/probe.AuthorizationTemplate'
+        comparator:
+          $ref: '#/components/schemas/probe.ComparatorTemplate'
+        endpoint:
+          type: string
+        query:
+          type: string
+        queryPath:
+          type: string
+        tlsConfig:
+          $ref: '#/components/schemas/probe.TLSConfigTemplate'
+    common.NodeAffinity:
+      type: object
+      properties:
+        preferred:
+          type: array
+          items:
+            $ref: '#/components/schemas/common.PreferredNodeSelector'
+        required:
+          type: array
+          items:
+            $ref: '#/components/schemas/common.RequiredNodeSelector'
+    v1.ObjectFieldSelector:
+      type: object
+      properties:
+        apiVersion:
+          description: 'Version of the schema the FieldPath is written in terms of, defaults to "v1".
+
+            +optional'
+          type: string
+        fieldPath:
+          description: Path of the field to select in the specified API version.
+          type: string
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.DatadogApmProbeInputs:
+      type: object
+      properties:
+        connectorID:
+          type: string
+        durationInMin: {}
+        query:
+          type: string
+        syntheticsTest:
+          $ref: '#/components/schemas/probe.SyntheticsTestTemplate'
+    probe.CmdProbeTemplate:
+      type: object
+      properties:
+        command:
+          type: string
+        comparator:
+          $ref: '#/components/schemas/probe.ComparatorTemplate'
+        env:
+          type: array
+          items:
+            $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.ENV'
+        source:
+          type: string
+    probe.ProbeType:
+      type: string
+      enum:
+      - httpProbe
+      - cmdProbe
+      - promProbe
+      - k8sProbe
+      - sloProbe
+      - datadogProbe
+      - dynatraceProbe
+      - containerProbe
+      - apmProbe
+      x-enum-varnames:
+      - ProbeTypeHTTPProbe
+      - ProbeTypeCmdProbe
+      - ProbeTypePromProbe
+      - ProbeTypeK8sProbe
+      - ProbeTypeSloProbe
+      - ProbeTypeDatadogProbe
+      - ProbeTypeDynatraceProbe
+      - ProbeTypeContainerProbe
+      - ProbeTypeAPMProbe
+    v1.SeccompProfileType:
+      type: string
+      enum:
+      - Unconfined
+      - RuntimeDefault
+      - Localhost
+      x-enum-varnames:
+      - SeccompProfileTypeUnconfined
+      - SeccompProfileTypeRuntimeDefault
+      - SeccompProfileTypeLocalhost
+    common.Volume:
+      type: object
+      properties:
+        configMap:
+          $ref: '#/components/schemas/common.VolumeInputTemplate'
+        emptyDir:
+          $ref: '#/components/schemas/v1.EmptyDirVolumeSource'
+        hostPath:
+          $ref: '#/components/schemas/v1.HostPathVolumeSource'
+        name:
+          type: string
+        persistentVolumeClaim:
+          $ref: '#/components/schemas/v1.PersistentVolumeClaimVolumeSource'
+        secret:
+          $ref: '#/components/schemas/common.VolumeInputTemplate'
+        type:
+          $ref: '#/components/schemas/common.VolumeType'
+    v1.VolumeMount:
+      type: object
+      properties:
+        mountPath:
+          description: 'Path within the container at which the volume should be mounted.  Must
+
+            not contain '':''.'
+          type: string
+        mountPropagation:
+          description: 'mountPropagation determines how mounts are propagated from the host
+
+            to container and the other way around.
+
+            When not set, MountPropagationNone is used.
+
+            This field is beta in 1.10.
+
+            +optional'
+          allOf:
+          - $ref: '#/components/schemas/v1.MountPropagationMode'
+        name:
+          description: This must match the Name of a Volume.
+          type: string
+        readOnly:
+          description: 'Mounted read-only if true, read-write otherwise (false or unspecified).
+
+            Defaults to false.
+
+            +optional'
+          type: boolean
+        subPath:
+          description: 'Path within the volume from which the container''s volume should be mounted.
+
+            Defaults to "" (volume''s root).
+
+            +optional'
+          type: string
+        subPathExpr:
+          description: 'Expanded path within the volume from which the container''s volume should be mounted.
+
+            Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container''s environment.
+
+            Defaults to "" (volume''s root).
+
+            SubPathExpr and SubPath are mutually exclusive.
+
+            +optional'
+          type: string
+    probe.ProbeTemplateProperties:
+      type: object
+      properties:
+        apmProbe:
+          $ref: '#/components/schemas/probe.APMProbeTemplate'
+        cmdProbe:
+          $ref: '#/components/schemas/probe.CmdProbeTemplate'
+        containerProbe:
+          $ref: '#/components/schemas/probe.ContainerProbeTemplate'
+        datadogProbe:
+          $ref: '#/components/schemas/probe.DatadogProbeTemplate'
+        dynatraceProbe:
+          $ref: '#/components/schemas/probe.DynatraceProbeTemplate'
+        httpProbe:
+          $ref: '#/components/schemas/probe.HttpProbeTemplate'
+        k8sProbe:
+          $ref: '#/components/schemas/probe.K8SProbeTemplate'
+        promProbe:
+          $ref: '#/components/schemas/probe.PromProbeTemplate'
+        sloProbe:
+          $ref: '#/components/schemas/probe.SLOProbeTemplate'
+    v1.ConfigMapKeySelector:
       type: object
       properties:
         key:
-          description: The key of the secret to select from.  Must be a valid secret key.
+          description: The key to select.
           type: string
         name:
           description: 'Name of the referent.
@@ -1890,110 +1983,17 @@ components:
             +optional'
           type: string
         optional:
-          description: 'Specify whether the Secret or its key must be defined
+          description: 'Specify whether the ConfigMap or its key must be defined
 
             +optional'
           type: boolean
-    probe.DatadogProbeTemplate:
+    github_com_harness_hce-saas_hce-sdk_template_schema_probe.AppDynamicsProbeInputs:
       type: object
       properties:
-        datadogCredentialsSecretName:
+        appdMetrics:
+          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.AppdMetrics'
+        connectorID:
           type: string
-        datadogSite:
-          type: string
-        metrics:
-          $ref: '#/components/schemas/probe.DatadogMetricsTemplate'
-        syntheticsTest:
-          $ref: '#/components/schemas/probe.SyntheticsTestTemplate'
-    probe.APMProbeTemplate:
-      type: object
-      properties:
-        appDynamicsProbeInputs:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.AppDynamicsProbeInputs'
-        comparator:
-          $ref: '#/components/schemas/probe.ComparatorTemplate'
-        datadogApmProbeInputs:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.DatadogApmProbeInputs'
-        dynatraceApmProbeInputs:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.DynatraceApmProbeInputs'
-        gcpCloudMonitoringProbeInputs:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.GcpCloudMonitoringProbeInputs'
-        newRelicProbeInputs:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.NewRelicProbeInputs'
-        prometheusProbeInputs:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.PrometheusProbeInputs'
-        splunkObservabilityProbeInputs:
-          $ref: '#/components/schemas/github_com_harness_hce-saas_hce-sdk_template_schema_probe.SplunkObservabilityProbeInputs'
-        type:
-          $ref: '#/components/schemas/probe.APMProbeType'
-    v1.Toleration:
-      type: object
-      properties:
-        effect:
-          description: 'Effect indicates the taint effect to match. Empty means match all taint effects.
-
-            When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.TaintEffect'
-        key:
-          description: 'Key is the taint key that the toleration applies to. Empty means match all taint keys.
-
-            If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-
-            +optional'
-          type: string
-        operator:
-          description: 'Operator represents a key''s relationship to the value.
-
-            Valid operators are Exists and Equal. Defaults to Equal.
-
-            Exists is equivalent to wildcard for value, so that a pod can
-
-            tolerate all taints of a particular category.
-
-            +optional'
-          allOf:
-          - $ref: '#/components/schemas/v1.TolerationOperator'
-        tolerationSeconds:
-          description: 'TolerationSeconds represents the period of time the toleration (which must be
-
-            of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
-
-            it is not set, which means tolerate the taint forever (do not evict). Zero and
-
-            negative values will be treated as 0 (evict immediately) by the system.
-
-            +optional'
-          type: integer
-        value:
-          description: 'Value is the taint value the toleration matches to.
-
-            If the operator is Exists, the value should be empty, otherwise just a regular string.
-
-            +optional'
-          type: string
-    common.RequiredNodeSelector:
-      type: object
-      properties:
-        key:
-          type: string
-        operator:
-          description: 'default: In'
-          type: string
-        values:
-          type: string
-    v1.MountPropagationMode:
-      type: string
-      enum:
-      - None
-      - HostToContainer
-      - Bidirectional
-      x-enum-varnames:
-      - MountPropagationNone
-      - MountPropagationHostToContainer
-      - MountPropagationBidirectional
   securitySchemes:
     x-api-key:
       name: x-api-key

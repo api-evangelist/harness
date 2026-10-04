@@ -325,51 +325,72 @@ paths:
                 $ref: '#/components/schemas/ResponseDTORuleEnforcementRecommendation'
 components:
   schemas:
-    EnforcementDetails:
+    ResponseDTOEnforcementDetails:
       type: object
       properties:
-        enforcementName:
+        status:
           type: string
-          description: Enforcement Name
-        schedule:
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/EnforcementDetails'
+        metaData:
+          type: object
+        correlationId:
           type: string
-          description: schedule
+    RuleEnforcementRecommendationList:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+          description: Total items
+          format: int64
+        ruleEnforcementRecommendations:
+          type: array
+          description: List of Rule Enforcement Recommendations
+          items:
+            $ref: '#/components/schemas/RuleEnforcementRecommendation'
+      description: This object will contain the complete definition of a Cloud Cost Rule Enforcement Recommendation List
+    EmbeddedUser:
+      type: object
+      properties:
+        uuid:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        externalUserId:
+          type: string
+    RuleEnforcementRecommendation:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: unique id
+        accountId:
+          type: string
+          description: account id
+        name:
+          type: string
+          description: name
         description:
           type: string
-          description: description
-        accounts:
+          description: Description of the entity
+        tags:
           type: array
-          description: Target Account/Subscription/Project Ids
+          description: Tags
           items:
             type: string
-            description: Target Account/Subscription/Project Ids
-        regions:
-          type: array
-          description: Target Region
-          items:
-            type: string
-            description: Target Region
-        ruleIds:
-          type: object
-          additionalProperties:
-            type: string
-            description: rules ids and list of enforcement
-          description: rules ids and list of enforcement
-        ruleSetIds:
-          type: object
-          additionalProperties:
-            type: string
-            description: rules pack ids and list of enforcement
-          description: rules pack ids and list of enforcement
-        isDryRun:
-          type: boolean
-          description: isDryRun
-        isEnabled:
-          type: boolean
-          description: isEnabled
-        executionTimezone:
+            description: Tags
+        orgIdentifier:
           type: string
-          description: executionTimezone
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
         cloudProvider:
           type: string
           description: cloudProvider
@@ -377,6 +398,56 @@ components:
           - AWS
           - AZURE
           - GCP
+        ruleIds:
+          type: array
+          description: rulesIds
+          items:
+            type: string
+            description: rulesIds
+        ruleSetIDs:
+          type: array
+          description: ruleSetIDs
+          items:
+            type: string
+            description: ruleSetIDs
+        executionSchedule:
+          type: string
+          description: executionSchedule
+        executionTimezone:
+          type: string
+          description: executionTimezone
+        targetAccounts:
+          type: array
+          description: targetAccounts
+          items:
+            type: string
+            description: targetAccounts
+        targetRegions:
+          type: array
+          description: targetRegions
+          items:
+            type: string
+            description: targetRegions
+        isDryRun:
+          type: boolean
+          description: isDryRun
+        runCount:
+          type: integer
+          description: runCount
+          format: int32
+        isEnabled:
+          type: boolean
+          description: isEnabled
+        ruleEnforcementRecommendationStatus:
+          type: string
+          description: ruleEnforcementRecommendationStatus
+          enum:
+          - NEW
+          - DISMISSED
+          - ACCEPTED
+        pricingCostType:
+          type: string
+          description: pricingCostType
         createdAt:
           type: integer
           description: Time at which the entity was created
@@ -389,17 +460,94 @@ components:
           $ref: '#/components/schemas/EmbeddedUser'
         lastUpdatedBy:
           $ref: '#/components/schemas/EmbeddedUser'
-        accountIdAndNames:
+        ruleEnforcementType:
+          type: string
+          enum:
+          - INTERNAL
+          - EXTERNAL
+      description: This object will contain the complete definition of a Cloud Cost Rule Enforcement generated by AI assistant
+    ResponseDTOBoolean:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: boolean
+        metaData:
           type: object
-          additionalProperties:
+        correlationId:
+          type: string
+    RuleEnforcementRecommendationsFilter:
+      type: object
+      properties:
+        ruleIds:
+          type: array
+          description: ruleIds
+          items:
             type: string
-            description: Target Account/Subscription/Project Id and Names
-          description: Target Account/Subscription/Project Id and Names
-        savings:
-          type: number
-          description: Savings
-          format: double
-      description: This object will contain the complete definition of a ExecutionEnforcementDetails
+            description: ruleIds
+        searchKey:
+          type: string
+          description: searchKey
+        targetAccounts:
+          type: array
+          description: targetAccounts
+          items:
+            type: string
+            description: targetAccounts
+        targetRegions:
+          type: array
+          description: targetRegions
+          items:
+            type: string
+            description: targetRegions
+        isDryRun:
+          type: boolean
+          description: isDryRun
+        isEnabled:
+          type: boolean
+          description: isEnabled
+        sortType:
+          type: string
+          description: ruleEnforcementSortType
+          enum:
+          - NAME
+        sortOrder:
+          type: string
+          description: sortOrder
+          enum:
+          - ASCENDING
+          - DESCENDING
+        pageNumber:
+          type: integer
+          description: pageNumber
+          format: int32
+        pageSize:
+          type: integer
+          description: pageSize
+          format: int32
+      description: This has the query to list the RuleEnforcementRecommendations
+    ResponseDTOListString:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: array
+          items:
+            type: string
+        metaData:
+          type: object
+        correlationId:
+          type: string
     ResponseMessage:
       type: object
       properties:
@@ -990,7 +1138,22 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOBoolean:
+    CcmErrorMetadata:
+      type: object
+      properties:
+        type:
+          type: string
+      description: This implements different error meta data objects
+      discriminator:
+        propertyName: type
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    ResponseDTORuleEnforcementRecommendation:
       type: object
       properties:
         status:
@@ -1000,7 +1163,7 @@ components:
           - FAILURE
           - ERROR
         data:
-          type: boolean
+          $ref: '#/components/schemas/RuleEnforcementRecommendation'
         metaData:
           type: object
         correlationId:
@@ -1424,116 +1587,21 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
-    CcmErrorMetadata:
+    ResponseDTORuleEnforcementRecommendationList:
       type: object
       properties:
-        type:
-          type: string
-      description: This implements different error meta data objects
-      discriminator:
-        propertyName: type
-    RuleEnforcementRecommendation:
-      type: object
-      properties:
-        uuid:
-          type: string
-          description: unique id
-        accountId:
-          type: string
-          description: account id
-        name:
-          type: string
-          description: name
-        description:
-          type: string
-          description: Description of the entity
-        tags:
-          type: array
-          description: Tags
-          items:
-            type: string
-            description: Tags
-        orgIdentifier:
-          type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
-          type: string
-          description: Project Identifier for the Entity.
-        cloudProvider:
-          type: string
-          description: cloudProvider
-          enum:
-          - AWS
-          - AZURE
-          - GCP
-        ruleIds:
-          type: array
-          description: rulesIds
-          items:
-            type: string
-            description: rulesIds
-        ruleSetIDs:
-          type: array
-          description: ruleSetIDs
-          items:
-            type: string
-            description: ruleSetIDs
-        executionSchedule:
-          type: string
-          description: executionSchedule
-        executionTimezone:
-          type: string
-          description: executionTimezone
-        targetAccounts:
-          type: array
-          description: targetAccounts
-          items:
-            type: string
-            description: targetAccounts
-        targetRegions:
-          type: array
-          description: targetRegions
-          items:
-            type: string
-            description: targetRegions
-        isDryRun:
-          type: boolean
-          description: isDryRun
-        runCount:
-          type: integer
-          description: runCount
-          format: int32
-        isEnabled:
-          type: boolean
-          description: isEnabled
-        ruleEnforcementRecommendationStatus:
-          type: string
-          description: ruleEnforcementRecommendationStatus
-          enum:
-          - NEW
-          - DISMISSED
-          - ACCEPTED
-        pricingCostType:
-          type: string
-          description: pricingCostType
-        createdAt:
-          type: integer
-          description: Time at which the entity was created
-          format: int64
-        lastUpdatedAt:
-          type: integer
-          description: Time at which the entity was last updated
-          format: int64
-        createdBy:
-          $ref: '#/components/schemas/EmbeddedUser'
-        lastUpdatedBy:
-          $ref: '#/components/schemas/EmbeddedUser'
-        ruleEnforcementType:
+        status:
           type: string
           enum:
-          - INTERNAL
-          - EXTERNAL
-      description: This object will contain the complete definition of a Cloud Cost Rule Enforcement generated by AI assistant
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          $ref: '#/components/schemas/RuleEnforcementRecommendationList'
+        metaData:
+          type: object
+        correlationId:
+          type: string
     CcmError:
       type: object
       properties:
@@ -1957,149 +2025,81 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
-    RuleEnforcementRecommendationsFilter:
+    EnforcementDetails:
       type: object
       properties:
-        ruleIds:
-          type: array
-          description: ruleIds
-          items:
-            type: string
-            description: ruleIds
-        searchKey:
+        enforcementName:
           type: string
-          description: searchKey
-        targetAccounts:
+          description: Enforcement Name
+        schedule:
+          type: string
+          description: schedule
+        description:
+          type: string
+          description: description
+        accounts:
           type: array
-          description: targetAccounts
+          description: Target Account/Subscription/Project Ids
           items:
             type: string
-            description: targetAccounts
-        targetRegions:
+            description: Target Account/Subscription/Project Ids
+        regions:
           type: array
-          description: targetRegions
+          description: Target Region
           items:
             type: string
-            description: targetRegions
+            description: Target Region
+        ruleIds:
+          type: object
+          additionalProperties:
+            type: string
+            description: rules ids and list of enforcement
+          description: rules ids and list of enforcement
+        ruleSetIds:
+          type: object
+          additionalProperties:
+            type: string
+            description: rules pack ids and list of enforcement
+          description: rules pack ids and list of enforcement
         isDryRun:
           type: boolean
           description: isDryRun
         isEnabled:
           type: boolean
           description: isEnabled
-        sortType:
+        executionTimezone:
           type: string
-          description: ruleEnforcementSortType
-          enum:
-          - NAME
-        sortOrder:
+          description: executionTimezone
+        cloudProvider:
           type: string
-          description: sortOrder
+          description: cloudProvider
           enum:
-          - ASCENDING
-          - DESCENDING
-        pageNumber:
+          - AWS
+          - AZURE
+          - GCP
+        createdAt:
           type: integer
-          description: pageNumber
-          format: int32
-        pageSize:
-          type: integer
-          description: pageSize
-          format: int32
-      description: This has the query to list the RuleEnforcementRecommendations
-    ResponseDTOEnforcementDetails:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/EnforcementDetails'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    EmbeddedUser:
-      type: object
-      properties:
-        uuid:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        externalUserId:
-          type: string
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    ResponseDTORuleEnforcementRecommendation:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/RuleEnforcementRecommendation'
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    RuleEnforcementRecommendationList:
-      type: object
-      properties:
-        totalItems:
-          type: integer
-          description: Total items
+          description: Time at which the entity was created
           format: int64
-        ruleEnforcementRecommendations:
-          type: array
-          description: List of Rule Enforcement Recommendations
-          items:
-            $ref: '#/components/schemas/RuleEnforcementRecommendation'
-      description: This object will contain the complete definition of a Cloud Cost Rule Enforcement Recommendation List
-    ResponseDTOListString:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
+        lastUpdatedAt:
+          type: integer
+          description: Time at which the entity was last updated
+          format: int64
+        createdBy:
+          $ref: '#/components/schemas/EmbeddedUser'
+        lastUpdatedBy:
+          $ref: '#/components/schemas/EmbeddedUser'
+        accountIdAndNames:
+          type: object
+          additionalProperties:
             type: string
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    ResponseDTORuleEnforcementRecommendationList:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          $ref: '#/components/schemas/RuleEnforcementRecommendationList'
-        metaData:
-          type: object
-        correlationId:
-          type: string
+            description: Target Account/Subscription/Project Id and Names
+          description: Target Account/Subscription/Project Id and Names
+        savings:
+          type: number
+          description: Savings
+          format: double
+      description: This object will contain the complete definition of a ExecutionEnforcementDetails
   securitySchemes:
     x-api-key:
       name: x-api-key

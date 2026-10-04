@@ -150,37 +150,6 @@ paths:
       x-codegen-request-body-name: accessPoint
 components:
   schemas:
-    CreateAccessPointResponse:
-      type: object
-      properties:
-        response:
-          $ref: '#/components/schemas/AccessPoint'
-        errors:
-          type: array
-          items:
-            type: string
-        metadata:
-          type: object
-          properties: {}
-    ConnectedKubernetesClustersListResponse:
-      type: object
-      properties:
-        ts:
-          type: integer
-          description: Response timestamp
-        success:
-          type: boolean
-        errors:
-          type: array
-          items:
-            type: string
-        response:
-          type: object
-          properties:
-            clusters:
-              type: array
-              items:
-                $ref: '#/components/schemas/ConnectedKubernetesCluster'
     OnboardToClusterOrchestratorRequest:
       type: object
       description: Configuration for cluster setup
@@ -204,24 +173,30 @@ components:
         k8s_connector_id:
           type: string
           description: ID for the CACM Cloud Cost Kubernetes connector
-    ConnectedClusterHealthStatus:
+    ClusterConsolidationBudget:
       type: object
       properties:
-        status:
+        reasons:
+          type: array
+          items:
+            type: string
+          example:
+          - Drifted
+          - Underutilized
+          - Empty
+        nodes:
           type: string
-          example: success
-        service:
-          type: string
-          example: telemetry_collector
-        raw_json:
+          example: 20%
+        schedule:
           type:
           - string
           - 'null'
-          example: null
-        last_heart_beat_received_at:
-          type: string
-          format: date-time
-          example: '2025-02-28T20:07:13Z'
+          example: midnight
+        duration:
+          type:
+          - string
+          - 'null'
+          example: 10m0s
     ConnectedKubernetesCluster:
       type: object
       properties:
@@ -323,96 +298,7 @@ components:
               - 'null'
               example: 6h
               description: The nodes which were replaced by a fallback ondemand node will be retried for spot after this window
-    ClusterConsolidationBudget:
-      type: object
-      properties:
-        reasons:
-          type: array
-          items:
-            type: string
-          example:
-          - Drifted
-          - Underutilized
-          - Empty
-        nodes:
-          type: string
-          example: 20%
-        schedule:
-          type:
-          - string
-          - 'null'
-          example: midnight
-        duration:
-          type:
-          - string
-          - 'null'
-          example: 10m0s
-    AccessPointMeta:
-      type: object
-      properties:
-        error:
-          type: string
-        certificate_id:
-          type: string
-        security_groups:
-          type: array
-          items:
-            type: string
-        dns:
-          type: object
-          properties:
-            route53:
-              type: object
-              properties:
-                hosted_zone_id:
-                  type: string
-            others:
-              type: string
-        albArn:
-          type: string
-        resource_group:
-          type: string
-        fe_ip_id:
-          type: string
-        subnet_id:
-          type: string
-        size:
-          type: string
-        app_gateway_id:
-          type: string
-        subnet_name:
-          type: string
-        fe_ip_name:
-          type: string
-        certificate:
-          $ref: '#/components/schemas/CertificateData'
-        func_region:
-          type: string
-    CertificateData:
-      type: object
-      properties:
-        name:
-          type: string
-        password:
-          type: string
-        content:
-          type: string
-    ClusterOrchestratorPodEvictor:
-      type: object
-      properties:
-        enabled:
-          type: boolean
-          example: false
-        evict_single_replicas:
-          type: boolean
-          example: false
-        minimum_cpu:
-          type: integer
-          example: 50
-        minimum_memory:
-          type: integer
-          example: 50
-    ConnectedKubernetesClustersGetResponse:
+    ConnectedKubernetesClustersListResponse:
       type: object
       properties:
         ts:
@@ -425,7 +311,12 @@ components:
           items:
             type: string
         response:
-          $ref: '#/components/schemas/ConnectedKubernetesCluster'
+          type: object
+          properties:
+            clusters:
+              type: array
+              items:
+                $ref: '#/components/schemas/ConnectedKubernetesCluster'
     AccessPoint:
       type: object
       properties:
@@ -469,6 +360,115 @@ components:
           type: array
           items:
             type: string
+    ClusterOrchestratorPodEvictor:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: false
+        evict_single_replicas:
+          type: boolean
+          example: false
+        minimum_cpu:
+          type: integer
+          example: 50
+        minimum_memory:
+          type: integer
+          example: 50
+    CertificateData:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        content:
+          type: string
+    ConnectedClusterHealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        service:
+          type: string
+          example: telemetry_collector
+        raw_json:
+          type:
+          - string
+          - 'null'
+          example: null
+        last_heart_beat_received_at:
+          type: string
+          format: date-time
+          example: '2025-02-28T20:07:13Z'
+    ConnectedKubernetesClustersGetResponse:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: Response timestamp
+        success:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        response:
+          $ref: '#/components/schemas/ConnectedKubernetesCluster'
+    CreateAccessPointResponse:
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/AccessPoint'
+        errors:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          properties: {}
+    AccessPointMeta:
+      type: object
+      properties:
+        error:
+          type: string
+        certificate_id:
+          type: string
+        security_groups:
+          type: array
+          items:
+            type: string
+        dns:
+          type: object
+          properties:
+            route53:
+              type: object
+              properties:
+                hosted_zone_id:
+                  type: string
+            others:
+              type: string
+        albArn:
+          type: string
+        resource_group:
+          type: string
+        fe_ip_id:
+          type: string
+        subnet_id:
+          type: string
+        size:
+          type: string
+        app_gateway_id:
+          type: string
+        subnet_name:
+          type: string
+        fe_ip_name:
+          type: string
+        certificate:
+          $ref: '#/components/schemas/CertificateData'
+        func_region:
+          type: string
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -48,159 +48,6 @@ paths:
       - Application
 components:
   schemas:
-    applicationsApplicationDestination:
-      type: object
-      properties:
-        server:
-          type: string
-          title: Server specifies the URL of the target cluster and must be set to the Kubernetes control plane API
-        namespace:
-          type: string
-          title: 'Namespace specifies the target namespace for the application''s resources.
-
-            The namespace will only be set for namespace-scoped resources that have not set a value for .metadata.namespace'
-        name:
-          type: string
-          title: Name is an alternate way of specifying the target cluster by its symbolic name
-      title: ApplicationDestination holds information about the application's destination
-    applicationsSyncSource:
-      type: object
-      properties:
-        targetBranch:
-          type: string
-          description: 'TargetBranch is the branch from which hydrated manifests will be synced.
-
-            If HydrateTo is not set, this is also the branch to which hydrated manifests are committed.'
-        path:
-          type: string
-          description: 'Path is a directory path within the git repository where hydrated manifests should be committed to and synced
-
-            from. The Path should never point to the root of the repo. If hydrateTo is set, this is just the path from which
-
-            hydrated manifests will be synced.
-
-
-            +kubebuilder:validation:Required
-
-            +kubebuilder:validation:MinLength=1
-
-            +kubebuilder:validation:Pattern=`^.{2,}|[^./]$`'
-      description: 'SyncSource specifies a location from which hydrated manifests may be synced. RepoURL is assumed based on the
-
-        associated DrySource config in the SourceHydrator.'
-    applicationsRevisionHistory:
-      type: object
-      properties:
-        revision:
-          type: string
-          title: Revision holds the revision the sync was performed against
-        deployedAt:
-          $ref: '#/components/schemas/v1Time'
-        id:
-          type: string
-          format: int64
-          title: ID is an auto incrementing identifier of the RevisionHistory
-        source:
-          $ref: '#/components/schemas/applicationsApplicationSource'
-        deployStartedAt:
-          $ref: '#/components/schemas/v1Time'
-        deployedAtTs:
-          type: string
-          format: date-time
-        deployStartedAtTs:
-          type: string
-          format: date-time
-        sources:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsApplicationSource'
-          title: Sources is a reference to the application sources used for the sync operation
-        revisions:
-          type: array
-          items:
-            type: string
-          title: Revisions holds the revision of each source in sources field the sync was performed against
-        initiatedBy:
-          $ref: '#/components/schemas/applicationsOperationInitiator'
-      title: RevisionHistory contains history information about a previous sync
-    applicationsHealthStatus:
-      type: object
-      properties:
-        status:
-          type: string
-          title: Status holds the status code of the application or resource
-        message:
-          type: string
-          title: Message is a human-readable informational message describing the health status
-        lastTransitionTime:
-          $ref: '#/components/schemas/v1Time'
-      title: HealthStatus contains information about the currently observed health state of a resource
-    applicationsApplicationSummary:
-      type: object
-      properties:
-        externalURLs:
-          type: array
-          items:
-            type: string
-          description: ExternalURLs holds all external URLs of application child resources.
-        images:
-          type: array
-          items:
-            type: string
-          description: Images holds all images of application child resources.
-      title: ApplicationSummary contains information about URLs and container images used by an application
-    applicationsAppHealthStatus:
-      type: object
-      properties:
-        status:
-          type: string
-          title: Status holds the status code of the application
-        message:
-          type: string
-          description: 'Deprecated: this field is not used and will be removed in a future release.'
-          title: Message is a human-readable informational message describing the health status
-        lastTransitionTime:
-          $ref: '#/components/schemas/v1Time'
-      title: AppHealthStatus contains information about the currently observed health state of an application
-    applicationsKustomizeResId:
-      type: object
-      properties:
-        gvk:
-          $ref: '#/components/schemas/applicationsKustomizeGvk'
-        name:
-          type: string
-        namespace:
-          type: string
-    applicationsOperationState:
-      type: object
-      properties:
-        operation:
-          $ref: '#/components/schemas/applicationsOperation'
-        phase:
-          type: string
-          title: Phase is the current phase of the operation
-        message:
-          type: string
-          description: Message holds any pertinent messages when attempting to perform operation (typically errors).
-        syncResult:
-          $ref: '#/components/schemas/applicationsSyncOperationResult'
-        startedAt:
-          $ref: '#/components/schemas/v1Time'
-        finishedAt:
-          $ref: '#/components/schemas/v1Time'
-        retryCount:
-          type: string
-          format: int64
-          title: RetryCount contains time of operation retries
-        startedAtTs:
-          type: string
-          format: date-time
-          title: Started at Timestamp
-        finishedAtTs:
-          type: string
-          format: date-time
-          title: Finised at Timestamp
-      title: OperationState contains information about state of a running operation
     applicationsApplicationSourceHelm:
       type: object
       properties:
@@ -264,151 +111,150 @@ components:
           type: boolean
           title: SkipSchemaValidation skips JSON schema validation (Helm's --skip-schema-validation)
       title: ApplicationSourceHelm holds helm specific options
-    applicationsSyncPolicyAutomated:
+    v1ManagedFieldsEntry:
       type: object
       properties:
-        prune:
-          type: boolean
-          title: 'Prune specifies whether to delete resources from the cluster that are not found in the sources anymore as part of automated sync (default: false)'
-        selfHeal:
-          type: boolean
-          title: 'SelfHeal specifes whether to revert resources back to their desired state upon modification in the cluster (default: false)'
-        allowEmpty:
-          type: boolean
-          title: 'AllowEmpty allows apps have zero live resources (default: false)'
-        enabled:
-          type: boolean
-          title: Enable allows apps to explicitly control automated sync
-      title: SyncPolicyAutomated controls the behavior of an automated sync
-    v1FieldsV1:
-      type: object
-      properties:
-        Raw:
+        manager:
           type: string
-          format: byte
-          description: Raw is the underlying serialization of this object.
-      description: 'FieldsV1 stores a set of fields in a data structure like a Trie, in JSON format.
-
-
-        Each key is either a ''.'' representing the field itself, and will always map to an empty set,
-
-        or a string representing a sub-field or item. The string will follow one of these four formats:
-
-        ''f:<name>'', where <name> is the name of a field in a struct, or key in a map
-
-        ''v:<value>'', where <value> is the exact json formatted value of a list item
-
-        ''i:<index>'', where <index> is position of a item in a list
-
-        ''k:<keys>'', where <keys> is a map of  a list item''s key fields to their unique values
-
-        If a key maps to an empty Fields value, the field that key represents is part of the set.
-
-
-        The exact format is defined in sigs.k8s.io/structured-merge-diff
-
-        +protobuf.options.(gogoproto.goproto_stringer)=false'
-    applicationsSyncStatus:
-      type: object
-      properties:
-        status:
+          description: Manager is an identifier of the workflow managing these fields.
+        operation:
           type: string
-          title: Status is the sync state of the comparison
-        comparedTo:
-          $ref: '#/components/schemas/applicationsComparedTo'
-        revision:
+          description: 'Operation is the type of operation which lead to this ManagedFieldsEntry being created.
+
+            The only valid values for this field are ''Apply'' and ''Update''.'
+        apiVersion:
           type: string
-          title: Revision contains information about the revision the comparison has been performed to
-        revisions:
-          type: array
-          items:
-            type: string
-          title: Revisions contains information about the revisions of multiple sources the comparison has been performed to
-      title: SyncStatus contains information about the currently observed live and desired states of an application
-    applicationsKsonnetParameter:
-      type: object
-      properties:
-        component:
+          description: 'APIVersion defines the version of this resource that this field set
+
+            applies to. The format is "group/version" just like the top-level
+
+            APIVersion field. It is necessary to track the version of a field
+
+            set because it cannot be automatically converted.'
+        time:
+          $ref: '#/components/schemas/v1Time'
+        fieldsType:
           type: string
-        name:
+          title: 'FieldsType is the discriminator for the different fields format and version.
+
+            There is currently only one possible value: "FieldsV1"'
+        fieldsV1:
+          $ref: '#/components/schemas/v1FieldsV1'
+        subresource:
           type: string
-        value:
-          type: string
-      title: KsonnetParameter is a ksonnet component parameter
-    applicationsOperationInitiator:
-      type: object
-      properties:
-        username:
-          type: string
-          title: Username contains the name of a user who started operation
-        automated:
-          type: boolean
-          description: Automated is set to true if operation was initiated automatically by the application controller.
-      title: OperationInitiator contains information about the initiator of an operation
-    applicationsInfo:
-      type: object
-      properties:
-        name:
-          type: string
-        value:
-          type: string
-    applicationsKustomizeGvk:
+          description: 'Subresource is the name of the subresource used to update that object, or
+
+            empty string if the object was updated through the main resource. The
+
+            value of this field is used to distinguish between managers, even if they
+
+            share the same name. For example, a status update will be distinct from a
+
+            regular update using the same manager name.
+
+            Note that the APIVersion field is not related to the Subresource field and
+
+            it always corresponds to the version of the main resource.'
+      description: 'ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
+
+        that the fieldset applies to.'
+    applicationsSyncOperationResource:
       type: object
       properties:
         group:
           type: string
-        version:
-          type: string
         kind:
           type: string
-    applicationsApplicationSource:
-      type: object
-      properties:
-        repoURL:
-          type: string
-          title: RepoURL is the URL to the repository (Git or Helm) that contains the application manifests
-        path:
-          type: string
-          description: Path is a directory path within the Git repository, and is only valid for applications sourced from Git.
-        targetRevision:
-          type: string
-          description: 'TargetRevision defines the revision of the source to sync the application to.
-
-            In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD.
-
-            In case of Helm, this is a semver tag for the Chart''s version.'
-        helm:
-          $ref: '#/components/schemas/applicationsApplicationSourceHelm'
-        kustomize:
-          $ref: '#/components/schemas/applicationsApplicationSourceKustomize'
-        ksonnet:
-          $ref: '#/components/schemas/applicationsApplicationSourceKsonnet'
-        directory:
-          $ref: '#/components/schemas/applicationsApplicationSourceDirectory'
-        plugin:
-          $ref: '#/components/schemas/applicationsApplicationSourcePlugin'
-        chart:
-          type: string
-          description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
-        ref:
-          type: string
-          description: Ref is reference to another source within sources field. This field will not be used if used with a `source` tag.
         name:
           type: string
-          description: Name is used to refer to a source and is displayed in the UI. It is used in multi-source Applications.
-      title: ApplicationSource contains all information about the source of an application
-    applicationsSuccessfulHydrateOperation:
+        namespace:
+          type: string
+      description: SyncOperationResource contains resources to sync.
+    protobufAny:
       type: object
       properties:
-        drySHA:
+        type_url:
           type: string
-          title: DrySHA holds the resolved revision (sha) of the dry source as of the most recent reconciliation
-        hydratedSHA:
+          description: "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        value:
           type: string
-          title: HydratedSHA holds the resolved revision (sha) of the hydrated source as of the most recent reconciliation
-        sourceHydrator:
-          $ref: '#/components/schemas/applicationsSourceHydrator'
-      title: SuccessfulHydrateOperation contains information about the most recent successful hydrate operation
+          format: byte
+          description: Must be a valid serialized protocol buffer of the above specified type.
+      description: "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    applicationsApplicationSourceJsonnet:
+      type: object
+      properties:
+        extVars:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsJsonnetVar'
+          title: ExtVars is a list of Jsonnet External Variables
+        tlas:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsJsonnetVar'
+          title: TLAS is a list of Jsonnet Top-level Arguments
+        libs:
+          type: array
+          items:
+            type: string
+          title: Additional library search dirs
+      title: ApplicationSourceJsonnet holds options specific to applications of type Jsonnet
+    applicationsSourceHydratorStatus:
+      type: object
+      properties:
+        lastSuccessfulOperation:
+          $ref: '#/components/schemas/applicationsSuccessfulHydrateOperation'
+        currentOperation:
+          $ref: '#/components/schemas/applicationsHydrateOperation'
+      title: SourceHydratorStatus contains information about the current state of source hydration
+    applicationsAppHealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          title: Status holds the status code of the application
+        message:
+          type: string
+          description: 'Deprecated: this field is not used and will be removed in a future release.'
+          title: Message is a human-readable informational message describing the health status
+        lastTransitionTime:
+          $ref: '#/components/schemas/v1Time'
+      title: AppHealthStatus contains information about the currently observed health state of an application
+    servicev1Applicationlist:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/servicev1Application'
+        totalPages:
+          type: integer
+          format: int32
+        totalItems:
+          type: integer
+          format: int32
+        pageItemCount:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        pageIndex:
+          type: integer
+          format: int32
+        empty:
+          type: boolean
+    applicationsHelmFileParameter:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name is the name of the Helm parameter
+        path:
+          type: string
+          title: Path is the path to the file containing the values for the Helm parameter
+      title: HelmFileParameter is a file parameter that's passed to helm template during manifest generation
     v1ObjectMeta:
       type: object
       properties:
@@ -644,6 +490,24 @@ components:
       description: 'ObjectMeta is metadata that all persisted resources must have, which includes all objects
 
         users must create.'
+    applicationsComparedTo:
+      type: object
+      properties:
+        source:
+          $ref: '#/components/schemas/applicationsApplicationSource'
+        destination:
+          $ref: '#/components/schemas/applicationsApplicationDestination'
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsApplicationSource'
+          title: Sources is a reference to the application's multiple sources used for comparison
+        ignoreDifferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsResourceIgnoreDifferences'
+          title: IgnoreDifferences is a reference to the application's ignored differences used for comparison
+      title: ComparedTo contains application source and target which was used for resources comparison
     applicationsResourceResult:
       type: object
       properties:
@@ -685,134 +549,101 @@ components:
             type: string
           title: Images contains the images related to the ResourceResult
       title: ResourceResult holds the operation result details of a specific resource
-    v1GovernanceMetadata:
+    applicationsApplicationSourceDirectory:
       type: object
       properties:
-        id:
-          type: string
-          description: Unique identifier for this evaluation
-        deny:
+        recurse:
           type: boolean
-          description: Whether the policy denied the action
-        status:
+          title: Recurse specifies whether to scan a directory recursively for manifests
+        jsonnet:
+          $ref: '#/components/schemas/applicationsApplicationSourceJsonnet'
+        exclude:
           type: string
-          description: 'Overall status: pass, warning, or error'
-        message:
+          title: Exclude contains a glob pattern to match paths against that should be explicitly excluded from being used during manifest generation
+        include:
           type: string
-          description: Human-readable message
-        timestamp:
-          type: string
-          description: Timestamp of evaluation in Unix milliseconds
-        accountId:
-          type: string
-          description: Account ID where evaluation was performed
-        orgId:
-          type: string
-          description: Organization ID where evaluation was performed
-        projectId:
-          type: string
-          description: Project ID where evaluation was performed
-        entity:
-          type: string
-          description: Entity identifier that was evaluated
-        type:
-          type: string
-          description: Type of entity evaluated (e.g., application)
-        action:
-          type: string
-          description: Action that triggered evaluation (e.g., onsave, onsync)
-        created:
-          type: string
-          description: Creation timestamp in Unix milliseconds
-        details:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1PolicySetDetail'
-          description: Detailed results for each policy set
-      description: 'GovernanceMetadata contains OPA policy evaluation results for an entity.
-
-        This structure mirrors the standard Harness governanceMetadata format used across all services.'
-    ApplicationQueryApplicationSortByOptions:
-      type: string
-      enum:
-      - SORT_BY_NOT_SET
-      - NAME
-      - GITOPS_AGENT
-      - SOURCE
-      - DESTINATION
-      default: SORT_BY_NOT_SET
-    applicationsEnvEntry:
-      type: object
-      properties:
-        name:
-          type: string
-          title: Name is the name of the variable, usually expressed in uppercase
-        value:
-          type: string
-          title: Value is the value of the variable
-      title: EnvEntry represents an entry in the application's environment
-    applicationsSyncStrategyHook:
-      type: object
-      properties:
-        force:
-          type: boolean
-          title: 'Embed SyncStrategyApply type to inherit any `apply` options
-
-            +'
-      description: 'SyncStrategyHook will perform a sync using hooks annotations.
-
-        If no hook annotation is specified falls back to `kubectl apply`.'
-    applicationsApplicationCondition:
-      type: object
-      properties:
-        type:
-          type: string
-          title: Type is an application condition type
-        message:
-          type: string
-          title: Message contains human-readable message indicating details about condition
-        lastTransitionTime:
-          $ref: '#/components/schemas/v1Time'
-        lastTransitionTimeTs:
-          type: string
-          format: date-time
-          title: LastTransitionTimeTs is the google timestamp variation of LastTransitionTime
-      title: ApplicationCondition contains details about an application condition, which is usally an error or warning
-    applicationsSyncOperationResult:
+          title: Include contains a glob pattern to match paths against that should be explicitly included during manifest generation
+      title: ApplicationSourceDirectory holds options for applications of type plain YAML or Jsonnet
+    applicationsApplicationStatus:
       type: object
       properties:
         resources:
           type: array
           items:
-            $ref: '#/components/schemas/applicationsResourceResult'
-          title: Resources contains a list of sync result items for each individual resource in a sync operation
-        revision:
-          type: string
-          title: Revision holds the revision this sync operation was performed to
-        source:
-          $ref: '#/components/schemas/applicationsApplicationSource'
-        sources:
+            $ref: '#/components/schemas/applicationsResourceStatus'
+          title: Resources is a list of Kubernetes resources managed by this application
+        sync:
+          $ref: '#/components/schemas/applicationsSyncStatus'
+        health:
+          $ref: '#/components/schemas/applicationsAppHealthStatus'
+        history:
           type: array
           items:
-            $ref: '#/components/schemas/applicationsApplicationSource'
-          title: Source records the application source information of the sync, used for comparing auto-sync
-        revisions:
+            $ref: '#/components/schemas/applicationsRevisionHistory'
+          title: History contains information about the application's sync history
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsApplicationCondition'
+          title: Conditions is a list of currently observed application conditions
+        reconciledAt:
+          $ref: '#/components/schemas/v1Time'
+        operationState:
+          $ref: '#/components/schemas/applicationsOperationState'
+        observedAt:
+          $ref: '#/components/schemas/v1Time'
+        sourceType:
+          type: string
+          title: SourceType specifies the type of this application
+        summary:
+          $ref: '#/components/schemas/applicationsApplicationSummary'
+        resourceHealthSource:
+          type: string
+          title: 'ResourceHealthSource indicates where the resource health status is stored: inline if not set or appTree'
+        sourceTypes:
           type: array
           items:
             type: string
-          title: Revisions holds the revision this sync operation was performed for respective indexed source in sources field
-        managedNamespaceMetadata:
-          $ref: '#/components/schemas/applicationsManagedNamespaceMetadata'
-      title: SyncOperationResult represent result of sync operation
-    applicationsHydrateTo:
+          title: SourceTypes specifies the type of the sources included in the application
+        controllerNamespace:
+          type: string
+          title: ControllerNamespace indicates the namespace in which the application controller is located
+        sourceHydrator:
+          $ref: '#/components/schemas/applicationsSourceHydratorStatus'
+      title: ApplicationStatus contains status information for the application
+    applicationsDrySource:
       type: object
       properties:
-        targetBranch:
+        repoURL:
           type: string
-          title: TargetBranch is the branch to which hydrated manifests should be committed
-      description: 'HydrateTo specifies a location to which hydrated manifests should be pushed as a "staging area" before being moved to
-
-        the SyncSource. The RepoURL and Path are assumed based on the associated SyncSource config in the SourceHydrator.'
+          title: RepoURL is the URL to the git repository that contains the application manifests
+        targetRevision:
+          type: string
+          title: TargetRevision defines the revision of the source to hydrate
+        path:
+          type: string
+          title: Path is a directory path within the Git repository where the manifests are located
+        helm:
+          $ref: '#/components/schemas/applicationsApplicationSourceHelm'
+        kustomize:
+          $ref: '#/components/schemas/applicationsApplicationSourceKustomize'
+        directory:
+          $ref: '#/components/schemas/applicationsApplicationSourceDirectory'
+        plugin:
+          $ref: '#/components/schemas/applicationsApplicationSourcePlugin'
+      description: DrySource specifies a location for dry "don't repeat yourself" manifest source information.
+    applicationsSuccessfulHydrateOperation:
+      type: object
+      properties:
+        drySHA:
+          type: string
+          title: DrySHA holds the resolved revision (sha) of the dry source as of the most recent reconciliation
+        hydratedSHA:
+          type: string
+          title: HydratedSHA holds the resolved revision (sha) of the hydrated source as of the most recent reconciliation
+        sourceHydrator:
+          $ref: '#/components/schemas/applicationsSourceHydrator'
+      title: SuccessfulHydrateOperation contains information about the most recent successful hydrate operation
     applicationsApplicationSourceKustomize:
       type: object
       properties:
@@ -889,16 +720,293 @@ components:
           type: boolean
           title: LabelIncludeTemplates specifies whether to apply common labels to resource templates or not
       title: ApplicationSourceKustomize holds options specific to an Application source specific to Kustomize
-    applicationsJsonnetVar:
+    applicationsOperation:
       type: object
       properties:
+        sync:
+          $ref: '#/components/schemas/applicationsSyncOperation'
+        initiatedBy:
+          $ref: '#/components/schemas/applicationsOperationInitiator'
+        info:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsInfo'
+          title: Info is a list of informational items for this operation
+        retry:
+          $ref: '#/components/schemas/applicationsRetryStrategy'
+      title: Operation contains information about a requested or running operation
+    applicationsSyncPolicyAutomated:
+      type: object
+      properties:
+        prune:
+          type: boolean
+          title: 'Prune specifies whether to delete resources from the cluster that are not found in the sources anymore as part of automated sync (default: false)'
+        selfHeal:
+          type: boolean
+          title: 'SelfHeal specifes whether to revert resources back to their desired state upon modification in the cluster (default: false)'
+        allowEmpty:
+          type: boolean
+          title: 'AllowEmpty allows apps have zero live resources (default: false)'
+        enabled:
+          type: boolean
+          title: Enable allows apps to explicitly control automated sync
+      title: SyncPolicyAutomated controls the behavior of an automated sync
+    applicationsSyncStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          title: Status is the sync state of the comparison
+        comparedTo:
+          $ref: '#/components/schemas/applicationsComparedTo'
+        revision:
+          type: string
+          title: Revision contains information about the revision the comparison has been performed to
+        revisions:
+          type: array
+          items:
+            type: string
+          title: Revisions contains information about the revisions of multiple sources the comparison has been performed to
+      title: SyncStatus contains information about the currently observed live and desired states of an application
+    v1PolicyMetadata:
+      type: object
+      properties:
+        policyId:
+          type: string
+          description: Unique ID of the policy
+        policyName:
+          type: string
+          description: Name of the policy
+        identifier:
+          type: string
+          description: User-defined identifier of the policy
+        severity:
+          type: string
+          description: 'Severity level: warning or error'
+        status:
+          type: string
+          description: 'Status: pass, warning, or error'
+        denyMessages:
+          type: array
+          items:
+            type: string
+          description: Messages explaining why the policy denied the action
+        accountId:
+          type: string
+          description: Account ID
+        orgId:
+          type: string
+          description: Organization ID
+        projectId:
+          type: string
+          description: Project ID
+        created:
+          type: string
+          description: Creation timestamp
+        updated:
+          type: string
+          description: Last update timestamp
+        error:
+          type: string
+          description: Error message from rego engine if any
+      description: PolicyMetadata contains evaluation results for a single policy within a policy set.
+    applicationsSyncSource:
+      type: object
+      properties:
+        targetBranch:
+          type: string
+          description: 'TargetBranch is the branch from which hydrated manifests will be synced.
+
+            If HydrateTo is not set, this is also the branch to which hydrated manifests are committed.'
+        path:
+          type: string
+          description: 'Path is a directory path within the git repository where hydrated manifests should be committed to and synced
+
+            from. The Path should never point to the root of the repo. If hydrateTo is set, this is just the path from which
+
+            hydrated manifests will be synced.
+
+
+            +kubebuilder:validation:Required
+
+            +kubebuilder:validation:MinLength=1
+
+            +kubebuilder:validation:Pattern=`^.{2,}|[^./]$`'
+      description: 'SyncSource specifies a location from which hydrated manifests may be synced. RepoURL is assumed based on the
+
+        associated DrySource config in the SourceHydrator.'
+    applicationsKustomizeResId:
+      type: object
+      properties:
+        gvk:
+          $ref: '#/components/schemas/applicationsKustomizeGvk'
         name:
           type: string
-        value:
+        namespace:
           type: string
-        code:
+    applicationsOptionalMap:
+      type: object
+      properties:
+        map:
+          type: object
+          additionalProperties:
+            type: string
+          title: 'Map is the value of a map type parameter.
+
+            +optional'
+    v1FieldsV1:
+      type: object
+      properties:
+        Raw:
+          type: string
+          format: byte
+          description: Raw is the underlying serialization of this object.
+      description: 'FieldsV1 stores a set of fields in a data structure like a Trie, in JSON format.
+
+
+        Each key is either a ''.'' representing the field itself, and will always map to an empty set,
+
+        or a string representing a sub-field or item. The string will follow one of these four formats:
+
+        ''f:<name>'', where <name> is the name of a field in a struct, or key in a map
+
+        ''v:<value>'', where <value> is the exact json formatted value of a list item
+
+        ''i:<index>'', where <index> is position of a item in a list
+
+        ''k:<keys>'', where <keys> is a map of  a list item''s key fields to their unique values
+
+        If a key maps to an empty Fields value, the field that key represents is part of the set.
+
+
+        The exact format is defined in sigs.k8s.io/structured-merge-diff
+
+        +protobuf.options.(gogoproto.goproto_stringer)=false'
+    applicationsHydrateTo:
+      type: object
+      properties:
+        targetBranch:
+          type: string
+          title: TargetBranch is the branch to which hydrated manifests should be committed
+      description: 'HydrateTo specifies a location to which hydrated manifests should be pushed as a "staging area" before being moved to
+
+        the SyncSource. The RepoURL and Path are assumed based on the associated SyncSource config in the SourceHydrator.'
+    applicationsRevisionHistory:
+      type: object
+      properties:
+        revision:
+          type: string
+          title: Revision holds the revision the sync was performed against
+        deployedAt:
+          $ref: '#/components/schemas/v1Time'
+        id:
+          type: string
+          format: int64
+          title: ID is an auto incrementing identifier of the RevisionHistory
+        source:
+          $ref: '#/components/schemas/applicationsApplicationSource'
+        deployStartedAt:
+          $ref: '#/components/schemas/v1Time'
+        deployedAtTs:
+          type: string
+          format: date-time
+        deployStartedAtTs:
+          type: string
+          format: date-time
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsApplicationSource'
+          title: Sources is a reference to the application sources used for the sync operation
+        revisions:
+          type: array
+          items:
+            type: string
+          title: Revisions holds the revision of each source in sources field the sync was performed against
+        initiatedBy:
+          $ref: '#/components/schemas/applicationsOperationInitiator'
+      title: RevisionHistory contains history information about a previous sync
+    applicationsOperationState:
+      type: object
+      properties:
+        operation:
+          $ref: '#/components/schemas/applicationsOperation'
+        phase:
+          type: string
+          title: Phase is the current phase of the operation
+        message:
+          type: string
+          description: Message holds any pertinent messages when attempting to perform operation (typically errors).
+        syncResult:
+          $ref: '#/components/schemas/applicationsSyncOperationResult'
+        startedAt:
+          $ref: '#/components/schemas/v1Time'
+        finishedAt:
+          $ref: '#/components/schemas/v1Time'
+        retryCount:
+          type: string
+          format: int64
+          title: RetryCount contains time of operation retries
+        startedAtTs:
+          type: string
+          format: date-time
+          title: Started at Timestamp
+        finishedAtTs:
+          type: string
+          format: date-time
+          title: Finised at Timestamp
+      title: OperationState contains information about state of a running operation
+    ApplicationQueryApplicationSortByOptions:
+      type: string
+      enum:
+      - SORT_BY_NOT_SET
+      - NAME
+      - GITOPS_AGENT
+      - SOURCE
+      - DESTINATION
+      default: SORT_BY_NOT_SET
+    servicev1Application:
+      type: object
+      properties:
+        accountIdentifier:
+          type: string
+          description: Account Identifier for the Entity.
+        orgIdentifier:
+          type: string
+          description: Organization Identifier for the Entity.
+        projectIdentifier:
+          type: string
+          description: Project Identifier for the Entity.
+        agentIdentifier:
+          type: string
+          description: Agent identifier for entity.
+        name:
+          type: string
+        clusterIdentifier:
+          type: string
+        repoIdentifier:
+          type: string
+        app:
+          $ref: '#/components/schemas/applicationsApplication'
+        createdAt:
+          type: string
+          format: date-time
+        lastModifiedAt:
+          type: string
+          format: date-time
+        stale:
           type: boolean
-      title: JsonnetVar represents a variable to be passed to jsonnet during manifest generation
+        skipRepoValidation:
+          type: boolean
+        repoIdentifiers:
+          type: array
+          items:
+            type: string
+        parentAppRef:
+          type: string
+          description: Reference of owner application (Application Set)
+        governanceMetadata:
+          $ref: '#/components/schemas/v1GovernanceMetadata'
     applicationsSyncOperation:
       type: object
       properties:
@@ -951,6 +1059,57 @@ components:
           format: int64
           title: SelfHealAttemptsCount contains the number of auto-heal attempts
       description: SyncOperation contains details about a sync operation.
+    applicationsApplication:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/v1ObjectMeta'
+        spec:
+          $ref: '#/components/schemas/applicationsApplicationSpec'
+        status:
+          $ref: '#/components/schemas/applicationsApplicationStatus'
+        operation:
+          $ref: '#/components/schemas/applicationsOperation'
+        creationTimestampTs:
+          type: string
+          format: date-time
+          title: Protobuf-safe copy of ObjectMeta.CreationTimestamp (v1.Time doesn't survive gRPC serialization)
+    applicationsKsonnetParameter:
+      type: object
+      properties:
+        component:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+      title: KsonnetParameter is a ksonnet component parameter
+    applicationsSyncOperationResult:
+      type: object
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsResourceResult'
+          title: Resources contains a list of sync result items for each individual resource in a sync operation
+        revision:
+          type: string
+          title: Revision holds the revision this sync operation was performed to
+        source:
+          $ref: '#/components/schemas/applicationsApplicationSource'
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsApplicationSource'
+          title: Source records the application source information of the sync, used for comparing auto-sync
+        revisions:
+          type: array
+          items:
+            type: string
+          title: Revisions holds the revision this sync operation was performed for respective indexed source in sources field
+        managedNamespaceMetadata:
+          $ref: '#/components/schemas/applicationsManagedNamespaceMetadata'
+      title: SyncOperationResult represent result of sync operation
     v1SortOrderOptions:
       type: string
       enum:
@@ -958,28 +1117,18 @@ components:
       - ASC
       - DESC
       default: SORT_ORDER_NOT_SET
-    applicationsHydrateOperation:
+    applicationsHealthStatus:
       type: object
       properties:
-        startedAt:
-          $ref: '#/components/schemas/v1Time'
-        finishedAt:
-          $ref: '#/components/schemas/v1Time'
-        phase:
+        status:
           type: string
-          title: Phase indicates the status of the hydrate operation
+          title: Status holds the status code of the application or resource
         message:
           type: string
-          title: Message contains a message describing the current status of the hydrate operation
-        drySHA:
-          type: string
-          title: DrySHA holds the resolved revision (sha) of the dry source as of the most recent reconciliation
-        hydratedSHA:
-          type: string
-          title: HydratedSHA holds the resolved revision (sha) of the hydrated source as of the most recent reconciliation
-        sourceHydrator:
-          $ref: '#/components/schemas/applicationsSourceHydrator'
-      title: HydrateOperation contains information about the most recent hydrate operation
+          title: Message is a human-readable informational message describing the health status
+        lastTransitionTime:
+          $ref: '#/components/schemas/v1Time'
+      title: HealthStatus contains information about the currently observed health state of a resource
     gatewayruntimeError:
       type: object
       properties:
@@ -994,16 +1143,147 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/protobufAny'
-    applicationsOptionalMap:
+    applicationsApplicationSource:
       type: object
       properties:
-        map:
+        repoURL:
+          type: string
+          title: RepoURL is the URL to the repository (Git or Helm) that contains the application manifests
+        path:
+          type: string
+          description: Path is a directory path within the Git repository, and is only valid for applications sourced from Git.
+        targetRevision:
+          type: string
+          description: 'TargetRevision defines the revision of the source to sync the application to.
+
+            In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD.
+
+            In case of Helm, this is a semver tag for the Chart''s version.'
+        helm:
+          $ref: '#/components/schemas/applicationsApplicationSourceHelm'
+        kustomize:
+          $ref: '#/components/schemas/applicationsApplicationSourceKustomize'
+        ksonnet:
+          $ref: '#/components/schemas/applicationsApplicationSourceKsonnet'
+        directory:
+          $ref: '#/components/schemas/applicationsApplicationSourceDirectory'
+        plugin:
+          $ref: '#/components/schemas/applicationsApplicationSourcePlugin'
+        chart:
+          type: string
+          description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
+        ref:
+          type: string
+          description: Ref is reference to another source within sources field. This field will not be used if used with a `source` tag.
+        name:
+          type: string
+          description: Name is used to refer to a source and is displayed in the UI. It is used in multi-source Applications.
+      title: ApplicationSource contains all information about the source of an application
+    applicationsApplicationSourceKsonnet:
+      type: object
+      properties:
+        environment:
+          type: string
+          title: Environment is a ksonnet application environment name
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsKsonnetParameter'
+          title: Parameters are a list of ksonnet component parameter override values
+      title: ApplicationSourceKsonnet holds ksonnet specific options
+    applicationsKustomizePatch:
+      type: object
+      properties:
+        path:
+          type: string
+        patch:
+          type: string
+        target:
+          $ref: '#/components/schemas/applicationsKustomizeSelector'
+        options:
+          type: object
+          additionalProperties:
+            type: boolean
+    applicationsResourceIgnoreDifferences:
+      type: object
+      properties:
+        group:
+          type: string
+        kind:
+          type: string
+        name:
+          type: string
+        namespace:
+          type: string
+        jsonPointers:
+          type: array
+          items:
+            type: string
+        jqPathExpressions:
+          type: array
+          items:
+            type: string
+        managedFieldsManagers:
+          type: array
+          items:
+            type: string
+          title: 'ManagedFieldsManagers is a list of trusted managers. Fields mutated by those managers will take precedence over the
+
+            desired state defined in the SCM and won''t be displayed in diffs'
+      description: ResourceIgnoreDifferences contains resource filter and list of json paths which should be ignored during comparison with live state.
+    applicationsManagedNamespaceMetadata:
+      type: object
+      properties:
+        labels:
           type: object
           additionalProperties:
             type: string
-          title: 'Map is the value of a map type parameter.
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+    applicationsSourceHydrator:
+      type: object
+      properties:
+        drySource:
+          $ref: '#/components/schemas/applicationsDrySource'
+        syncSource:
+          $ref: '#/components/schemas/applicationsSyncSource'
+        hydrateTo:
+          $ref: '#/components/schemas/applicationsHydrateTo'
+      description: 'SourceHydrator specifies a dry "don''t repeat yourself" source for manifests, a sync source from which to sync
+
+        hydrated manifests, and an optional hydrateTo location to act as a "staging" aread for hydrated manifests.'
+    applicationsOptionalArray:
+      type: object
+      properties:
+        array:
+          type: array
+          items:
+            type: string
+          title: 'Array is the value of an array type parameter.
 
             +optional'
+    applicationsEnvEntry:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name is the name of the variable, usually expressed in uppercase
+        value:
+          type: string
+          title: Value is the value of the variable
+      title: EnvEntry represents an entry in the application's environment
+    applicationsOperationInitiator:
+      type: object
+      properties:
+        username:
+          type: string
+          title: Username contains the name of a user who started operation
+        automated:
+          type: boolean
+          description: Automated is set to true if operation was initiated automatically by the application controller.
+      title: OperationInitiator contains information about the initiator of an operation
     applicationsSyncStrategyApply:
       type: object
       properties:
@@ -1015,121 +1295,6 @@ components:
 
             retried for 5 times.'
       title: SyncStrategyApply uses `kubectl apply` to perform the apply
-    applicationsSyncStrategy:
-      type: object
-      properties:
-        apply:
-          $ref: '#/components/schemas/applicationsSyncStrategyApply'
-        hook:
-          $ref: '#/components/schemas/applicationsSyncStrategyHook'
-      title: SyncStrategy controls the manner in which a sync is performed
-    protobufAny:
-      type: object
-      properties:
-        type_url:
-          type: string
-          description: "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
-        value:
-          type: string
-          format: byte
-          description: Must be a valid serialized protocol buffer of the above specified type.
-      description: "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
-    v1PolicyMetadata:
-      type: object
-      properties:
-        policyId:
-          type: string
-          description: Unique ID of the policy
-        policyName:
-          type: string
-          description: Name of the policy
-        identifier:
-          type: string
-          description: User-defined identifier of the policy
-        severity:
-          type: string
-          description: 'Severity level: warning or error'
-        status:
-          type: string
-          description: 'Status: pass, warning, or error'
-        denyMessages:
-          type: array
-          items:
-            type: string
-          description: Messages explaining why the policy denied the action
-        accountId:
-          type: string
-          description: Account ID
-        orgId:
-          type: string
-          description: Organization ID
-        projectId:
-          type: string
-          description: Project ID
-        created:
-          type: string
-          description: Creation timestamp
-        updated:
-          type: string
-          description: Last update timestamp
-        error:
-          type: string
-          description: Error message from rego engine if any
-      description: PolicyMetadata contains evaluation results for a single policy within a policy set.
-    applicationsApplicationSourceDirectory:
-      type: object
-      properties:
-        recurse:
-          type: boolean
-          title: Recurse specifies whether to scan a directory recursively for manifests
-        jsonnet:
-          $ref: '#/components/schemas/applicationsApplicationSourceJsonnet'
-        exclude:
-          type: string
-          title: Exclude contains a glob pattern to match paths against that should be explicitly excluded from being used during manifest generation
-        include:
-          type: string
-          title: Include contains a glob pattern to match paths against that should be explicitly included during manifest generation
-      title: ApplicationSourceDirectory holds options for applications of type plain YAML or Jsonnet
-    applicationsResourceStatus:
-      type: object
-      properties:
-        group:
-          type: string
-          description: Group represents the API group of the resource (e.g., "apps" for Deployments).
-        version:
-          type: string
-          description: Version indicates the API version of the resource (e.g., "v1", "v1beta1").
-        kind:
-          type: string
-          description: Kind specifies the type of the resource (e.g., "Deployment", "Service").
-        namespace:
-          type: string
-          description: Namespace defines the Kubernetes namespace where the resource is located.
-        name:
-          type: string
-          description: Name is the unique name of the resource within the namespace.
-        status:
-          type: string
-          description: Status represents the synchronization state of the resource (e.g., Synced, OutOfSync).
-        health:
-          $ref: '#/components/schemas/applicationsHealthStatus'
-        hook:
-          type: boolean
-          description: Hook is true if the resource is used as a lifecycle hook in an Argo CD application.
-        requiresPruning:
-          type: boolean
-          description: RequiresPruning is true if the resource needs to be pruned (deleted) as part of synchronization.
-        syncWave:
-          type: string
-          format: int64
-          description: 'SyncWave determines the order in which resources are applied during a sync operation.
-
-            Lower values are applied first.'
-        requiresDeletionConfirmation:
-          type: boolean
-          description: RequiresDeletionConfirmation is true if the resource requires explicit user confirmation before deletion.
-      description: ResourceStatus holds the current synchronization and health status of a Kubernetes resource.
     applicationsSyncPolicy:
       type: object
       properties:
@@ -1145,14 +1310,21 @@ components:
         managedNamespaceMetadata:
           $ref: '#/components/schemas/applicationsManagedNamespaceMetadata'
       title: SyncPolicy controls when a sync will be performed in response to updates in git
-    applicationsSourceHydratorStatus:
+    applicationsApplicationDestination:
       type: object
       properties:
-        lastSuccessfulOperation:
-          $ref: '#/components/schemas/applicationsSuccessfulHydrateOperation'
-        currentOperation:
-          $ref: '#/components/schemas/applicationsHydrateOperation'
-      title: SourceHydratorStatus contains information about the current state of source hydration
+        server:
+          type: string
+          title: Server specifies the URL of the target cluster and must be set to the Kubernetes control plane API
+        namespace:
+          type: string
+          title: 'Namespace specifies the target namespace for the application''s resources.
+
+            The namespace will only be set for namespace-scoped resources that have not set a value for .metadata.namespace'
+        name:
+          type: string
+          title: Name is an alternate way of specifying the target cluster by its symbolic name
+      title: ApplicationDestination holds information about the application's destination
     servicev1ApplicationQuery:
       type: object
       properties:
@@ -1186,158 +1358,45 @@ components:
           type: array
           items:
             type: string
-    applicationsResourceIgnoreDifferences:
+    v1PolicySetDetail:
       type: object
       properties:
-        group:
+        policySetId:
           type: string
-        kind:
+          description: Unique ID of the policy set
+        policySetName:
           type: string
-        name:
+          description: Name of the policy set
+        identifier:
           type: string
-        namespace:
-          type: string
-        jsonPointers:
-          type: array
-          items:
-            type: string
-        jqPathExpressions:
-          type: array
-          items:
-            type: string
-        managedFieldsManagers:
-          type: array
-          items:
-            type: string
-          title: 'ManagedFieldsManagers is a list of trusted managers. Fields mutated by those managers will take precedence over the
-
-            desired state defined in the SCM and won''t be displayed in diffs'
-      description: ResourceIgnoreDifferences contains resource filter and list of json paths which should be ignored during comparison with live state.
-    applicationsApplication:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/v1ObjectMeta'
-        spec:
-          $ref: '#/components/schemas/applicationsApplicationSpec'
+          description: User-defined identifier of the policy set
+        deny:
+          type: boolean
+          description: Whether this policy set denied the action
         status:
-          $ref: '#/components/schemas/applicationsApplicationStatus'
-        operation:
-          $ref: '#/components/schemas/applicationsOperation'
-        creationTimestampTs:
           type: string
-          format: date-time
-          title: Protobuf-safe copy of ObjectMeta.CreationTimestamp (v1.Time doesn't survive gRPC serialization)
-    applicationsHelmParameter:
-      type: object
-      properties:
-        name:
+          description: 'Status: pass, warning, or error'
+        accountId:
           type: string
-          title: Name is the name of the Helm parameter
-        value:
+          description: Account ID
+        orgId:
           type: string
-          title: Value is the value for the Helm parameter
-        forceString:
-          type: boolean
-          title: ForceString determines whether to tell Helm to interpret booleans and numbers as strings
-      title: HelmParameter is a parameter that's passed to helm template during manifest generation
-    servicev1Application:
-      type: object
-      properties:
-        accountIdentifier:
+          description: Organization ID
+        projectId:
           type: string
-          description: Account Identifier for the Entity.
-        orgIdentifier:
+          description: Project ID
+        description:
           type: string
-          description: Organization Identifier for the Entity.
-        projectIdentifier:
+          description: Description of the policy set
+        created:
           type: string
-          description: Project Identifier for the Entity.
-        agentIdentifier:
-          type: string
-          description: Agent identifier for entity.
-        name:
-          type: string
-        clusterIdentifier:
-          type: string
-        repoIdentifier:
-          type: string
-        app:
-          $ref: '#/components/schemas/applicationsApplication'
-        createdAt:
-          type: string
-          format: date-time
-        lastModifiedAt:
-          type: string
-          format: date-time
-        stale:
-          type: boolean
-        skipRepoValidation:
-          type: boolean
-        repoIdentifiers:
+          description: Creation timestamp
+        policyMetadata:
           type: array
           items:
-            type: string
-        parentAppRef:
-          type: string
-          description: Reference of owner application (Application Set)
-        governanceMetadata:
-          $ref: '#/components/schemas/v1GovernanceMetadata'
-    v1Time:
-      type: object
-      properties:
-        seconds:
-          type: string
-          format: int64
-          description: 'Represents seconds of UTC time since Unix epoch
-
-            1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
-
-            9999-12-31T23:59:59Z inclusive.'
-        nanos:
-          type: integer
-          format: int32
-          description: 'Non-negative fractions of a second at nanosecond resolution. Negative
-
-            second values with fractions must still have non-negative nanos values
-
-            that count forward in time. Must be from 0 to 999,999,999
-
-            inclusive. This field may be limited in precision depending on context.'
-      description: 'Time is a wrapper around time.Time which supports correct
-
-        marshaling to YAML and JSON.  Wrappers are provided for many
-
-        of the factory methods that the time package offers.
-
-
-        +protobuf.options.marshal=false
-
-        +protobuf.as=Timestamp
-
-        +protobuf.options.(gogoproto.goproto_stringer)=false'
-    applicationsSourceHydrator:
-      type: object
-      properties:
-        drySource:
-          $ref: '#/components/schemas/applicationsDrySource'
-        syncSource:
-          $ref: '#/components/schemas/applicationsSyncSource'
-        hydrateTo:
-          $ref: '#/components/schemas/applicationsHydrateTo'
-      description: 'SourceHydrator specifies a dry "don''t repeat yourself" source for manifests, a sync source from which to sync
-
-        hydrated manifests, and an optional hydrateTo location to act as a "staging" aread for hydrated manifests.'
-    applicationsHelmFileParameter:
-      type: object
-      properties:
-        name:
-          type: string
-          title: Name is the name of the Helm parameter
-        path:
-          type: string
-          title: Path is the path to the file containing the values for the Helm parameter
-      title: HelmFileParameter is a file parameter that's passed to helm template during manifest generation
+            $ref: '#/components/schemas/v1PolicyMetadata'
+          description: Individual policy evaluation results
+      description: PolicySetDetail contains evaluation results for a single policy set.
     v1OwnerReference:
       type: object
       properties:
@@ -1390,77 +1449,236 @@ components:
         be cluster-scoped, so there is no namespace field.
 
         +structType=atomic'
-    applicationsApplicationStatus:
+    applicationsKustomizeReplicas:
       type: object
       properties:
-        resources:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsResourceStatus'
-          title: Resources is a list of Kubernetes resources managed by this application
-        sync:
-          $ref: '#/components/schemas/applicationsSyncStatus'
-        health:
-          $ref: '#/components/schemas/applicationsAppHealthStatus'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsRevisionHistory'
-          title: History contains information about the application's sync history
-        conditions:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsApplicationCondition'
-          title: Conditions is a list of currently observed application conditions
-        reconciledAt:
-          $ref: '#/components/schemas/v1Time'
-        operationState:
-          $ref: '#/components/schemas/applicationsOperationState'
-        observedAt:
-          $ref: '#/components/schemas/v1Time'
-        sourceType:
+        count:
           type: string
-          title: SourceType specifies the type of this application
-        summary:
-          $ref: '#/components/schemas/applicationsApplicationSummary'
-        resourceHealthSource:
+          title: Number of replicas
+        name:
           type: string
-          title: 'ResourceHealthSource indicates where the resource health status is stored: inline if not set or appTree'
-        sourceTypes:
+          title: Name of Deployment or StatefulSet
+    applicationsApplicationCondition:
+      type: object
+      properties:
+        type:
+          type: string
+          title: Type is an application condition type
+        message:
+          type: string
+          title: Message contains human-readable message indicating details about condition
+        lastTransitionTime:
+          $ref: '#/components/schemas/v1Time'
+        lastTransitionTimeTs:
+          type: string
+          format: date-time
+          title: LastTransitionTimeTs is the google timestamp variation of LastTransitionTime
+      title: ApplicationCondition contains details about an application condition, which is usally an error or warning
+    applicationsBackoff:
+      type: object
+      properties:
+        duration:
+          type: string
+          title: Duration is the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
+        factor:
+          type: string
+          format: int64
+          title: Factor is a factor to multiply the base duration after each failed retry
+        maxDuration:
+          type: string
+          title: MaxDuration is the maximum amount of time allowed for the backoff strategy
+      title: Backoff is the backoff strategy to use on subsequent retries for failing syncs
+    v1GovernanceMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this evaluation
+        deny:
+          type: boolean
+          description: Whether the policy denied the action
+        status:
+          type: string
+          description: 'Overall status: pass, warning, or error'
+        message:
+          type: string
+          description: Human-readable message
+        timestamp:
+          type: string
+          description: Timestamp of evaluation in Unix milliseconds
+        accountId:
+          type: string
+          description: Account ID where evaluation was performed
+        orgId:
+          type: string
+          description: Organization ID where evaluation was performed
+        projectId:
+          type: string
+          description: Project ID where evaluation was performed
+        entity:
+          type: string
+          description: Entity identifier that was evaluated
+        type:
+          type: string
+          description: Type of entity evaluated (e.g., application)
+        action:
+          type: string
+          description: Action that triggered evaluation (e.g., onsave, onsync)
+        created:
+          type: string
+          description: Creation timestamp in Unix milliseconds
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/v1PolicySetDetail'
+          description: Detailed results for each policy set
+      description: 'GovernanceMetadata contains OPA policy evaluation results for an entity.
+
+        This structure mirrors the standard Harness governanceMetadata format used across all services.'
+    applicationsHelmParameter:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name is the name of the Helm parameter
+        value:
+          type: string
+          title: Value is the value for the Helm parameter
+        forceString:
+          type: boolean
+          title: ForceString determines whether to tell Helm to interpret booleans and numbers as strings
+      title: HelmParameter is a parameter that's passed to helm template during manifest generation
+    applicationsInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    applicationsSyncStrategy:
+      type: object
+      properties:
+        apply:
+          $ref: '#/components/schemas/applicationsSyncStrategyApply'
+        hook:
+          $ref: '#/components/schemas/applicationsSyncStrategyHook'
+      title: SyncStrategy controls the manner in which a sync is performed
+    applicationsSyncStrategyHook:
+      type: object
+      properties:
+        force:
+          type: boolean
+          title: 'Embed SyncStrategyApply type to inherit any `apply` options
+
+            +'
+      description: 'SyncStrategyHook will perform a sync using hooks annotations.
+
+        If no hook annotation is specified falls back to `kubectl apply`.'
+    applicationsHydrateOperation:
+      type: object
+      properties:
+        startedAt:
+          $ref: '#/components/schemas/v1Time'
+        finishedAt:
+          $ref: '#/components/schemas/v1Time'
+        phase:
+          type: string
+          title: Phase indicates the status of the hydrate operation
+        message:
+          type: string
+          title: Message contains a message describing the current status of the hydrate operation
+        drySHA:
+          type: string
+          title: DrySHA holds the resolved revision (sha) of the dry source as of the most recent reconciliation
+        hydratedSHA:
+          type: string
+          title: HydratedSHA holds the resolved revision (sha) of the hydrated source as of the most recent reconciliation
+        sourceHydrator:
+          $ref: '#/components/schemas/applicationsSourceHydrator'
+      title: HydrateOperation contains information about the most recent hydrate operation
+    v1Time:
+      type: object
+      properties:
+        seconds:
+          type: string
+          format: int64
+          description: 'Represents seconds of UTC time since Unix epoch
+
+            1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+
+            9999-12-31T23:59:59Z inclusive.'
+        nanos:
+          type: integer
+          format: int32
+          description: 'Non-negative fractions of a second at nanosecond resolution. Negative
+
+            second values with fractions must still have non-negative nanos values
+
+            that count forward in time. Must be from 0 to 999,999,999
+
+            inclusive. This field may be limited in precision depending on context.'
+      description: 'Time is a wrapper around time.Time which supports correct
+
+        marshaling to YAML and JSON.  Wrappers are provided for many
+
+        of the factory methods that the time package offers.
+
+
+        +protobuf.options.marshal=false
+
+        +protobuf.as=Timestamp
+
+        +protobuf.options.(gogoproto.goproto_stringer)=false'
+    applicationsApplicationSourcePlugin:
+      type: object
+      properties:
+        name:
+          type: string
+        env:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsEnvEntry'
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationsApplicationSourcePluginParameter'
+      title: ApplicationSourcePlugin holds options specific to config management plugins
+    applicationsApplicationSourcePluginParameter:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name is the name identifying a parameter.
+        string:
+          type: string
+          description: String_ is the value of a string type parameter.
+        map:
+          $ref: '#/components/schemas/applicationsOptionalMap'
+        array:
+          $ref: '#/components/schemas/applicationsOptionalArray'
+    applicationsKustomizeGvk:
+      type: object
+      properties:
+        group:
+          type: string
+        version:
+          type: string
+        kind:
+          type: string
+    applicationsApplicationSummary:
+      type: object
+      properties:
+        externalURLs:
           type: array
           items:
             type: string
-          title: SourceTypes specifies the type of the sources included in the application
-        controllerNamespace:
-          type: string
-          title: ControllerNamespace indicates the namespace in which the application controller is located
-        sourceHydrator:
-          $ref: '#/components/schemas/applicationsSourceHydratorStatus'
-      title: ApplicationStatus contains status information for the application
-    servicev1Applicationlist:
-      type: object
-      properties:
-        content:
+          description: ExternalURLs holds all external URLs of application child resources.
+        images:
           type: array
           items:
-            $ref: '#/components/schemas/servicev1Application'
-        totalPages:
-          type: integer
-          format: int32
-        totalItems:
-          type: integer
-          format: int32
-        pageItemCount:
-          type: integer
-          format: int32
-        pageSize:
-          type: integer
-          format: int32
-        pageIndex:
-          type: integer
-          format: int32
-        empty:
-          type: boolean
+            type: string
+          description: Images holds all images of application child resources.
+      title: ApplicationSummary contains information about URLs and container images used by an application
     applicationsApplicationSpec:
       type: object
       properties:
@@ -1505,96 +1723,6 @@ components:
         sourceHydrator:
           $ref: '#/components/schemas/applicationsSourceHydrator'
       description: ApplicationSpec represents desired application state. Contains link to repository with application definition and additional parameters link definition revision.
-    v1PolicySetDetail:
-      type: object
-      properties:
-        policySetId:
-          type: string
-          description: Unique ID of the policy set
-        policySetName:
-          type: string
-          description: Name of the policy set
-        identifier:
-          type: string
-          description: User-defined identifier of the policy set
-        deny:
-          type: boolean
-          description: Whether this policy set denied the action
-        status:
-          type: string
-          description: 'Status: pass, warning, or error'
-        accountId:
-          type: string
-          description: Account ID
-        orgId:
-          type: string
-          description: Organization ID
-        projectId:
-          type: string
-          description: Project ID
-        description:
-          type: string
-          description: Description of the policy set
-        created:
-          type: string
-          description: Creation timestamp
-        policyMetadata:
-          type: array
-          items:
-            $ref: '#/components/schemas/v1PolicyMetadata'
-          description: Individual policy evaluation results
-      description: PolicySetDetail contains evaluation results for a single policy set.
-    applicationsComparedTo:
-      type: object
-      properties:
-        source:
-          $ref: '#/components/schemas/applicationsApplicationSource'
-        destination:
-          $ref: '#/components/schemas/applicationsApplicationDestination'
-        sources:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsApplicationSource'
-          title: Sources is a reference to the application's multiple sources used for comparison
-        ignoreDifferences:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsResourceIgnoreDifferences'
-          title: IgnoreDifferences is a reference to the application's ignored differences used for comparison
-      title: ComparedTo contains application source and target which was used for resources comparison
-    applicationsApplicationSourcePlugin:
-      type: object
-      properties:
-        name:
-          type: string
-        env:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsEnvEntry'
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsApplicationSourcePluginParameter'
-      title: ApplicationSourcePlugin holds options specific to config management plugins
-    applicationsOptionalArray:
-      type: object
-      properties:
-        array:
-          type: array
-          items:
-            type: string
-          title: 'Array is the value of an array type parameter.
-
-            +optional'
-    applicationsKustomizeSelector:
-      type: object
-      properties:
-        resId:
-          $ref: '#/components/schemas/applicationsKustomizeResId'
-        annotationSelector:
-          type: string
-        labelSelector:
-          type: string
     applicationsRetryStrategy:
       type: object
       properties:
@@ -1608,192 +1736,64 @@ components:
           type: boolean
           title: 'Refresh indicates if the latest revision should be used on retry instead of the initial one (default: false)'
       title: RetryStrategy contains information about the strategy to apply when a sync failed
-    applicationsApplicationSourceJsonnet:
+    applicationsJsonnetVar:
       type: object
       properties:
-        extVars:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsJsonnetVar'
-          title: ExtVars is a list of Jsonnet External Variables
-        tlas:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsJsonnetVar'
-          title: TLAS is a list of Jsonnet Top-level Arguments
-        libs:
-          type: array
-          items:
-            type: string
-          title: Additional library search dirs
-      title: ApplicationSourceJsonnet holds options specific to applications of type Jsonnet
-    applicationsDrySource:
-      type: object
-      properties:
-        repoURL:
+        name:
           type: string
-          title: RepoURL is the URL to the git repository that contains the application manifests
-        targetRevision:
+        value:
           type: string
-          title: TargetRevision defines the revision of the source to hydrate
-        path:
-          type: string
-          title: Path is a directory path within the Git repository where the manifests are located
-        helm:
-          $ref: '#/components/schemas/applicationsApplicationSourceHelm'
-        kustomize:
-          $ref: '#/components/schemas/applicationsApplicationSourceKustomize'
-        directory:
-          $ref: '#/components/schemas/applicationsApplicationSourceDirectory'
-        plugin:
-          $ref: '#/components/schemas/applicationsApplicationSourcePlugin'
-      description: DrySource specifies a location for dry "don't repeat yourself" manifest source information.
-    applicationsOperation:
-      type: object
-      properties:
-        sync:
-          $ref: '#/components/schemas/applicationsSyncOperation'
-        initiatedBy:
-          $ref: '#/components/schemas/applicationsOperationInitiator'
-        info:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsInfo'
-          title: Info is a list of informational items for this operation
-        retry:
-          $ref: '#/components/schemas/applicationsRetryStrategy'
-      title: Operation contains information about a requested or running operation
-    applicationsBackoff:
-      type: object
-      properties:
-        duration:
-          type: string
-          title: Duration is the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
-        factor:
-          type: string
-          format: int64
-          title: Factor is a factor to multiply the base duration after each failed retry
-        maxDuration:
-          type: string
-          title: MaxDuration is the maximum amount of time allowed for the backoff strategy
-      title: Backoff is the backoff strategy to use on subsequent retries for failing syncs
-    applicationsManagedNamespaceMetadata:
-      type: object
-      properties:
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-        annotations:
-          type: object
-          additionalProperties:
-            type: string
-    applicationsSyncOperationResource:
+        code:
+          type: boolean
+      title: JsonnetVar represents a variable to be passed to jsonnet during manifest generation
+    applicationsResourceStatus:
       type: object
       properties:
         group:
           type: string
+          description: Group represents the API group of the resource (e.g., "apps" for Deployments).
+        version:
+          type: string
+          description: Version indicates the API version of the resource (e.g., "v1", "v1beta1").
         kind:
           type: string
-        name:
-          type: string
+          description: Kind specifies the type of the resource (e.g., "Deployment", "Service").
         namespace:
           type: string
-      description: SyncOperationResource contains resources to sync.
-    applicationsApplicationSourceKsonnet:
-      type: object
-      properties:
-        environment:
-          type: string
-          title: Environment is a ksonnet application environment name
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/applicationsKsonnetParameter'
-          title: Parameters are a list of ksonnet component parameter override values
-      title: ApplicationSourceKsonnet holds ksonnet specific options
-    applicationsKustomizePatch:
-      type: object
-      properties:
-        path:
-          type: string
-        patch:
-          type: string
-        target:
-          $ref: '#/components/schemas/applicationsKustomizeSelector'
-        options:
-          type: object
-          additionalProperties:
-            type: boolean
-    applicationsApplicationSourcePluginParameter:
-      type: object
-      properties:
+          description: Namespace defines the Kubernetes namespace where the resource is located.
         name:
           type: string
-          description: Name is the name identifying a parameter.
-        string:
+          description: Name is the unique name of the resource within the namespace.
+        status:
           type: string
-          description: String_ is the value of a string type parameter.
-        map:
-          $ref: '#/components/schemas/applicationsOptionalMap'
-        array:
-          $ref: '#/components/schemas/applicationsOptionalArray'
-    v1ManagedFieldsEntry:
+          description: Status represents the synchronization state of the resource (e.g., Synced, OutOfSync).
+        health:
+          $ref: '#/components/schemas/applicationsHealthStatus'
+        hook:
+          type: boolean
+          description: Hook is true if the resource is used as a lifecycle hook in an Argo CD application.
+        requiresPruning:
+          type: boolean
+          description: RequiresPruning is true if the resource needs to be pruned (deleted) as part of synchronization.
+        syncWave:
+          type: string
+          format: int64
+          description: 'SyncWave determines the order in which resources are applied during a sync operation.
+
+            Lower values are applied first.'
+        requiresDeletionConfirmation:
+          type: boolean
+          description: RequiresDeletionConfirmation is true if the resource requires explicit user confirmation before deletion.
+      description: ResourceStatus holds the current synchronization and health status of a Kubernetes resource.
+    applicationsKustomizeSelector:
       type: object
       properties:
-        manager:
+        resId:
+          $ref: '#/components/schemas/applicationsKustomizeResId'
+        annotationSelector:
           type: string
-          description: Manager is an identifier of the workflow managing these fields.
-        operation:
+        labelSelector:
           type: string
-          description: 'Operation is the type of operation which lead to this ManagedFieldsEntry being created.
-
-            The only valid values for this field are ''Apply'' and ''Update''.'
-        apiVersion:
-          type: string
-          description: 'APIVersion defines the version of this resource that this field set
-
-            applies to. The format is "group/version" just like the top-level
-
-            APIVersion field. It is necessary to track the version of a field
-
-            set because it cannot be automatically converted.'
-        time:
-          $ref: '#/components/schemas/v1Time'
-        fieldsType:
-          type: string
-          title: 'FieldsType is the discriminator for the different fields format and version.
-
-            There is currently only one possible value: "FieldsV1"'
-        fieldsV1:
-          $ref: '#/components/schemas/v1FieldsV1'
-        subresource:
-          type: string
-          description: 'Subresource is the name of the subresource used to update that object, or
-
-            empty string if the object was updated through the main resource. The
-
-            value of this field is used to distinguish between managers, even if they
-
-            share the same name. For example, a status update will be distinct from a
-
-            regular update using the same manager name.
-
-            Note that the APIVersion field is not related to the Subresource field and
-
-            it always corresponds to the version of the main resource.'
-      description: 'ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
-
-        that the fieldset applies to.'
-    applicationsKustomizeReplicas:
-      type: object
-      properties:
-        count:
-          type: string
-          title: Number of replicas
-        name:
-          type: string
-          title: Name of Deployment or StatefulSet
   requestBodies:
     servicev1ApplicationQuery:
       content:

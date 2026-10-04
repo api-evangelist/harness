@@ -78,26 +78,56 @@ paths:
       description: Deletes the requested favorite at account level.
       x-internal: true
 components:
-  schemas:
+  responses:
     FavoriteResponse:
-      type: object
-      x-examples:
-        example-1:
-          FavoriteDTO:
-            user_id: example_userId
-            org: sample_organization
-            project: sample_project
-            resource_type: Example_resourceType
-            resource_id: This is a example resource
-          created: 1234567890
-      title: FavoriteResponse
-      properties:
-        Favorite:
-          $ref: '#/components/schemas/FavoriteDTO'
-        created:
-          type: integer
-          format: int64
-          description: Creation timestamp for favorite.
+      description: Favorite response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FavoriteResponse'
+          examples:
+            example-Favorite-response-json:
+              value:
+                Favorite:
+                  org: sample_organization
+                  project: sample_project
+                  user_id: example_userId
+                  resource_type: Example_resourceType
+                  resource_id: Example_resourceId
+                created: 1234567890
+    FavoriteListResponse:
+      description: Favorite list response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/FavoriteResponse'
+          examples:
+            example-Favorite-list-response-json:
+              value:
+              - Favorite:
+                  account: sample_account
+                  org: sample_organization
+                  project: sample_project
+                  user_id: example_userId
+                  resource_type: Example_resourceType
+                  resource_id: Example_resourceId
+                created: 1234567890
+      headers:
+        X-Total-Elements:
+          schema:
+            type: integer
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: integer
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: integer
+          description: Maximum page size in Paginated response.
+  schemas:
     FavoritesResourceType:
       type: string
       enum:
@@ -152,6 +182,25 @@ components:
           pattern: ^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$
           minLength: 1
           maxLength: 256
+    FavoriteResponse:
+      type: object
+      x-examples:
+        example-1:
+          FavoriteDTO:
+            user_id: example_userId
+            org: sample_organization
+            project: sample_project
+            resource_type: Example_resourceType
+            resource_id: This is a example resource
+          created: 1234567890
+      title: FavoriteResponse
+      properties:
+        Favorite:
+          $ref: '#/components/schemas/FavoriteDTO'
+        created:
+          type: integer
+          format: int64
+          description: Creation timestamp for favorite.
     ModuleType:
       type: string
       description: Type of Modules
@@ -173,14 +222,29 @@ components:
       - SEI
       - CODE
       - HAR
+  requestBodies:
+    FavoriteRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FavoriteDTO'
+          examples:
+            ProjectFavConnector:
+              value:
+                org: org_id
+                project: project_id
+                user_id: user_id
+                module: CD
+                resource_type: CONNECTOR
+                resource_id: resource_id
   parameters:
-    UserIdPathParam:
-      name: user-id
-      in: path
-      required: true
+    ResourceId:
+      name: resource_id
+      in: query
+      required: false
       schema:
         type: string
-      description: This would be used to fetch the Favorites of the user.
+      description: This would be used to do operations on the favorite entity.
     AccountHeader:
       name: Harness-Account
       in: header
@@ -201,77 +265,13 @@ components:
         - SECRET
         - PROJECT
       description: Determines the type of favorite entity requested.
-    ResourceId:
-      name: resource_id
-      in: query
-      required: false
+    UserIdPathParam:
+      name: user-id
+      in: path
+      required: true
       schema:
         type: string
-      description: This would be used to do operations on the favorite entity.
-  responses:
-    FavoriteResponse:
-      description: Favorite response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/FavoriteResponse'
-          examples:
-            example-Favorite-response-json:
-              value:
-                Favorite:
-                  org: sample_organization
-                  project: sample_project
-                  user_id: example_userId
-                  resource_type: Example_resourceType
-                  resource_id: Example_resourceId
-                created: 1234567890
-    FavoriteListResponse:
-      description: Favorite list response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/FavoriteResponse'
-          examples:
-            example-Favorite-list-response-json:
-              value:
-              - Favorite:
-                  account: sample_account
-                  org: sample_organization
-                  project: sample_project
-                  user_id: example_userId
-                  resource_type: Example_resourceType
-                  resource_id: Example_resourceId
-                created: 1234567890
-      headers:
-        X-Total-Elements:
-          schema:
-            type: integer
-          description: Total number of elements returned in Paginated response.
-        X-Page-Number:
-          schema:
-            type: integer
-          description: Page number in Paginated response.
-        X-Page-Size:
-          schema:
-            type: integer
-          description: Maximum page size in Paginated response.
-  requestBodies:
-    FavoriteRequest:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/FavoriteDTO'
-          examples:
-            ProjectFavConnector:
-              value:
-                org: org_id
-                project: project_id
-                user_id: user_id
-                module: CD
-                resource_type: CONNECTOR
-                resource_id: resource_id
+      description: This would be used to fetch the Favorites of the user.
   securitySchemes:
     x-api-key:
       name: x-api-key

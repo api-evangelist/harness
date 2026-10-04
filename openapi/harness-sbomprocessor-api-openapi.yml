@@ -101,32 +101,60 @@ components:
         artifact_id:
           type: string
           description: Id of created artifact
-    SbomProcess:
-      title: SbomProcess
+    EnforceSbomResponseBody:
+      title: SbomEnforceResponseBody
       x-stoplight:
-        id: y71a32xrlv7u5
+        id: g9c6fh5bqtzm3
       type: object
       properties:
-        name:
+        enforcement_id:
           type: string
-          description: name of the sbom
-          example: SBOM_Name
-        data:
+          description: ID of the enforcement of the SBOM
+        status:
           type: string
-          format: byte
-          description: serialised sbom data
-        format:
-          type: string
-          description: format of the SBOM
-          example: spdx-json
+          description: Status of the enforcement
+        response:
+          $ref: '#/components/schemas/PluginResponseBody'
+    SbomProcessRequestBody:
+      title: SbomProcessRequestBody
+      x-stoplight:
+        id: 5ang2l7dsv4pw
+      type: object
+      properties:
+        artifact:
+          $ref: '#/components/schemas/Artifact1'
+        sbom_process:
+          $ref: '#/components/schemas/SbomProcess'
+        attestation:
+          $ref: '#/components/schemas/Attestation'
+        sbom_metadata:
+          $ref: '#/components/schemas/SbomMetadata'
+    RepositoryPlatform:
+      type: string
+      title: RepositoryPlatform
+      x-stoplight:
+        id: prybalroyw6dc
+      enum:
+      - HARNESS
+      - GITHUB
+      - BITBUCKET
+      - GITLAB
+      - GIT
+      - AZURE
+    Attestation:
+      title: Attestation
+      x-stoplight:
+        id: rzr5mk8z847jg
+      type: object
+      properties:
+        is_attested:
+          type: boolean
+          default: false
+          description: is the sbom attested or not
         url:
           type: string
-          description: URL of the sbom
-          example: https://console.google.com/storage
-      required:
-      - name
-      - data
-      - format
+          description: url of the attested file
+          example: https://storage.googleapis.com/sbom_store_public/kmpySmUISimoRrJL6NL73w/default/SSCS_CI_Plugin_Demo/CKO_SSCA_Pipeline/Build/39/q940CvjoQj-GEInJQfWiwg/sbom
     EnforceSbomRequestBody:
       title: SbomEnforceRequestBody
       x-stoplight:
@@ -181,27 +209,93 @@ components:
           x-stoplight:
             id: nnft7ewvsw4k2
           description: Stage type of the step
-    ArtifactVariant:
-      title: ArtifactVariant
-      x-stoplight:
-        id: uyb3jwhgs9wjh
+    PluginResponseBody:
+      title: PluginResponseBody
       type: object
+      required:
+      - source_id
+      - artifact
+      - response_url
       properties:
+        source_id:
+          type: string
+          x-stoplight:
+            id: itkxv1ghux6aa
+        artifact:
+          type: object
+          x-stoplight:
+            id: ysaq85xiuzjsw
+          properties:
+            id:
+              type: string
+              x-stoplight:
+                id: sgyd78hu7w5gl
+            name:
+              type: string
+              x-stoplight:
+                id: khrj2i162jh3x
+            url:
+              type: string
+              x-stoplight:
+                id: zgc35mjt90crt
+        response_url:
+          type: string
+          x-stoplight:
+            id: uadidz06nvmyn
+    Artifact1:
+      title: Artifact
+      x-go-name: ArtifactListItem
+      x-stoplight:
+        id: 13qkvpww6x2ku
+      type: object
+      x-examples: {}
+      required:
+      - type
+      - name
+      - registry_url
+      properties:
+        id:
+          type: string
+          description: id of the artifact
+          example: 089855ea-f90e-4bea-a5c9-b5ddf85d3180
         type:
           type: string
-          x-stoplight:
-            id: 2r8lmxejmwqbf
+          description: type of the artifact
           enum:
-          - tag
-          - branch
-          - gitTag
-          - commit
-          description: type of the variant of the artifact.
-        value:
+          - image
+          - repository
+          default: image
+          example: image
+        name:
+          type: string
+          description: name of the artifact
+          example: harness/image
+        tag:
+          type: string
+          description: tag of the artifact
+          default: latest
+          example: latest
+        registry_url:
+          type: string
+          description: url of the artifact
+          example: https://console.cloud.google.com/gcr/images/imageName
+        url:
           type: string
           x-stoplight:
-            id: hd1p3s7bugn88
-          description: Value of the variant of the artifact.
+            id: 2gcc89tfmislv
+        variant:
+          $ref: '#/components/schemas/ArtifactVariant'
+        digest:
+          type: string
+          description: digest of the artifact
+          example: sha256:1234567890
+        metadata:
+          type: object
+          additionalProperties: true
+          x-stoplight:
+            id: bcmiu856m2sf8
+        repository_platform:
+          $ref: '#/components/schemas/RepositoryPlatform'
     SbomMetadata:
       title: SbomMetadata
       x-stoplight:
@@ -268,155 +362,65 @@ components:
           type: string
           x-stoplight:
             id: 9t8qu0gsrou0z
-    SbomProcessRequestBody:
-      title: SbomProcessRequestBody
+    ArtifactVariant:
+      title: ArtifactVariant
       x-stoplight:
-        id: 5ang2l7dsv4pw
+        id: uyb3jwhgs9wjh
       type: object
       properties:
-        artifact:
-          $ref: '#/components/schemas/Artifact1'
-        sbom_process:
-          $ref: '#/components/schemas/SbomProcess'
-        attestation:
-          $ref: '#/components/schemas/Attestation'
-        sbom_metadata:
-          $ref: '#/components/schemas/SbomMetadata'
-    EnforceSbomResponseBody:
-      title: SbomEnforceResponseBody
-      x-stoplight:
-        id: g9c6fh5bqtzm3
-      type: object
-      properties:
-        enforcement_id:
-          type: string
-          description: ID of the enforcement of the SBOM
-        status:
-          type: string
-          description: Status of the enforcement
-        response:
-          $ref: '#/components/schemas/PluginResponseBody'
-    PluginResponseBody:
-      title: PluginResponseBody
-      type: object
-      required:
-      - source_id
-      - artifact
-      - response_url
-      properties:
-        source_id:
-          type: string
-          x-stoplight:
-            id: itkxv1ghux6aa
-        artifact:
-          type: object
-          x-stoplight:
-            id: ysaq85xiuzjsw
-          properties:
-            id:
-              type: string
-              x-stoplight:
-                id: sgyd78hu7w5gl
-            name:
-              type: string
-              x-stoplight:
-                id: khrj2i162jh3x
-            url:
-              type: string
-              x-stoplight:
-                id: zgc35mjt90crt
-        response_url:
-          type: string
-          x-stoplight:
-            id: uadidz06nvmyn
-    RepositoryPlatform:
-      type: string
-      title: RepositoryPlatform
-      x-stoplight:
-        id: prybalroyw6dc
-      enum:
-      - HARNESS
-      - GITHUB
-      - BITBUCKET
-      - GITLAB
-      - GIT
-      - AZURE
-    Artifact1:
-      title: Artifact
-      x-go-name: ArtifactListItem
-      x-stoplight:
-        id: 13qkvpww6x2ku
-      type: object
-      x-examples: {}
-      required:
-      - type
-      - name
-      - registry_url
-      properties:
-        id:
-          type: string
-          description: id of the artifact
-          example: 089855ea-f90e-4bea-a5c9-b5ddf85d3180
         type:
           type: string
-          description: type of the artifact
+          x-stoplight:
+            id: 2r8lmxejmwqbf
           enum:
-          - image
-          - repository
-          default: image
-          example: image
-        name:
-          type: string
-          description: name of the artifact
-          example: harness/image
-        tag:
-          type: string
-          description: tag of the artifact
-          default: latest
-          example: latest
-        registry_url:
-          type: string
-          description: url of the artifact
-          example: https://console.cloud.google.com/gcr/images/imageName
-        url:
+          - tag
+          - branch
+          - gitTag
+          - commit
+          description: type of the variant of the artifact.
+        value:
           type: string
           x-stoplight:
-            id: 2gcc89tfmislv
-        variant:
-          $ref: '#/components/schemas/ArtifactVariant'
-        digest:
-          type: string
-          description: digest of the artifact
-          example: sha256:1234567890
-        metadata:
-          type: object
-          additionalProperties: true
-          x-stoplight:
-            id: bcmiu856m2sf8
-        repository_platform:
-          $ref: '#/components/schemas/RepositoryPlatform'
-    Attestation:
-      title: Attestation
+            id: hd1p3s7bugn88
+          description: Value of the variant of the artifact.
+    SbomProcess:
+      title: SbomProcess
       x-stoplight:
-        id: rzr5mk8z847jg
+        id: y71a32xrlv7u5
       type: object
       properties:
-        is_attested:
-          type: boolean
-          default: false
-          description: is the sbom attested or not
+        name:
+          type: string
+          description: name of the sbom
+          example: SBOM_Name
+        data:
+          type: string
+          format: byte
+          description: serialised sbom data
+        format:
+          type: string
+          description: format of the SBOM
+          example: spdx-json
         url:
           type: string
-          description: url of the attested file
-          example: https://storage.googleapis.com/sbom_store_public/kmpySmUISimoRrJL6NL73w/default/SSCS_CI_Plugin_Demo/CKO_SSCA_Pipeline/Build/39/q940CvjoQj-GEInJQfWiwg/sbom
+          description: URL of the sbom
+          example: https://console.google.com/storage
+      required:
+      - name
+      - data
+      - format
+  requestBodies:
+    EnforceSbomRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnforceSbomRequestBody'
+    SbomProcessRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SbomProcessRequestBody'
   parameters:
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
     ProjectParam1:
       in: path
       required: true
@@ -431,6 +435,13 @@ components:
       schema:
         type: string
       description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
   responses:
     EnforceSbomResponseBody:
       description: Example response
@@ -444,17 +455,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SbomProcessResponseBody'
-  requestBodies:
-    SbomProcessRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SbomProcessRequestBody'
-    EnforceSbomRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/EnforceSbomRequestBody'
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -116,166 +116,7 @@ paths:
       security:
       - x-api-key: []
 components:
-  parameters:
-    AccountHeader6:
-      name: Harness-Account
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
-    ProjectParam1:
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness project ID
-      name: project
-    OrchestrationId:
-      name: orchestration
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness Pipeline Execution ID
-    DigestParam:
-      name: digest
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Attestation digest (gitoidSha256 or payload digest)
-    OrgParam1:
-      name: org
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Harness organization ID
   schemas:
-    ExecutionDetail:
-      type: object
-      required:
-      - type
-      properties:
-        type:
-          $ref: '#/components/schemas/ExecutionType'
-        github:
-          $ref: '#/components/schemas/GithubExecutionDetail'
-        harness:
-          $ref: '#/components/schemas/HarnessExecutionDetail'
-    HarnessExecutionDetail:
-      title: HarnessExecutionDetail
-      x-stoplight:
-        id: 26kpn09zundb0
-      type: object
-      properties:
-        org:
-          type: string
-          x-stoplight:
-            id: zf78rh1u21y55
-        project:
-          type: string
-          x-stoplight:
-            id: lghyhop0hsg0f
-        pipeline_execution_id:
-          type: string
-          x-stoplight:
-            id: svsw1myd4slwa
-        pipeline_id:
-          type: string
-          x-stoplight:
-            id: 6ms1cohmjf8rv
-        pipeline_name:
-          type: string
-          x-stoplight:
-            id: qecka5f2dfvxx
-        sequence_id:
-          type: string
-          x-stoplight:
-            id: tvb3c7trq28pt
-        step_id:
-          type: string
-          x-stoplight:
-            id: bj8ul3cpt9061
-        step_execution_id:
-          type: string
-          x-stoplight:
-            id: eyon9kxjzpuu5
-        step_name:
-          type: string
-          x-stoplight:
-            id: li446ik3qfg8l
-        stage_id:
-          type: string
-          x-stoplight:
-            id: uk4e6msb1annk
-        stage_execution_id:
-          type: string
-          x-stoplight:
-            id: ltrcdcpqky4rv
-        stage_name:
-          type: string
-          x-stoplight:
-            id: n27q5wlhtrd65
-        stage_type:
-          type: string
-          x-stoplight:
-            id: 22ha61i5fiwzc
-          description: Stage type in which the step executed
-        runner_detail:
-          $ref: '#/components/schemas/HarnessRunner'
-      description: Harness Pipeline Execution Details
-    ExecutionType:
-      type: string
-      enum:
-      - harness
-      - github
-    GithubExecutionDetail:
-      title: GithubExecutionDetail
-      x-stoplight:
-        id: nfcbibnr1z2rw
-      type: object
-      properties:
-        repository:
-          type: string
-          x-stoplight:
-            id: sac861lasuewn
-        github_action:
-          type: string
-          x-stoplight:
-            id: l8azkn1th708h
-        action_path:
-          type: string
-          x-stoplight:
-            id: twcllxr8bibkc
-        job_id:
-          type: string
-          x-stoplight:
-            id: gxvhjwmosdutz
-        run_id:
-          type: string
-          x-stoplight:
-            id: cunrcn7ohnpy2
-        workflow_ref:
-          type: string
-          x-stoplight:
-            id: gnclwe27klokp
-        runner_detail:
-          $ref: '#/components/schemas/GithubRunner'
-      description: Github Pipeline Execution Details
-    AttestationLinks:
-      title: AttestationLinks
-      type: object
-      properties:
-        download:
-          type: string
-          example: /orgs/SSCA/projects/SSCA_Sanity/attestations/300cd77...
-          description: Download URL for this attestation
-        graph:
-          type: string
-          example: /orgs/SSCA/projects/SSCA_Sanity/attestations/graph?artifactId=68f09...
-          description: Graph query URL for related attestations
     RepositoryPlatform:
       type: string
       title: RepositoryPlatform
@@ -288,6 +129,51 @@ components:
       - GITLAB
       - GIT
       - AZURE
+    DSSESignature:
+      title: DSSESignature
+      type: object
+      properties:
+        keyid:
+          type: string
+          example: harness-ci-signer
+          description: Identifier of the signing key
+        sig:
+          type: string
+          example: MEUCIQ...
+          description: Base64-encoded signature
+    AttestationUploadRequest:
+      title: AttestationUploadRequest
+      type: object
+      required:
+      - envelope
+      - artifact
+      properties:
+        envelope:
+          $ref: '#/components/schemas/DSSEEnvelope'
+        artifact:
+          $ref: '#/components/schemas/Artifact1'
+        executionContext:
+          $ref: '#/components/schemas/ExecutionDetail'
+    GraphQLError:
+      title: GraphQLError
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        locations:
+          type: array
+          items:
+            type: object
+            properties:
+              line:
+                type: integer
+              column:
+                type: integer
+        path:
+          type: array
+          items:
+            type: string
     Artifact1:
       title: Artifact
       x-go-name: ArtifactListItem
@@ -342,168 +228,50 @@ components:
             id: bcmiu856m2sf8
         repository_platform:
           $ref: '#/components/schemas/RepositoryPlatform'
-    AttestationUploadRequest:
-      title: AttestationUploadRequest
-      type: object
-      required:
-      - envelope
-      - artifact
-      properties:
-        envelope:
-          $ref: '#/components/schemas/DSSEEnvelope'
-        artifact:
-          $ref: '#/components/schemas/Artifact1'
-        executionContext:
-          $ref: '#/components/schemas/ExecutionDetail'
-    DSSEEnvelope:
-      title: DSSEEnvelope
-      type: object
-      required:
-      - payloadType
-      - payload
-      properties:
-        payloadType:
-          type: string
-          example: application/vnd.in-toto+json
-          description: MIME type of the payload
-        payload:
-          type: string
-          description: base64-encoded JSON payload (in-toto Statement)
-          example: eyJfdHlwZSI6ICJod...
-        signatures:
-          type: array
-          items:
-            $ref: '#/components/schemas/DSSESignature'
-        metadata:
-          type: object
-          additionalProperties: true
-          description: optional metadata such as source / ingestedBy / timestamp
-    GithubRunner:
-      title: GithubRunner
+    GithubExecutionDetail:
+      title: GithubExecutionDetail
       x-stoplight:
-        id: 32axq2gn4gemv
+        id: nfcbibnr1z2rw
       type: object
       properties:
-        name:
+        repository:
           type: string
           x-stoplight:
-            id: x0aeloqpvaybd
-        account_id:
+            id: sac861lasuewn
+        github_action:
           type: string
           x-stoplight:
-            id: aod8pc43fmjbt
-    ArtifactVariant:
-      title: ArtifactVariant
-      x-stoplight:
-        id: uyb3jwhgs9wjh
+            id: l8azkn1th708h
+        action_path:
+          type: string
+          x-stoplight:
+            id: twcllxr8bibkc
+        job_id:
+          type: string
+          x-stoplight:
+            id: gxvhjwmosdutz
+        run_id:
+          type: string
+          x-stoplight:
+            id: cunrcn7ohnpy2
+        workflow_ref:
+          type: string
+          x-stoplight:
+            id: gnclwe27klokp
+        runner_detail:
+          $ref: '#/components/schemas/GithubRunner'
+      description: Github Pipeline Execution Details
+    ExecutionDetail:
       type: object
+      required:
+      - type
       properties:
         type:
-          type: string
-          x-stoplight:
-            id: 2r8lmxejmwqbf
-          enum:
-          - tag
-          - branch
-          - gitTag
-          - commit
-          description: type of the variant of the artifact.
-        value:
-          type: string
-          x-stoplight:
-            id: hd1p3s7bugn88
-          description: Value of the variant of the artifact.
-    HarnessRunner:
-      title: HarnessRunner
-      x-stoplight:
-        id: vfsaqcya7qwfx
-      type: object
-      properties:
-        trigger_type:
-          type: string
-          x-stoplight:
-            id: rzkmd5bqoc9r9
-        trigger_by_id:
-          type: string
-          x-stoplight:
-            id: b36ytjxzv2yq6
-        trigger_by_name:
-          type: string
-          x-stoplight:
-            id: a7g4t02vts8gf
-    AttestationUploadResponseBody:
-      title: AttestationUploadResponseBody
-      type: object
-      properties:
-        gitoidSha256:
-          type: string
-          example: 300cd77db87c312b00b2e712d82a7581b20972e6a49e0ed11f4cdd1e2be942a0
-          description: GitOID SHA256 digest of the attestation
-        status:
-          type: string
-          example: ingested
-          description: Ingestion status
-        verified:
-          type: boolean
-          example: true
-          description: Whether the signature was verified
-        indexed:
-          type: boolean
-          example: false
-          description: Whether the attestation has been indexed
-        artifactId:
-          type: string
-          description: Associated artifact identifier
-        orchestrationId:
-          type: string
-          description: Orchestration identifier for this attestation
-        links:
-          $ref: '#/components/schemas/AttestationLinks'
-    GraphQLError:
-      title: GraphQLError
-      type: object
-      properties:
-        message:
-          type: string
-          description: Error message
-        locations:
-          type: array
-          items:
-            type: object
-            properties:
-              line:
-                type: integer
-              column:
-                type: integer
-        path:
-          type: array
-          items:
-            type: string
-    GraphQLResponse:
-      title: GraphQLResponse
-      type: object
-      properties:
-        data:
-          type: object
-          additionalProperties: true
-          description: GraphQL response data
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/GraphQLError'
-          description: GraphQL errors if any
-    DSSESignature:
-      title: DSSESignature
-      type: object
-      properties:
-        keyid:
-          type: string
-          example: harness-ci-signer
-          description: Identifier of the signing key
-        sig:
-          type: string
-          example: MEUCIQ...
-          description: Base64-encoded signature
+          $ref: '#/components/schemas/ExecutionType'
+        github:
+          $ref: '#/components/schemas/GithubExecutionDetail'
+        harness:
+          $ref: '#/components/schemas/HarnessExecutionDetail'
     GraphQLRequest:
       title: GraphQLRequest
       type: object
@@ -576,36 +344,268 @@ components:
             not:
               type: object
               description: Logical NOT filter condition
+    AttestationUploadResponseBody:
+      title: AttestationUploadResponseBody
+      type: object
+      properties:
+        gitoidSha256:
+          type: string
+          example: 300cd77db87c312b00b2e712d82a7581b20972e6a49e0ed11f4cdd1e2be942a0
+          description: GitOID SHA256 digest of the attestation
+        status:
+          type: string
+          example: ingested
+          description: Ingestion status
+        verified:
+          type: boolean
+          example: true
+          description: Whether the signature was verified
+        indexed:
+          type: boolean
+          example: false
+          description: Whether the attestation has been indexed
+        artifactId:
+          type: string
+          description: Associated artifact identifier
+        orchestrationId:
+          type: string
+          description: Orchestration identifier for this attestation
+        links:
+          $ref: '#/components/schemas/AttestationLinks'
+    ExecutionType:
+      type: string
+      enum:
+      - harness
+      - github
+    AttestationLinks:
+      title: AttestationLinks
+      type: object
+      properties:
+        download:
+          type: string
+          example: /orgs/SSCA/projects/SSCA_Sanity/attestations/300cd77...
+          description: Download URL for this attestation
+        graph:
+          type: string
+          example: /orgs/SSCA/projects/SSCA_Sanity/attestations/graph?artifactId=68f09...
+          description: Graph query URL for related attestations
+    DSSEEnvelope:
+      title: DSSEEnvelope
+      type: object
+      required:
+      - payloadType
+      - payload
+      properties:
+        payloadType:
+          type: string
+          example: application/vnd.in-toto+json
+          description: MIME type of the payload
+        payload:
+          type: string
+          description: base64-encoded JSON payload (in-toto Statement)
+          example: eyJfdHlwZSI6ICJod...
+        signatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/DSSESignature'
+        metadata:
+          type: object
+          additionalProperties: true
+          description: optional metadata such as source / ingestedBy / timestamp
+    GithubRunner:
+      title: GithubRunner
+      x-stoplight:
+        id: 32axq2gn4gemv
+      type: object
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: x0aeloqpvaybd
+        account_id:
+          type: string
+          x-stoplight:
+            id: aod8pc43fmjbt
+    GraphQLResponse:
+      title: GraphQLResponse
+      type: object
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+          description: GraphQL response data
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphQLError'
+          description: GraphQL errors if any
+    HarnessExecutionDetail:
+      title: HarnessExecutionDetail
+      x-stoplight:
+        id: 26kpn09zundb0
+      type: object
+      properties:
+        org:
+          type: string
+          x-stoplight:
+            id: zf78rh1u21y55
+        project:
+          type: string
+          x-stoplight:
+            id: lghyhop0hsg0f
+        pipeline_execution_id:
+          type: string
+          x-stoplight:
+            id: svsw1myd4slwa
+        pipeline_id:
+          type: string
+          x-stoplight:
+            id: 6ms1cohmjf8rv
+        pipeline_name:
+          type: string
+          x-stoplight:
+            id: qecka5f2dfvxx
+        sequence_id:
+          type: string
+          x-stoplight:
+            id: tvb3c7trq28pt
+        step_id:
+          type: string
+          x-stoplight:
+            id: bj8ul3cpt9061
+        step_execution_id:
+          type: string
+          x-stoplight:
+            id: eyon9kxjzpuu5
+        step_name:
+          type: string
+          x-stoplight:
+            id: li446ik3qfg8l
+        stage_id:
+          type: string
+          x-stoplight:
+            id: uk4e6msb1annk
+        stage_execution_id:
+          type: string
+          x-stoplight:
+            id: ltrcdcpqky4rv
+        stage_name:
+          type: string
+          x-stoplight:
+            id: n27q5wlhtrd65
+        stage_type:
+          type: string
+          x-stoplight:
+            id: 22ha61i5fiwzc
+          description: Stage type in which the step executed
+        runner_detail:
+          $ref: '#/components/schemas/HarnessRunner'
+      description: Harness Pipeline Execution Details
+    ArtifactVariant:
+      title: ArtifactVariant
+      x-stoplight:
+        id: uyb3jwhgs9wjh
+      type: object
+      properties:
+        type:
+          type: string
+          x-stoplight:
+            id: 2r8lmxejmwqbf
+          enum:
+          - tag
+          - branch
+          - gitTag
+          - commit
+          description: type of the variant of the artifact.
+        value:
+          type: string
+          x-stoplight:
+            id: hd1p3s7bugn88
+          description: Value of the variant of the artifact.
+    HarnessRunner:
+      title: HarnessRunner
+      x-stoplight:
+        id: vfsaqcya7qwfx
+      type: object
+      properties:
+        trigger_type:
+          type: string
+          x-stoplight:
+            id: rzkmd5bqoc9r9
+        trigger_by_id:
+          type: string
+          x-stoplight:
+            id: b36ytjxzv2yq6
+        trigger_by_name:
+          type: string
+          x-stoplight:
+            id: a7g4t02vts8gf
+  requestBodies:
+    AttestationUploadRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AttestationUploadRequest'
+    AttestationQueryRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GraphQLRequest'
   responses:
-    AttestationQueryResponse:
-      description: GraphQL query response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GraphQLResponse'
-    AttestationDownloadResponse:
-      description: DSSE envelope download response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DSSEEnvelope'
     AttestationUploadResponse:
       description: Attestation upload success response
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AttestationUploadResponseBody'
-  requestBodies:
-    AttestationQueryRequestBody:
+    AttestationDownloadResponse:
+      description: DSSE envelope download response
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GraphQLRequest'
-    AttestationUploadRequestBody:
+            $ref: '#/components/schemas/DSSEEnvelope'
+    AttestationQueryResponse:
+      description: GraphQL query response
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/AttestationUploadRequest'
+            $ref: '#/components/schemas/GraphQLResponse'
+  parameters:
+    OrchestrationId:
+      name: orchestration
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness Pipeline Execution ID
+    ProjectParam1:
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness project ID
+      name: project
+    AccountHeader6:
+      name: Harness-Account
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifier field of the account the resource is scoped to. This is required for Authorization methods other than the x-api-key header. If you are using the x-api-key header, this can be skipped.
+    OrgParam1:
+      name: org
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Harness organization ID
+    DigestParam:
+      name: digest
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Attestation digest (gitoidSha256 or payload digest)
   securitySchemes:
     x-api-key:
       name: x-api-key

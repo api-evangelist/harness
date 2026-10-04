@@ -333,6 +333,19 @@ paths:
                 $ref: '#/components/schemas/ResponseDTOAnomaliesWhitelistRule'
 components:
   schemas:
+    AnomaliesWhitelistRuleSpecDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - AWS
+          - AZURE
+          - GCP
+          - CLUSTER
+      description: Cloud specific whitelist rule configuration
+      discriminator:
+        propertyName: type
     RuleExecutionFilter:
       type: object
       properties:
@@ -459,6 +472,34 @@ components:
           items:
             $ref: '#/components/schemas/CCMCostCategoryCostBucketsDTO'
       description: This has the query to list the RuleExecution
+    ResponseDTOListString:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: array
+          items:
+            type: string
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    EmbeddedUser:
+      type: object
+      properties:
+        uuid:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        externalUserId:
+          type: string
     ResponseDTOAnomaliesWhitelistRule:
       type: object
       properties:
@@ -470,6 +511,66 @@ components:
           - ERROR
         data:
           $ref: '#/components/schemas/AnomaliesWhitelistRule'
+        metaData:
+          type: object
+        correlationId:
+          type: string
+    AnomaliesWhitelistRule:
+      required:
+      - name
+      - type
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: Unique id
+        accountId:
+          type: string
+          description: Harness account id
+        name:
+          type: string
+          description: Name
+        type:
+          type: string
+          description: Cloud provider type
+          enum:
+          - AWS
+          - AZURE
+          - GCP
+          - CLUSTER
+        ruleSpec:
+          $ref: '#/components/schemas/AnomaliesWhitelistRuleSpecDTO'
+        whitelistedAnomalyCount:
+          type: integer
+          description: Number of whitelisted anomalies
+          format: int64
+        enabled:
+          type: boolean
+          description: Enabled
+        createdAt:
+          type: integer
+          description: Time at which the entity was created
+          format: int64
+        lastUpdatedAt:
+          type: integer
+          description: Time at which the entity was last updated
+          format: int64
+        createdBy:
+          $ref: '#/components/schemas/EmbeddedUser'
+        lastUpdatedBy:
+          $ref: '#/components/schemas/EmbeddedUser'
+      description: This object contains the complete definition of Anomalies Whitelist Rule
+    ResponseDTOBoolean:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: boolean
         metaData:
           type: object
         correlationId:
@@ -1064,83 +1165,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    ResponseDTOBoolean:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: boolean
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    AnomaliesWhitelistRule:
-      required:
-      - name
-      - type
-      type: object
-      properties:
-        uuid:
-          type: string
-          description: Unique id
-        accountId:
-          type: string
-          description: Harness account id
-        name:
-          type: string
-          description: Name
-        type:
-          type: string
-          description: Cloud provider type
-          enum:
-          - AWS
-          - AZURE
-          - GCP
-          - CLUSTER
-        ruleSpec:
-          $ref: '#/components/schemas/AnomaliesWhitelistRuleSpecDTO'
-        whitelistedAnomalyCount:
-          type: integer
-          description: Number of whitelisted anomalies
-          format: int64
-        enabled:
-          type: boolean
-          description: Enabled
-        createdAt:
-          type: integer
-          description: Time at which the entity was created
-          format: int64
-        lastUpdatedAt:
-          type: integer
-          description: Time at which the entity was last updated
-          format: int64
-        createdBy:
-          $ref: '#/components/schemas/EmbeddedUser'
-        lastUpdatedBy:
-          $ref: '#/components/schemas/EmbeddedUser'
-      description: This object contains the complete definition of Anomalies Whitelist Rule
-    ResponseDTOListAnomaliesWhitelistRule:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/AnomaliesWhitelistRule'
-        metaData:
-          type: object
-        correlationId:
-          type: string
     CcmErrorMetadata:
       type: object
       properties:
@@ -1149,6 +1173,54 @@ components:
       description: This implements different error meta data objects
       discriminator:
         propertyName: type
+    ValidationError:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        error:
+          type: string
+    CCMCostCategoryCostBucketsDTO:
+      type: object
+      properties:
+        costCategory:
+          type: string
+        costBucket:
+          type: array
+          items:
+            type: string
+      description: This object will contain cost category and it's bucket value
+    CCMTagDTO:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+      description: This object will contain tag key and value
+    CCMTimeFilter:
+      type: object
+      properties:
+        operator:
+          type: string
+          description: List of all possible Operators
+          enum:
+          - NOT_IN
+          - IN
+          - EQUALS
+          - NOT_NULL
+          - 'NULL'
+          - LIKE
+          - GREATER_THAN
+          - LESS_THAN
+          - GREATER_THAN_EQUALS_TO
+          - LESS_THAN_EQUALS_TO
+          - AFTER
+          - BEFORE
+        timestamp:
+          type: integer
+          format: int64
+      description: Time
     Failure:
       type: object
       properties:
@@ -1568,6 +1640,23 @@ components:
           items:
             $ref: '#/components/schemas/ValidationError'
       description: This is Failure entity as defied in Harness
+    ResponseDTOListAnomaliesWhitelistRule:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - FAILURE
+          - ERROR
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnomaliesWhitelistRule'
+        metaData:
+          type: object
+        correlationId:
+          type: string
     CcmError:
       type: object
       properties:
@@ -1991,95 +2080,6 @@ components:
         metadata:
           $ref: '#/components/schemas/CcmErrorMetadata'
       description: This is Error entity as defined in Harness
-    CCMTagDTO:
-      type: object
-      properties:
-        key:
-          type: string
-        value:
-          type: string
-      description: This object will contain tag key and value
-    CCMTimeFilter:
-      type: object
-      properties:
-        operator:
-          type: string
-          description: List of all possible Operators
-          enum:
-          - NOT_IN
-          - IN
-          - EQUALS
-          - NOT_NULL
-          - 'NULL'
-          - LIKE
-          - GREATER_THAN
-          - LESS_THAN
-          - GREATER_THAN_EQUALS_TO
-          - LESS_THAN_EQUALS_TO
-          - AFTER
-          - BEFORE
-        timestamp:
-          type: integer
-          format: int64
-      description: Time
-    CCMCostCategoryCostBucketsDTO:
-      type: object
-      properties:
-        costCategory:
-          type: string
-        costBucket:
-          type: array
-          items:
-            type: string
-      description: This object will contain cost category and it's bucket value
-    EmbeddedUser:
-      type: object
-      properties:
-        uuid:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        externalUserId:
-          type: string
-    ValidationError:
-      type: object
-      properties:
-        fieldId:
-          type: string
-        error:
-          type: string
-    ResponseDTOListString:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-          - SUCCESS
-          - FAILURE
-          - ERROR
-        data:
-          type: array
-          items:
-            type: string
-        metaData:
-          type: object
-        correlationId:
-          type: string
-    AnomaliesWhitelistRuleSpecDTO:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - AWS
-          - AZURE
-          - GCP
-          - CLUSTER
-      description: Cloud specific whitelist rule configuration
-      discriminator:
-        propertyName: type
   securitySchemes:
     x-api-key:
       name: x-api-key
