@@ -1,0 +1,869 @@
+openapi: 3.2.0
+info:
+  title: Harness Contributors API
+  version: '1.0'
+  description: The Harness Software Delivery Platform uses OpenAPI Specification v3.0.
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: https://harness.io/
+  x-logo:
+    url: https://mma.prnewswire.com/media/779232/Harnes_logo_horizontal.jpg?p=facebook
+    altText: Harness
+  termsOfService: https://harness.io/terms-of-use/
+servers:
+- url: https://app.harness.io
+  description: Harness host URL
+- url: https://{vanity}
+  description: Vanity URL
+  variables:
+    vanity:
+      default: app.harness.io
+security:
+- x-api-key: []
+tags:
+- name: Contributors
+  description: This contains APIs specific to the Contributors
+paths:
+  /v1/org/users/versions:
+    get:
+      tags:
+      - Contributors
+      summary: Retrieve the list of active versions
+      description: This API endpoint retrieves the list of active versions.
+      operationId: contributors#getActiveVersions
+      parameters:
+      - name: page_size
+        in: query
+        description: The number of records to return per page. Default is not specified.
+        required: false
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: The page number to retrieve. Default is 0 (the first page).
+        required: false
+        schema:
+          type: integer
+      x-codeSamples:
+      - lang: cURL
+        label: curl
+        source: "curl 'https://app.harness.io/gratis/sei/api/v1/org/users/versions?page_size=999' \\\n  -H 'accept: application/json, text/plain, */*' \\\n  -H 'Authorization: APIKEY <HARNESS_SEI_API_KEY>'\n"
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        version:
+                          type: string
+                  count:
+                    type: integer
+                  _metadata:
+                    type: object
+                    properties:
+                      page_size:
+                        type: integer
+                      page:
+                        type: integer
+                      has_next:
+                        type: boolean
+                      total_count:
+                        type: integer
+              example:
+                records:
+                - /* Array of 521 items */
+                count: 521
+                _metadata:
+                  page_size: 999
+                  page: 0
+                  has_next: false
+                  total_count: 521
+  /v1/org/users/schema:
+    get:
+      tags:
+      - Contributors
+      summary: Retrieve the Ccontributor data schema
+      description: This API endpoint retrieves the schema used by the contributors, including any custom fields.
+      operationId: contributors#getSchema
+      parameters: []
+      x-codeSamples:
+      - lang: cURL
+        label: curl
+        source: "curl 'https://app.harness.io/gratis/sei/api/v1/org/users/schema' \\\n  -H 'accept: application/json, text/plain, */*' \\\n  -H 'Authorization: APIKEY <HARNESS_SEI_API_KEY>' \\\n"
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: integer
+                  created_at:
+                    type: integer
+                  fields:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        index:
+                          type: integer
+                        key:
+                          type: string
+                        display_name:
+                          type: string
+                        description:
+                          type: string
+                        type:
+                          type: string
+                        system_field:
+                          type: boolean
+              example:
+                version: 190
+                created_at: 1710153327501
+                fields:
+                - index: 3
+                  key: integration
+                  display_name: Integration
+                  description: Add a column for every integration
+                  type: string
+                  system_field: false
+                - index: 1
+                  key: full_name
+                  display_name: Name
+                  description: Name
+                  type: string
+                  system_field: false
+                - index: 2
+                  key: region
+                  display_name: Region
+                  description: Region
+                  type: string
+                  system_field: false
+                - index: 2
+                  key: email
+                  display_name: Email
+                  description: Unique email address per member
+                  type: string
+                  system_field: false
+  /v1/org/users/list:
+    post:
+      tags:
+      - Contributors
+      summary: Retrieve the list of current active licensed contributors
+      description: This API endpoint retrieves the list of current active licensed contributors.
+      operationId: users#listActiveUsers
+      parameters:
+      - in: query
+        name: version
+        schema:
+          type: integer
+        required: false
+        description: The version of the schema to use for the list of contributors.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                page:
+                  type: integer
+                  description: The page number to retrieve.
+                  default: 0
+                page_size:
+                  type: integer
+                  description: The number of records to return per page.
+                  default: 50
+                filter:
+                  type: object
+                  description: Filter criteria for the list of contributors.
+                  properties: {}
+      x-codeSamples:
+      - lang: cURL
+        label: curl
+        source: "curl 'https://app.harness.io/gratis/sei/api/v1/org/users/list?page=0&page_size=50' \\\n  -X POST \\\n  -H 'accept: application/json, text/plain, */*' \\\n  -H 'Authorization: APIKEY <HARNESS_SEI_API_KEY>' \\\n  -H 'Content-type: application/json' \\\n  -d '{\n    \"page\": 0,\n    \"page_size\": 50,\n    \"filter\": {}\n  }'\n"
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        org_uuid:
+                          type: string
+                        full_name:
+                          type: string
+                        email:
+                          type: string
+                        integration_user_ids:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              integration_id:
+                                type: string
+                              user_id:
+                                type: string
+                        additional_fields:
+                          type: object
+                        version:
+                          type: string
+                        created_at:
+                          type: integer
+                        updated_at:
+                          type: integer
+                  _metadata:
+                    type: object
+                    properties:
+                      total_count:
+                        type: integer
+                      has_next:
+                        type: boolean
+                      page_size:
+                        type: integer
+                      next_page:
+                        type: integer
+                      page:
+                        type: integer
+                      non_users_count:
+                        type: integer
+              example:
+                records:
+                - id: '3'
+                  org_uuid: 6a113eba-3e65-4344-ab24-a935c602eb7f
+                  full_name: Ashish Duthade
+                  email: ashish@harness.io
+                  integration_user_ids: []
+                  additional_fields:
+                    region: test
+                  version: '512'
+                  created_at: 1710164128545
+                  updated_at: 1714968896813
+                - id: '0'
+                  full_name: External User766797748
+                  email: ''
+                  integration_user_ids:
+                  - integration_id: '5322'
+                    user_id: 712020:c41c2f65-682b-4c77-91df-6cd9de138c63
+                  additional_fields: {}
+                  version: '0'
+                  created_at: 1715126614000
+                  updated_at: 1715661535000
+                _metadata:
+                  total_count: 80715
+                  has_next: true
+                  page_size: 50
+                  next_page: 1
+                  page: 0
+                  non_users_count: 80710
+  /v1/org/users:
+    put:
+      tags:
+      - Contributors
+      summary: Update existing contributors
+      description: This API endpoint is used to update existing contributors (users) in the system.
+      operationId: contributors#updateContributors
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The unique identifier of the contributor.
+                  org_uuid:
+                    type: string
+                    description: The UUID of the Collection the contributor belongs to.
+                  full_name:
+                    type: string
+                    description: The updated full name of the contributor.
+                  email:
+                    type: string
+                    description: The updated email address of the contributor.
+                  integration_user_ids:
+                    type: array
+                    items:
+                      type: object
+                    description: An array of objects representing the integration user IDs associated with the contributor.
+                  additional_fields:
+                    type: object
+                    description: An object containing additional fields for the contributor (based on the schema).
+                  version:
+                    type: string
+                    description: The version of the contributor record.
+                  created_at:
+                    type: integer
+                    description: The timestamp when the contributor record was created (in milliseconds).
+                  updated_at:
+                    type: integer
+                    description: The timestamp when the contributor record was last updated (in milliseconds).
+                  dynamic_column_aggs_region:
+                    type: string
+                    description: A dynamic field for region aggregation.
+              example:
+              - id: '3'
+                org_uuid: 6a113eba-3e65-4344-ab24-a935c602eb7f
+                full_name: Ashish Duthade
+                email: ashish@harness.io
+                integration_user_ids: []
+                additional_fields:
+                  region: test 123
+                version: '512'
+                created_at: 1710164128545
+                updated_at: 1714968896813
+                dynamic_column_aggs_region: test 123
+      responses:
+        '200':
+          description: Update successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message indicating the update was successful.
+              example:
+                message: Contributor with ID 3 updated successfully.
+        '400':
+          description: Bad request. Indicates an issue with the request payload.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating the reason for the bad request.
+              example:
+                error: Invalid JSON format in request body.
+        '404':
+          description: Not found. Indicates the contributor with the specified ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating the contributor was not found.
+              example:
+                error: Contributor with ID 3 not found.
+      x-codeSamples:
+      - lang: cURL
+        label: curl
+        source: "curl 'https://app.harness.io/gratis/sei/api/v1/org/users' \\\n  -X 'PUT' \\\n  -H 'accept: application/json, text/plain, */*' \\\n  -H 'Authorization: APIKEY <HARNESS_SEI_API_KEY>' \\\n  -H 'Content-type: application/json' \\\n  --data-raw '[\n    {\n      \"id\": \"3\",\n      \"org_uuid\": \"6a113eba-3e65-4344-ab24-a935c602eb7f\",\n      \"full_name\": \"Ashish Duthade\",\n      \"email\": \"ashish@harness.io\",\n      \"integration_user_ids\": [],\n      \"additional_fields\": {\n        \"region\": \"test 123\"\n      },\n      \"version\": \"512\",\n      \"created_at\": 1710164128545,\n      \"updated_at\": 1714968896813,\n      \"dynamic_column_aggs_region\": \"test 123\"\n    }\n  ]'\n"
+  /v1/sei_contributor/list:
+    post:
+      tags:
+      - Contributors
+      summary: Retrieve SEI contributors list
+      description: This API endpoint retrieves the list of licensed users for the given organization.
+      operationId: seiContributors#listContributors
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      x-codeSamples:
+      - lang: cURL
+        label: curl
+        source: "curl --location 'https://app.harness.io/gratis/sei/api/v1/sei_contributor/list' \\\n  -H 'Content-type: application/json' \\\n  -H 'Authorization: APIKEY <HARNESS_SEI_API_KEY>' \\\n  --data '{}'\n"
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  org_user_count:
+                    type: integer
+                  integration_user_count:
+                    type: integer
+                  org_user_details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        org_user_id:
+                          type: string
+                        org_user_ref_id:
+                          type: string
+                        full_name:
+                          type: string
+                        email:
+                          type: string
+                        integration_user_details:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              integration_id:
+                                type: integer
+                              integration_type:
+                                type: string
+                              integration_user_id:
+                                type: string
+                              cloud_id:
+                                type: string
+              example:
+                org_user_count: 27
+                integration_user_count: 86
+                org_user_details:
+                - org_user_id: 8789d43f-a278-4250-8ec3-6e117400f3cc
+                  org_user_ref_id: '550'
+                  full_name: Meetrajsinh Solanki
+                  email: meetrajsinh.solanki@harness.io
+                  integration_user_details:
+                  - integration_id: 2
+                    integration_type: github
+                    integration_user_id: 27f430e1-b2d9-4dc8-9b7f-d2b76206dc6e
+                    cloud_id: meetrajsinh-crest
+                  - integration_id: 12
+                    integration_type: github
+                    integration_user_id: 119f6299-f4bb-4206-8228-e4178d9addfc
+                    cloud_id: meetrajsinh-crest
+                  - integration_id: 49
+                    integration_type: github
+                    integration_user_id: 3b9cebed-f8a4-4d57-8811-ccd7718fa139
+                    cloud_id: meetrajsinh-crest
+                - org_user_id: 2e4299b6-3106-454a-9115-5c58c34c24db
+                  org_user_ref_id: '551'
+                  full_name: Esha Shah Crest
+                  email: esha.shah@harness.io
+                  integration_user_details:
+                  - integration_id: 2
+                    integration_type: github
+                    integration_user_id: cf44ed58-f742-4164-8905-9de782017002
+                    cloud_id: eshah-crest
+                  - integration_id: 49
+                    integration_type: github
+                    integration_user_id: 14fc9b9d-3218-4441-bb8a-12403d8db443
+                    cloud_id: eshah-crest
+                  - integration_id: 12
+                    integration_type: github
+                    integration_user_id: 3210b749-35f5-445a-a12d-fced73139ba0
+                    cloud_id: eshah-crest
+components:
+  securitySchemes:
+    x-api-key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: API key is a token provided while making the API calls. This is used to authenticate the client at the exposed endpoint.
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+x-stoplight:
+  id: oc91t4vrfnjyi
+x-tagGroups:
+- name: Organizations
+  tags:
+  - Organization
+- name: Projects
+  tags:
+  - Org Project
+  - Project
+- name: Secrets
+  tags:
+  - Account Secret
+  - Org Secret
+  - Project Secret
+  - Secrets
+- name: Connectors
+  tags:
+  - Account Connector
+  - Org Connector
+  - Project Connector
+  - Connectors
+  - GoogleSecretManagerConnector
+- name: Roles
+  tags:
+  - Account Roles
+  - Organization Roles
+  - Project Roles
+  - Roles
+- name: Resource Groups
+  tags:
+  - Account Resource Groups
+  - Organization Resource Groups
+  - Project Resource Groups
+  - Filter Resource Groups
+  - Harness Resource Group
+  - Zendesk
+- name: Role Assignments
+  tags:
+  - Account Role Assignments
+  - Org Role Assignments
+  - Project Role Assignments
+  - Role Assignments
+- name: Platform
+  tags:
+  - Access Control List
+  - Account Banner
+  - Account Banner
+  - Account Licensed Modules
+  - Account License Type
+  - Account Webhooks
+  - AccountSetting
+  - Accounts
+  - Analyze Account Access Policy
+  - Analyze Organization Access Policy
+  - Analyze Project Access Policy
+  - ApiKey
+  - Audit
+  - AuditFilters
+  - Authentication Settings
+  - Canny
+  - Devops Essentials License Data By Account
+  - EULA
+  - Filter
+  - Harness Resource Type
+  - Invite
+  - IP Allowlist
+  - Nextgen Ldap
+  - Notification Channels
+  - Notification Rules
+  - OIDC
+  - Oidc-Access-Token
+  - Oidc-ID-Token
+  - Org Webhooks
+  - Permissions
+  - Project Webhooks
+  - Secret Managers
+  - Service Account
+  - Setting
+  - SMTP
+  - Source Code Manager
+  - Token
+  - User
+  - User Group
+  - Variables
+- name: Delegate
+  tags:
+  - Agent mTLS Endpoint Management
+  - Delegate Download Resource
+  - Delegate Group Tags Resource
+  - Delegate Setup Resource
+  - Delegate Token Resource
+- name: Pipelines
+  tags:
+  - Pipelines
+  - Input Sets
+  - Approvals
+  - Pipeline Execution
+  - Pipeline Dashboard
+  - Pipeline Input Set
+  - Pipeline
+  - Pipeline Execution Details
+  - Pipeline Execute
+  - Pipeline Refresh
+  - Pipeline data retention
+  - Triggers
+  - TriggersEvents
+  - Webhook Triggers
+  - Webhook Event Handler
+  - DryRunPipeline
+- name: Artifact Registry
+  tags:
+  - Registries
+  - Artifacts
+  - Docker Artifacts
+  - Helm Artifacts
+  - quarantine
+  - Webhooks
+  - Spaces
+  - Replication
+  - Registry V3 - Registries
+  - Registry V3 - Packages
+  - Registry V3 - Versions
+  - Registry V3 - Files
+  - Registry V3 - Metadata
+  - Registry V3 - Firewall
+  - Registry V3 - Transfer
+- name: Database DevOps
+  tags:
+  - Database Schema
+  - Database Instance
+  - Deployed State
+  - Execution Config
+  - Migration State
+- name: CD
+  tags:
+  - K8s Release Service Mapping
+  - CustomDeployment
+  - Environments
+  - EnvironmentGroup
+  - Infrastructures
+  - Usage
+  - File Store
+  - Service Dashboard
+  - ServiceOverrides
+  - Rollback
+  - tas
+- name: Deployment Freeze
+  tags:
+  - Freeze CRUD
+  - Freeze Evaluation
+  - Freeze Schema
+- name: Services
+  tags:
+  - Account Services
+  - Org Services
+  - Project Services
+  - Services
+- name: Rancher Infrastructures
+  tags:
+  - Account Rancher Infrastructure
+  - Org Rancher Infrastructure
+  - Project Rancher Infrastructure
+- name: Templates
+  tags:
+  - Account Template
+  - Org Template
+  - Project Template
+  - Templates
+  - Global Templates
+- name: GitOps
+  tags:
+  - Agents
+  - Application
+  - Applications
+  - Certificates
+  - Clusters
+  - Dashboard Aggregates
+  - Dashboards
+  - GnuPGP Keys
+  - GPG Keys
+  - Hosts
+  - Project mappings
+  - Projects
+  - Reconciler
+  - Repositories
+  - Repository Certificates
+  - Repository credentials
+  - ValidateHost
+- name: GitX
+  tags:
+  - GitX Webhooks
+  - Org Gitx Webhooks
+  - Project Gitx Webhooks
+- name: CACM
+  tags:
+  - Anomalies Ignorelist Rule
+  - Anomalies
+  - BI Dashboards
+  - Budgets
+  - Budget Groups
+  - Cost Categories
+  - Cloud Accounts
+  - K8S Connectors Metadata
+  - Notification Settings v2
+  - Overview
+  - Data Job Status
+  - Recommendation cost settings
+  - Unit Metric
+  - Anomaly Comments
+  - Cloud and AI cost anomaly details
+  - Cloud and AI cost anomalies v2
+  - Cost Details
+  - Currency Preferences
+  - External Data Provider
+  - AiEngine
+  - CACM governance cost settings
+  - Governance Enforcement Recommendation APIs
+  - Governance Alert
+  - Governance Overview
+  - Governance Recommendation APIs
+  - RuleEnforcement
+  - Rule Executions
+  - Rule
+  - Rule Sets
+  - Perspectives Folders
+  - Perspective Reports
+  - Perspectives
+  - Cost Category Jira Project Mapping
+  - Recommendations Details
+  - Recommendations
+  - Recommendation Jira
+  - Recommendation Preferences
+  - Recommendation Presets
+  - Recommendation Servicenow
+  - Recommendation Tags
+  - Recommendation Ignore List
+  - AutoStopping Rules
+  - AutoStopping Rules V2
+  - AutoStopping Load Balancers
+  - AutoStopping Fixed Schedules
+  - AutoStopping Alerts
+  - Commitment Orchestrator Events APIs
+- name: Feature Flags
+  tags:
+  - API Keys
+  - Feature Flags
+  - Targets
+  - Target Groups
+  - Environment Perspectives
+  - Anomalies
+  - Proxy
+  - Tags
+- name: SRM
+  tags:
+  - Monitored Services
+  - SLOs dashboard
+  - NG SLOs
+  - SLOs
+  - Downtime
+  - Srm Notification
+- name: Internal Developer Portal - IDP
+  tags:
+  - Entities
+  - Teams
+  - CatalogCustomProperties
+  - Scores
+  - DataSource
+  - KubernetesDataPoints
+  - AggregationRules
+  - AppConfig
+  - PluginInfo
+  - LayoutProxy
+  - Kinds
+  - LayoutsV3
+  - LayoutsV4
+- name: Environment Management - IDP
+  tags:
+  - Environment
+  - Infrastructure
+  - Instance
+- name: Custom Dashboards
+  tags:
+  - aida
+  - dashboards
+  - downloads
+  - embed
+  - folders
+- name: Policy Management
+  tags:
+  - dashboard
+  - examples
+  - policies
+  - evaluate
+  - evaluations
+  - policysets
+  - system
+- name: Code
+  tags:
+  - repository
+  - status_checks
+  - pullreq
+  - upload
+  - webhook
+  - resource
+  - rules
+  - labels
+- name: IaCM
+  tags:
+  - usage
+  - approvals
+  - costs
+  - executions
+  - module-registry
+  - workspaces
+  - settings
+  - tf-standard-backend
+  - variables
+- name: STO
+  tags:
+  - Exemptions
+  - Issues
+  - Scans
+  - Products
+  - Test Targets
+  - Target Variants
+- name: SEI
+  tags:
+  - Collection categories
+  - Collections
+  - Contributors
+  - DORA
+- name: Git Sync (deprecated)
+  tags:
+  - Git Branches
+  - Git Full Sync
+  - Git Sync Settings
+  - Git Sync
+  - Git Sync Errors
+- name: Error Models
+  tags:
+  - Error Response
+  - Governance Metadata
+- name: Supply Chain Security
+  tags:
+  - integration
+  - PipelineInfraConfig
+  - SBOM
+  - Integration Step Config
+  - Delete Step Config
+  - Delete Repositories
+  - Pipeline Store Config
+  - Evidence Vault [Beta]
+- name: Release Management
+  tags:
+  - Release Groups
+  - Releases
+  - Orchestration Processes
+  - Orchestration Activities
+  - Orchestration Executions
+  - Conflicts
+  - Freeze
+  - Reports
+  - Uploads
+- name: Resilience Testing
+  tags:
+  - Actions
+  - Action Templates
+  - Chaos Components
+  - Chaos Hubs
+  - ChaosGuard Conditions
+  - ChaosGuard Rules
+  - DR Tests
+  - Experiments
+  - Experiment Templates
+  - Faults
+  - Fault Templates
+  - Chaos Infrastructure
+  - Health
+  - Network Maps
+  - Onboarding
+  - Probes
+  - Probe Templates
+  - Chaos Recommendations
+  - Risks
